@@ -154,6 +154,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 // POST /api/auth/login
 // ══════════════════════════════════════════════════════
 router.post('/login', async (req, res) => {
+    console.log('LOGIN_HIT', JSON.stringify(req.body));
     try {
         const { email, password } = req.body;
 
@@ -177,14 +178,6 @@ router.post('/login', async (req, res) => {
         if (!valid) {
             return res.status(401).json({ error: 'Email o contraseña incorrectos' });
         }
-
-        try {
-            const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
-            await pool.query(
-                'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
-                [clientIp.replace(/^::ffff:/, ''), user.id]
-            );
-        } catch(e) { console.warn('[login] IP update failed:', e.message); }
 
         const token = signToken({ userId: user.id, username: user.username, email: user.email });
 

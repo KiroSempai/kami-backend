@@ -368,4 +368,26 @@ router.post('/reset', auth, async (req, res) => {
   }
 });
 
+// 🚪 [GET] /api/stats/history/:userId — Historial de actividad del usuario
+// 👤 Permiso: público
+// 📤 Respuesta: { entries: [{ id, manga_id, action_type, metadata, created_at, manga_title, manga_cover }] }
+// 📝 Últimas 50 acciones del usuario (lecturas, cambios de estado, ratings)
+router.get('/history/:userId', async (req, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT ut.id, ut.manga_id, ut.chapter_id, ut.action_type, ut.metadata, ut.created_at,
+             m.title AS manga_title, m.cover AS manga_cover
+      FROM user_tracking ut
+      LEFT JOIN mangas m ON m.id = ut.manga_id
+      WHERE ut.user_id = $1
+      ORDER BY ut.created_at DESC
+      LIMIT 50
+    `, [req.params.userId]);
+    res.json({ entries: r.rows });
+  } catch (err) {
+    console.error('[history] Error:', err.message);
+    res.status(500).json({ error: 'Error al cargar historial' });
+  }
+});
+
 module.exports = router;

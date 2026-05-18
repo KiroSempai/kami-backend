@@ -106,15 +106,15 @@ router.get('/:username', async (req, res) => {
       [userId]
     );
 
-    // Chapters completed (distintos por manga_id + chapter_number para no duplicar)
+    // Chapters completed (suma del progreso en biblioteca — no se duplica ni se infla)
     const chaptersDone = await pool.query(
-      `SELECT COUNT(DISTINCT (manga_id, metadata->>'chapter')) AS count FROM user_tracking WHERE user_id = $1 AND action_type = 'chapter_read'`,
+      `SELECT COALESCE(SUM(progress), 0) AS count FROM user_manga_library WHERE user_id = $1`,
       [userId]
     );
 
-    // Total reading time (minutes)
+    // Total reading time (minutos estimados desde progreso de biblioteca)
     const timeSpent = await pool.query(
-      `SELECT COALESCE(SUM((metadata->>'minutes')::INTEGER), 0) AS total FROM user_tracking WHERE user_id = $1 AND action_type = 'chapter_read'`,
+      `SELECT COALESCE(SUM(progress * 5), 0) AS total FROM user_manga_library WHERE user_id = $1`,
       [userId]
     );
 

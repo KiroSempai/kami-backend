@@ -1712,6 +1712,8 @@
       .catch(function(){});
     }
 
+    var _mgmt = { commId: null, myRole: null };
+
     function abrirPanelMiembros(comId) {
       document.getElementById('members-panel').style.display = 'flex';
       document.getElementById('members-panel-list').innerHTML = '<div class="notif-loading">Cargando...</div>';

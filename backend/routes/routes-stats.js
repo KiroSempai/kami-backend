@@ -305,12 +305,12 @@ router.post('/track', auth, async (req, res) => {
 
     // 3. UPSERT en user_daily_activity para heatmap
     await client.query(
-      `INSERT INTO user_daily_activity (user_id, activity_date, minutes_read, chapters_count)
+      `INSERT INTO user_daily_activity (user_id, activity_date, minutes_read, chapters_read)
        VALUES ($1, CURRENT_DATE, $2, 1)
        ON CONFLICT (user_id, activity_date)
        DO UPDATE SET
          minutes_read = user_daily_activity.minutes_read + $2,
-         chapters_count = user_daily_activity.chapters_count + 1`,
+         chapters_read = user_daily_activity.chapters_read + 1`,
       [userId, minutes]
     );
 

@@ -1753,7 +1753,7 @@
               var nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
               // Botones de gestión (solo si tiene permisos y aplica)
               var canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
-              var canCreator = globalAdmin && m.role !== 'creator' && m.role !== 'member' && !isSelf;
+              var canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
               var canDescend = (myRole === 'creator' || globalAdmin) && m.role === 'moderator' && !isSelf;
               var canKick = (isManager || globalAdmin) && m.role !== 'creator' && !isSelf;
               var canBan = canKick;

@@ -1462,8 +1462,10 @@
       // Guardar ID del post actual para restaurar scroll por anclaje
       var curHash = window.location.hash || '#inicio';
       sessionStorage.setItem('kami_last_post_id_' + curHash, postId);
-      // Navegar al hash del post — hashchange hará el resto
+      // Navegar al hash del post
       window.location.hash = 'post/' + postId;
+      // Forzar enrutamiento inmediato (por si hashchange no se dispare en algunos casos)
+      procesarEnrutamientoGlobal();
     }
 
     function cerrarHiloPost() {

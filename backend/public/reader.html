@@ -742,9 +742,24 @@
         renderAllPages();
         updateProgress();
 
-        // Track chapter read con tiempo real (envía al salir del reader)
+        // Track chapter read: si lleva 10s, marca como leído; al salir, envía tiempo real
         if (TOKEN) {
+          var _chapterTracked = false;
+          // A los 10 segundos: marca el capítulo como leído (mínimo 1 minuto)
+          setTimeout(function() {
+            if (!_chapterTracked) {
+              _chapterTracked = true;
+              fetch('/api/stats/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+                body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 1 })
+              }).catch(function(){});
+            }
+          }, 10000);
+          // Al salir: si aún no se marcó, enviar con tiempo real
           window.addEventListener('beforeunload', function enviarTrack() {
+            if (_chapterTracked) return;
+            _chapterTracked = true;
             var elapsed = Math.max(1, Math.round((Date.now() - _chapterStartTime) / 60000));
             fetch('/api/stats/track', {
               method: 'POST',

@@ -921,4 +921,26 @@ router.get('/:id/chat', async (req, res) => {
   }
 });
 
+// 🚪 [GET] /api/communities/sidebar-data/:userId
+// 👤 Permiso: público
+// 📤 Respuesta: array [{ id, name, manga_id, local_role }]
+// 📝 Comunidades activas de un usuario específico para el panel lateral del perfil.
+router.get('/sidebar-data/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const r = await pool.query(`
+      SELECT c.id, c.name, c.manga_id, cm.role AS local_role
+      FROM community_members cm
+      JOIN communities c ON c.id = cm.community_id
+      WHERE cm.user_id = $1
+      ORDER BY c.name ASC
+      LIMIT 5
+    `, [userId]);
+    res.json(r.rows);
+  } catch (err) {
+    console.error('[communities] Error en sidebar-data/:userId:', err.message);
+    res.status(500).json({ error: 'Error al cargar sidebar' });
+  }
+});
+
 module.exports = router;

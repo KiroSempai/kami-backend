@@ -412,4 +412,23 @@ function formatEntry(row) {
   };
 }
 
+// 🚪 [GET] /api/library/:mangaId/progress — Progreso del usuario en un manga específico
+// 👤 Permiso: auth
+// 📤 Respuesta: { progress: number, status: string }
+router.get('/:mangaId/progress', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.json({ progress: 0, status: null });
+    const decoded = require('../config').verifyToken(token);
+    const r = await pool.query(
+      'SELECT progress, status FROM user_manga_library WHERE user_id = $1 AND manga_id = $2',
+      [decoded.userId, req.params.mangaId]
+    );
+    if (r.rows.length === 0) return res.json({ progress: 0, status: null });
+    res.json({ progress: r.rows[0].progress || 0, status: r.rows[0].status });
+  } catch (e) {
+    res.json({ progress: 0, status: null });
+  }
+});
+
 module.exports = router;

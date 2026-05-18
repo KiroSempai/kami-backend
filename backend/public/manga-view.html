@@ -282,6 +282,7 @@
         let mangaData = null;
         let libraryStatus = null;
         var currentChapterList = [];
+        var _userProgress = 0;
         var currentUserRating = null;
 
         async function trackAction(action_type, chapter_id, metadata) {
@@ -341,6 +342,10 @@
                 // Track unique view + daily_login + manga_started
                 var token = localStorage.getItem('kami_token');
                 if (token) {
+                  fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(function(r){ return r.json(); })
+                    .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
+                    .catch(function(){});
                   fetch('/api/manga/' + mangaId + '/view', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
@@ -673,7 +678,8 @@
         function renderChapterRow(ch) {
           var date = ch.createdAt ? new Date(ch.createdAt).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }) : (ch.releaseDate || '');
           var numStr = String(ch.number).padStart(3, '0');
-          return '<div class="chapter-row" onclick="window.location.href=\'/reader/' + mangaId + '/' + ch.number + '\'">' +
+          var readClass = _userProgress > 0 && ch.number <= _userProgress ? ' chapter-read' : '';
+          return '<div class="chapter-row' + readClass + '" onclick="window.location.href=\'/reader/' + mangaId + '/' + ch.number + '\'">' +
             '<div class="chapter-thumb">#' + numStr + '</div>' +
             '<div class="chapter-info">' +
               '<div class="chapter-num-line">' +

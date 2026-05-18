@@ -178,6 +178,7 @@ body { background:#0e0e1e; color:#f2f2fa; font-family:'Plus Jakarta Sans',sans-s
 .chapter-row { display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.06); cursor:pointer; transition:.15s; border-radius:8px; margin:0 -12px; }
 .chapter-row:hover { background:rgba(255,255,255,0.04); }
 .chapter-row.blurred { opacity:0.2; pointer-events:none; filter:blur(3px); user-select:none; }
+.chapter-row.chapter-read { opacity:0.45; }
 .chapter-thumb { width:64px; height:48px; border-radius:6px; flex-shrink:0; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:18px; color:rgba(255,255,255,0.2); }
 .chapter-info { flex:1; min-width:0; }
 .chapter-num-line { display:flex; align-items:baseline; gap:8px; }

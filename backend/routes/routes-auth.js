@@ -149,7 +149,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 // ══════════════════════════════════════════════════════
 // POST /api/auth/login
 // ══════════════════════════════════════════════════════
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -157,53 +157,55 @@ router.post('/login', loginLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Email y contraseña requeridos' });
         }
 
-        const result = await pool.query(
-            'SELECT * FROM users WHERE email = $1',
-            [email]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
-        }
-
-        const user = result.rows[0];
-        const role = getRole(user);
-
-        const valid = await bcrypt.compare(password, user.password);
-        if (!valid) {
-            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
-        }
-
-        // Actualizar última sesión + IP
         try {
-          const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
-          await pool.query(
-              'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
-              [clientIp.replace(/^::ffff:/, ''), user.id]
-          );
-        } catch(e) { console.warn('[login] IP update failed:', e.message); }
+            const r2 = await pool.query('SELECT 1');
+            const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-        const token = signToken({ userId: user.id, username: user.username, email: user.email });
+            if (result.rows.length === 0) {
+                return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            }
 
-        res.json({
-            success: true,
-            message: 'Login exitoso',
-            token,
-            user: {
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                avatar: user.avatar || user.username.slice(0, 2).toUpperCase(),
-                banner: user.banner || '',
-                bio: user.bio || '',
-                role,
-            },
-            redirect: `/profile/${user.username}`,
-        });
+            const user = result.rows[0];
+            const role = getRole(user);
 
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) {
+                return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+            }
+
+            try {
+                const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
+                await pool.query(
+                    'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
+                    [clientIp.replace(/^::ffff:/, ''), user.id]
+                );
+            } catch(e) { console.warn('[login] IP update failed:', e.message); }
+
+            const token = signToken({ userId: user.id, username: user.username, email: user.email });
+
+            res.json({
+                success: true,
+                message: 'Login exitoso',
+                token,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    avatar: user.avatar || user.username.slice(0, 2).toUpperCase(),
+                    banner: user.banner || '',
+                    bio: user.bio || '',
+                    role,
+                },
+                redirect: `/profile/${user.username}`,
+            });
+        } catch(innerErr) {
+            console.error('[login] inner error:', innerErr.message);
+            res.status(500).json({ error: 'Error interno', detail: innerErr.message, stack: innerErr.stack?.slice(0,200) });
+        }
     } catch (err) {
-        console.error('Error en /login:', err.message, err.stack?.split('\n')[1]);
-        res.status(500).json({ error: 'Error interno al iniciar sesión', detail: err.message });
+        console.error('Error en /login outer:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor', outer: err.message });
+    }
     }
 });
 

@@ -2414,6 +2414,32 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       }).catch(function(){ if (pc) pc.innerHTML = '<div class="notif-empty">Error de conexi&oacute;n</div>'; });
     }
 
+    // ── Repost functions ──
+    async function repostPost(postId) {
+      let token = localStorage.getItem('kami_token');
+      if (!token) return;
+      try {
+        let res = await fetch('/api/feed/repost', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+          body: JSON.stringify({ post_id: postId })
+        });
+        let data = await res.json();
+        if (data.success) {
+          let btn = document.querySelector(`.feed-post[data-post-id="${postId}"] .feed-post-action .repost-count`);
+          let parent = btn ? btn.closest('.feed-post-action') : null;
+          if (parent) {
+            let span = parent.querySelector('.repost-count');
+            let n = parseInt(span.textContent) || 0;
+            if (data.action === 'reposted') { span.textContent = n + 1; parent.classList.add('reposted'); }
+            else { span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted'); }
+          }
+        }
+        if (res.ok && typeof renderFeed === 'function') renderFeed();
+      } catch (e) { console.error('[repost] Error:', e); }
+    }
+    function toggleRepost(postId) { repostPost(postId); }
+
     const FILTER_TAG_MAP = { 'FanArt':'fanart', 'Reseña':'review', 'Teoría':'theory', 'Coleccionismo':'collection', 'Memes':'memes' };
     function toggleFilter(el) {
       el.classList.toggle('active');

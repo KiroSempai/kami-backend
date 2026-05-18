@@ -792,6 +792,30 @@
             feedInteract(postId, 'hide');
         }
 
+        async function repostPost(postId) {
+            var token = localStorage.getItem('kami_token');
+            if (!token) return;
+            try {
+                var res = await fetch('/api/feed/repost', {
+                    method: 'POST',
+                    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+                    body: JSON.stringify({ post_id: postId })
+                });
+                var data = await res.json();
+                if (data.success) {
+                    var btn = document.querySelector('.feed-post[data-post-id="' + postId + '"] .feed-post-action .repost-count');
+                    var parent = btn ? btn.closest('.feed-post-action') : null;
+                    if (parent) {
+                        var span = parent.querySelector('.repost-count');
+                        var n = parseInt(span.textContent) || 0;
+                        if (data.action === 'reposted') { span.textContent = n + 1; parent.classList.add('reposted'); }
+                        else { span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted'); }
+                    }
+                }
+                if (res.ok && typeof renderFeed === 'function') renderFeed();
+            } catch (e) { console.error('[repost] Error:', e); }
+        }
+
         function openRepostMenu(btn, postId) {
             var m = document.getElementById('repost-menu');
             if (m) m.remove();
@@ -802,7 +826,7 @@
             var btnEl = btn.closest('.feed-post-action');
             var isRep = btnEl && btnEl.classList.contains('reposted');
             menu.innerHTML =
-                '<div class="repost-menu-item" onclick="toggleRepost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isRep ? 'Deshacer repost' : 'Repost simple') + '</div>' +
+                '<div class="repost-menu-item" onclick="repostPost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isRep ? 'Deshacer repost' : 'Repost simple') + '</div>' +
                 '<div class="repost-menu-item" onclick="openReply&&openReply(' + postId + ');closeRepostMenu()"><i class="ti ti-quote"></i> Citar post</div>';
             menu.style.position = 'fixed';
             menu.style.top = (rect.bottom + 4) + 'px';
@@ -812,25 +836,7 @@
         }
         function closeRepostMenu() { var m = document.getElementById('repost-menu'); if (m) m.remove(); }
 
-        function toggleRepost(postId) {
-            var token = localStorage.getItem('kami_token');
-            if (!token) return;
-            var btn = document.querySelector('.feed-post[data-post-id="' + postId + '"] .feed-post-action .repost-count');
-            var parent = btn ? btn.closest('.feed-post-action') : null;
-            var isRep = parent && parent.classList.contains('reposted');
-            fetch('/api/feed/repost', {
-                method: isRep ? 'DELETE' : 'POST',
-                headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-                body: JSON.stringify({ post_id: postId })
-            }).then(function(r){return r.json()}).then(function(d){
-                if (d.success && parent) {
-                    var span = parent.querySelector('.repost-count');
-                    var n = parseInt(span.textContent) || 0;
-                    if (isRep) { span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted'); }
-                    else { span.textContent = n + 1; parent.classList.add('reposted'); }
-                }
-            }).catch(function(){});
-        }
+        function toggleRepost(postId) { repostPost(postId); }
 
         function openDotsMenu(btn, postId, postUser) {
             var m = document.getElementById('dots-menu');
@@ -905,7 +911,8 @@
 
         function renderFeedPosts(posts) {
             var _isAdmin = false;
-            try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); _isAdmin = _u && _u.role === 'admin'; } catch(e) {}
+            var _localUser = null;
+            try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); _isAdmin = _u && _u.role === 'admin'; _localUser = _u; } catch(e) {}
             return posts.map(function(p) {
                 var avatarStyle, avatarContent;
                 if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
@@ -936,8 +943,15 @@
                 if (p.spoiler) {
                     spoilerOverlay = '<div class="spoiler-overlay" onclick="this.parentElement.classList.remove(\'feed-post-spoiler\');this.style.display=\'none\';if(window.feedSpoilerRevealed)feedSpoilerRevealed(' + p.id + ')"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>';
                 }
+                var _repostBanner = '';
+                if (p.reposter_username) {
+                    var _currentUser = (_localUser && _localUser.username) ? _localUser.username : null;
+                    var _bannerText = (p.reposter_username === _currentUser) ? 'Tú reposteaste' : '@' + p.reposter_username + ' Reposteó';
+                    _repostBanner = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;">🔄 ' + _bannerText + '</div>';
+                }
                 return '' +
                     '<div class="feed-post' + spoilerClass + '" data-post-id="' + p.id + '">' +
+                    _repostBanner +
                     spoilerOverlay +
                     '<a href="/profile/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + '">' + avatarContent + '</a>' +
                     '<div class="feed-post-body">' +
@@ -995,8 +1009,17 @@
             roleBadgeHtml = '<span style="font-size:10px;color:var(--accent);font-weight:600;margin-left:4px;">ADMIN</span>';
           }
 
+          // ── Repost banner ──
+          var _bannerHTML = '';
+          if (p.reposter_username) {
+            var _curUser = null; try { var _uu = JSON.parse(localStorage.getItem('kami_user') || 'null'); _curUser = _uu ? _uu.username : null; } catch(e) {}
+            var _bTxt = (p.reposter_username === _curUser) ? 'Tú reposteaste' : '@' + p.reposter_username + ' Reposteó';
+            _bannerHTML = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;">🔄 ' + _bTxt + '</div>';
+          }
+
           var html = '';
           html += '<div class="actividad-expanded-card" data-post-id="' + p.id + '" onclick="window.location.href=\'/#post/' + p.id + '\'">';
+          html += _bannerHTML;
           html += '  <div class="post-detail-author-row" style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px 16px;width:100%;box-sizing:border-box;">';
           html += '    <a href="/profile/' + p.user + '" onclick="event.stopPropagation();">' + avatarContent + '</a>';
           html += '    <div style="display:flex;flex-direction:column;">';

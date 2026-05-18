@@ -576,6 +576,9 @@
           <span id="members-panel-title">Miembros</span>
           <button onclick="document.getElementById('members-panel').style.display='none'" class="gif-picker-close"><i class="ti ti-x"></i></button>
         </div>
+        <div style="padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+          <input type="text" id="members-search-input" placeholder="Buscar miembro..." oninput="filterMembers(this.value)" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
         <div id="members-panel-list" style="flex:1;min-height:0;overflow-y:auto;padding:8px;"></div>
       </div>
     </div>
@@ -1714,6 +1717,7 @@
     }
 
     var _mgmt = { commId: null, myRole: null };
+    var _membersCache = [];
 
     function abrirPanelMiembros(comId) {
       document.getElementById('members-panel').style.display = 'flex';
@@ -1738,45 +1742,60 @@
               document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Sin miembros</div>';
               return;
             }
-            var myId = (function(){try{return JSON.parse(localStorage.getItem('kami_user')||'null').id}catch(e){return null}})();
-            document.getElementById('members-panel-list').innerHTML = d.members.map(function(m){
-              var isSelf = m.user_id && m.user_id === myId;
-              var roleEmoji = m.role === 'creator' ? '👑' : m.role === 'moderator' ? '🛡️' : '';
-              var roleLabel = m.role === 'creator' ? 'Creador' : m.role === 'moderator' ? 'Moderador' : 'Miembro';
-              var globalAdmin = (function(){try{var u=JSON.parse(localStorage.getItem('kami_user')||'null');return u&&u.role==='admin';}catch(e){return false}})();
-              var av = '';
-              if (m.avatar && typeof m.avatar === 'string' && (m.avatar.indexOf('/') === 0 || m.avatar.indexOf('http') === 0 || m.avatar.indexOf('base64') >= 0)) {
-                av = '<img src="' + m.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
-              } else {
-                av = '<span style="font-size:14px;font-weight:700;color:#fff;">' + (m.username||'?').charAt(0).toUpperCase() + '</span>';
-              }
-              var nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
-              // Botones de gestión (solo si tiene permisos y aplica)
-              var canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
-              var canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
-              var canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
-              var canKick = (isManager || globalAdmin) && !isSelf && (m.role !== 'creator' || globalAdmin);
-              var canBan = canKick;
-              var actionsHtml = '';
-              if (canAscend) actionsHtml += '<button class="rm-btn ascend" onclick="ascendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a moderador">⬆</button>';
-              if (canCreator) actionsHtml += '<button class="rm-btn creator" onclick="promoteCreator(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a creator">👑</button>';
-              if (canDescend) actionsHtml += '<button class="rm-btn descend" onclick="descendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Descender a miembro">⬇</button>';
-              if (canKick) actionsHtml += '<button class="rm-btn kick" onclick="removeMember(\'' + comId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Eliminar de la comunidad">❌</button>';
-              if (canBan) actionsHtml += '<button class="rm-btn ban" onclick="banMember(\'' + comId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Banear de la comunidad">🚫</button>';
-              return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);">' +
-                '<div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;" onclick="' + nav + '">' + av + '</div>' +
-                '<div style="flex:1;min-width:0;">' +
-                  '<div style="display:flex;align-items:center;gap:4px;">' +
-                    '<span onclick="' + nav + '" style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;">' + roleEmoji + ' ' + m.username + '</span>' +
-                  '</div>' +
-                  '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + roleLabel + '</div>' +
-                '</div>' +
-                (actionsHtml ? '<div class="rm-actions" style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;">' + actionsHtml + '</div>' : '') +
-              '</div>';
-            }).join('');
+            _membersCache = d.members;
+            document.getElementById('members-search-input').value = '';
+            renderMembersList('');
           })
           .catch(function(){ document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Error al cargar</div>'; });
       });
+    }
+
+    function renderMembersList(filter) {
+      var comId = _mgmt.commId;
+      var myRole = _mgmt.myRole;
+      var isManager = myRole === 'creator' || myRole === 'moderator';
+      var myId = (function(){try{return JSON.parse(localStorage.getItem('kami_user')||'null').id}catch(e){return null}})();
+      var globalAdmin = (function(){try{var u=JSON.parse(localStorage.getItem('kami_user')||'null');return u&&u.role==='admin';}catch(e){return false}})();
+      var q = filter.toLowerCase().trim();
+      var filtered = q ? _membersCache.filter(function(m){ return (m.username||'').toLowerCase().indexOf(q) >= 0; }) : _membersCache;
+      document.getElementById('members-panel-list').innerHTML = filtered.map(function(m){
+        var isSelf = m.user_id && m.user_id === myId;
+        var roleEmoji = m.role === 'creator' ? '👑' : m.role === 'moderator' ? '🛡️' : '';
+        var roleLabel = m.role === 'creator' ? 'Creador' : m.role === 'moderator' ? 'Moderador' : 'Miembro';
+        var av = '';
+        if (m.avatar && typeof m.avatar === 'string' && (m.avatar.indexOf('/') === 0 || m.avatar.indexOf('http') === 0 || m.avatar.indexOf('base64') >= 0)) {
+          av = '<img src="' + m.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+        } else {
+          av = '<span style="font-size:14px;font-weight:700;color:#fff;">' + (m.username||'?').charAt(0).toUpperCase() + '</span>';
+        }
+        var nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
+        var canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
+        var canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
+        var canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
+        var canKick = (isManager || globalAdmin) && !isSelf && (m.role !== 'creator' || globalAdmin);
+        var canBan = canKick;
+        var actionsHtml = '';
+        if (canAscend) actionsHtml += '<button class="rm-btn ascend" onclick="ascendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a moderador">⬆</button>';
+        if (canCreator) actionsHtml += '<button class="rm-btn creator" onclick="promoteCreator(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a creator">👑</button>';
+        if (canDescend) actionsHtml += '<button class="rm-btn descend" onclick="descendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Descender">⬇</button>';
+        if (canKick) actionsHtml += '<button class="rm-btn kick" onclick="removeMember(\'' + comId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Eliminar">❌</button>';
+        if (canBan) actionsHtml += '<button class="rm-btn ban" onclick="banMember(\'' + comId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Banear">🚫</button>';
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);">' +
+          '<div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;" onclick="' + nav + '">' + av + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="display:flex;align-items:center;gap:4px;">' +
+              '<span onclick="' + nav + '" style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;">' + roleEmoji + ' ' + m.username + '</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + roleLabel + '</div>' +
+          '</div>' +
+          (actionsHtml ? '<div class="rm-actions" style="margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0;">' + actionsHtml + '</div>' : '') +
+        '</div>';
+      }).join('');
+      if (!filtered.length) document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Sin resultados</div>';
+    }
+
+    function filterMembers(query) {
+      renderMembersList(query);
     }
 
     // Helpers de gestión que refrescan el panel actual

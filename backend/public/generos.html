@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Géneros-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/generos.css">
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div id="page-loader">
+      <div class="spinner"></div>
+      <p style="color:var(--text-muted);font-size:14px;">Cargando géneros...</p>
+    </div>
+
+    <div id="page-content">
+    <!-- ═══════════ MAIN CONTENT ═══════════ -->
+    <div class="main-content">
+
+        <div class="page-header">
+            <h1 class="page-title">GÉNEROS</h1>
+            <p class="page-subtitle">Explora todos los géneros disponibles en KAMI</p>
+        </div>
+
+        <div class="genres-grid" id="genres-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
+        </div>
+
+    </div>
+    </div>
+
+    <!-- ═══════════ SCRIPTS ═══════════ -->
+    <script src="/js/offline.js?v=2"></script>
+    <script>
+        async function loadGenres() {
+            const grid = document.getElementById('genres-grid');
+            const result = await kamiOffline.safeFetch('/api/manga/genres', {}, { cacheKey: 'kami_genres', maxAge: 24*60*60*1000 });
+            const genres = result.ok ? (result.data.genres || []) : [];
+
+            if (genres.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted);padding:40px;text-align:center;grid-column:1/-1;">No hay géneros disponibles</p>';
+                kamiOffline.showContent();
+                return;
+            }
+
+            grid.innerHTML = genres.map(g => {
+                const emojiMap = {
+                    'accion': '⚔️', 'aventura': '🗺️', 'artes marciales': '🥋',
+                    'militar': '🎖️', 'drama': '🎭', 'romance': '💕',
+                    'slice of life': '☕', 'tragedia': '💔', 'fantasia': '✨',
+                    'isekai': '🌀', 'ciencia ficcion': '🤖', 'mecha': '⚙️',
+                    'sistema': '📊', 'dark fantasy': '🌑', 'comedia': '😂',
+                    'escolar': '🎒', 'recuentos de la vida': '🌱', 'deportes': '⚽',
+                    'horror': '👻', 'misterio': '🔍', 'thriller': '🔪',
+                    'psicologico': '🧠', 'sobrenatural': '👁️', 'historico': '🏯',
+                    'historia': '📜', 'musica': '🎵', 'seinen': '🗡️',
+                    'shonen': '⚡', 'shoujo': '🌸', 'josei': '💄',
+                    'ecchi': '🔞', 'harem': '👥', 'manga': '📘',
+                    'manhwa': '📗', 'manhua': '📙'
+                };
+                const name = g.name || g;
+                const key = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const emoji = emojiMap[key] || '🏷️';
+                const count = g.count || '';
+                return `
+                    <a href="/biblioteca?genre=${encodeURIComponent(name)}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);transition:.2s;cursor:pointer;">
+                        <span style="font-size:36px;">${emoji}</span>
+                        <span style="font-weight:600;font-size:14px;text-align:center;">${name.charAt(0).toUpperCase() + name.slice(1)}</span>
+                        ${count ? `<span style="font-size:11px;color:var(--text-muted);">${count} títulos</span>` : ''}
+                    </a>
+                `;
+            }).join('');
+        }
+
+        loadGenres().finally(() => kamiOffline.showContent());
+    </script>
+
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

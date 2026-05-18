@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/perfil.css">
+    <link rel="stylesheet" href="/css/kmi-card.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <script src="/js/offline.js?v=2"></script>
+    <style>
+        #profile-loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 64px);
+            gap: 16px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #profile-content {
+            display: none;
+        }
+
+    /* ─── Feed post styles (copiado de index.html) ─── */
+    .feed-post { display:flex; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); transition:.1s; }
+    .feed-post:hover { background:rgba(255,255,255,0.02); }
+    .feed-post-avatar { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; text-decoration:none; }
+    .feed-post-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .feed-post-avatar:hover { opacity:0.9; }
+    .feed-post-body { flex:1; min-width:0; }
+    .feed-post-header { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+    .feed-post-user { font-size:14px; font-weight:700; color:#f0f0f0; display:flex; align-items:center; gap:4px; text-decoration:none; }
+    .feed-post-user:hover { text-decoration:underline; }
+    .feed-post-handle { font-size:12px; color:rgba(255,255,255,0.25); text-decoration:none; }
+    .feed-post-handle:hover { text-decoration:underline; color:rgba(255,255,255,0.4); }
+    .feed-post-time { font-size:11px; color:rgba(255,255,255,0.2); margin-left:auto; white-space:nowrap; }
+    .role-badge-admin { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ff1493; border:1px solid rgba(255,20,147,0.3); background:rgba(255,20,147,0.06); line-height:1.4; }
+    .role-badge-golden { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ffd700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); line-height:1.4; }
+    .role-badge-silver { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#c0c0c0; border:1px solid rgba(192,192,192,0.3); background:rgba(192,192,192,0.06); line-height:1.4; }
+    .feed-post-text { font-size:13px; color:#e0e0e0; line-height:1.5; margin-top:4px; word-wrap:break-word; }
+    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
+    .feed-post-manga:hover { background:rgba(255,255,255,0.05); }
+    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+    .feed-post-manga-info { flex:1; min-width:0; }
+    .feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
+    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
+    .feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+    .feed-post-actions { display:flex; align-items:center; gap:24px; margin-top:10px; }
+    .feed-post-action { display:flex; align-items:center; gap:4px; background:none; border:none; color:rgba(255,255,255,0.25); font-size:11px; cursor:pointer; font-family:inherit; padding:4px; border-radius:4px; transition:.1s; }
+    .feed-post-action:hover { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5); }
+    .feed-post-action i { font-size:16px; }
+    .feed-post-action.liked { color:var(--accent); }
+    .feed-post-action.liked i.ti-heart { animation:heartPop .3s ease; }
+    @keyframes heartPop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    .feed-post-action.reposted { color:var(--green); }
+    .feed-post-action.bookmarked { color:var(--blue); }
+    .feed-post-media { position:relative; margin-top:10px; border-radius:14px; overflow:hidden; }
+    .feed-post-media img { width:100%; display:block; border-radius:14px; max-height:300px; object-fit:cover; background:rgba(255,255,255,0.03); }
+    .feed-post-media-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; z-index:1; }
+    .feed-post-quote { display:flex; align-items:center; gap:8px; margin-top:8px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:12px; color:var(--text-secondary); transition:.15s; }
+    .feed-post-quote:hover { background:rgba(255,255,255,0.04); border-color:var(--border-hover); }
+    .feed-post-quote i { font-size:14px; color:var(--accent); }
+    .feed-post-spoiler { position:relative; }
+    .spoiler-overlay { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(232,52,74,0.15); backdrop-filter:blur(6px); border-radius:0; cursor:pointer; color:rgba(255,255,255,0.5); font-size:13px; font-weight:600; transition:.2s; }
+    .spoiler-overlay:hover { background:rgba(232,52,74,0.25); color:#fff; }
+    .spoiler-overlay i { font-size:20px; }
+    .feed-post-spoiler .feed-post-avatar,
+    .feed-post-spoiler .feed-post-body { opacity:0.3; pointer-events:none; filter:blur(2px); }
+
+    /* ─── Floating menus ─── */
+    .repost-menu { z-index:9999; background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; padding:4px; min-width:160px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .repost-menu-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-radius:8px; font-size:13px; color:var(--text-primary); transition:.15s; }
+    .repost-menu-item:hover { background:rgba(255,255,255,0.06); }
+    .repost-menu-item i { font-size:16px; color:var(--text-secondary); }
+
+    </style>
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div id="profile-loader">
+        <div class="spinner"></div>
+        <p style="color:var(--text-muted);font-size:14px;">Cargando perfil...</p>
+    </div>
+
+    <div id="profile-content">
+    <!-- PROFILE HERO -->
+    <div class="profile-hero" style="position:relative;">
+
+        <!-- Banner -->
+        <div class="profile-banner">
+        </div>
+
+        <button id="btn-moderation" style="display:none;position:absolute;top:12px;right:12px;z-index:50;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--font-body);border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.25);color:rgba(255,255,255,0.7);cursor:pointer;transition:all .15s;" onclick="if(window.openModPanel)window.openModPanel();else alert('Moderación no disponible')">Moderar</button>
+
+        <!-- Info bar -->
+        <div class="profile-info-bar">
+            <div class="profile-info-inner">
+                <div class="profile-avatar-wrap">
+                    <div class="profile-avatar">
+                        <div class="profile-avatar-level"></div>
+                    </div>
+                </div>
+
+                <div class="profile-meta">
+                <div class="profile-username-row">
+                    <span class="profile-username" id="profile-username-display"></span>
+                    <span class="profile-verified" id="profile-verified-tag" style="display:none;">✓ Verificado</span>
+                    <span class="profile-admin" id="profile-admin-tag" style="display:none;">⚡ Admin</span>
+                    <span class="profile-silver" id="profile-silver-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color:#fff;font-size:7px;margin-right:3px;">神</span> Silver</span>
+                    <span class="profile-gold" id="profile-gold-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color:#fff;font-size:7px;margin-right:3px;">神</span> Gold</span>
+                    <span class="profile-moderator" id="profile-moderator-tag" style="display:none;">🛡️ Moderador</span>
+                    <span class="profile-company" id="profile-company-tag" style="display:none;">🏢 Empresa</span>
+                    <span class="profile-banned" id="profile-banned-tag" style="display:none;">🚫 Baneado</span>
+                </div>
+                    <p class="profile-bio"></p>
+                    <div class="profile-tags">
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="btn btn-ghost" id="btn-share-profile">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                            <polyline points="16 6 12 2 8 6" />
+                            <line x1="12" y1="2" x2="12" y2="15" />
+                        </svg>
+                        Compartir perfil
+                    </button>
+                    <a class="btn btn-ghost" id="btn-edit-profile" href="/perfil-editor/">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        ✏ Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="profile-stats-bar">
+            <div class="profile-stat">
+                <div class="profile-stat-val" id="stat-titles">0</div>
+                <div class="profile-stat-lbl">Títulos</div>
+                <div class="profile-stat-sub">leídos</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-val" id="stat-chapters">0</div>
+                <div class="profile-stat-lbl">Capítulos</div>
+                <div class="profile-stat-sub">completados</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-val" id="stat-hours">0</div>
+                <div class="profile-stat-lbl">Horas</div>
+                <div class="profile-stat-sub">de lectura</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-val" id="stat-followers">0</div>
+                <div class="profile-stat-lbl">Seguidores</div>
+            </div>
+            <div class="profile-stat" style="border-right: none;">
+                <div class="profile-stat-val" id="stat-following">0</div>
+                <div class="profile-stat-lbl">Siguiendo</div>
+            </div>
+            <div class="streak-badge">
+                <div class="streak-fire">🔥</div>
+                <div class="streak-info">
+                    <div class="streak-num" id="stat-streak">0</div>
+                    <div class="streak-lbl">días de racha</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TABS
+══════════════════════════════════════ -->
+    <div class="profile-tabs">
+        <button class="tab-btn active" id="tab-biblioteca" onclick="showTab('biblioteca', this)">
+            📚 Biblioteca <span class="tab-count">347</span>
+        </button>
+        <button class="tab-btn" id="tab-estadisticas" onclick="showTab('estadisticas', this)">
+            📊 Estadísticas
+        </button>
+        <button class="tab-btn" id="tab-historial" onclick="showTab('historial', this)">
+            🕐 Historial
+        </button>
+        <button class="tab-btn" id="tab-actividad" onclick="showTab('actividad', this)">
+            👥 Actividad
+        </button>
+        <button class="tab-btn" id="tab-listas" onclick="showTab('listas', this)">
+            🎵 Listas <span class="tab-count">8</span>
+        </button>
+        <button class="tab-btn" id="tab-logros" onclick="showTab('logros', this)">
+            🏆 Logros <span class="tab-count">34</span>
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: BIBLIOTECA
+══════════════════════════════════════ -->
+    <div class="tab-content active" id="content-biblioteca">
+
+        <!-- State filters -->
+        <div class="library-states">
+            <button class="state-chip sc-all active" onclick="filterState(this)" data-state="all">
+                <div class="state-chip-dot" style="background:var(--text-muted);"></div>
+                Todos <span class="state-chip-count" id="tab-count-all"></span>
+            </button>
+            <button class="state-chip sc-reading" onclick="filterState(this)" data-state="reading">
+                <div class="state-chip-dot" style="background:var(--blue);"></div>
+                Leyendo <span class="state-chip-count" id="tab-count-reading">0</span>
+            </button>
+            <button class="state-chip sc-continuing" onclick="filterState(this)" data-state="continuing">
+                <div class="state-chip-dot" style="background:var(--green);"></div>
+                Continuando <span class="state-chip-count" id="tab-count-continuing">0</span>
+            </button>
+            <button class="state-chip sc-planned" onclick="filterState(this)" data-state="planned">
+                <div class="state-chip-dot" style="background:var(--accent-gold);"></div>
+                Pendientes <span class="state-chip-count" id="tab-count-planned">0</span>
+            </button>
+            <button class="state-chip sc-favorite" onclick="filterState(this)" data-state="favorite">
+                <div class="state-chip-dot" style="background:var(--accent);"></div>
+                Favoritos <span class="state-chip-count" id="tab-count-favorite">0</span>
+            </button>
+            <button class="state-chip sc-completed" onclick="filterState(this)" data-state="completed">
+                <div class="state-chip-dot" style="background:var(--purple);"></div>
+                Terminados <span class="state-chip-count" id="tab-count-completed">0</span>
+            </button>
+            <button class="state-chip sc-dropped" onclick="filterState(this)" data-state="dropped">
+                <div class="state-chip-dot" style="background:var(--text-muted);"></div>
+                Abandonados <span class="state-chip-count" id="tab-count-dropped">0</span>
+            </button>
+            <button class="state-chip sc-rereading" onclick="filterState(this)" data-state="rereading">
+                <div class="state-chip-dot" style="background:var(--orange);"></div>
+                Releyendo <span class="state-chip-count" id="tab-count-rereading">0</span>
+            </button>
+        </div>
+
+        <!-- Info bar -->
+        <div class="library-info-bar">
+            <div class="library-info-text">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Autoguardado activo — los capítulos se marcan automáticamente al abrirlos
+            </div>
+            <div class="library-sort">
+                <span style="font-size:12px; color:var(--text-muted);">Ordenar:</span>
+                <select class="sort-select">
+                    <option>Última actividad</option>
+                    <option>Título A–Z</option>
+                    <option>Puntuación</option>
+                    <option>Capítulos restantes</option>
+                    <option>Fecha añadido</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Manga grid (dynamic) -->
+        <div class="kmi-grid" id="lib-grid">
+            <div class="lib-loading" style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">Cargando biblioteca…</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: ESTADÍSTICAS
+══════════════════════════════════════ -->
+    <div class="tab-content" id="content-estadisticas">
+
+        <!-- Top stat cards -->
+        <div class="stats-grid-top">
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                <div class="stat-card-val" id="stat-hours-val">—</div>
+                <div class="stat-card-lbl">Horas leídas</div>
+                <div class="stat-card-trend" id="stat-hours-trend" style="color:var(--green);"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(232,51,74,0.15); color:var(--accent);">📄</div>
+                <div class="stat-card-val" id="stat-caps-val">—</div>
+                <div class="stat-card-lbl">Capítulos totales</div>
+                <div class="stat-card-trend" id="stat-caps-trend" style="color:var(--green);"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(167,139,250,0.15); color:var(--purple);">📚</div>
+                <div class="stat-card-val" id="stat-titles-val">—</div>
+                <div class="stat-card-lbl">Títulos leídos</div>
+                <div class="stat-card-trend" id="stat-titles-trend" style="color:var(--green);"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon" style="background:rgba(251,146,60,0.15); color:var(--orange);">🔥</div>
+                <div class="stat-card-val" id="stat-streak-val">—</div>
+                <div class="stat-card-lbl">Racha actual</div>
+                <div class="stat-card-trend" id="stat-streak-trend" style="color:var(--accent-gold);"></div>
+            </div>
+        </div>
+
+        <!-- Heatmap full width -->
+        <div class="heatmap-card" style="margin-bottom:20px;">
+            <div class="card-title">
+                Mapa de lectura <span
+                    style="color:var(--text-muted); font-size:12px; font-weight:400; text-transform:none; letter-spacing:0;">—
+                    últimos 12 meses</span>
+                <span class="card-title-tag" id="heatmap-tag"></span>
+            </div>
+            <div id="heatmap-container">
+                <div class="heatmap-grid" id="heatmap-grid"></div>
+            </div>
+            <div class="heatmap-legend">
+                <span>Menos</span>
+                <div class="heatmap-legend-squares">
+                    <div class="heatmap-day" style="width:12px;height:12px;"></div>
+                    <div class="heatmap-day" style="width:12px;height:12px;" data-level="1"></div>
+                    <div class="heatmap-day" style="width:12px;height:12px;" data-level="2"></div>
+                    <div class="heatmap-day" style="width:12px;height:12px;" data-level="3"></div>
+                    <div class="heatmap-day" style="width:12px;height:12px;" data-level="4"></div>
+                </div>
+                <span>Más</span>
+            </div>
+        </div>
+
+        <!-- Two col: weekly + genres -->
+        <div class="stats-two-col">
+            <div class="weekly-chart-card">
+                <div class="card-title">Capítulos por día <span class="card-title-tag" id="weekly-tag"></span></div>
+                <div class="weekly-bars" id="weekly-bars"></div>
+                <div style="display:flex; gap:8px; justify-content:space-around; margin-top:4px;" id="weekly-labels">
+                </div>
+            </div>
+            <div class="genre-chart-card">
+                <div class="card-title">Géneros favoritos</div>
+                <div id="genre-bars"></div>
+            </div>
+        </div>
+
+        <!-- Two col: top manga + more stats -->
+        <div class="stats-two-col">
+            <div class="top-manga-card">
+                <div class="card-title">Top mangas por tiempo</div>
+                <div id="top-mangas-list"></div>
+            </div>
+
+            <div class="stat-card" style="display:flex; flex-direction:column; gap:16px; height:fit-content;">
+                <div class="card-title" style="margin-bottom:0;">Más datos</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div
+                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        <div id="stat-caps-per-day"
+                            style="font-size:22px; font-family:var(--font-display); color:var(--text-primary); letter-spacing:1px;">
+                            —</div>
+                        <div
+                            style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">
+                            Cap/día media</div>
+                    </div>
+                    <div
+                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        <div id="stat-hours-per-week"
+                            style="font-size:22px; font-family:var(--font-display); color:var(--accent-gold); letter-spacing:1px;">
+                            —</div>
+                        <div
+                            style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">
+                            Horas/semana</div>
+                    </div>
+                    <div
+                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        <div id="stat-max-streak"
+                            style="font-size:22px; font-family:var(--font-display); color:var(--green); letter-spacing:1px;">
+                            —</div>
+                        <div
+                            style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">
+                            Racha récord</div>
+                    </div>
+                    <div
+                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        <div id="stat-mangas-per-month"
+                            style="font-size:22px; font-family:var(--font-display); color:var(--blue); letter-spacing:1px;">
+                            —</div>
+                        <div
+                            style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px;">
+                            Mangas/mes</div>
+                    </div>
+                    <div
+                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); grid-column:span 2;">
+                        <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Tipo favorito</div>
+                        <div id="stat-fav-type" style="display:flex; gap:6px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: HISTORIAL
+══════════════════════════════════════ -->
+    <div class="tab-content" id="content-historial">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div>
+                <h2 style="font-family:var(--font-display); font-size:28px; letter-spacing:1px; margin-bottom:4px;">
+                    HISTORIAL DE LECTURA</h2>
+                <p style="font-size:13px; color:var(--text-muted);">Todo lo que has leído, página a página</p>
+            </div>
+            <select class="sort-select">
+                <option>Últimos 7 días</option>
+                <option>Este mes</option>
+                <option>Este año</option>
+                <option>Todo el historial</option>
+            </select>
+        </div>
+
+        <div class="history-timeline">
+
+            <div class="history-day">
+                <div class="history-day-label">Hoy — martes, 13 mayo 2026</div>
+                <div class="history-entry">
+                    <span class="history-time">22:14</span>
+                    <div class="history-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                    <div class="history-text">
+                        <div class="history-main">Leíste <strong>Berserk</strong> — Capítulo 364 (pág. 1–22)</div>
+                        <div class="history-sub">18 min · 22 páginas · Scan: Young Animal</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#200a0a,#3d1010);">⛩</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">21:38</span>
+                    <div class="history-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                    <div class="history-text">
+                        <div class="history-main">Leíste <strong>Berserk</strong> — Capítulo 363</div>
+                        <div class="history-sub">14 min · 20 páginas</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#200a0a,#3d1010);">⛩</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">19:05</span>
+                    <div class="history-icon" style="background:rgba(45,202,122,0.15); color:var(--green);">✅</div>
+                    <div class="history-text">
+                        <div class="history-main">Marcaste <strong>Kingdom</strong> cap. 720 como leído</div>
+                        <div class="history-sub">Auto-marcado al abrir el capítulo 721</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#0a1520,#102035);">👑</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-day">
+                <div class="history-day-label">Ayer — lunes, 12 mayo</div>
+                <div class="history-entry">
+                    <span class="history-time">23:42</span>
+                    <div class="history-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                    <div class="history-text">
+                        <div class="history-main">Leíste <strong>Vagabond</strong> — Caps. 194–197</div>
+                        <div class="history-sub">52 min · 4 capítulos · 88 páginas</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#1a1028,#2d1040);">⚔</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">20:15</span>
+                    <div class="history-icon" style="background:rgba(232,51,74,0.15); color:var(--accent);">❤️</div>
+                    <div class="history-text">
+                        <div class="history-main">Añadiste <strong>Dungeon Meshi</strong> a Favoritos</div>
+                        <div class="history-sub">Puntuación asignada: ★ 9.2</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a);">🌿</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">18:30</span>
+                    <div class="history-icon" style="background:rgba(167,139,250,0.15); color:var(--purple);">🏆</div>
+                    <div class="history-text">
+                        <div class="history-main">¡Desbloqueaste el logro <strong>"Maratón"</strong>!</div>
+                        <div class="history-sub">10 capítulos en un día · +250 XP</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">14:22</span>
+                    <div class="history-icon" style="background:rgba(245,200,66,0.1); color:var(--accent-gold);">➕</div>
+                    <div class="history-text">
+                        <div class="history-main">Añadiste <strong>Blue Lock: Episode Nagi</strong> a Pendientes</div>
+                        <div class="history-sub">Cap. 1–8 disponibles</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history-day">
+                <div class="history-day-label">Domingo, 11 mayo</div>
+                <div class="history-entry">
+                    <span class="history-time">16:05</span>
+                    <div class="history-icon" style="background:rgba(45,202,122,0.15); color:var(--green);">✔</div>
+                    <div class="history-text">
+                        <div class="history-main">Completaste <strong>Fullmetal Alchemist</strong></div>
+                        <div class="history-sub">108 capítulos · 312 páginas · 42 días en total</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#1a140a,#34280a);">🔱</div>
+                    </div>
+                </div>
+                <div class="history-entry">
+                    <span class="history-time">12:18</span>
+                    <div class="history-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                    <div class="history-text">
+                        <div class="history-main">Leíste <strong>Fullmetal Alchemist</strong> — Caps. 105–108</div>
+                        <div class="history-sub">1h 10min · Capítulos finales</div>
+                    </div>
+                    <div class="history-cover-mini">
+                        <div style="background:linear-gradient(145deg,#1a140a,#34280a);">🔱</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: ACTIVIDAD
+══════════════════════════════════════ -->
+    <div class="tab-content" id="content-actividad">
+      <div class="sub-tabs" style="display:flex;border-bottom:1px solid var(--border);margin-bottom:12px;">
+        <div class="sub-tab active" data-act="posts" onclick="switchActivityTab('posts',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--accent);color:var(--text-primary);font-family:inherit;">Posts</div>
+        <div class="sub-tab" data-act="replies" onclick="switchActivityTab('replies',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted);font-family:inherit;">Respuestas</div>
+        <div class="sub-tab" data-act="media" onclick="switchActivityTab('media',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted);font-family:inherit;">Multimedia</div>
+        <div class="sub-tab" data-act="likes" onclick="switchActivityTab('likes',this)" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;color:var(--text-muted);font-family:inherit;">Me gusta</div>
+      </div>
+      <div id="activity-posts-container"></div>
+    </div>
+            <div id="activity-posts-container"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: LISTAS
+══════════════════════════════════════ -->
+    <div class="tab-content" id="content-listas">
+        <div class="lists-header">
+            <div>
+                <h2 style="font-family:var(--font-display); font-size:28px; letter-spacing:1px; margin-bottom:4px;">MIS
+                    LISTAS</h2>
+                <p style="font-size:13px; color:var(--text-muted);">Colecciones personales tipo Spotify</p>
+            </div>
+            <button class="btn btn-primary" onclick="document.getElementById('btn-create-list')?.click()">+ Nueva lista</button>
+        </div>
+
+        <div class="lists-grid">
+
+            <div class="list-card">
+                <div class="list-card-mosaic">
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#200a0a,#3d1010);">⛩</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0a1520,#102035);">👑</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a1028,#2d1040);">⚔</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a);">🌿</div>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-name">🔥 Mi Trinidad Sagrada</div>
+                    <div class="list-card-desc">Berserk, Kingdom, Vagabond. Las tres obras que definen lo que es el
+                        manga de verdad.</div>
+                    <div class="list-card-footer">
+                        <span class="list-card-count">15 títulos · 847 seg.</span>
+                        <span class="list-visibility">🌍 Pública</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-mosaic">
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a0a10,#2d1020);">💕</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a1a0a,#2d2d10);">🌸</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0a1a0a,#102010);">🌺</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a0f1a,#2d1a2d);">💫</div>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-name">💕 Romance bueno (existe)</div>
+                    <div class="list-card-desc">El romance manga que no me hace sufrir innecesariamente.</div>
+                    <div class="list-card-footer">
+                        <span class="list-card-count">22 títulos · 234 seg.</span>
+                        <span class="list-visibility">🌍 Pública</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-mosaic">
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0f0f1e,#1e1e38);">🌙</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a0a1a,#2d102d);">💀</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a0808,#2d1010);">🔴</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#08081a,#10102d);">⚫</div>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-name">🌑 Dark &amp; Oscuro</div>
+                    <div class="list-card-desc">Para cuando quieres sufrir de manera elegante y literaria.</div>
+                    <div class="list-card-footer">
+                        <span class="list-card-count">18 títulos · 512 seg.</span>
+                        <span class="list-visibility">🌍 Pública</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-mosaic">
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0d0d1f,#1a1a3d);">🌀</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a1028,#2d1840);">🗡</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0f1520,#1a2535);">🌊</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a0f1a,#2d1a2d);">⚡</div>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-name">⚡ Manhwa Top</div>
+                    <div class="list-card-desc">Solo Leveling y sus primos. El manhwa hecho bien.</div>
+                    <div class="list-card-footer">
+                        <span class="list-card-count">11 títulos · 389 seg.</span>
+                        <span class="list-visibility">🌍 Pública</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-mosaic">
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0a1a0f,#10281a);">🌿</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a150a,#2d2210);">🍜</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#0f1a15,#1a2d22);">☕</div>
+                    <div class="list-cover-cell" style="background:linear-gradient(145deg,#1a1a0a,#282810);">🌱</div>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-name">☕ Para descansar el cerebro</div>
+                    <div class="list-card-desc">Slice of life tranquilo. Para leer un domingo por la mañana.</div>
+                    <div class="list-card-footer">
+                        <span class="list-card-count">9 títulos · 127 seg.</span>
+                        <span class="list-visibility">🔒 Privada</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card" id="btn-create-list"
+                style="border-style:dashed; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 20px; gap:10px; cursor:pointer;">
+                <div style="font-size:32px; opacity:0.3;">+</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-muted);">Crear nueva lista</div>
+                <div style="font-size:12px; color:var(--text-muted); text-align:center;">Pública, privada o colaborativa
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     TAB: LOGROS
+══════════════════════════════════════ -->
+    <div class="tab-content" id="content-logros">
+
+        <div class="achievements-intro">
+            <div>
+                <div style="font-family:var(--font-display); font-size:38px; letter-spacing:1px; line-height:1;">NIVEL
+                    42</div>
+                <div style="font-size:13px; color:var(--text-muted); margin-top:3px;">Lector Élite · 34 logros
+                    desbloqueados</div>
+            </div>
+            <div class="xp-bar-wrap">
+                <div class="xp-bar-labels">
+                    <span>Nivel 42</span>
+                    <span style="color:var(--accent-gold);">8.450 / 10.000 XP</span>
+                </div>
+                <div class="xp-bar-track">
+                    <div class="xp-bar-fill" style="width:84.5%;"></div>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">1.550 XP para Nivel 43</div>
+            </div>
+            <div class="xp-bar-val">8.450 XP</div>
+        </div>
+
+        <div class="achievements-category">
+            <div class="achievements-cat-title">
+                <span style="color:var(--accent-gold);">★</span>
+                Logros de lectura
+                <span style="color:var(--text-muted); font-weight:400; font-size:11px;">12/15 desbloqueados</span>
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">📚</div>
+                    <div class="achievement-name">Bibliófilo</div>
+                    <div class="achievement-desc">Lee 100 títulos diferentes</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">⚡</div>
+                    <div class="achievement-name">Maratonista</div>
+                    <div class="achievement-desc">10 capítulos en un solo día</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">🔥</div>
+                    <div class="achievement-name">En racha</div>
+                    <div class="achievement-desc">30 días consecutivos</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">⛩</div>
+                    <div class="achievement-name">Fanático</div>
+                    <div class="achievement-desc">Puntúa 50 títulos con ≥9</div>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">👑</div>
+                    <div class="achievement-name">Leyenda</div>
+                    <div class="achievement-desc">Lee 500 títulos</div>
+                    <div class="achievement-progress">
+                        <div class="ach-prog-bar">
+                            <div class="ach-prog-fill" style="width:69%;"></div>
+                        </div>
+                        <div class="ach-prog-label">347 / 500</div>
+                    </div>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">💯</div>
+                    <div class="achievement-name">Centenario</div>
+                    <div class="achievement-desc">Racha de 100 días</div>
+                    <div class="achievement-progress">
+                        <div class="ach-prog-bar">
+                            <div class="ach-prog-fill" style="width:47%;"></div>
+                        </div>
+                        <div class="ach-prog-label">47 / 100</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="achievements-category">
+            <div class="achievements-cat-title">
+                <span style="color:var(--blue);">◆</span>
+                Logros sociales
+                <span style="color:var(--text-muted); font-weight:400; font-size:11px;">8/10 desbloqueados</span>
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">👥</div>
+                    <div class="achievement-name">Sociable</div>
+                    <div class="achievement-desc">10 seguidores</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">🎵</div>
+                    <div class="achievement-name">Curador</div>
+                    <div class="achievement-desc">Crea 5 listas públicas</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">💬</div>
+                    <div class="achievement-name">Comentarista</div>
+                    <div class="achievement-desc">100 comentarios publicados</div>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">⭐</div>
+                    <div class="achievement-name">Influencer</div>
+                    <div class="achievement-desc">500 seguidores</div>
+                    <div class="achievement-progress">
+                        <div class="ach-prog-bar">
+                            <div class="ach-prog-fill" style="width:25%;"></div>
+                        </div>
+                        <div class="ach-prog-label">128 / 500</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="achievements-category">
+            <div class="achievements-cat-title">
+                <span style="color:var(--green);">▲</span>
+                Colecciones especiales
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">🎖️</div>
+                    <div class="achievement-name">Seinen Master</div>
+                    <div class="achievement-desc">Lee 50 títulos Seinen</div>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-unlocked-tag">✓ Desbloqueado</div>
+                    <div class="achievement-icon">⚔</div>
+                    <div class="achievement-name">Aventurero</div>
+                    <div class="achievement-desc">10 géneros diferentes</div>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">🌏</div>
+                    <div class="achievement-name">Global Reader</div>
+                    <div class="achievement-desc">Lee manga, manhwa y manhua</div>
+                    <div class="achievement-progress">
+                        <div class="ach-prog-bar">
+                            <div class="ach-prog-fill" style="width:66%;"></div>
+                        </div>
+                        <div class="ach-prog-label">2 / 3 tipos</div>
+                    </div>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">🗓</div>
+                    <div class="achievement-name">Veterano</div>
+                    <div class="achievement-desc">Miembro activo 5 años</div>
+                    <div class="achievement-progress">
+                        <div class="ach-prog-bar">
+                            <div class="ach-prog-fill" style="width:80%;"></div>
+                        </div>
+                        <div class="ach-prog-label">4 / 5 años</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+    <script>
+        /* ─── Dropdown ─── */
+        function toggleDropdown() {
+            const avatar = document.getElementById('nav-avatar');
+            const dropdown = document.getElementById('nav-dropdown');
+            avatar.classList.toggle('open');
+            dropdown.classList.toggle('open');
+        }
+
+        document.addEventListener('click', function (e) {
+            const wrap = document.querySelector('.nav-avatar-wrap');
+            if (!wrap) return;
+            if (!wrap.contains(e.target)) {
+                document.getElementById('nav-avatar').classList.remove('open');
+                document.getElementById('nav-dropdown').classList.remove('open');
+            }
+        });
+
+        function trackAction() {}
+
+        // ── Interaction functions (copiado de index.html) ──
+        function likePost(el) {
+            el.classList.toggle('liked');
+            var span = el.querySelector('.like-count');
+            if (span) {
+                var n = parseInt(span.textContent) || 0;
+                span.textContent = el.classList.contains('liked') ? n + 1 : Math.max(0, n - 1);
+            }
+            var postEl = el.closest('.feed-post[data-post-id]');
+            if (postEl) feedInteract(postEl.getAttribute('data-post-id'), 'like');
+        }
+
+        function feedInteract(postId, type) {
+            var token = localStorage.getItem('kami_token');
+            if (!token) return;
+            fetch('/api/feed/interact', {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+                body: JSON.stringify({ post_id: postId, interaction_type: type })
+            }).catch(function(){});
+        }
+
+        function feedHidePost(postId) {
+            var el = document.querySelector('.feed-post[data-post-id="' + postId + '"]');
+            if (el) el.remove();
+            feedInteract(postId, 'hide');
+        }
+
+        function openRepostMenu(btn, postId) {
+            var m = document.getElementById('repost-menu');
+            if (m) m.remove();
+            var rect = btn.getBoundingClientRect();
+            var menu = document.createElement('div');
+            menu.id = 'repost-menu';
+            menu.className = 'repost-menu';
+            var btnEl = btn.closest('.feed-post-action');
+            var isRep = btnEl && btnEl.classList.contains('reposted');
+            menu.innerHTML =
+                '<div class="repost-menu-item" onclick="toggleRepost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isRep ? 'Deshacer repost' : 'Repost simple') + '</div>' +
+                '<div class="repost-menu-item" onclick="openReply&&openReply(' + postId + ');closeRepostMenu()"><i class="ti ti-quote"></i> Citar post</div>';
+            menu.style.position = 'fixed';
+            menu.style.top = (rect.bottom + 4) + 'px';
+            menu.style.left = rect.left + 'px';
+            document.body.appendChild(menu);
+            setTimeout(function() { document.addEventListener('click', closeRepostMenu, { once: true }); }, 10);
+        }
+        function closeRepostMenu() { var m = document.getElementById('repost-menu'); if (m) m.remove(); }
+
+        function toggleRepost(postId) {
+            var token = localStorage.getItem('kami_token');
+            if (!token) return;
+            var btn = document.querySelector('.feed-post[data-post-id="' + postId + '"] .feed-post-action .repost-count');
+            var parent = btn ? btn.closest('.feed-post-action') : null;
+            var isRep = parent && parent.classList.contains('reposted');
+            fetch('/api/feed/repost', {
+                method: isRep ? 'DELETE' : 'POST',
+                headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+                body: JSON.stringify({ post_id: postId })
+            }).then(function(r){return r.json()}).then(function(d){
+                if (d.success && parent) {
+                    var span = parent.querySelector('.repost-count');
+                    var n = parseInt(span.textContent) || 0;
+                    if (isRep) { span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted'); }
+                    else { span.textContent = n + 1; parent.classList.add('reposted'); }
+                }
+            }).catch(function(){});
+        }
+
+        function openDotsMenu(btn, postId, postUser) {
+            var m = document.getElementById('dots-menu');
+            if (m) m.remove();
+            var rect = btn.getBoundingClientRect();
+            var currentUser = null;
+            try { currentUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+            var isOwner = currentUser && postUser && currentUser.username === postUser;
+            var menu = document.createElement('div');
+            menu.id = 'dots-menu';
+            menu.className = 'repost-menu';
+            menu.innerHTML =
+                '<div class="repost-menu-item" onclick="feedHidePost(' + postId + ');closeDotsMenu()"><i class="ti ti-eye-off"></i> No me interesa</div>' +
+                (isOwner ? '<div class="repost-menu-item" onclick="pinPostToProfile(' + postId + ');closeDotsMenu()"><i class="ti ti-pin"></i> Fijar en mi perfil</div>' : '');
+            menu.style.position = 'fixed';
+            menu.style.top = (rect.bottom + 4) + 'px';
+            menu.style.right = (window.innerWidth - rect.right) + 'px';
+            document.body.appendChild(menu);
+            setTimeout(function() { document.addEventListener('click', closeDotsMenu, { once: true }); }, 10);
+        }
+        function closeDotsMenu() { var m = document.getElementById('dots-menu'); if (m) m.remove(); }
+
+        function openReply(postId) {
+            window.location.href = '/?reply=' + postId;
+        }
+
+        /* ─── Tabs ─── */
+        function showTab(id, btn) {
+            // Bloquear tabs privadas si no eres el dueño
+            var privadas = ['biblioteca', 'estadisticas', 'historial', 'listas'];
+            if (privadas.indexOf(id) >= 0 && !window.isProfileOwner) {
+                var tabBtn = document.querySelector('.tab-btn');
+                if (tabBtn) tabBtn.click();
+                return;
+            }
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('content-' + id).classList.add('active');
+            btn.classList.add('active');
+            try { localStorage.setItem('kami_active_tab', id); } catch {}
+
+            // Si es la pestaña de actividad, cargar sub-tab
+            if (id === 'actividad') {
+                var savedSub = null;
+                try { savedSub = localStorage.getItem('kami_active_subtab'); } catch(e) {}
+                if (savedSub) {
+                    var subBtn = document.querySelector('.sub-tab[data-act="' + savedSub + '"]');
+                    if (subBtn) { switchActivityTab(savedSub, subBtn); }
+                } else {
+                    setTimeout(function() {
+                        var firstSub = document.querySelector('.sub-tab');
+                        if (firstSub && !firstSub.dataset.loaded) {
+                            firstSub.dataset.loaded = 'true';
+                            switchActivityTab('posts', firstSub);
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        // ── Feed post renderer (copiado de index.html) ──
+        function timeAgo(dateStr) {
+            var diff = Date.now() - new Date(dateStr).getTime();
+            var mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Ahora';
+            if (mins < 60) return mins + 'm';
+            var hrs = Math.floor(mins / 60);
+            if (hrs < 24) return hrs + 'h';
+            var days = Math.floor(hrs / 24);
+            return days + 'd';
+        }
+
+        function renderFeedPosts(posts) {
+            var _isAdmin = false;
+            try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); _isAdmin = _u && _u.role === 'admin'; } catch(e) {}
+            return posts.map(function(p) {
+                var avatarStyle, avatarContent;
+                if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
+                    avatarStyle = 'background:rgba(232,52,74,0.08);padding:0;';
+                    avatarContent = '<img src="' + p.avatar + '" alt="">';
+                } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
+                    avatarStyle = p.avatar;
+                    avatarContent = '<span>' + p.user.charAt(0) + '</span>';
+                } else if (p.avatar && p.avatar.indexOf('base64') >= 0) {
+                    avatarStyle = 'padding:0;';
+                    avatarContent = '<img src="' + p.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+                } else {
+                    avatarStyle = 'background:' + (p.avatar || '#e8344a') + ';';
+                    avatarContent = p.user.charAt(0);
+                }
+                var mangaBlock = p.manga && p.manga.title ? '' +
+                    '<div class="feed-post-manga" onclick="openCommunity(\'com-' + p.manga.id + '\')">' +
+                    '<div class="feed-post-manga-cover"' +
+                    (p.manga.cover && p.manga.cover.indexOf('/') >= 0
+                        ? ' style="background:transparent;overflow:hidden;"><img src="' + p.manga.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;">'
+                        : ' style="background:' + (p.manga.cover || '#e8344a') + ';">' + p.manga.title.charAt(0)) +
+                    '</div>' +
+                    '<div class="feed-post-manga-info"><div class="feed-post-manga-title">' + p.manga.title + (p.chapter ? ' · Cap. ' + p.chapter : '') + '</div></div>' +
+                    '<button class="feed-post-manga-add" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">📢 Comunidad</button>' +
+                    '</div>' : '';
+                var spoilerClass = p.spoiler ? ' feed-post-spoiler' : '';
+                var spoilerOverlay = '';
+                if (p.spoiler) {
+                    spoilerOverlay = '<div class="spoiler-overlay" onclick="this.parentElement.classList.remove(\'feed-post-spoiler\');this.style.display=\'none\';if(window.feedSpoilerRevealed)feedSpoilerRevealed(' + p.id + ')"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>';
+                }
+                return '' +
+                    '<div class="feed-post' + spoilerClass + '" data-post-id="' + p.id + '">' +
+                    spoilerOverlay +
+                    '<a href="/profile/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + '">' + avatarContent + '</a>' +
+                    '<div class="feed-post-body">' +
+                    '<div class="feed-post-header">' +
+                    '<a href="/profile/' + p.user + '" class="feed-post-user">' + p.user +
+                    (p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
+                    p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
+                    p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : '') +
+                    '</a>' +
+                    '<a href="/profile/' + p.user + '" class="feed-post-handle">' + p.handle + '</a>' +
+                    '<span class="feed-post-time">' + timeAgo(p.created_at) + (p.views_count !== undefined ? ' · ' + p.views_count + ' vistas' : '') + '</span>' +
+                    '</div>' +
+                    '<div class="feed-post-text">' + (p.text || '').replace(/\n/g, '<br>') + '</div>' +
+                    (p.media_url ? '<div class="feed-post-media"><div class="feed-post-media-badge">GIF</div><img src="' + p.media_url + '" alt="GIF" loading="lazy"></div>' : '') +
+                    mangaBlock +
+                    (p.quoted_post_id ? '<div class="feed-post-quote" title="Ver post citado"><i class="ti ti-quote"></i> Citando un post</div>' : '') +
+                    '<div class="feed-post-actions">' +
+                    '<button class="feed-post-action" onclick="openReply(' + p.id + ')"><i class="ti ti-message"></i> ' + (p.replies || 0) + '</button>' +
+                    '<button class="feed-post-action' + (p.user_has_reposted ? ' reposted' : '') + '" onclick="openRepostMenu(this,' + p.id + ')"><i class="ti ti-repeat"></i> <span class="repost-count">' + (p.reposts || 0) + '</span></button>' +
+                    '<button class="feed-post-action' + (p.user_has_liked ? ' liked' : '') + '" onclick="likePost(this);feedInteract(' + p.id + ',\'like\')"><i class="ti ti-heart"></i> <span class="like-count">' + (p.likes || 0) + '</span></button>' +
+                    '<button class="feed-post-action' + (p.user_has_bookmarked ? ' bookmarked' : '') + '" onclick="feedInteract(' + p.id + ',\'bookmark\')"><i class="ti ti-bookmark"></i></button>' +
+                    '<button class="feed-post-action" onclick="openDotsMenu(this,' + p.id + ',\'' + (p.user || '').replace(/'/g,"\\'") + '\')" title="Más opciones"><i class="ti ti-dots"></i></button>' +
+                    (_isAdmin && p.score !== undefined ? '<button class="feed-post-action tuerca" onclick="showAlgorithm(' + p.id + ')" title="Algoritmo" data-score="' + (p.score || 0) + '" data-breakdown=\'' + JSON.stringify(p.scoreBreakdown || {}).replace(/'/g, '&#39;') + '\'><i class="ti ti-settings"></i></button>' : '') +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        /* ── Post expandido 1-columna para Actividad (estilo X.com) ── */
+        function renderPostExpanded(p) {
+          var avatarContent = '';
+          if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
+            avatarContent = '<img src="' + p.avatar + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">';
+          } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
+            avatarContent = '<div style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:' + p.avatar + ';color:#fff;font-weight:700;font-size:16px;">' + p.user.charAt(0).toUpperCase() + '</div>';
+          } else if (p.avatar && p.avatar.indexOf('base64') >= 0) {
+            avatarContent = '<img src="' + p.avatar + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">';
+          } else {
+            avatarContent = '<div style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--border);color:var(--text-primary);font-weight:700;font-size:16px;">' + p.user.charAt(0).toUpperCase() + '</div>';
+          }
+          var rText = p.replies > 0 ? p.replies : '';
+          var rpText = p.reposts > 0 ? p.reposts : '';
+          var lText = p.likes > 0 ? p.likes : '';
+          var lClass = p.user_has_liked ? 'liked' : '';
+          var lIcon = p.user_has_liked ? 'ti ti-heart-filled' : 'ti ti-heart';
+          var rpClass = p.user_has_reposted ? 'reposted' : '';
+          var bClass = p.user_has_bookmarked ? 'bookmarked' : '';
+          var bIcon = p.user_has_bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark';
+          var timeText = typeof timeAgo === 'function' ? timeAgo(p.created_at) : (p.created_at || '');
+          var roleBadgeHtml = '';
+          if (typeof renderRoleBadge === 'function') {
+            roleBadgeHtml = renderRoleBadge(p.author_role);
+          } else if (p.author_role === 'admin') {
+            roleBadgeHtml = '<span style="font-size:10px;color:var(--accent);font-weight:600;margin-left:4px;">ADMIN</span>';
+          }
+
+          var html = '';
+          html += '<div class="actividad-expanded-card" data-post-id="' + p.id + '" onclick="window.location.href=\'/#post/' + p.id + '\'">';
+          html += '  <div class="post-detail-author-row" style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px 16px;width:100%;box-sizing:border-box;">';
+          html += '    <a href="/profile/' + p.user + '" onclick="event.stopPropagation();">' + avatarContent + '</a>';
+          html += '    <div style="display:flex;flex-direction:column;">';
+          html += '      <div style="display:flex;align-items:center;gap:4px;">';
+          html += '        <a href="/profile/' + p.user + '" onclick="event.stopPropagation();" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">' + p.user + '</a>';
+          html +=        roleBadgeHtml;
+          html += '      </div>';
+          html += '      <div style="font-size:13px;color:var(--text-muted);">' + (p.handle || '@' + p.user.toLowerCase()) + '</div>';
+          html += '    </div>';
+          html += '  </div>';
+          if (p.parent_id && p.replyToUser) {
+            html += '  <div class="reply-context" style="padding:0 16px 6px 16px;font-size:12px;color:var(--text-muted);"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/' + p.replyToUser + '" onclick="event.stopPropagation();" style="color:var(--accent);text-decoration:none;">@' + p.replyToUser + '</a></div>';
+          }
+          html += '  <div class="post-detail-text" style="width:100%;text-align:left;font-size:15px;color:var(--text-primary);line-height:1.5;word-break:break-word;padding:0 16px 12px 16px;box-sizing:border-box;">' + (p.text || p.content || '') + '</div>';
+          if (p.media_url) {
+            html += '  <div class="post-detail-media" style="padding:0 16px 12px 16px;box-sizing:border-box;">';
+            html += '    <img src="' + p.media_url + '" style="width:100%!important;height:auto!important;max-height:520px!important;border-radius:12px;border:1px solid var(--border);display:block;">';
+            html += '  </div>';
+          }
+          html += '  <div class="post-detail-meta" style="font-size:13px;color:var(--text-muted);padding:0 16px 12px 16px;width:100%;box-sizing:border-box;">';
+          html +=      timeText + ' · <span style="color:var(--text-primary);font-weight:600;">' + (p.views_count || 0) + '</span> vistas';
+          html += '  </div>';
+          html += '  <div class="post-detail-actions" style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);width:100%;box-sizing:border-box;">';
+          html += '    <div class="post-detail-action" onclick="event.stopPropagation();openReply(' + p.id + ')"><i class="ti ti-message"></i><span class="action-cnt">' + rText + '</span></div>';
+          html += '    <div class="post-detail-action ' + rpClass + '" onclick="event.stopPropagation();openRepostMenu(this,' + p.id + ')"><i class="ti ti-repeat"></i><span class="action-cnt">' + rpText + '</span></div>';
+          html += '    <div class="post-detail-action ' + lClass + '" onclick="event.stopPropagation();likePost(this);feedInteract(' + p.id + ',\'like\')"><i class="ti ' + lIcon + '"></i><span class="action-cnt">' + lText + '</span></div>';
+          html += '    <div class="post-detail-action ' + bClass + '" onclick="event.stopPropagation();feedInteract(' + p.id + ',\'bookmark\')"><i class="ti ' + bIcon + '"></i></div>';
+          html += '    <div class="post-detail-action" onclick="event.stopPropagation();if(navigator.share)navigator.share({url:window.location.origin+\'/#post/\'+' + p.id + '})"><i class="ti ti-share"></i></div>';
+          html += '  </div>';
+          html += '</div>';
+          return html;
+        }
+
+        // ── Activity sub-tabs (Posts, Replies, Media, Likes) ──
+        function switchActivityTab(type, el) {
+            localStorage.setItem('kami_active_subtab', type);
+            document.querySelectorAll('.sub-tab').forEach(function(t){
+                t.style.color = 'var(--text-muted)';
+                t.style.borderBottom = 'none';
+            });
+            if (el) {
+                el.style.color = 'var(--text-primary)';
+                el.style.borderBottom = '2px solid var(--accent)';
+            }
+
+            var container = document.getElementById('activity-posts-container');
+            if (!container) return;
+            container.innerHTML = '<div class="notif-loading">Cargando...</div>';
+
+            var uid = profileContext && profileContext.userId;
+            if (!uid) {
+                try { var u = JSON.parse(localStorage.getItem('kami_user') || '{}'); uid = u.id || u.userId || u.sub || null; } catch(e) {}
+            }
+            if (!uid || uid === 'undefined' || uid === 'null') {
+                container.innerHTML = '<div class="notif-empty" style="padding:40px;">Cargando perfil...</div>';
+                return;
+            }
+
+            var token = localStorage.getItem('kami_token');
+            var opts = { headers: {} };
+            if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+
+            var url = '/api/feed/profile-activity?user_id=' + encodeURIComponent(uid) + '&type=' + type;
+
+            fetch(url, opts)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(function(d) {
+                    if (!d || !d.success) {
+                        container.innerHTML = '<div class="notif-empty">Error del servidor</div>';
+                        return;
+                    }
+                    if (!d.posts || !Array.isArray(d.posts) || !d.posts.length) {
+                        container.innerHTML = '<div class="notif-empty" style="padding:40px;">Sin actividad aquí aún</div>';
+                        return;
+                    }
+                    try {
+                        if (type === 'replies') {
+                            var rh = '';
+                            d.posts.forEach(function(rp) {
+                                rh += '<div class="actividad-expanded-card" style="padding:0;border-radius:16px;overflow:hidden;">';
+                                if (rp.parent_post) {
+                                    rh += '<div class="parent-thread-context">' + renderFeedPosts([rp.parent_post]) + '</div>';
+                                }
+                                rh += renderFeedPosts([rp], true);
+                                rh += '</div>';
+                            });
+                            container.innerHTML = rh;
+                        } else {
+                            container.innerHTML = d.posts.map(renderPostExpanded).join('');
+                        }
+                    } catch(e) {
+                        console.error('[actividad] Error en renderFeedPosts:', e);
+                        container.innerHTML = '<div class="notif-empty">Error al renderizar</div>';
+                    }
+                })
+                .catch(function(err) {
+                    console.error('[actividad] Error:', err.message);
+                    container.innerHTML = '<div class="notif-empty">Error de conexión</div>';
+                });
+        }
+
+        // Restore last tab — runs after everything is ready
+        function restoreTab() {
+            try {
+                const saved = localStorage.getItem('kami_active_tab');
+                const ids = ['biblioteca','estadisticas','historial','actividad','listas','logros'];
+                const tabId = ids.includes(saved) ? saved : null;
+                if (tabId) {
+                    const btn = document.getElementById('tab-' + tabId);
+                    if (btn) btn.click();
+                }
+            } catch {}
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreTab);
+        } else {
+            restoreTab();
+        }
+
+        /* ─── Library state filter ─── */
+        function filterState(el) {
+            document.querySelectorAll('.state-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        /* ─── Renderizar todas las estadísticas desde API ─── */
+        function renderStats(data) {
+            if (!data) return;
+            const s = data.stats || {};
+
+            // Top 4 stat cards
+            document.getElementById('stat-hours-val').textContent = (s.hoursRead || 0).toFixed(1);
+            document.getElementById('stat-caps-val').textContent = (s.chaptersCompleted || 0).toLocaleString();
+            document.getElementById('stat-titles-val').textContent = (s.titlesRead || 0).toLocaleString();
+            document.getElementById('stat-streak-val').textContent = s.currentStreak || 0;
+            if (s.mangasPerMonth) {
+                document.getElementById('stat-hours-trend').textContent = '↑ ' + s.hoursPerWeek.toFixed(1) + 'h/sem';
+                document.getElementById('stat-caps-trend').textContent = '↑ +' + s.chaptersPerDay.toFixed(1) + '/día';
+                document.getElementById('stat-titles-trend').textContent = '↑ +' + s.mangasPerMonth + ' este mes';
+            }
+            document.getElementById('stat-streak-trend').textContent = '⭐ Récord: ' + (s.maxStreak || 0) + ' días';
+
+            // Más datos
+            document.getElementById('stat-caps-per-day').textContent = (s.chaptersPerDay || 0).toFixed(1);
+            document.getElementById('stat-hours-per-week').textContent = (s.hoursPerWeek || 0).toFixed(1) + 'h';
+            document.getElementById('stat-max-streak').textContent = s.maxStreak || 0;
+            document.getElementById('stat-mangas-per-month').textContent = s.mangasPerMonth || 0;
+
+            // Heatmap
+            buildHeatmap(data.readingDays || []);
+
+            // Weekly bars
+            buildWeeklyBars(data.weeklyData || []);
+
+            // Genre bars
+            buildGenreBars(data.favoriteGenres || []);
+
+            // Top mangas
+            buildTopMangas(data.topMangas || []);
+        }
+
+        /* ─── Heatmap desde datos reales ─── */
+        function buildHeatmap(readingDays) {
+            const grid = document.getElementById('heatmap-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const dayMap = {};
+            readingDays.forEach(d => {
+                const key = new Date(d.date).toISOString().split('T')[0];
+                dayMap[key] = d.chapters || 0;
+            });
+
+            const today = new Date();
+            const start = new Date(today);
+            start.setDate(start.getDate() - 364);
+            const dow = start.getDay();
+            start.setDate(start.getDate() - (dow === 0 ? 6 : dow - 1));
+
+            let week = null;
+            const cur = new Date(start);
+            let activeDays = 0;
+
+            while (cur <= today) {
+                if (!week) {
+                    week = document.createElement('div');
+                    week.className = 'heatmap-week';
+                    grid.appendChild(week);
+                }
+                const day = document.createElement('div');
+                day.className = 'heatmap-day';
+
+                const key = cur.toISOString().split('T')[0];
+                const chapters = dayMap[key] || 0;
+                if (chapters > 0) activeDays++;
+                if (chapters >= 20) day.setAttribute('data-level', '4');
+                else if (chapters >= 10) day.setAttribute('data-level', '3');
+                else if (chapters >= 5) day.setAttribute('data-level', '2');
+                else if (chapters >= 1) day.setAttribute('data-level', '1');
+                else day.setAttribute('data-level', '0');
+
+                day.title = cur.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+                    + ' — ' + chapters + ' caps';
+                week.appendChild(day);
+
+                cur.setDate(cur.getDate() + 1);
+                if (cur.getDay() === 1 && cur <= today) week = null;
+            }
+
+            const tag = document.getElementById('heatmap-tag');
+            if (tag) tag.textContent = activeDays + ' días activos de ' + readingDays.length;
+        }
+
+        /* ─── Weekly bars desde datos reales ─── */
+        function buildWeeklyBars(weeklyData) {
+            const barsEl = document.getElementById('weekly-bars');
+            const labelsEl = document.getElementById('weekly-labels');
+            if (!barsEl) return;
+            barsEl.innerHTML = '';
+            labelsEl.innerHTML = '';
+
+            const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+            const values = [];
+            const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+
+            for (let i = 0; i < 7; i++) {
+                values[i] = 0;
+            }
+            let totalWeek = 0;
+            weeklyData.forEach((d, i) => {
+                if (i < 7) {
+                    values[i] = d.chapters || 0;
+                    totalWeek += values[i];
+                }
+            });
+
+            const max = Math.max(...values, 1);
+
+            dayNames.forEach((d, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'weekly-bar-wrap';
+                const valEl = document.createElement('div');
+                valEl.className = 'weekly-bar-val';
+                valEl.textContent = values[i] > 0 ? values[i] : '';
+                const bar = document.createElement('div');
+                bar.className = 'weekly-bar' + (i === todayIdx ? ' today' : '');
+                bar.style.height = Math.round((values[i] / max) * 100) + '%';
+                const lbl = document.createElement('div');
+                lbl.className = 'weekly-bar-lbl';
+                lbl.textContent = d;
+                lbl.style.fontWeight = i === todayIdx ? '700' : '400';
+                lbl.style.color = i === todayIdx ? 'var(--text-primary)' : '';
+                wrap.appendChild(valEl);
+                wrap.appendChild(bar);
+                barsEl.appendChild(wrap);
+                labelsEl.appendChild(lbl);
+            });
+
+            const tag = document.getElementById('weekly-tag');
+            if (tag) tag.textContent = 'Esta semana: ' + totalWeek + ' caps';
+        }
+
+        /* ─── Genre bars desde datos reales ─── */
+        const GENRE_COLORS = [
+            'var(--accent)', 'var(--blue)', 'var(--green)', 'var(--purple)',
+            'var(--accent-gold)', 'var(--orange)', 'var(--pink)', '#4fc3f7'
+        ];
+        function buildGenreBars(genres) {
+            const el = document.getElementById('genre-bars');
+            if (!el) return;
+            el.innerHTML = '';
+
+            if (!genres || genres.length === 0) {
+                el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Aún no hay suficientes datos</div>';
+                return;
+            }
+
+            const maxCount = Math.max(...genres.map(g => g.count), 1);
+            genres.forEach((g, i) => {
+                const color = GENRE_COLORS[i % GENRE_COLORS.length];
+                const pct = Math.round((g.count / maxCount) * 100);
+                const item = document.createElement('div');
+                item.className = 'genre-bar-item';
+                item.innerHTML = `
+                    <div class="genre-bar-label">
+                        <span class="genre-bar-name">${g.name}</span>
+                        <span class="genre-bar-count">${g.count} títulos</span>
+                    </div>
+                    <div class="genre-bar-track">
+                        <div class="genre-bar-fill" style="width:${pct}%; background:${color};"></div>
+                    </div>
+                `;
+                el.appendChild(item);
+            });
+        }
+
+        /* ─── Top mangas desde datos reales ─── */
+        const RANK_COLORS = ['var(--accent-gold)', '#c0c0c0', '#cd7f32', 'var(--text-muted)', 'var(--text-muted)'];
+        function buildTopMangas(topMangas) {
+            const el = document.getElementById('top-mangas-list');
+            if (!el) return;
+            el.innerHTML = '';
+
+            if (!topMangas || topMangas.length === 0) {
+                el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px;">Aún no hay datos de lectura</div>';
+                return;
+            }
+
+            topMangas.forEach((m, i) => {
+                const hours = (m.minutesRead / 60).toFixed(0);
+                const genreStr = (m.genres && m.genres.length ? m.genres[0] : '') || '';
+                const item = document.createElement('div');
+                item.className = 'top-manga-item';
+                item.innerHTML = `
+                    <span class="top-manga-num" style="color:${RANK_COLORS[i] || 'var(--text-muted)'};">${i + 1}</span>
+                    <div class="top-manga-cover">
+                        ${m.cover
+                            ? '<img src="' + m.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" onerror="this.outerHTML=\'<div style=background:linear-gradient(145deg,#1a1a2e,#16213e);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;>📖</div>\'">'
+                            : '<div style="background:linear-gradient(145deg,#1a1a2e,#16213e);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;">📖</div>'
+                        }
+                    </div>
+                    <div>
+                        <div class="top-manga-title">${m.title || ''}</div>
+                        <div class="top-manga-meta">${m.chaptersRead || 0} caps${genreStr ? ' · ' + genreStr : ''}</div>
+                    </div>
+                    <span class="top-manga-time">${hours}h</span>
+                `;
+                el.appendChild(item);
+            });
+        }
+    </script>
+    <script src="/js/perfil.js"></script>
+    <!-- ══════════════════════════════════════
+         MODAL: EDITAR PERFIL
+    ══════════════════════════════════════ -->
+    <div class="edit-overlay" id="edit-modal-overlay">
+      <div class="edit-modal" id="edit-modal">
+
+        <div class="edit-header">
+          <div>
+            <div class="edit-title">EDITAR PERFIL</div>
+            <div class="edit-sub">Personaliza tu perfil público</div>
+          </div>
+          <button class="edit-close" onclick="closeEditModal()">&times;</button>
+        </div>
+
+        <!-- AVATAR -->
+        <div class="edit-section">
+          <div class="edit-label">Avatar</div>
+          <div class="edit-avatar-row">
+            <div class="edit-avatar-preview" id="edit-avatar-preview">?</div>
+            <div class="edit-avatar-controls">
+              <label class="upload-btn">📷 Subir foto
+                <input type="file" accept="image/*" onchange="handleAvatarImage(this)" hidden>
+              </label>
+              <div class="edit-hint">O usa iniciales + color:</div>
+              <input class="edit-input edit-input--sm" id="edit-avatar-text" type="text" maxlength="3" placeholder="YU" oninput="onAvatarTextInput()">
+              <div class="edit-swatches" id="avatar-color-swatches"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BIO -->
+        <div class="edit-section">
+          <div class="edit-label">Bio <span class="edit-counter" id="bio-counter">0/300</span></div>
+          <textarea class="edit-textarea" id="edit-bio" maxlength="300" rows="3" placeholder="Cuéntanos algo sobre ti..." oninput="updateBioCounter()"></textarea>
+        </div>
+
+        <!-- PAÍS -->
+        <div class="edit-section">
+          <div class="edit-label">País</div>
+          <input class="edit-input" id="edit-country" type="text" placeholder="Ej: España, México, Argentina..." maxlength="60">
+        </div>
+
+        <!-- REDES SOCIALES -->
+        <div class="edit-section">
+          <div class="edit-label">Redes sociales</div>
+          <div class="edit-social-row">
+            <span class="edit-social-icon">🐦</span>
+            <input class="edit-input" id="edit-social-twitter" type="text" placeholder="Twitter / X (URL)">
+          </div>
+          <div class="edit-social-row">
+            <span class="edit-social-icon">💬</span>
+            <input class="edit-input" id="edit-social-discord" type="text" placeholder="Discord (URL)">
+          </div>
+          <div class="edit-social-row">
+            <span class="edit-social-icon">🌐</span>
+            <input class="edit-input" id="edit-social-website" type="text" placeholder="Sitio web">
+          </div>
+          <div class="edit-social-row">
+            <span class="edit-social-icon">💰</span>
+            <input class="edit-input" id="edit-social-patreon" type="text" placeholder="Patreon / Ko-fi (URL)">
+          </div>
+        </div>
+
+        <!-- ESTADO -->
+        <div class="edit-status" id="edit-status"></div>
+
+        <!-- BOTONES -->
+        <div class="edit-actions">
+          <button class="edit-btn edit-btn--secondary" onclick="closeEditModal()">Cancelar</button>
+          <button class="edit-btn edit-btn--primary" id="edit-save-btn" onclick="saveProfileEdit()">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      #edit-modal-overlay { display: none; }
+      #edit-modal-overlay.open { display: flex; }
+
+      .edit-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+      .edit-modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); width:min(560px,94vw); max-height:88vh; overflow-y:auto; padding:28px; position:relative; }
+      .edit-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+      .edit-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; }
+      .edit-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+      .edit-close { background:rgba(255,255,255,0.06); border:none; border-radius:8px; width:32px; height:32px; cursor:pointer; color:var(--text-muted); font-size:20px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+      .edit-close:hover { background:rgba(255,255,255,0.12); color:var(--text-primary); }
+      .edit-section { margin-bottom:20px; }
+      .edit-label { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+      .edit-counter { font-weight:400; text-transform:none; letter-spacing:0; }
+
+      .edit-avatar-row { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+      .edit-avatar-preview { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color:#fff; flex-shrink:0; border:2px solid rgba(232,51,74,0.5); overflow:hidden; background-size:cover; background-position:center; background:linear-gradient(135deg,#e8334a,#f5c842); }
+      .edit-avatar-controls { flex:1; min-width:0; }
+      .upload-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:8px; padding:7px 14px; color:var(--text-secondary); cursor:pointer; font-size:12px; transition:all .15s; margin-bottom:8px; }
+      .upload-btn:hover { background:rgba(255,255,255,0.1); color:var(--text-primary); }
+      .edit-hint { font-size:11px; color:var(--text-muted); margin-bottom:6px; }
+
+      .edit-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; outline:none; transition:border-color .2s; box-sizing:border-box; }
+      .edit-input:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+      .edit-input--sm { max-width:160px; }
+      .edit-textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; resize:vertical; outline:none; line-height:1.6; transition:border-color .2s; box-sizing:border-box; }
+      .edit-textarea:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+
+      .edit-swatches { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+      .swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .15s; flex-shrink:0; }
+      .swatch:hover, .swatch.active { border-color:#fff; transform:scale(1.15); }
+
+      .edit-social-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+      .edit-social-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+
+      .edit-status { display:none; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
+      .edit-status.show { display:block; }
+      .edit-status.success { background:rgba(45,202,122,0.12); border:1px solid rgba(45,202,122,0.3); color:var(--green); }
+      .edit-status.error { background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.3); color:var(--accent); }
+
+      .edit-actions { display:flex; gap:10px; justify-content:flex-end; }
+      .edit-btn { padding:10px 22px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+      .edit-btn--primary { background:linear-gradient(135deg,var(--accent),#c0223a); color:#fff; }
+      .edit-btn--primary:hover { opacity:.9; }
+      .edit-btn--primary:disabled { opacity:.5; cursor:not-allowed; }
+      .edit-btn--secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
+      .edit-btn--secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+
+      /* ── Modales reutilizables (moderación) ── */
+      .overlay-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:3000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+      .overlay-modal.open { display:flex; }
+      .modal-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); width:min(520px,94vw); max-height:82vh; display:flex; flex-direction:column; }
+      .modal-box-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 0; }
+      .modal-box-title { font-family:var(--font-display); font-size:20px; letter-spacing:1px; }
+      .modal-box-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; padding:4px; line-height:1; }
+      .modal-box-close:hover { color:var(--text-primary); }
+      .modal-box-body { padding:16px 24px 20px; overflow-y:auto; flex:1; }
+      .modal-box-footer { display:flex; justify-content:flex-end; gap:8px; padding:0 24px 20px; }
+      .modal-btn { padding:9px 20px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+      .modal-btn.primary { background:var(--accent); color:#fff; }
+      .modal-btn.primary:hover { opacity:.9; }
+      .modal-btn.secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
+      .modal-btn.secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+      .mod-action-item { border-radius:8px; }
+      .mod-action-item:not(:last-child) { border-bottom:1px solid rgba(255,255,255,0.04); }
+      #mod-modal table tbody tr:hover { background:rgba(255,255,255,0.02); }
+    </style>
+
+    <script>
+      /* ─── Edit Modal State ─── */
+      const AVATAR_COLORS = [
+        'linear-gradient(135deg,#e8334a,#f5c842)',
+        'linear-gradient(135deg,#4c9df5,#a855f7)',
+        'linear-gradient(135deg,#2dca7a,#4c9df5)',
+        'linear-gradient(135deg,#f5c842,#fb923c)',
+        'linear-gradient(135deg,#a855f7,#e8334a)',
+        'linear-gradient(135deg,#fb923c,#e8334a)',
+        'linear-gradient(135deg,#2dca7a,#a855f7)',
+        'linear-gradient(135deg,#1e293b,#334155)',
+      ];
+      const BANNER_GRADIENTS = [
+        'linear-gradient(135deg,#0f0f1a,#1a1a2e)',
+        'linear-gradient(135deg,#200a0a,#3d1010)',
+        'linear-gradient(135deg,#0a1520,#102035)',
+        'linear-gradient(135deg,#1a1028,#2d1040)',
+        'linear-gradient(135deg,#0f1a0f,#1a2d1a)',
+        'linear-gradient(135deg,#1a100a,#2d1f0a)',
+        'linear-gradient(135deg,#200a14,#3d1028)',
+        'linear-gradient(135deg,#07070e,#0f0f1a)',
+      ];
+
+      let editState = {
+        avatar: '', avatarColor: AVATAR_COLORS[0],
+        avatarImage: null,
+        banner: BANNER_GRADIENTS[0],
+        bannerImage: null,
+        bio: '',
+        country: '',
+        socialLinks: { twitter: '', discord: '', website: '', patreon: '' }
+      };
+
+      /* ─── Redimensiona imagen a maxW×maxH via canvas ─── */
+      function resizeImage(file, maxW, maxH, quality = 0.82) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = reject;
+          reader.onload = e => {
+            const img = new Image();
+            img.onerror = reject;
+            img.onload = () => {
+              let { width, height } = img;
+              if (width > maxW || height > maxH) {
+                const ratio = Math.min(maxW / width, maxH / height);
+                width = Math.round(width * ratio);
+                height = Math.round(height * ratio);
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width; canvas.height = height;
+              canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      /* ─── Handler: imagen de avatar ─── */
+      async function handleAvatarImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+          const b64 = await resizeImage(file, 150, 150, 0.85);
+          editState.avatarImage = b64;
+          // Preview en el círculo
+          const prev = document.getElementById('edit-avatar-preview');
+          prev.style.backgroundImage = `url('${b64}')`;
+          prev.style.backgroundSize = 'cover';
+          prev.style.backgroundPosition = 'center';
+          prev.textContent = '';
+          // Desactivar swatches visualmente
+          document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+          document.getElementById('edit-avatar-text').value = '';
+        } catch (e) { alert('Error al cargar la imagen'); }
+      }
+
+      /* ─── Handler: imagen de banner ─── */
+      async function handleBannerImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+          const b64 = await resizeImage(file, 1400, 450, 0.88);
+          editState.bannerImage = b64;
+          const prev = document.getElementById('edit-banner-preview');
+          prev.style.backgroundImage = `url('${b64}')`;
+          prev.style.backgroundSize = 'cover';
+          prev.style.backgroundPosition = 'center';
+          prev.style.background = '';
+          // Desactivar swatches
+          document.querySelectorAll('.swatch-banner').forEach(s => s.classList.remove('active'));
+        } catch (e) { alert('Error al cargar la imagen'); }
+      }
+
+      /* ─── Cuando el usuario escribe iniciales, limpia imagen ─── */
+      function onAvatarTextInput() {
+        editState.avatarImage = null;
+        const prev = document.getElementById('edit-avatar-preview');
+        prev.style.backgroundImage = '';
+        updateAvatarPreview();
+      }
+
+      function buildSwatches() {
+        // Avatar swatches
+        const aEl = document.getElementById('avatar-color-swatches');
+        AVATAR_COLORS.forEach((c, i) => {
+          const s = document.createElement('div');
+          s.className = 'swatch' + (i === 0 ? ' active' : '');
+          s.style.background = c;
+          s.onclick = () => {
+            editState.avatarColor = c;
+            document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+            s.classList.add('active');
+            updateAvatarPreview();
+          };
+          aEl.appendChild(s);
+        });
+
+      }
+
+      function updateAvatarPreview() {
+        const text = document.getElementById('edit-avatar-text').value.toUpperCase() || '?';
+        editState.avatar = document.getElementById('edit-avatar-text').value;
+        const el = document.getElementById('edit-avatar-preview');
+        el.style.background = editState.avatarColor;
+        el.textContent = text;
+      }
+
+      function updateBioCounter() {
+        const len = document.getElementById('edit-bio').value.length;
+        const el = document.getElementById('bio-counter');
+        el.textContent = `${len}/300`;
+        el.style.color = len > 270 ? '#e8334a' : '#8888a0';
+      }
+
+      function openEditModal() {
+        // Pre-fill from localStorage
+        const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        const avatarVal = stored.avatar || '';
+        const bannerVal = stored.banner || '';
+        function isUrlAvatar(v) { return v.startsWith('data:image/') || v.startsWith('/') || v.startsWith('http'); }
+        const isAvatarImg = isUrlAvatar(avatarVal);
+        const isBannerImg = bannerVal.startsWith('data:image/');
+
+        // Avatar
+        if (isAvatarImg) {
+          editState.avatarImage = avatarVal;
+          editState.avatar = '';
+          document.getElementById('edit-avatar-text').value = '';
+          const prev = document.getElementById('edit-avatar-preview');
+          document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+          if (avatarVal.startsWith('data:image/')) {
+            prev.style.backgroundImage = `url('${avatarVal}')`;
+            prev.style.backgroundSize = 'cover';
+            prev.style.backgroundPosition = 'center';
+            prev.style.background = 'none';
+            prev.innerHTML = '';
+          } else {
+            prev.style.background = 'rgba(232,51,74,0.08)';
+            prev.style.backgroundImage = 'none';
+            prev.innerHTML = '<img src="' + avatarVal + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
+          }
+        } else {
+          editState.avatarImage = null;
+          editState.avatar = avatarVal;
+          document.getElementById('edit-avatar-text').value = avatarVal;
+          document.getElementById('edit-avatar-preview').style.backgroundImage = '';
+          if (stored.avatarColor) {
+            editState.avatarColor = stored.avatarColor;
+            document.querySelectorAll('.swatch').forEach(s => {
+              s.classList.toggle('active', s.style.background === stored.avatarColor);
+            });
+          }
+          updateAvatarPreview();
+        }
+
+
+
+        // Bio
+        document.getElementById('edit-bio').value = stored.bio || '';
+        editState.bio = stored.bio || '';
+        updateBioCounter();
+
+        // Country
+        document.getElementById('edit-country').value = stored.country || '';
+        editState.country = stored.country || '';
+
+        // Social links
+        const sl = stored.socialLinks || {};
+        editState.socialLinks = { ...sl };
+        document.getElementById('edit-social-twitter').value = sl.twitter || '';
+        document.getElementById('edit-social-discord').value = sl.discord || '';
+        document.getElementById('edit-social-website').value = sl.website || '';
+        document.getElementById('edit-social-patreon').value = sl.patreon || '';
+
+        document.getElementById('edit-status').className = 'edit-status';
+        document.getElementById('edit-modal-overlay').classList.add('open');
+      }
+
+      function closeEditModal() {
+        document.getElementById('edit-modal-overlay').classList.remove('open');
+      }
+
+      async function saveProfileEdit() {
+        const btn = document.getElementById('edit-save-btn');
+        const statusEl = document.getElementById('edit-status');
+        const bio = document.getElementById('edit-bio').value;
+        const country = document.getElementById('edit-country').value.trim();
+        const socialLinks = {
+          twitter: document.getElementById('edit-social-twitter').value.trim(),
+          discord: document.getElementById('edit-social-discord').value.trim(),
+          website: document.getElementById('edit-social-website').value.trim(),
+          patreon: document.getElementById('edit-social-patreon').value.trim(),
+        };
+        const avatarValue = editState.avatarImage
+          ? editState.avatarImage
+          : (document.getElementById('edit-avatar-text').value.toUpperCase().trim() || editState.avatar);
+        const bannerValue = editState.bannerImage || editState.banner;
+        const avatarColor = editState.avatarColor;
+
+        btn.textContent = 'Guardando...';
+        btn.disabled = true;
+        statusEl.className = 'edit-status';
+
+        try {
+          const token = localStorage.getItem('kami_token');
+          if (!token) throw new Error('No estás autenticado');
+
+          const res = await fetch('/api/auth/profile/edit', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ bio, country, socialLinks, avatar: avatarValue, banner: bannerValue }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error del servidor');
+
+          const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+          stored.bio = bio;
+          stored.country = country;
+          stored.socialLinks = socialLinks;
+          stored.avatar = avatarValue;
+          stored.banner = bannerValue;
+          stored.avatarColor = editState.avatarImage ? null : avatarColor;
+          localStorage.setItem('kami_user', JSON.stringify(stored));
+
+          applyProfileData({ bio, country, socialLinks, avatar: avatarValue, avatarColor, banner: bannerValue, favoriteGenres: stored.favoriteGenres, emoji: stored.emoji, username: stored.username, createdAt: stored.createdAt, role: data.user?.role });
+
+          if (typeof window.kamiRefreshNav === 'function') window.kamiRefreshNav();
+
+          statusEl.className = 'edit-status success show';
+          statusEl.textContent = '✓ Cambios guardados correctamente';
+          setTimeout(() => closeEditModal(), 1200);
+
+        } catch (err) {
+          statusEl.className = 'edit-status error show';
+          statusEl.textContent = '✕ ' + err.message;
+        } finally {
+          btn.textContent = 'Guardar cambios';
+          btn.disabled = false;
+        }
+      }
+
+      /* ─── Muestra el badge según el rol ─── */
+      function applyRoleBadge(role) {
+        const tags = {
+          admin: 'profile-admin-tag',
+          silver: 'profile-silver-tag',
+          gold: 'profile-gold-tag',
+          moderator: 'profile-moderator-tag',
+          company: 'profile-company-tag',
+          banned: 'profile-banned-tag',
+          verified: 'profile-verified-tag',
+        };
+        Object.values(tags).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+        const el = document.getElementById(tags[role]);
+        if (el) el.style.display = 'inline';
+        if (role === 'company') {
+          const v = document.getElementById('profile-verified-tag');
+          if (v) v.style.display = 'inline';
+        }
+      }
+
+      /* ─── Aplica datos de perfil al DOM ─── */
+      function applyProfileData(data) {
+        const { bio, avatar, avatarColor, banner, username, country, socialLinks, favoriteGenres, emoji, createdAt, role } = data;
+
+        const usernameEl = document.getElementById('profile-username-display');
+        if (usernameEl && username) {
+          usernameEl.textContent = username;
+          document.title = `Perfil-${username}`;
+        }
+
+        if (role) applyRoleBadge(role);
+
+        const bioEl = document.querySelector('.profile-bio');
+        if (bioEl && bio !== undefined) bioEl.textContent = bio;
+
+        document.querySelectorAll('.profile-avatar').forEach(el => {
+          const isDataImage = avatar && avatar.startsWith('data:image/');
+          const isUrlImage = avatar && (avatar.startsWith('/') || avatar.startsWith('http'));
+          if (isDataImage) {
+            el.style.cssText += `; background-image: url('${avatar}') !important; background-size: cover !important; background-position: center !important;`;
+            const textNode = [...el.childNodes].find(n => n.nodeType === 3 && n.nodeValue.trim());
+            if (textNode) textNode.nodeValue = ' ';
+          } else if (isUrlImage) {
+            el.style.cssText += '; background: rgba(232,51,74,0.08) !important; overflow: hidden;';
+            el.innerHTML = '<img src="' + avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
+          } else {
+            el.style.backgroundImage = 'none';
+            if (avatar) {
+              const textNode = [...el.childNodes].find(n => n.nodeType === 3);
+              if (textNode) textNode.nodeValue = avatar;
+              else el.insertBefore(document.createTextNode(avatar), el.firstChild);
+            }
+            if (avatarColor) el.style.background = avatarColor;
+          }
+        });
+
+        const bannerEl = document.querySelector('.profile-banner');
+        if (bannerEl) {
+          if (banner && banner.startsWith('data:image/')) {
+            bannerEl.style.backgroundImage = `url('${banner}')`;
+            bannerEl.style.backgroundSize = 'cover';
+            bannerEl.style.backgroundPosition = 'center';
+            bannerEl.style.backgroundRepeat = 'no-repeat';
+            bannerEl.style.filter = 'blur(3px)';
+          } else if (banner) {
+            bannerEl.style.backgroundImage = 'none';
+            bannerEl.style.background = banner;
+            bannerEl.style.filter = 'none';
+          }
+        }
+
+        // Tags dinámicos
+        const tagsEl = document.querySelector('.profile-tags');
+        if (tagsEl) {
+          tagsEl.innerHTML = '';
+
+          // País
+          if (country) {
+            const t = document.createElement('span');
+            t.className = 'profile-tag';
+            t.textContent = `🌍 ${country}`;
+            tagsEl.appendChild(t);
+          }
+
+          // Emoji
+          if (emoji) {
+            const t = document.createElement('span');
+            t.className = 'profile-tag';
+            t.textContent = emoji;
+            tagsEl.appendChild(t);
+          }
+
+          // Géneros favoritos
+          if (favoriteGenres && favoriteGenres.length > 0) {
+            favoriteGenres.forEach(g => {
+              const t = document.createElement('span');
+              t.className = 'profile-tag';
+              t.textContent = `⭐ ${g}`;
+              tagsEl.appendChild(t);
+            });
+          }
+
+          // Fecha de registro
+          if (createdAt) {
+            const d = new Date(createdAt);
+            const joinedStr = d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+            const t = document.createElement('span');
+            t.className = 'profile-tag';
+            t.textContent = `📅 Miembro desde ${joinedStr}`;
+            tagsEl.appendChild(t);
+          }
+        }
+      }
+
+      /* ─── Carga inicial — perfil propio o social ─── */
+      var profileContext = { mode: 'own', username: null, userId: null };
+
+      function initProfileFromStorage() {
+        var loader = document.getElementById('profile-loader');
+        var content = document.getElementById('profile-content');
+
+        function showContent() {
+          if (loader) loader.style.display = 'none';
+          if (content) content.style.display = 'block';
+        }
+
+        var parts = window.location.pathname.split('/');
+        var urlUsername = parts[2] ? decodeURIComponent(parts[2]) : null;
+
+        var token = localStorage.getItem('kami_token');
+        var currentUser = null;
+        try { currentUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+
+        if (!urlUsername || (currentUser && currentUser.username === urlUsername)) {
+          // ── Own profile ──
+          profileContext = { mode: 'own', username: currentUser?.username || null, userId: null };
+          window.isProfileOwner = true;
+          document.getElementById('btn-edit-profile').style.display = 'inline-flex';
+          try {
+            var stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+            applyProfileData({ ...stored, role: stored.role });
+          } catch (e) {}
+          if (token) {
+            kamiOffline.safeFetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } }, { cacheKey: 'kami_user', maxAge: 24*60*60*1000 })
+              .then(function(result) {
+                if (result.ok && result.data?.user) {
+                  var u = result.data.user;
+                  var stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+                  stored.bio = u.bio || stored.bio;
+                  stored.banner = u.banner || stored.banner;
+                  stored.avatar = u.avatar || stored.avatar;
+                  stored.country = u.country || stored.country;
+                  stored.favoriteGenres = u.favoriteGenres || stored.favoriteGenres;
+                  stored.emoji = u.emoji || stored.emoji;
+                  stored.role = u.role || stored.role;
+                  stored.createdAt = u.createdAt || stored.createdAt;
+                  localStorage.setItem('kami_user', JSON.stringify(stored));
+                  applyProfileData({
+                    username: u.username,
+                    bio: u.bio,
+                    avatar: u.avatar,
+                    banner: u.banner,
+                    avatarColor: stored.avatarColor,
+                    country: u.country,
+                    favoriteGenres: u.favoriteGenres,
+                    emoji: u.emoji,
+                    role: u.role,
+                    createdAt: u.createdAt,
+                    socialLinks: stored.socialLinks,
+                  });
+                }
+                showContent();
+              })
+              .catch(function() { showContent(); });
+          } else {
+            showContent();
+          }
+          return;
+        }
+
+        // ── Social profile ──
+        profileContext = { mode: 'social', username: urlUsername, userId: null };
+        document.getElementById('btn-edit-profile').style.display = 'none';
+
+        loadSocialProfile(urlUsername, token, function(success, data) {
+          showContent();
+          if (success) {
+            window.isProfileOwner = data && data.canEdit;
+            var privadas = ['biblioteca','estadisticas','historial','listas'];
+            privadas.forEach(function(id) {
+              var tab = document.getElementById('tab-' + id);
+              if (tab) tab.style.display = window.isProfileOwner ? '' : 'none';
+            });
+            if (window.isProfileOwner) {
+              setTimeout(function() { loadSocialStats(urlUsername); }, 100);
+              setTimeout(function() { loadSocialLibrary(urlUsername); }, 200);
+            }
+          }
+        });
+      }
+
+      function loadSocialProfile(username, token, callback) {
+        fetch('/api/social/' + encodeURIComponent(username) + '/profile', {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        })
+          .then(function(r) {
+            if (!r.ok) {
+              return r.json().then(function(err) { throw new Error(err.error || 'Error ' + r.status); });
+            }
+            return r.json();
+          })
+          .then(function(data) {
+            if (data.user) {
+              profileContext.userId = data.user.id;
+              applyProfileData({
+                username: data.user.username,
+                bio: data.user.bio,
+                avatar: data.user.avatar,
+                banner: data.user.banner,
+                avatarColor: null,
+                country: data.user.country,
+                favoriteGenres: data.user.favoriteGenres,
+                emoji: data.user.emoji,
+                role: data.user.role,
+                createdAt: data.user.createdAt,
+                socialLinks: null,
+              });
+              document.title = 'Perfil-' + data.user.username;
+
+              if (token && !data.canEdit) {
+                renderFollowButton(data.isFollowing, data.user.id, username);
+              }
+              renderSocialActions(data.isFriend, data.user.id);
+
+              if (data.counts) {
+                document.getElementById('stat-followers').textContent = data.counts.followers || 0;
+                document.getElementById('stat-following').textContent = data.counts.following || 0;
+              }
+
+              // Inicializar primera sub-tab de actividad ahora que tenemos el userId
+              var firstAct = document.querySelector('.sub-tab');
+              if (firstAct && document.getElementById('content-actividad').classList.contains('active')) {
+                switchActivityTab('posts', firstAct);
+              }
+
+              if (callback) callback(true, data);
+            } else {
+              document.getElementById('profile-content').innerHTML = '<div style="text-align:center;padding:80px 20px;color:var(--text-muted);font-size:16px;">Usuario no encontrado</div>';
+              if (callback) callback(false);
+            }
+          })
+          .catch(function(err) {
+            document.getElementById('profile-content').innerHTML = '<div style="text-align:center;padding:80px 20px;color:var(--text-muted);font-size:16px;">' + (err.message || 'Error al cargar perfil') + '</div>';
+            if (callback) callback(false);
+          });
+      }
+
+      function renderFollowButton(isFollowing, userId, username) {
+        var actionsEl = document.querySelector('.profile-actions');
+        if (!actionsEl) return;
+        var existing = document.getElementById('social-follow-btn');
+        if (existing) existing.remove();
+
+        var btn = document.createElement('button');
+        btn.id = 'social-follow-btn';
+        btn.className = 'btn' + (isFollowing ? ' btn-ghost' : ' btn-primary');
+        btn.innerHTML = isFollowing
+          ? '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Siguiendo'
+          : '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Seguir';
+        btn.onclick = function() { toggleFollow(userId, username, btn); };
+        actionsEl.insertBefore(btn, actionsEl.firstChild);
+      }
+
+      function renderSocialActions(isFriend, userId) {
+        var actionsEl = document.querySelector('.profile-actions');
+        if (!actionsEl) return;
+        var existing = document.getElementById('social-friend-btn');
+        if (existing) existing.remove();
+
+        var token = localStorage.getItem('kami_token');
+        if (!token) return;
+
+        var btn = document.createElement('button');
+        btn.id = 'social-friend-btn';
+        btn.className = 'btn btn-ghost';
+        if (isFriend) {
+          btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Amigo';
+          btn.style.opacity = '0.6';
+          btn.title = 'Ya sois amigos';
+        } else {
+          btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Agregar amigo';
+          btn.onclick = function() { addFriend(username); };
+        }
+        actionsEl.appendChild(btn);
+      }
+
+      function toggleFollow(userId, username, btn) {
+        var token = localStorage.getItem('kami_token');
+        if (!token) { alert('Debes iniciar sesión'); return; }
+
+        var isFollowing = btn.textContent.trim().startsWith('Siguiendo');
+
+        if (isFollowing) {
+          // Unfollow via DELETE (compatibilidad)
+          fetch('/api/social/follow/' + userId, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token },
+          })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data.error) { alert(data.error); return; }
+              btn.className = 'btn btn-primary';
+              btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Seguir';
+              var countEl = document.getElementById('stat-followers');
+              if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+            })
+            .catch(function(e) { alert('Error: ' + e.message); });
+        } else {
+          // Follow via nuevo endpoint unificado
+          fetch('/api/social/follow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ following_id: userId }),
+          })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data.error) { alert(data.error); return; }
+              btn.className = 'btn btn-ghost';
+              btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Siguiendo';
+              var countEl = document.getElementById('stat-followers');
+              if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
+            })
+            .catch(function(e) { alert('Error: ' + e.message); });
+        }
+      }
+
+      function addFriend(username) {
+        var token = localStorage.getItem('kami_token');
+        if (!token) { alert('Debes iniciar sesión'); return; }
+        fetch('/api/friends/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ username: username }),
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.error) { alert(data.error); return; }
+            alert('✓ Ahora eres amigo de ' + username);
+            var btn = document.getElementById('social-friend-btn');
+            if (btn) {
+              btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Amigo';
+              btn.style.opacity = '0.6';
+              btn.onclick = null;
+              btn.title = 'Ya sois amigos';
+            }
+          })
+          .catch(function(e) { alert('Error: ' + e.message); });
+      }
+
+      // Close on overlay click
+      document.getElementById('edit-modal-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+      });
+
+      // ═══════════════════════════════════════
+      // FUNCIONES DE BIBLIOTECA
+      // ═══════════════════════════════════════
+
+      const STATUS_LABELS = {
+        reading: { label: 'Leyendo', icon: '📖', color: 'var(--blue)' },
+        continuing: { label: 'Continuando', icon: '▶', color: 'var(--green)' },
+        planned: { label: 'Pendientes', icon: '⏳', color: 'var(--accent-gold)' },
+        favorite: { label: 'Favoritos', icon: '❤️', color: 'var(--accent)' },
+        completed: { label: 'Terminados', icon: '✅', color: 'var(--purple)' },
+        dropped: { label: 'Abandonados', icon: '🚫', color: 'var(--text-muted)' },
+        rereading: { label: 'Releyendo', icon: '🔄', color: 'var(--orange)' },
+      };
+
+      const STATE_KEYS = ['reading', 'continuing', 'planned', 'favorite', 'completed', 'dropped', 'rereading'];
+      let libraryData = null;
+      let currentFilter = 'all';
+
+      async function loadLibrary() {
+        const token = localStorage.getItem('kami_token');
+        if (profileContext.mode === 'social') {
+          loadSocialLibrary(profileContext.username);
+          return;
+        }
+        if (!token) return;
+        try {
+          const r = await fetch('/api/library', { headers: { 'Authorization': 'Bearer ' + token } });
+          if (!r.ok) return;
+          const data = await r.json();
+          libraryData = data.library;
+          renderLibrary(currentFilter);
+        } catch (e) {
+          console.error('Error cargando biblioteca:', e);
+        }
+      }
+
+      async function loadSocialLibrary(username) {
+        try {
+          const r = await fetch('/api/social/' + encodeURIComponent(username) + '/library');
+          if (!r.ok) return;
+          const data = await r.json();
+          var grouped = {};
+          ['reading','continuing','planned','favorite','completed','dropped','rereading'].forEach(function(s) { grouped[s] = []; });
+          (data.mangas || []).forEach(function(m) {
+            var key = m.status || 'planned';
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(m);
+          });
+          libraryData = grouped;
+          renderLibrary(currentFilter);
+        } catch (e) {
+          console.error('Error cargando biblioteca social:', e);
+        }
+      }
+
+      function renderLibrary(filter) {
+        const grid = document.getElementById('lib-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        let entries = [];
+        if (filter === 'all') {
+          STATE_KEYS.forEach(key => {
+            (libraryData[key] || []).forEach(e => entries.push({ ...e, _statusKey: key }));
+          });
+        } else if (filter === 'favorite') {
+          // Favoritos: mostrar todos los mangas con isFavorite=true, de cualquier estado
+          STATE_KEYS.forEach(key => {
+            (libraryData[key] || []).forEach(e => {
+              if (e.isFavorite) entries.push({ ...e, _statusKey: key });
+            });
+          });
+        } else {
+          (libraryData[filter] || []).forEach(e => entries.push({ ...e, _statusKey: filter }));
+        }
+
+        // Update tab count
+        STATE_KEYS.forEach(key => {
+          var count;
+          if (key === 'favorite') {
+            // Contar isFavorite=true en todos los estados
+            count = 0;
+            STATE_KEYS.forEach(k => {
+              (libraryData[k] || []).forEach(e => { if (e.isFavorite) count++; });
+            });
+          } else {
+            count = (libraryData[key] || []).length;
+          }
+          const btn = document.querySelector(`.state-chip[data-state="${key}"] .state-chip-count`);
+          if (btn) btn.textContent = count;
+          const tabCount = document.getElementById(`tab-count-${key}`);
+          if (tabCount) tabCount.textContent = count;
+        });
+
+        if (entries.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;opacity:0.3;">📚</div><div style="font-size:15px;">No hay mangas aquí</div><div style="font-size:12px;margin-top:4px;">Explora el catálogo y añade tus primeros títulos</div><a href="/biblioteca" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">Ir al catálogo</a></div>';
+          return;
+        }
+
+        entries.forEach(function(m) {
+          var pct = m.totalChapters > 0 ? Math.min(100, Math.round((m.progress / m.totalChapters) * 100)) : 0;
+          var statusKey = m._statusKey || m.status;
+          var statusColor = (STATUS_LABELS[statusKey] || {}).color || 'var(--blue)';
+          var overlay = '';
+          overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
+          overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>Cap. ' + (m.progress || 0) + '/' + (m.totalChapters || '?') + '</span><span>' + pct + '%</span></div>';
+          overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
+          overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + (m.progress + 1)) + '</div>';
+          overlay += '</div>';
+          if (statusKey) overlay += '<div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:' + statusColor + ';border:2px solid var(--bg-surface);z-index:2;"></div>';
+          if (m.isFavorite) overlay += '<div style="position:absolute;top:8px;left:8px;font-size:14px;z-index:2;">❤️</div>';
+          var html = window.kamiMangaCard(m, { showRating: false, extraOverlay: overlay });
+          var tmp = document.createElement('div');
+          tmp.innerHTML = html;
+          var el = tmp.firstElementChild;
+          el.dataset.mangaId = m.mangaId;
+          el.dataset.status = statusKey;
+          grid.appendChild(el);
+        });
+      }
+
+      // Override filterState for library filtering
+      const originalFilterState = window.filterState;
+      window.filterState = function(el) {
+        const state = el.dataset.state;
+        currentFilter = state || 'all';
+        document.querySelectorAll('.state-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        if (libraryData) renderLibrary(currentFilter);
+      };
+
+      // Library action functions
+      async function updateLibraryStatus(mangaId, status) {
+        const token = localStorage.getItem('kami_token');
+        if (!token) return;
+        try {
+          const r = await fetch('/api/library/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ manga_id: mangaId, status }),
+          });
+          if (r.ok) {
+            loadLibrary();
+            trackAction('library_' + status, mangaId);
+          }
+        } catch (e) {
+          console.error('Error actualizando biblioteca:', e);
+        }
+      }
+
+      async function removeFromLibrary(mangaId) {
+        var pConfirmed = await new Promise(function(resolve) {
+            var m = document.getElementById('confirm-modal');
+            if (!m) { resolve(true); return; }
+            m.style.display = 'flex';
+            m.querySelector('.confirm-msg').textContent = '\u00bfEliminar este manga de tu biblioteca?';
+            m.querySelector('.confirm-yes').onclick = function() { m.style.display = 'none'; resolve(true); };
+            m.querySelector('.confirm-no').onclick = function() { m.style.display = 'none'; resolve(false); };
+        });
+        if (!pConfirmed) return;
+        const token = localStorage.getItem('kami_token');
+        if (!token) return;
+        try {
+          const r = await fetch('/api/library/' + mangaId, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token },
+          });
+          if (r.ok) {
+            loadLibrary();
+            trackAction('library_remove', mangaId);
+          }
+        } catch (e) {
+          console.error('Error eliminando manga:', e);
+        }
+      }
+
+      async function loadStats() {
+        const username = document.getElementById('profile-username-display')?.textContent?.trim();
+        if (!username) return;
+        try {
+          var endpoint = profileContext.mode === 'social'
+            ? '/api/social/' + encodeURIComponent(username) + '/stats'
+            : '/api/stats/' + encodeURIComponent(username);
+          const r = await fetch(endpoint);
+          if (!r.ok) return;
+          const data = await r.json();
+          document.getElementById('stat-titles').textContent = (data.stats?.titlesRead || 0).toLocaleString();
+          document.getElementById('stat-chapters').textContent = (data.stats?.chaptersCompleted || 0).toLocaleString();
+          document.getElementById('stat-hours').textContent = (data.stats?.hoursRead || 0).toFixed(1);
+          document.getElementById('stat-streak').textContent = data.stats?.currentStreak || 0;
+          // Only update followers/following for own profile (social already set from profile endpoint)
+          if (profileContext.mode === 'own') {
+            document.getElementById('stat-followers').textContent = data.stats?.followers || 0;
+            document.getElementById('stat-following').textContent = data.stats?.following || 0;
+          }
+          renderStats(data);
+        } catch {}
+      }
+
+      async function loadSocialStats(username) {
+        try {
+          const r = await fetch('/api/social/' + encodeURIComponent(username) + '/stats');
+          if (!r.ok) return;
+          const data = await r.json();
+          document.getElementById('stat-titles').textContent = (data.stats?.titlesRead || 0).toLocaleString();
+          document.getElementById('stat-chapters').textContent = (data.stats?.chaptersCompleted || 0).toLocaleString();
+          document.getElementById('stat-hours').textContent = (data.stats?.hoursRead || 0).toFixed(1);
+          document.getElementById('stat-streak').textContent = data.stats?.currentStreak || 0;
+          renderStats(data);
+        } catch {}
+      }
+
+      // Call loadLibrary + initModButton + tracking after profile is ready
+      const origInit = initProfileFromStorage;
+      initProfileFromStorage = function() {
+        origInit.call(this);
+        var token = localStorage.getItem('kami_token');
+        if (profileContext.mode === 'own') {
+          setTimeout(loadLibrary, 100);
+          setTimeout(initModButton, 200);
+          setTimeout(loadStats, 300);
+          setTimeout(function() {
+            if (token) trackAction('daily_login');
+          }, 500);
+        } else if (profileContext.mode === 'social') {
+          setTimeout(initModButton, 300);
+        }
+      };
+
+      // Init swatches + carga inicial
+      buildSwatches();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProfileFromStorage);
+      } else {
+        initProfileFromStorage();
+      }
+
+      // Set edit profile link from localStorage (dynamic user)
+      const editBtn = document.getElementById('btn-edit-profile');
+      const storedUser = JSON.parse(localStorage.getItem('kami_user') || '{}');
+      if (editBtn && storedUser.username) {
+        editBtn.href = '/perfil-editor/' + encodeURIComponent(storedUser.username);
+      }
+
+      // ═══════════════════════════════════════
+      // MODERACIÓN: botón + panel
+      // ═══════════════════════════════════════
+      const MOD_ROLES = ['admin', 'moderator', 'company'];
+      let modTargetUser = null;
+
+      function initModButton() {
+        try {
+          const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+          const btn = document.getElementById('btn-moderation');
+          if (!btn || !stored.role) return;
+          if (!MOD_ROLES.includes(stored.role)) return;
+          btn.style.display = 'block';
+          btn.onmouseenter = function() { this.style.borderColor = 'rgba(255,255,255,0.5)'; this.style.color = '#fff'; };
+          btn.onmouseleave = function() { this.style.borderColor = 'rgba(255,255,255,0.2)'; this.style.color = 'rgba(255,255,255,0.7)'; };
+          btn.onclick = function() { window.openModPanel(); };
+        } catch(e) { console.error('initModButton error:', e); }
+      }
+
+      window.openModPanel = async function openModPanel() {
+        const usernameEl = document.getElementById('profile-username-display');
+        const username = usernameEl?.textContent?.trim();
+        if (!username) { alert('Error: No se encontró el nombre de usuario en el perfil'); return; }
+
+        const token = localStorage.getItem('kami_token');
+        if (!token) { alert('Debes iniciar sesión'); return; }
+
+        // Find target user ID
+        try {
+          const r = await fetch('/api/profile/' + encodeURIComponent(username), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!r.ok) throw new Error('No se pudo obtener usuario');
+          const data = await r.json();
+          modTargetUser = data.user;
+
+          // Load mod data
+          const modR = await fetch('/api/moderation/user/' + modTargetUser.id, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!modR.ok) {
+            const errData = await modR.json();
+            alert(errData.error || 'Sin permisos de moderación');
+            return;
+          }
+          const modData = await modR.json();
+          renderModPanel(modData);
+        } catch (e) {
+          alert('Error: ' + e.message);
+        }
+      }
+
+      function renderModPanel(data) {
+        const u = data.user;
+        const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        const myRole = stored.role || '';
+        const isAdmin = myRole === 'admin';
+        const isMod = ['admin', 'moderator', 'company'].includes(myRole);
+        const isCompany = myRole === 'company';
+
+        const mutedActive = u.mutedUntil && new Date(u.mutedUntil) > new Date();
+        const statusColor = u.isBanned ? '#e8334a' : mutedActive ? '#fb923c' : '#2dca7a';
+        const statusIcon = u.isBanned ? '🚫' : mutedActive ? '🔇' : '✅';
+        const statusLabel = u.isBanned ? 'Baneado' : mutedActive ? 'Silenciado' : 'Activo';
+
+        const html = `
+          <div class="overlay-modal open" id="mod-modal" style="z-index:3000;">
+            <div class="modal-box" style="max-width:640px;width:min(640px,94vw);">
+              <div class="modal-box-header" style="padding:20px 24px 0;border-bottom:1px solid var(--border);padding-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(232,51,74,0.12);border-radius:10px;color:var(--accent);font-size:18px;">🛡️</div>
+                  <div>
+                    <div class="modal-box-title" style="font-size:18px;">Panel de moderación</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${u.username} · ${stored.role || '?'}</div>
+                  </div>
+                </div>
+                <button class="modal-box-close" onclick="closeModPanel()" style="font-size:24px;">&times;</button>
+              </div>
+              <div class="modal-box-body" style="padding:20px 24px;max-height:70vh;overflow-y:auto;">
+
+                <!-- ── INFO TARJETA USUARIO ── -->
+                <div style="display:flex;gap:16px;padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;">
+                  <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#e8334a,#f5c842);color:#fff;font-size:22px;font-weight:700;flex-shrink:0;">${u.username ? u.username[0].toUpperCase() : '?'}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:15px;font-weight:700;">${escHtml(u.username)}</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;display:flex;flex-wrap:wrap;gap:10px;">
+                      <span>ID: ${escHtml(u.id || '—')}</span>
+                      <span>Strikes: ${u.strikes || 0}/3</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;background:${statusColor}22;border:1px solid ${statusColor}44;color:${statusColor};">${statusIcon} ${statusLabel}</div>
+                  </div>
+                </div>
+
+                <!-- ── ACCIONES DE MODERACIÓN ── -->
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                  <span>⚖️ Acciones de moderación</span>
+                  <div style="flex:1;height:1px;background:var(--border);"></div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">
+                  ${!u.isBanned && isMod ? `<div class="mod-action-item" onclick="modAction('ban')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(232,51,74,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">🚫</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--accent);">Ban permanente</div><div style="font-size:10px;color:var(--text-muted);">Bloquear acceso permanentemente</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${!u.isBanned && isMod && !isCompany ? `<div class="mod-action-item" onclick="modAction('ban_temp')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(232,51,74,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">⏳</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--accent);">Ban temporal</div><div style="font-size:10px;color:var(--text-muted);">Bloquear por tiempo definido</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${u.isBanned && isMod ? `<div class="mod-action-item" onclick="modAction('unban')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(45,202,122,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">✅</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--green);">Desbanear</div><div style="font-size:10px;color:var(--text-muted);">Restaurar acceso al usuario</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${isMod && !isCompany ? `<div class="mod-action-item" onclick="modAction('strike')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(251,146,60,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">⚠️</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--orange);">Añadir strike</div><div style="font-size:10px;color:var(--text-muted);">${u.strikes}/3 · 3 strikes = ban automático</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${isMod && (u.strikes || 0) > 0 && !isCompany ? `<div class="mod-action-item" onclick="modAction('clear_strikes')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">🧹</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-secondary);">Limpiar strikes</div><div style="font-size:10px;color:var(--text-muted);">Eliminar todos los strikes del usuario</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${!mutedActive && isMod ? `<div class="mod-action-item" onclick="modAction('mute')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(76,157,245,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">🔇</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--blue);">Silenciar usuario</div><div style="font-size:10px;color:var(--text-muted);">Suspender comentarios temporalmente</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${isMod ? `<div class="mod-action-item" onclick="modAction('warn')">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(167,139,250,0.06)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">📨</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--purple);">Enviar aviso</div><div style="font-size:10px;color:var(--text-muted);">Mensaje directo de advertencia al usuario</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+
+                  ${isMod ? `<div class="mod-action-item" onclick="window.location.href='/messages'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                      <span style="font-size:16px;width:20px;text-align:center;">💬</span>
+                      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-secondary);;">Ir a mensajes</div><div style="font-size:10px;color:var(--text-muted);">Ver todas las conversaciones y apelaciones</div></div>
+                      <span style="font-size:11px;color:var(--text-muted);">→</span>
+                    </div>
+                  </div>` : ''}
+                </div>
+
+                <!-- ── HISTORIAL ── -->
+                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                  <span>📋 Historial de sanciones</span>
+                  <div style="flex:1;height:1px;background:var(--border);"></div>
+                  ${data.history.length > 0 ? `<span style="font-size:10px;font-weight:400;color:var(--text-muted);text-transform:none;letter-spacing:0;">${data.history.length} registros</span>` : ''}
+                </div>
+
+                <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;">
+                  ${data.history.length === 0 ? '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">Sin historial de sanciones</div>' :
+                    `<table style="width:100%;border-collapse:collapse;font-size:11px;">
+                      <thead>
+                        <tr style="background:rgba(255,255,255,0.03);">
+                          <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Acción</th>
+                          <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Motivo</th>
+                          <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Moderador</th>
+                          <th style="padding:8px 10px;text-align:right;color:var(--text-muted);font-weight:600;">Fecha</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${data.history.map(h => {
+                          const actionColors = {
+                            ban_permanent: '#e8334a', ban_temporary: '#e8334a',
+                            unban: '#2dca7a', strike: '#fb923c',
+                            clear_strikes: '#8888a0', warning: '#a78bfa',
+                            mute: '#4c9df5',
+                          };
+                          const color = actionColors[h.actionType] || '#8888a0';
+                          return `<tr style="border-top:1px solid var(--border);">
+                            <td style="padding:8px 10px;"><span style="color:${color};font-weight:600;">${h.actionType.replace(/_/g,' ')}</span></td>
+                            <td style="padding:8px 10px;color:var(--text-secondary);">${escHtml(h.reason || '—')}</td>
+                            <td style="padding:8px 10px;color:var(--text-muted);">${escHtml(h.moderatorName || '—')}</td>
+                            <td style="padding:8px 10px;text-align:right;color:var(--text-muted);white-space:nowrap;">${new Date(h.createdAt).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}</td>
+                          </tr>`;
+                        }).join('')}
+                      </tbody>
+                    </table>`}
+                </div>
+
+              </div>
+              <div class="modal-box-footer" style="padding:12px 24px 16px;border-top:1px solid var(--border);">
+                <button class="modal-btn" onclick="closeModPanel()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 20px;">Cerrar panel</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const existing = document.getElementById('mod-modal');
+        if (existing) existing.remove();
+        document.body.insertAdjacentHTML('beforeend', html);
+      }
+
+      window.closeModPanel = function() {
+        const m = document.getElementById('mod-modal');
+        if (m) m.remove();
+      }
+
+      window.modAction = function(action) {
+        if (!modTargetUser) return;
+        const token = localStorage.getItem('kami_token');
+        if (!token) return;
+
+        let promptText = '', endpoint = '', body = { targetUserId: modTargetUser.id };
+
+        switch (action) {
+          case 'ban':
+            body.reason = prompt('Motivo del baneo:');
+            if (!body.reason) return;
+            endpoint = '/api/moderation/ban';
+            break;
+          case 'ban_temp': {
+            body.reason = prompt('Motivo del baneo temporal:');
+            if (!body.reason) return;
+            const durBan = prompt('Duración (ej: 7 días, 12 horas, 3 meses):');
+            if (!durBan) return;
+            body.durationSeconds = parseDuration(durBan);
+            if (!body.durationSeconds) return alert('Formato inválido');
+            endpoint = '/api/moderation/ban';
+            break;
+          }
+          case 'unban':
+            body.reason = prompt('Motivo del desbaneo:') || 'Sin motivo';
+            endpoint = '/api/moderation/unban';
+            break;
+          case 'strike':
+            body.reason = prompt('Motivo del strike:');
+            if (!body.reason) return;
+            endpoint = '/api/moderation/strike';
+            break;
+          case 'clear_strikes':
+            if (!confirm('¿Limpiar todos los strikes de este usuario?')) return;
+            endpoint = '/api/moderation/clear-strikes';
+            break;
+          case 'mute': {
+            const durMute = prompt('Duración del silencio (ej: 1 hora, 7 días, 2 semanas):');
+            if (!durMute) return;
+            body.durationSeconds = parseDuration(durMute);
+            if (!body.durationSeconds) return alert('Formato inválido');
+            body.reason = prompt('Motivo:');
+            if (!body.reason) return;
+            endpoint = '/api/moderation/mute';
+            break;
+          }
+          case 'warn':
+            body.message = prompt('Mensaje del aviso:');
+            if (!body.message) return;
+            endpoint = '/api/moderation/warn';
+            break;
+        }
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(body),
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) return alert('Error: ' + data.error);
+          alert(data.message || 'Acción completada');
+          openModPanel(); // refresh
+        })
+        .catch(e => alert('Error de conexión: ' + e.message));
+      }
+
+      function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+      function parseDuration(str) {
+        const m = str.match(/^(\d+)\s*(segundo|segundos|minuto|minutos|hora|horas|día|días|dia|dias|semana|semanas|mes|meses|año|años|ano|anos)$/i);
+        if (!m) return null;
+        const val = parseInt(m[1]);
+        const unit = m[2].toLowerCase();
+        const map = {
+          segundo: 1, segundos: 1, minuto: 60, minutos: 60, hora: 3600, horas: 3600,
+          día: 86400, días: 86400, dia: 86400, dias: 86400,
+          semana: 604800, semanas: 604800, mes: 2592000, meses: 2592000,
+          año: 31536000, años: 31536000, ano: 31536000, anos: 31536000,
+        };
+        return val * (map[unit] || 1);
+      }
+
+      // ── Crear lista personalizada ──
+      let listVisibility = 'public';
+
+      window.selectListVis = function(type) {
+        listVisibility = type;
+        document.querySelectorAll('#list-modal [name="list-vis"]').forEach(r => r.checked = r.value === type);
+      }
+
+      window.closeListModal = function() {
+        document.getElementById('list-modal').classList.remove('open');
+      }
+
+      window.confirmCreateList = function() {
+        const name = document.getElementById('list-name-input').value.trim();
+        if (!name) { document.getElementById('list-name-input').style.borderColor = 'var(--accent)'; return; }
+        closeListModal();
+        const visType = listVisibility === 'public' ? '🌍 Pública' : '🔒 Privada';
+        const mosaic = ['🔥','📖','⭐','💫','🎯','🌀','🌸','⚔'].sort(() => Math.random() - 0.5).slice(0, 4);
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        card.innerHTML = '<div class="list-card-mosaic">' +
+          mosaic.map(e => '<div class="list-cover-cell" style="background:linear-gradient(145deg,#0f0f1a,#1a1a2e);font-size:24px;">' + e + '</div>').join('') +
+          '</div><div class="list-card-body"><div class="list-card-name">' + escHtml(name) + '</div>' +
+          '<div class="list-card-desc" style="font-size:11px;color:var(--text-muted);font-style:italic;">Creada ahora</div>' +
+          '<div class="list-card-footer"><span class="list-card-count">0 títulos</span><span class="list-visibility">' + visType + '</span></div></div>';
+        makeListDraggable(card);
+        document.getElementById('btn-create-list').parentNode.insertBefore(card, document.getElementById('btn-create-list'));
+        document.getElementById('list-name-input').value = '';
+      }
+
+      document.getElementById('btn-create-list')?.addEventListener('click', function() {
+        document.getElementById('list-name-input').value = '';
+        document.getElementById('list-name-input').style.borderColor = 'var(--border)';
+        document.getElementById('list-modal').classList.add('open');
+        setTimeout(() => document.getElementById('list-name-input').focus(), 100);
+      });
+
+      // ── Drag & drop para reordenar listas ──
+      let dragSrcEl = null;
+
+      function makeListDraggable(card) {
+        card.draggable = true;
+        card.style.cursor = 'grab';
+        card.addEventListener('dragstart', function(e) {
+          dragSrcEl = this;
+          this.style.opacity = '0.4';
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', function() {
+          this.style.opacity = '1';
+          document.querySelectorAll('.lists-grid .list-card[draggable]').forEach(c => c.style.borderColor = '');
+          dragSrcEl = null;
+        });
+        card.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          this.style.borderColor = 'var(--accent)';
+        });
+        card.addEventListener('dragleave', function() {
+          this.style.borderColor = '';
+        });
+        card.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.style.borderColor = '';
+          if (dragSrcEl && dragSrcEl !== this) {
+            const parent = this.parentNode;
+            const all = [...parent.querySelectorAll('.list-card[draggable]')];
+            const fromIdx = all.indexOf(dragSrcEl);
+            const toIdx = all.indexOf(this);
+            if (fromIdx > -1 && toIdx > -1) {
+              if (fromIdx < toIdx) parent.insertBefore(dragSrcEl, this.nextSibling);
+              else parent.insertBefore(dragSrcEl, this);
+            }
+          }
+        });
+      }
+
+      // Make existing cards draggable
+      document.querySelectorAll('.lists-grid > .list-card').forEach(makeListDraggable);
+
+    </script>
+  <!-- MODAL: Crear lista -->
+  <div class="overlay-modal" id="list-modal">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-box-header">
+        <div class="modal-box-title">📋 Nueva lista</div>
+        <button class="modal-box-close" onclick="closeListModal()">&times;</button>
+      </div>
+      <div class="modal-box-body">
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Nombre de la lista</div>
+          <input type="text" id="list-name-input" placeholder="Ej: Mi top seinen, Favoritos, Pendientes..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:14px;font-family:var(--font-body);outline:none;box-sizing:border-box;transition:border-color .15s;" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Visibilidad</div>
+          <div style="display:flex;gap:10px;">
+            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgba(255,255,255,0.03);" id="list-vis-opt-public" onclick="selectListVis('public')">
+              <input type="radio" name="list-vis" value="public" checked style="accent-color:var(--accent);">
+              <div><div style="font-size:13px;font-weight:600;">🌍 Pública</div><div style="font-size:10px;color:var(--text-muted);">Visible para todos</div></div>
+            </label>
+            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgba(255,255,255,0.03);" id="list-vis-opt-private" onclick="selectListVis('private')">
+              <input type="radio" name="list-vis" value="private" style="accent-color:var(--accent);">
+              <div><div style="font-size:13px;font-weight:600;">🔒 Privada</div><div style="font-size:10px;color:var(--text-muted);">Solo tú</div></div>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-box-footer">
+        <button class="modal-btn secondary" onclick="closeListModal()">Cancelar</button>
+        <button class="modal-btn primary" onclick="confirmCreateList()" id="btn-create-list-confirm">Crear lista</button>
+      </div>
+    </div>
+  </div>
+  <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(6px);" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:18px;padding:32px;width:min(380px,90vw);box-shadow:0 24px 80px rgba(0,0,0,0.6);text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-bottom:4px;">CONFIRMAR</div>
+      <div class="confirm-msg" style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.5;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
+        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

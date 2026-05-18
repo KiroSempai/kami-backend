@@ -1,0 +1,17 @@
+{
+  "date": "2026-05-16",
+  "global": {
+    "id": 2165,
+    "date": "2026-05-15T22:00:00.000Z",
+    "total_users": 3,
+    "active_users": 0,
+    "new_users": 0,
+    "premium_users": 0,
+    "total_actions": 0,
+    "total_reads": 0,
+    "avg_chapters_per_user": "0.00",
+    "created_at": "2026-05-16T00:03:02.135Z",
+    "updated_at": "2026-05-16T23:59:59.887Z"
+  },
+  "createdAt": "2026-05-16T23:59:59.909Z"
+}

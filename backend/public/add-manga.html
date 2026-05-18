@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir manga-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/kmi-card.css">
+    <style>
+        :root {
+            --bg: #0d0d14;
+            --surface: #13131e;
+            --surface2: #1a1a28;
+            --border: rgba(255,255,255,0.07);
+            --accent: #e8334a;
+            --accent-gold: #f5c842;
+            --blue: #4c9df5;
+            --green: #2dca7a;
+            --purple: #a78bfa;
+            --text-primary: #f2f2fa;
+            --text-muted: #6b6b8a;
+            --radius: 12px;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
+
+        /* ── REST OF PAGE ── */
+
+        /* LAYOUT */
+        .editor-wrap { max-width:1100px; margin:0 auto; padding:40px 24px; display:grid; grid-template-columns:1fr 320px; gap:32px; align-items:start; }
+        @media(max-width:860px) { .editor-wrap { grid-template-columns:1fr; } }
+
+        /* CARD */
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; }
+        .card-title { font-family:var(--font-display); font-size:20px; letter-spacing:1px; margin-bottom:22px; display:flex; align-items:center; gap:10px; }
+        .card-title span { font-size:18px; }
+
+        /* FORM */
+        .field { margin-bottom:18px; }
+        .field label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+        .field input, .field textarea, .field select {
+            width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border);
+            border-radius:8px; color:var(--text-primary); font-family:var(--font-body); font-size:14px;
+            padding:10px 14px; transition:border-color .2s; outline:none;
+        }
+        .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+        .field textarea { resize:vertical; min-height:100px; line-height:1.6; }
+        .field select option { background:var(--surface2); }
+        .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .field-hint { font-size:11px; color:var(--text-muted); margin-top:4px; }
+        .required { color:var(--accent); margin-left:2px; }
+
+        /* GÉNEROS */
+        .genre-group-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+        .genre-group-list { display: flex; flex-direction: column; gap: 2px; }
+        .genre-check { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: all .15s; user-select: none; }
+        .genre-check:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+        .genre-check input[type="checkbox"] { appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; background: transparent; cursor: pointer; position: relative; flex-shrink: 0; transition: all .15s; }
+        .genre-check input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+        .genre-check input[type="checkbox"]:checked::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; }
+
+        /* ALT TITLES */
+        .alt-list { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+        .alt-item { display:flex; gap:6px; align-items:center; }
+        .alt-item input { flex:1; }
+        .btn-rm { background:rgba(232,51,74,0.15); border:1px solid rgba(232,51,74,0.3); color:var(--accent); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:13px; transition:all .18s; }
+        .btn-rm:hover { background:rgba(232,51,74,0.3); }
+        .btn-add-alt { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--text-muted); border-radius:8px; padding:8px 14px; font-size:12px; font-family:var(--font-body); cursor:pointer; transition:all .2s; width:100%; margin-top:4px; }
+        .btn-add-alt:hover { color:var(--text-primary); border-color:rgba(255,255,255,0.2); }
+
+        /* TOGGLE */
+        .toggle-row { display:flex; align-items:center; justify-content:space-between; }
+        .toggle-label { font-size:14px; color:var(--text-primary); }
+        .toggle { position:relative; width:44px; height:24px; }
+        .toggle input { opacity:0; width:0; height:0; }
+        .toggle-track { position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:.25s; }
+        .toggle input:checked + .toggle-track { background:var(--accent); }
+        .toggle-track::before { content:''; position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.25s; }
+        .toggle input:checked + .toggle-track::before { transform:translateX(20px); }
+
+        /* COVER PREVIEW */
+        .cover-preview { width:100%; aspect-ratio:3/4; background:var(--surface2); border-radius:10px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:12px; position:relative; }
+        .cover-preview img { width:100%; height:100%; object-fit:cover; }
+        .cover-placeholder { text-align:center; color:var(--text-muted); font-size:13px; }
+        .cover-placeholder .icon { font-size:40px; margin-bottom:8px; display:block; }
+
+        /* PREVIEW CARD */
+        .preview-card { background:var(--surface2); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+        .preview-cover { width:100%; height:160px; object-fit:cover; background:linear-gradient(135deg,#1a1a2e,#2d1040); display:flex; align-items:center; justify-content:center; font-size:50px; }
+        .preview-body { padding:14px; }
+        .preview-title { font-family:var(--font-display); font-size:18px; letter-spacing:1px; margin-bottom:4px; }
+        .preview-meta { font-size:11px; color:var(--text-muted); margin-bottom:8px; }
+        .preview-genres { display:flex; flex-wrap:wrap; gap:4px; }
+        .preview-genre { background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.25); color:var(--accent); border-radius:4px; padding:2px 8px; font-size:10px; font-weight:600; }
+        .preview-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; }
+        .badge-manga { background:rgba(76,157,245,0.15); color:var(--blue); border:1px solid rgba(76,157,245,0.3); }
+        .badge-manhwa { background:rgba(45,202,122,0.15); color:var(--green); border:1px solid rgba(45,202,122,0.3); }
+        .badge-manhua { background:rgba(251,146,60,0.15); color:#fb923c; border:1px solid rgba(251,146,60,0.3); }
+        .badge-oneshot { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
+
+        /* SUBMIT */
+        .btn-submit { width:100%; padding:14px; background:linear-gradient(135deg,var(--accent),#c0223a); border:none; border-radius:10px; color:#fff; font-family:var(--font-display); font-size:20px; letter-spacing:2px; cursor:pointer; transition:all .22s; margin-top:12px; }
+        .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(232,51,74,0.4); }
+        .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+        /* STATUS */
+        .status-box { padding:14px 16px; border-radius:10px; font-size:14px; margin-top:14px; display:none; }
+        .status-box.success { background:rgba(45,202,122,0.12); border:1px solid rgba(45,202,122,0.3); color:var(--green); }
+        .status-box.error { background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.3); color:var(--accent); }
+        .status-box.show { display:block; }
+        .status-id { font-family:var(--font-display); font-size:22px; letter-spacing:2px; margin-top:6px; }
+
+        /* SECTION HEADER */
+        .section-header { font-family:var(--font-display); font-size:28px; letter-spacing:2px; margin-bottom:6px; }
+        .section-sub { font-size:13px; color:var(--text-muted); margin-bottom:28px; }
+        .prov-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(245,200,66,0.12); border:1px solid rgba(245,200,66,0.3); color:var(--accent-gold); border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; margin-bottom:16px; }
+
+        /* ── DUPLICATE MODAL ── */
+        .dup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+        .dup-overlay.show { display:flex; }
+        .dup-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; width:90%; max-width:460px; text-align:center; }
+        .dup-icon { font-size:48px; margin-bottom:12px; display:block; }
+        .dup-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; margin-bottom:8px; }
+        .dup-desc { color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:6px; }
+        .dup-match { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; background:rgba(232,51,74,0.1); border:1px solid rgba(232,51,74,0.2); border-radius:8px; margin:12px 0 20px; font-size:14px; font-weight:600; }
+        .dup-match-img { width:32px; height:44px; border-radius:4px; object-fit:cover; background:var(--surface2); }
+        .dup-actions { display:flex; gap:10px; }
+        .dup-btn { flex:1; padding:12px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+        .dup-btn.danger { background:var(--accent); color:#fff; }
+        .dup-btn.danger:hover { opacity:.9; }
+        .dup-btn.secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
+        .dup-btn.secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+    </style>
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div style="max-width:1100px;margin:40px auto;padding:0 24px;">
+    <div class="prov-badge">⚠ Acceso provisional — Solo scans autorizados</div>
+    <h1 class="section-header">AÑADIR MANGA AL CATÁLOGO</h1>
+    <p class="section-sub">Completa todos los campos obligatorios. El ID se genera automáticamente como número de serie (KMI-0000001).</p>
+</div>
+
+<div class="editor-wrap">
+    <!-- FORMULARIO -->
+    <div>
+        <form id="manga-form">
+
+            <!-- Información básica -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title"><span>📖</span> Información básica</div>
+
+                <div class="field">
+                    <label>Título principal <span class="required">*</span></label>
+                    <input type="text" id="f-title" placeholder="Ej: Berserk" required>
+                    <div class="field-hint">El ID se genera automáticamente como número de serie único (KMI-0000001, KMI-0000002…)</div>
+                </div>
+
+                <div class="field">
+                    <label>Títulos alternativos</label>
+                    <div class="alt-list" id="alt-list"></div>
+                    <button type="button" class="btn-add-alt" onclick="addAltTitle()">+ Añadir título alternativo</button>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Tipo <span class="required">*</span></label>
+                        <select id="f-type" required>
+                            <option value="">— Seleccionar —</option>
+                            <option value="manga">Manga 🇯🇵</option>
+                            <option value="manhwa">Manhwa 🇰🇷</option>
+                            <option value="manhua">Manhua 🇨🇳</option>
+                            <option value="oneshot">One-shot</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Estado <span class="required">*</span></label>
+                        <select id="f-status" required>
+                            <option value="">— Seleccionar —</option>
+                            <option value="ongoing">En emisión</option>
+                            <option value="completed">Completado</option>
+                            <option value="hiatus">En hiato</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Descripción / Sinopsis</label>
+                    <textarea id="f-desc" placeholder="Escribe una sinopsis…"></textarea>
+                </div>
+
+                <div class="field">
+                    <div class="toggle-row">
+                        <span class="toggle-label">Es One-shot (obra de un solo capítulo)</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="f-oneshot" onchange="document.getElementById('f-chapters').disabled=this.checked;if(this.checked)document.getElementById('f-chapters').value=1;">
+                            <div class="toggle-track"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Autores y detalles -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title"><span>✍️</span> Autores y detalles</div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Autor (Historia) <span class="required">*</span></label>
+                        <input type="text" id="f-author" placeholder="Ej: Kentaro Miura" required>
+                    </div>
+                    <div class="field">
+                        <label>Artista (Dibujo)</label>
+                        <input type="text" id="f-artist" placeholder="Si difiere del autor">
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Target demográfico</label>
+                        <select id="f-demo">
+                            <option value="">— Ninguno / Desconocido —</option>
+                            <option value="shonen">Shōnen (jóvenes)</option>
+                            <option value="shoujo">Shōjo (chicas)</option>
+                            <option value="seinen">Seinen (adultos)</option>
+                            <option value="josei">Josei (mujeres adultas)</option>
+                            <option value="kodomomuke">Kodomomuke (infantil)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Capítulos totales</label>
+                        <input type="number" id="f-chapters" min="0" placeholder="0 = desconocido">
+                        <div class="field-hint">Estimado si está en emisión</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Géneros -->
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title"><span>🏷️</span> Géneros</div>
+                <div class="adv-section">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;" id="add-genre-groups">
+                        <div>
+                            <div class="genre-group-title">Acción y Aventura</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Acción"> Acción</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Aventura"> Aventura</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Artes Marciales"> Artes Marciales</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Militar"> Militar</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Drama y Romance</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Drama"> Drama</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Romance"> Romance</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Slice of Life"> Slice of Life</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Tragedia"> Tragedia</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Fantasía y Ciencia Ficción</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Fantasía"> Fantasía</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Isekai"> Isekai</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Ciencia Ficción"> Ciencia Ficción</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Mecha"> Mecha</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Sistema"> Sistema</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Dark Fantasy"> Dark Fantasy</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Comedia y Costumbrista</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Comedia"> Comedia</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Escolar"> Escolar</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Recuentos de la vida"> Recuentos de la vida</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Deportes"> Deportes</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Terror y Suspenso</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Horror"> Horror</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Misterio"> Misterio</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Thriller"> Thriller</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Psicológico"> Psicológico</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Sobrenatural"> Sobrenatural</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Historia y Cultura</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Histórico"> Histórico</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Historia"> Historia</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Música"> Música</label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="genre-group-title">Demográficos y Especiales</div>
+                            <div class="genre-group-list">
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Seinen"> Seinen</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Shonen"> Shonen</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Shoujo"> Shoujo</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Josei"> Josei</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Ecchi"> Ecchi</label>
+                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Harem"> Harem</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portada -->
+            <div class="card">
+                <div class="card-title"><span>🖼️</span> Portada</div>
+                <div class="field">
+                    <label>Imagen de portada</label>
+                    <input type="file" id="f-cover" accept="image/*" onchange="updateCoverPreview(this)">
+                    <div class="field-hint">Imagen en formato vertical (ratio 3:4 recomendado, max 10MB)</div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- SIDEBAR: PREVIEW + SUBMIT -->
+    <div>
+        <div class="card" style="margin-bottom:20px; position:sticky; top:80px;">
+            <div class="card-title"><span>👁️</span> Vista previa</div>
+
+            <div class="preview-card">
+                <div class="preview-cover" id="preview-cover">📖</div>
+                <div class="preview-body">
+                    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+                        <span class="preview-badge badge-manga" id="preview-type-badge">MANGA</span>
+                        <span id="preview-status" style="font-size:10px;color:var(--text-muted);">En emisión</span>
+                    </div>
+                    <div class="preview-title" id="preview-title">Título del manga</div>
+                    <div class="preview-meta" id="preview-meta">Autor · ? caps</div>
+                    <div class="preview-genres" id="preview-genres"></div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">ID generado (secuencial)</div>
+                <div style="font-family:var(--font-display);font-size:18px;letter-spacing:1px;color:var(--accent-gold);" id="preview-id">Cargando…</div>
+            </div>
+
+            <button class="btn-submit" id="btn-submit" type="button" onclick="submitManga()">
+                PUBLICAR EN CATÁLOGO
+            </button>
+
+            <div class="status-box" id="status-box">
+                <div id="status-msg"></div>
+                <div class="status-id" id="status-id"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DUPLICATE CONFIRMATION MODAL -->
+<div class="dup-overlay" id="dup-overlay">
+    <div class="dup-box">
+        <span class="dup-icon">⚠️</span>
+        <div class="dup-title">OBRA DUPLICADA</div>
+        <div class="dup-desc">Ya existe una obra registrada con este nombre:</div>
+        <div class="dup-match" id="dup-match-display"></div>
+        <div class="dup-desc" style="margin-bottom:16px;">¿Estás seguro de que quieres crearla de todas formas?</div>
+        <div class="dup-actions">
+            <button class="dup-btn secondary" onclick="closeDupModal()">Volver atrás</button>
+            <button class="dup-btn danger" onclick="confirmDupSubmit()">Sí, crear</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function getAddGenres() {
+    return [...document.querySelectorAll('#add-genre-groups input[name="add-genre"]:checked')]
+        .map(cb => cb.value);
+}
+
+// Títulos alternativos
+let altCount = 0;
+function addAltTitle() {
+    const list = document.getElementById('alt-list');
+    const id = `alt-${altCount++}`;
+    const div = document.createElement('div');
+    div.className = 'alt-item';
+    div.id = id;
+    div.innerHTML = `<input type="text" placeholder="Título en otro idioma…"><button type="button" class="btn-rm" onclick="document.getElementById('${id}').remove()">✕</button>`;
+    list.appendChild(div);
+}
+
+// ID secuencial actual (se obtiene del servidor)
+let currentNextId = 'KMI-???????';
+
+// Obtener el siguiente ID disponible del servidor
+async function fetchNextId() {
+    try {
+        const res = await fetch('/api/manga/next-id');
+        const data = await res.json();
+        currentNextId = data.nextId;
+    } catch {
+        currentNextId = 'KMI-???????';
+    }
+    document.getElementById('preview-id').textContent = currentNextId;
+}
+
+// Actualizar preview en tiempo real
+function updatePreview() {
+    const title = document.getElementById('f-title').value || 'Título del manga';
+    const type  = document.getElementById('f-type').value || 'manga';
+    const status= document.getElementById('f-status').value;
+    const author= document.getElementById('f-author').value || 'Autor';
+    const chapters = document.getElementById('f-chapters').value;
+
+    document.getElementById('preview-title').textContent = title;
+    document.getElementById('preview-meta').textContent = `${author} · ${chapters || '?'} caps`;
+
+    const statusLabels = { ongoing:'En emisión', completed:'Completado', hiatus:'En hiato', cancelled:'Cancelado' };
+    document.getElementById('preview-status').textContent = statusLabels[status] || '';
+
+    const badge = document.getElementById('preview-type-badge');
+    badge.textContent = type.toUpperCase();
+    badge.className = `preview-badge badge-${type || 'manga'}`;
+}
+
+function updateCoverPreview(input) {
+    const el = document.getElementById('preview-cover');
+    el.style.backgroundImage = '';
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    if (input?.files?.[0]) {
+        el.style.backgroundImage = `url(${URL.createObjectURL(input.files[0])})`;
+        el.textContent = '';
+    } else {
+        el.textContent = '📖';
+    }
+}
+
+function updatePreviewGenres() {
+    const el = document.getElementById('preview-genres');
+    el.innerHTML = '';
+    getAddGenres().slice(0,4).forEach(g => {
+        const span = document.createElement('span');
+        span.className = 'preview-genre';
+        span.textContent = g;
+        el.appendChild(span);
+    });
+}
+
+// Live bindings
+['f-title','f-type','f-status','f-author','f-chapters'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+});
+document.querySelectorAll('#add-genre-groups input[name="add-genre"]').forEach(cb => {
+    cb.addEventListener('change', updatePreviewGenres);
+});
+updatePreview();
+fetchNextId();
+
+// Recolectar títulos alternativos
+function getAltTitles() {
+    return [...document.querySelectorAll('#alt-list .alt-item input')]
+        .map(i => i.value.trim()).filter(Boolean);
+}
+
+let pendingFormData = null;
+
+// Submit con FormData (multipart)
+async function submitManga() {
+    const btn = document.getElementById('btn-submit');
+    const box = document.getElementById('status-box');
+    box.className = 'status-box';
+
+    const title  = document.getElementById('f-title').value.trim();
+    const type   = document.getElementById('f-type').value;
+    const estatus = document.getElementById('f-status').value;
+    const author = document.getElementById('f-author').value.trim();
+
+    if (!title) { showStatus('error', 'El título es obligatorio'); return; }
+    if (!type)  { showStatus('error', 'Selecciona el tipo'); return; }
+    if (!estatus){ showStatus('error', 'Selecciona el estado'); return; }
+    if (!author){ showStatus('error', 'El autor es obligatorio'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'VERIFICANDO…';
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('type', type);
+    formData.append('status', estatus);
+    formData.append('author', author);
+    formData.append('artist', document.getElementById('f-artist').value.trim() || author);
+    formData.append('description', document.getElementById('f-desc').value.trim());
+    formData.append('demographicTarget', document.getElementById('f-demo').value);
+    formData.append('totalChapters', document.getElementById('f-chapters').value || '0');
+    formData.append('isOneshot', document.getElementById('f-oneshot').checked ? 'true' : 'false');
+    formData.append('genres', JSON.stringify(getAddGenres()));
+    formData.append('alternativeTitles', JSON.stringify(getAltTitles()));
+
+    const fileInput = document.getElementById('f-cover');
+    if (fileInput.files?.[0]) {
+        formData.append('coverImage', fileInput.files[0]);
+    }
+
+    // Verificar si ya existe una obra con el mismo título
+    try {
+        const searchRes = await fetch(`/api/manga/search?q=${encodeURIComponent(title)}&limit=5`);
+        const searchData = await searchRes.json();
+        const exactMatch = (searchData.results || []).find(m =>
+            m.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (exactMatch) {
+            btn.disabled = false;
+            btn.textContent = 'PUBLICAR EN CATÁLOGO';
+            pendingFormData = formData;
+            const matchEl = document.getElementById('dup-match-display');
+            const coverImg = exactMatch.cover
+                ? `<img src="${exactMatch.cover}" class="dup-match-img" onerror="this.style.display='none'">`
+                : '';
+            matchEl.innerHTML = `${coverImg}<span>${exactMatch.title} (${exactMatch.id})</span>`;
+            document.getElementById('dup-overlay').classList.add('show');
+            return;
+        }
+    } catch {}
+
+    // No hay duplicado → publicar directamente
+    executeSubmit(formData, btn);
+}
+
+function closeDupModal() {
+    document.getElementById('dup-overlay').classList.remove('show');
+    pendingFormData = null;
+}
+
+function confirmDupSubmit() {
+    document.getElementById('dup-overlay').classList.remove('show');
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'PUBLICANDO…';
+    executeSubmit(pendingFormData, btn);
+}
+
+async function executeSubmit(formData, btn) {
+    const box = document.getElementById('status-box');
+    try {
+        const res = await fetch('/api/manga', {
+            method: 'POST',
+            body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error del servidor');
+
+        showStatus('success', `✅ ${data.message}`, data.manga.id);
+        setTimeout(() => {
+            window.location.href = `/manga/${data.manga.id}/edit`;
+        }, 1500);
+    } catch (err) {
+        showStatus('error', `❌ ${err.message}`);
+        btn.disabled = false;
+        btn.textContent = 'PUBLICAR EN CATÁLOGO';
+    }
+}
+
+function showStatus(type, msg, id) {
+    const box = document.getElementById('status-box');
+    document.getElementById('status-msg').textContent = msg;
+    document.getElementById('status-id').textContent = id ? `ID: ${id}` : '';
+    box.className = `status-box ${type} show`;
+}
+</script>
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

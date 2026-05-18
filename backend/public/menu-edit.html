@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de edición-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/kmi-card.css">
+    <style>
+        :root {
+            --bg: #0d0d14;
+            --surface: #13131e;
+            --surface2: #1a1a28;
+            --border: rgba(255,255,255,0.07);
+            --accent: #e8334a;
+            --accent-gold: #f5c842;
+            --blue: #4c9df5;
+            --green: #2dca7a;
+            --text-primary: #f2f2fa;
+            --text-muted: #6b6b8a;
+            --radius: 12px;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+
+        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
+        .page-title { font-family:var(--font-display); font-size:36px; letter-spacing:2px; }
+        .page-subtitle { color:var(--text-muted); font-size:14px; margin-top:4px; }
+        .btn-add { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:linear-gradient(135deg,var(--accent),#c0223a); border:none; border-radius:10px; color:#fff; font-family:var(--font-display); font-size:18px; letter-spacing:1px; cursor:pointer; text-decoration:none; transition:all .22s; }
+        .btn-add:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(232,51,74,0.4); }
+
+        .search-section { margin-bottom:32px; }
+        .search-bar { display:flex; gap:12px; }
+        .search-input { flex:1; padding:16px 20px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:12px; color:var(--text-primary); font-family:var(--font-body); font-size:16px; outline:none; transition:border-color .2s; }
+        .search-input:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+        .search-input::placeholder { color:var(--text-muted); }
+        .btn-search { padding:16px 28px; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
+        .btn-search:hover { border-color:var(--accent); background:rgba(232,51,74,0.08); color:var(--accent); }
+
+        .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .results-count { font-size:14px; color:var(--text-muted); }
+        .kmi-grid { margin-bottom:0; }
+
+        .manga-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:all .25s; cursor:pointer; text-decoration:none; color:var(--text-primary); }
+        .manga-card:hover { border-color:var(--accent); transform:translateY(-6px); box-shadow:0 12px 40px rgba(232,51,74,0.15); }
+        .manga-card-cover { width:100%; aspect-ratio:3/4; background:var(--surface2); overflow:hidden; position:relative; }
+        .manga-card-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+        .manga-card-cover .placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; color:var(--text-muted); background:linear-gradient(145deg,var(--surface2),var(--surface)); }
+        .manga-card-body { padding:12px 14px 14px; }
+        .manga-card-title { font-size:13px; font-weight:600; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .manga-card-meta { font-size:11px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; }
+        .manga-card-rating { color:var(--accent-gold); font-weight:700; }
+        .manga-card-type { padding:2px 8px; border-radius:4px; font-size:9px; font-weight:700; text-transform:uppercase; }
+        .type-manga { background:rgba(76,157,245,0.15); color:var(--blue); border:1px solid rgba(76,157,245,0.3); }
+        .type-manhwa { background:rgba(45,202,122,0.15); color:var(--green); border:1px solid rgba(45,202,122,0.3); }
+        .type-manhua { background:rgba(251,146,60,0.15); color:#fb923c; border:1px solid rgba(251,146,60,0.3); }
+        .type-oneshot { background:rgba(167,139,250,0.15); color:#a78bfa; border:1px solid rgba(167,139,250,0.3); }
+
+        .empty-state { text-align:center; padding:80px 24px; }
+        .empty-icon { font-size:64px; margin-bottom:16px; display:block; opacity:0.4; }
+        .empty-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; margin-bottom:8px; }
+        .empty-desc { color:var(--text-muted); font-size:14px; max-width:400px; margin:0 auto; line-height:1.6; }
+
+        .loading-state { text-align:center; padding:60px; color:var(--text-muted); }
+        .spinner { display:inline-block; width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loading-text { margin-top:12px; font-size:14px; }
+    </style>
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div class="container">
+        <div class="page-header">
+            <div>
+                <div class="page-title">PANEL DE EDICIÓN</div>
+                <div class="page-subtitle">Busca mangas existentes para editar o añade uno nuevo al catálogo</div>
+            </div>
+            <a href="/add-manga" class="btn-add">+ AÑADIR MANGA</a>
+        </div>
+
+        <div class="search-section">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="search-input" placeholder="Busca un manga por nombre, autor o título alternativo…" autocomplete="off">
+                <button class="btn-search" id="btn-search">Buscar</button>
+            </div>
+        </div>
+
+        <div id="results-area">
+            <div class="empty-state" id="empty-state">
+                <span class="empty-icon">🔍</span>
+                <div class="empty-title">BUSCA UN MANGA</div>
+                <div class="empty-desc">Escribe el nombre del manga que quieras editar. Los resultados aparecerán aquí en formato cartelera.</div>
+            </div>
+            <div id="results-content" style="display:none;">
+                <div class="results-header">
+                    <div class="results-count" id="results-count"></div>
+                </div>
+                <div class="kmi-grid" id="manga-grid"></div>
+            </div>
+            <div class="loading-state" id="loading-state" style="display:none;">
+                <div class="spinner"></div>
+                <div class="loading-text">Buscando mangas…</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var searchInput = document.getElementById('search-input');
+        var btnSearch = document.getElementById('btn-search');
+        var mangaGrid = document.getElementById('manga-grid');
+        var resultsCount = document.getElementById('results-count');
+        var emptyState = document.getElementById('empty-state');
+        var resultsContent = document.getElementById('results-content');
+        var loadingState = document.getElementById('loading-state');
+        var debounceTimer = null;
+
+        function getQueryParam(name) {
+            var params = new URLSearchParams(window.location.search);
+            return params.get(name) || '';
+        }
+
+        var initialQuery = getQueryParam('q');
+        if (initialQuery) {
+            searchInput.value = initialQuery;
+            doSearch(initialQuery);
+        }
+
+        function doSearchFromInput() {
+            var q = searchInput.value.trim();
+            if (q.length < 1) return;
+            var newUrl = q ? '?q=' + encodeURIComponent(q) : window.location.pathname;
+            window.history.replaceState(null, '', newUrl);
+            doSearch(q);
+        }
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doSearchFromInput();
+        });
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            var q = this.value.trim();
+            if (q.length < 1) { showEmpty(); return; }
+            debounceTimer = setTimeout(function() { doSearchFromInput(); }, 400);
+        });
+
+        btnSearch.addEventListener('click', doSearchFromInput);
+
+        async function doSearch(q) {
+            if (!q || q.length < 1) { showEmpty(); return; }
+
+            emptyState.style.display = 'none';
+            resultsContent.style.display = 'none';
+            loadingState.style.display = 'block';
+
+            try {
+                var result = await kamiOffline.safeFetch('/api/manga/search?q=' + encodeURIComponent(q) + '&limit=50', {}, { cacheKey: 'search_' + q, maxAge: 60000 });
+                var results = result.ok ? (result.data.results || []) : [];
+
+                loadingState.style.display = 'none';
+
+                if (results.length === 0) {
+                    emptyState.querySelector('.empty-icon').textContent = result.fromCache ? '⚠️' : '📭';
+                    emptyState.querySelector('.empty-title').textContent = result.fromCache ? 'SIN CONEXIÓN' : 'SIN RESULTADOS';
+                    emptyState.querySelector('.empty-desc').textContent = result.fromCache ? 'No hay datos guardados localmente. Conéctate al servidor e intenta de nuevo.' : 'No se encontraron mangas para "' + q + '". Prueba con otro t\u00e9rmino.';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                resultsCount.textContent = results.length + ' manga' + (results.length !== 1 ? 's' : '') + ' encontrado' + (results.length !== 1 ? 's' : '');
+                mangaGrid.innerHTML = results.map(function(m) {
+                    return window.kamiMangaCard(m, { link: '/manga/' + m.id + '/edit' });
+                }).join('');
+                resultsContent.style.display = 'block';
+            } catch (err) {
+                loadingState.style.display = 'none';
+                emptyState.querySelector('.empty-icon').textContent = '⚠️';
+                emptyState.querySelector('.empty-title').textContent = 'ERROR';
+                emptyState.querySelector('.empty-desc').textContent = err.message || 'Error al buscar. Verifica que el servidor est\u00e9 corriendo en localhost:4000.';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function showEmpty() {
+            loadingState.style.display = 'none';
+            resultsContent.style.display = 'none';
+            emptyState.querySelector('.empty-icon').textContent = '🔍';
+            emptyState.querySelector('.empty-title').textContent = 'BUSCA UN MANGA';
+            emptyState.querySelector('.empty-desc').textContent = 'Escribe el nombre del manga que quieras editar. Los resultados aparecer\u00e1n aqu\u00ed en formato cartelera.';
+            emptyState.style.display = 'block';
+        }
+    </script>
+  <script src="/js/offline.js?v=2"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

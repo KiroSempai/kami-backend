@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAMI — Lee el Universo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #07070e;
+      --bg-surface: #0f0f1a;
+      --bg-card: #14141f;
+      --bg-card-hover: #1a1a2a;
+      --accent: #e8334a;
+      --accent-glow: rgba(232, 51, 74, 0.15);
+      --accent-gold: #f5c842;
+      --accent-gold-glow: rgba(245, 200, 66, 0.12);
+      --text-primary: #f2f2fa;
+      --text-secondary: #8888a0;
+      --text-muted: #4a4a62;
+      --border: rgba(255, 255, 255, 0.07);
+      --border-hover: rgba(255, 255, 255, 0.14);
+      --red-badge: #e8334a;
+      --green: #2dca7a;
+      --blue: #4c9df5;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-jp: 'Noto Sans JP', sans-serif;
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-muted);
+      border-radius: 10px;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(7, 7, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+    }
+
+    .nav-logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-links a.active {
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 7px 14px;
+      width: 210px;
+      transition: var(--transition);
+      cursor: text;
+    }
+
+    .nav-search:hover {
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-search svg {
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .nav-search span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .nav-btn {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+    }
+
+    .nav-btn-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .nav-btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .nav-btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .nav-btn-primary:hover {
+      background: #c8283d;
+    }
+
+    .nav-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e8334a, #f5c842);
+      border: 2px solid rgba(232, 51, 74, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      height: 580px;
+      margin-top: 60px;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 65% 50%, rgba(232, 51, 74, 0.12) 0%, transparent 70%),
+        linear-gradient(180deg, transparent 40%, var(--bg-base) 100%),
+        linear-gradient(90deg, var(--bg-base) 0%, transparent 50%);
+      z-index: 1;
+    }
+
+    .hero-covers {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 58%;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 60px 40px 60px 0;
+      mask-image: linear-gradient(90deg, transparent 0%, black 20%, black 80%, transparent 100%);
+    }
+
+    .hero-cover {
+      flex-shrink: 0;
+      height: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .hero-cover:nth-child(1) {
+      width: 150px;
+      transform: translateY(15px);
+    }
+
+    .hero-cover:nth-child(2) {
+      width: 180px;
+    }
+
+    .hero-cover:nth-child(3) {
+      width: 150px;
+      transform: translateY(10px);
+    }
+
+    .hero-cover:nth-child(4) {
+      width: 130px;
+      transform: translateY(20px);
+      opacity: 0.6;
+    }
+
+    .hero-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-cover-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+    }
+
+    .hero-cover-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.3;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-cover-tag {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 52%;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 0 0 60px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(232, 51, 74, 0.15);
+      border: 1px solid rgba(232, 51, 74, 0.3);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      width: fit-content;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-jp);
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 3px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 400px;
+      margin-bottom: 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-hero-primary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 13px 24px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      letter-spacing: 0.3px;
+    }
+
+    .btn-hero-primary:hover {
+      background: #c8283d;
+      transform: translateY(-1px);
+    }
+
+    .btn-hero-secondary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 13px 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 28px;
+      margin-top: 36px;
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--text-primary);
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+
+    .hero-stat-divider {
+      width: 1px;
+      background: var(--border);
+    }
+
+    /* ─── SECTION WRAPPER ─── */
+    .section {
+      padding: 0 60px;
+      margin-bottom: 52px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+    }
+
+    .section-title-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .section-title-icon.red {
+      background: rgba(232, 51, 74, 0.2);
+      color: var(--accent);
+    }
+
+    .section-title-icon.gold {
+      background: rgba(245, 200, 66, 0.15);
+      color: var(--accent-gold);
+    }
+
+    .section-title-icon.blue {
+      background: rgba(76, 157, 245, 0.15);
+      color: var(--blue);
+    }
+
+    .section-title-icon.green {
+      background: rgba(45, 202, 122, 0.15);
+      color: var(--green);
+    }
+
+    .section-see-all {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .section-see-all:hover {
+      color: var(--accent);
+    }
+
+    /* ─── CONTINUE READING ─── */
+    .continue-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .continue-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .continue-card {
+      flex-shrink: 0;
+      width: 300px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .continue-card:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .continue-card-thumb {
+      width: 80px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .continue-card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .continue-card-body {
+      padding: 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .continue-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .continue-card-chapter {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .continue-progress-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .continue-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 10px;
+    }
+
+    .continue-progress-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .continue-btn {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 7px 0;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: var(--transition);
+    }
+
+    .continue-btn:hover {
+      background: #c8283d;
+    }
+
+    .continue-new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── MANGA GRID ─── */
+    .manga-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 16px;
+    }
+
+    .manga-card {
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .manga-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .manga-card:hover .manga-card-cover img {
+      filter: brightness(1.1);
+    }
+
+    .manga-card-cover {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      aspect-ratio: 2/3;
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .manga-card-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: 0.3s ease;
+    }
+
+    .manga-card-badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-hot {
+      background: rgba(232, 51, 74, 0.9);
+      color: #fff;
+    }
+
+    .badge-new {
+      background: rgba(76, 157, 245, 0.9);
+      color: #fff;
+    }
+
+    .badge-update {
+      background: rgba(45, 202, 122, 0.85);
+      color: #fff;
+    }
+
+    .badge-nsfw {
+      background: rgba(245, 200, 66, 0.9);
+      color: #000;
+    }
+
+    .badge-complete {
+      background: rgba(120, 80, 255, 0.9);
+      color: #fff;
+    }
+
+    .badge-exclusive {
+      background: rgba(255, 165, 0, 0.9);
+      color: #fff;
+    }
+
+    .manga-card-rating {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      border-radius: 5px;
+      padding: 3px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    .manga-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .manga-card-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .manga-card-genre {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .manga-card-genre span {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ─── LATEST UPDATES ─── */
+    .updates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 8px;
+    }
+
+    .update-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .update-item:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+    }
+
+    .update-cover {
+      width: 44px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+    }
+
+    .update-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .update-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .update-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .update-chapters {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .chapter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .chapter-chip:hover {
+      background: rgba(232, 51, 74, 0.15);
+      border-color: rgba(232, 51, 74, 0.3);
+      color: var(--accent);
+    }
+
+    .chapter-chip.new {
+      border-color: rgba(45, 202, 122, 0.3);
+      color: var(--green);
+      background: rgba(45, 202, 122, 0.08);
+    }
+
+    .update-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .update-scan {
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 2px 7px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    /* ─── FILTERS BAR ─── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font-body);
+    }
+
+    .filter-chip:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .filter-chip-count {
+      font-size: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 1px 5px;
+    }
+
+    /* ─── FEATURES STRIP ─── */
+    .features-strip {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 60px;
+      margin-bottom: 52px;
+    }
+
+    .features-title {
+      font-family: var(--font-display);
+      font-size: 42px;
+      letter-spacing: 1px;
+      text-align: center;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .features-subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-item {
+      padding: 28px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: var(--transition);
+      cursor: default;
+    }
+
+    .feature-item:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-card-hover);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+
+    .feature-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ─── RANKINGS ─── */
+    .rankings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .ranking-col {}
+
+    .ranking-col-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .ranking-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .ranking-num {
+      font-family: var(--font-display);
+      font-size: 22px;
+      min-width: 30px;
+      line-height: 1;
+    }
+
+    .ranking-num.top1 {
+      color: var(--accent-gold);
+    }
+
+    .ranking-num.top2 {
+      color: #c0c0c0;
+    }
+
+    .ranking-num.top3 {
+      color: #cd7f32;
+    }
+
+    .ranking-num.other {
+      color: var(--text-muted);
+    }
+
+    .ranking-cover {
+      width: 36px;
+      height: 50px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--bg-card);
+    }
+
+    .ranking-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ranking-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .ranking-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ranking-trend {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .ranking-trend.up {
+      color: var(--green);
+    }
+
+    .ranking-trend.down {
+      color: var(--accent);
+    }
+
+    .ranking-trend.same {
+      color: var(--text-muted);
+    }
+
+    /* ─── PROMO BANNER ─── */
+    .promo-banner {
+      margin: 0 60px 52px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, #1a0810 0%, #0f0515 50%, #060b1a 100%);
+      border: 1px solid rgba(232, 51, 74, 0.2);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .promo-banner::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: 100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(232, 51, 74, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .promo-left {
+      z-index: 1;
+    }
+
+    .promo-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 200, 66, 0.15);
+      border: 1px solid rgba(245, 200, 66, 0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .promo-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+
+    .promo-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 380px;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .promo-features {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .promo-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .promo-feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .promo-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      z-index: 1;
+    }
+
+    .btn-promo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-gold);
+      color: #0a0a0a;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 800;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+      letter-spacing: 0.3px;
+    }
+
+    .btn-promo:hover {
+      background: #e6ba30;
+      transform: translateY(-1px);
+    }
+
+    .promo-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      padding: 40px 60px 28px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 32px;
+    }
+
+    .footer-brand-logo {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-brand-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 280px;
+      margin-bottom: 16px;
+    }
+
+    .footer-legal-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      line-height: 1.5;
+    }
+
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 8px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-copy span {
+      color: var(--accent);
+    }
+
+    .footer-legal-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-legal-links a {
+      font-size: 11px;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .footer-legal-links a:hover {
+      color: var(--text-secondary);
+    }
+
+    /* ─── UTILITY ─── */
+    .dot-sep {
+      color: var(--text-muted);
+      font-size: 8px;
+    }
+
+    .placeholder-img {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ─── ANIMATE ─── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-content>* {
+      animation: fadeUp 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .hero-content>*:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .hero-content>*:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .hero-content>*:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .hero-content>*:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+
+    .hero-content>*:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .hero-content>*:nth-child(6) {
+      animation-delay: 0.3s;
+    }
+
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+      background-size: 160px;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<!-- ═══════════ NAV ═══════════ -->
+  <div class="nav-right">
+    <div class="nav-search">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <span>Buscar manga...</span>
+    </div>
+
+    <div id="kami-nav-right"></div>
+  </div>
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+
+    <div class="hero-covers">
+      <!-- Cover 1 -->
+      <div class="hero-cover">
+        <div class="placeholder-img"
+          style="background: linear-gradient(145deg,#1a1028,#2d1040); color: #8b68c0; flex-direction:column; gap:6px;">
+          <span style="font-size:28px;">⚔</span><span>VAGABOND</span>
+        </div>
+        <div class="hero-cover-overlay">
+          <div>
+            <div class="hero-cover-tag">Seinen</div>
+            <div class="hero-cover-title">Vagabond</div>
+          </div>
+        </div>
+      </div>
+      <!-- Cover 2 (featured) -->
+      <div class="hero-cover" style="border: 2px solid rgba(232,51,74,0.5); box-shadow: 0 0 40px rgba(232,51,74,0.2);">
+        <div class="placeholder-img"
+          style="background: linear-gradient(145deg,#200a0a,#3d1010); color: #c06060; flex-direction:column; gap:6px;">
+          <span style="font-size:42px;">⛩</span><span style="font-size:12px;">BERSERK</span>
+        </div>
+        <div class="hero-cover-overlay">
+          <div>
+            <div class="hero-cover-tag" style="background:var(--accent);">★ Destacado</div>
+            <div class="hero-cover-title">Berserk</div>
+          </div>
+        </div>
+      </div>
+      <!-- Cover 3 -->
+      <div class="hero-cover">
+        <div class="placeholder-img"
+          style="background: linear-gradient(145deg,#0a1520,#102035); color: #4090c0; flex-direction:column; gap:6px;">
+          <span style="font-size:28px;">👑</span><span>KINGDOM</span>
+        </div>
+        <div class="hero-cover-overlay">
+          <div>
+            <div class="hero-cover-tag" style="background:#4c9df5;">Histórico</div>
+            <div class="hero-cover-title">Kingdom</div>
+          </div>
+        </div>
+      </div>
+      <!-- Cover 4 -->
+      <div class="hero-cover">
+        <div class="placeholder-img"
+          style="background: linear-gradient(145deg,#0f1a0f,#1a2d1a); color: #5ab85a; flex-direction:column; gap:6px;">
+          <span style="font-size:24px;">🌿</span><span style="font-size:10px;">VINLAND SAGA</span>
+        </div>
+        <div class="hero-cover-overlay">
+          <div>
+            <div class="hero-cover-title">Vinland Saga</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        Plataforma en directo · Beta
+      </div>
+      <div class="hero-subtitle">紙 — La nueva era del manga</div>
+      <h1 class="hero-title">LEE SIN<br>LÍMITES,<br>GRATIS &amp; <em>LEGAL</em></h1>
+      <p class="hero-desc">Más de 45.000 obras, lector ultra rápido, biblioteca inteligente y la mejor comunidad de
+        habla hispana. Sin anuncios invasivos.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-primary">
+          <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Empezar a leer
+        </button>
+        <button class="btn-hero-secondary">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          Explorar catálogo
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-value">45K+</div>
+          <div class="hero-stat-label">Títulos</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div>
+          <div class="hero-stat-value">2.8M</div>
+          <div class="hero-stat-label">Lectores</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div>
+          <div class="hero-stat-value">380+</div>
+          <div class="hero-stat-label">Scans activos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CONTINUE READING ═══════════ -->
+  <section class="section" style="margin-top:36px;">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-title-icon blue">▶</span>
+        Continuar leyendo
+      </h2>
+      <span class="section-see-all">Ver biblioteca →</span>
+    </div>
+    <div class="continue-scroll">
+
+      <div class="continue-card">
+        <div class="continue-card-thumb">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#200a0a,#3d1010); color:#c06060;">⛩
+          </div>
+        </div>
+        <div class="continue-card-body">
+          <div>
+            <div class="continue-card-title">Berserk</div>
+            <div class="continue-card-chapter">Cap. 364 · Pág. 14</div>
+            <div class="continue-progress-bar">
+              <div class="continue-progress-fill" style="width:91%"></div>
+            </div>
+            <div class="continue-progress-label"><span>364 / 374 caps</span><span>91%</span></div>
+          </div>
+          <div class="continue-btn">▶ Continuar cap. 365</div>
+        </div>
+        <div class="continue-new-badge">2 nuevos</div>
+      </div>
+
+      <div class="continue-card">
+        <div class="continue-card-thumb">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#0a1520,#102035); color:#4090c0;">👑
+          </div>
+        </div>
+        <div class="continue-card-body">
+          <div>
+            <div class="continue-card-title">Kingdom</div>
+            <div class="continue-card-chapter">Cap. 721 · Pág. 6</div>
+            <div class="continue-progress-bar">
+              <div class="continue-progress-fill" style="width:68%"></div>
+            </div>
+            <div class="continue-progress-label"><span>721 / 1058 caps</span><span>68%</span></div>
+          </div>
+          <div class="continue-btn">▶ Continuar cap. 722</div>
+        </div>
+      </div>
+
+      <div class="continue-card">
+        <div class="continue-card-thumb">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#1a1028,#2d1040); color:#8b68c0;">⚔
+          </div>
+        </div>
+        <div class="continue-card-body">
+          <div>
+            <div class="continue-card-title">Vagabond</div>
+            <div class="continue-card-chapter">Cap. 197 · Pág. 22</div>
+            <div class="continue-progress-bar">
+              <div class="continue-progress-fill" style="width:85%"></div>
+            </div>
+            <div class="continue-progress-label"><span>197 / 327 caps</span><span>85%</span></div>
+          </div>
+          <div class="continue-btn">▶ Continuar cap. 198</div>
+        </div>
+        <div class="continue-new-badge">1 nuevo</div>
+      </div>
+
+      <div class="continue-card">
+        <div class="continue-card-thumb">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a); color:#5ab85a;">🌿
+          </div>
+        </div>
+        <div class="continue-card-body">
+          <div>
+            <div class="continue-card-title">Vinland Saga</div>
+            <div class="continue-card-chapter">Cap. 102 · Pág. 1</div>
+            <div class="continue-progress-bar">
+              <div class="continue-progress-fill" style="width:41%"></div>
+            </div>
+            <div class="continue-progress-label"><span>102 / 207 caps</span><span>41%</span></div>
+          </div>
+          <div class="continue-btn">▶ Continuar cap. 103</div>
+        </div>
+      </div>
+
+      <div class="continue-card">
+        <div class="continue-card-thumb">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#1a100a,#2d1f0a); color:#c09060;">🔱
+          </div>
+        </div>
+        <div class="continue-card-body">
+          <div>
+            <div class="continue-card-title">Fullmetal Alchemist</div>
+            <div class="continue-card-chapter">Cap. 44 · Pág. 3</div>
+            <div class="continue-progress-bar">
+              <div class="continue-progress-fill" style="width:34%"></div>
+            </div>
+            <div class="continue-progress-label"><span>44 / 108 caps</span><span>34%</span></div>
+          </div>
+          <div class="continue-btn">▶ Continuar cap. 45</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ TRENDING ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-title-icon red">🔥</span>
+        Tendencias ahora
+      </h2>
+      <span class="section-see-all">Ver todos →</span>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-chip active">🔥 Todo <span class="filter-chip-count">45K</span></button>
+      <button class="filter-chip">Manga</button>
+      <button class="filter-chip">Manhwa</button>
+      <button class="filter-chip">Manhua</button>
+      <button class="filter-chip">Acción</button>
+      <button class="filter-chip">Romance</button>
+      <button class="filter-chip">Fantasy</button>
+      <button class="filter-chip">Seinen</button>
+      <button class="filter-chip">Shonen</button>
+      <button class="filter-chip">Isekai</button>
+      <button class="filter-chip">Terror</button>
+      <button class="filter-chip">Slice of Life</button>
+    </div>
+    <div class="manga-grid">
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#0d0d1f,#1a1a3d); color:#5060b0; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🌀</span><span style="font-size:10px;">SOLO LEVELING</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-hot">🔥 Hot</span></div>
+          <div class="manga-card-rating">★ 9.4</div>
+        </div>
+        <div class="manga-card-title">Solo Leveling</div>
+        <div class="manga-card-meta"><span>Cap. 179</span><span class="dot-sep">•</span><span>Manhwa</span></div>
+        <div class="manga-card-genre"><span>Acción</span><span>Fantasy</span><span>Isekai</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#1a0a0a,#350d0d); color:#a04040; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">⛩</span><span style="font-size:10px;">BERSERK</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-update">✓ Nuevo cap</span></div>
+          <div class="manga-card-rating">★ 9.8</div>
+        </div>
+        <div class="manga-card-title">Berserk</div>
+        <div class="manga-card-meta"><span>Cap. 374</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Seinen</span><span>Dark Fantasy</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#0a0f1a,#1020380); color:#4070b0; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">⚡</span><span style="font-size:10px;">ONE PIECE</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-hot">🔥 Trending</span></div>
+          <div class="manga-card-rating">★ 9.6</div>
+        </div>
+        <div class="manga-card-title">One Piece</div>
+        <div class="manga-card-meta"><span>Cap. 1108</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Shonen</span><span>Aventura</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#0f1a0f,#1a341a); color:#5aaa5a; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🌿</span><span style="font-size:10px;">VINLAND SAGA</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-complete">✔ Completo</span></div>
+          <div class="manga-card-rating">★ 9.5</div>
+        </div>
+        <div class="manga-card-title">Vinland Saga</div>
+        <div class="manga-card-meta"><span>Cap. 207</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Seinen</span><span>Histórico</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#1a1028,#2d1840); color:#9068b0; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🗡</span><span style="font-size:10px;">OMNISCIENT READER</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-new">✦ Nuevo</span></div>
+          <div class="manga-card-rating">★ 9.2</div>
+        </div>
+        <div class="manga-card-title">Omniscient Reader</div>
+        <div class="manga-card-meta"><span>Cap. 147</span><span class="dot-sep">•</span><span>Manhwa</span></div>
+        <div class="manga-card-genre"><span>Fantasy</span><span>Acción</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#1a140a,#34280a); color:#c09040; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🔱</span><span style="font-size:10px;">FMA</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-complete">✔ Completo</span></div>
+          <div class="manga-card-rating">★ 9.7</div>
+        </div>
+        <div class="manga-card-title">Fullmetal Alchemist</div>
+        <div class="manga-card-meta"><span>Cap. 108</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Shonen</span><span>Aventura</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#0f0f1e,#1e1e38); color:#6060c0; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🌙</span><span style="font-size:10px;">DEATH NOTE</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-complete">✔ Completo</span></div>
+          <div class="manga-card-rating">★ 9.3</div>
+        </div>
+        <div class="manga-card-title">Death Note</div>
+        <div class="manga-card-meta"><span>Cap. 108</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Thriller</span><span>Psicológico</span></div>
+      </div>
+
+      <div class="manga-card">
+        <div class="manga-card-cover">
+          <div class="placeholder-img"
+            style="background:linear-gradient(145deg,#1a0f0a,#301e10); color:#b07050; flex-direction:column; gap:8px;">
+            <span style="font-size:36px;">🏯</span><span style="font-size:10px;">KINGDOM</span>
+          </div>
+          <div class="manga-card-badges"><span class="badge badge-update">✓ Nuevo cap</span></div>
+          <div class="manga-card-rating">★ 9.4</div>
+        </div>
+        <div class="manga-card-title">Kingdom</div>
+        <div class="manga-card-meta"><span>Cap. 784</span><span class="dot-sep">•</span><span>Manga</span></div>
+        <div class="manga-card-genre"><span>Seinen</span><span>Histórico</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ LATEST UPDATES ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-title-icon green">⬆</span>
+        Últimas actualizaciones
+      </h2>
+      <span class="section-see-all">Ver feed completo →</span>
+    </div>
+    <div class="updates-grid">
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#1a0a0a,#350d0d); color:#a04040;">⛩
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">Berserk</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 374</span>
+            <span class="chapter-chip new">Cap. 373</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 2 horas
+          </div>
+        </div>
+        <span class="update-scan">Young Animal</span>
+      </div>
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#0a0f1a,#102038); color:#4070b0;">⚡
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">One Piece</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 1108</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 3 horas
+          </div>
+        </div>
+        <span class="update-scan">Scan-ES</span>
+      </div>
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#0d0d1f,#1a1a3d); color:#5060b0;">🌀
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">Solo Leveling: Ragnarok</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 92</span>
+            <span class="chapter-chip new">Cap. 91</span>
+            <span class="chapter-chip">Cap. 90</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 5 horas
+          </div>
+        </div>
+        <span class="update-scan">IlNAScanlation</span>
+      </div>
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#1a100a,#2d1f0a); color:#c09060;">🔱
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">Jujutsu Kaisen</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 265</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 6 horas
+          </div>
+        </div>
+        <span class="update-scan">WeebCentral</span>
+      </div>
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#1a1028,#2d1840); color:#9068b0;">🗡
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">Omniscient Reader's Viewpoint</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 147</span>
+            <span class="chapter-chip">Cap. 146</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 8 horas
+          </div>
+        </div>
+        <span class="update-scan">AsuraScan</span>
+      </div>
+
+      <div class="update-item">
+        <div class="update-cover">
+          <div class="placeholder-img" style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a); color:#5ab85a;">🌿
+          </div>
+        </div>
+        <div class="update-body">
+          <div class="update-title">Dungeon Meshi</div>
+          <div class="update-chapters">
+            <span class="chapter-chip new">Cap. 97</span>
+          </div>
+          <div class="update-time">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            hace 11 horas
+          </div>
+        </div>
+        <span class="update-scan">NieHime</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ RANKINGS ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="section-title-icon gold">★</span>
+        Rankings
+      </h2>
+      <span class="section-see-all">Ranking completo →</span>
+    </div>
+    <div class="rankings-grid">
+
+      <div class="ranking-col">
+        <div class="ranking-col-title">
+          <span style="color:var(--accent);">▲</span> Más leídos hoy
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top1">1</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0d0d1f,#1a1a3d); color:#5060b0; font-size:18px;">🌀</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Solo Leveling</div>
+            <div class="ranking-meta">182K lecturas</div>
+          </div>
+          <span class="ranking-trend up">↑ 3</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top2">2</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a0a0a,#350d0d); color:#a04040; font-size:18px;">⛩</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Berserk</div>
+            <div class="ranking-meta">178K lecturas</div>
+          </div>
+          <span class="ranking-trend up">↑ 1</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top3">3</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0a0f1a,#102038); color:#4070b0; font-size:18px;">⚡</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">One Piece</div>
+            <div class="ranking-meta">165K lecturas</div>
+          </div>
+          <span class="ranking-trend same">— —</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">4</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a100a,#2d1f0a); color:#c09060; font-size:18px;">🔱</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Jujutsu Kaisen</div>
+            <div class="ranking-meta">148K lecturas</div>
+          </div>
+          <span class="ranking-trend down">↓ 2</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">5</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a); color:#5ab85a; font-size:18px;">🌿</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Vinland Saga</div>
+            <div class="ranking-meta">122K lecturas</div>
+          </div>
+          <span class="ranking-trend up">↑ 5</span>
+        </div>
+      </div>
+
+      <div class="ranking-col">
+        <div class="ranking-col-title">
+          <span style="color:var(--accent-gold);">★</span> Mejor valorados
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top1">1</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a0a0a,#350d0d); color:#a04040; font-size:18px;">⛩</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Berserk</div>
+            <div class="ranking-meta">★ 9.8 · 2.4M votos</div>
+          </div>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top2">2</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0f1a0f,#1a2d1a); color:#5ab85a; font-size:18px;">🌿</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Vinland Saga</div>
+            <div class="ranking-meta">★ 9.5 · 1.8M votos</div>
+          </div>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top3">3</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a1028,#2d1840); color:#9068b0; font-size:18px;">⚔</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Vagabond</div>
+            <div class="ranking-meta">★ 9.5 · 1.6M votos</div>
+          </div>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">4</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0a0f1a,#102038); color:#4070b0; font-size:18px;">⚡</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">One Piece</div>
+            <div class="ranking-meta">★ 9.6 · 3.1M votos</div>
+          </div>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">5</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a140a,#34280a); color:#c09040; font-size:18px;">🔱</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Fullmetal Alchemist</div>
+            <div class="ranking-meta">★ 9.7 · 2.0M votos</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ranking-col">
+        <div class="ranking-col-title">
+          <span style="color:var(--blue);">◆</span> Nuevos esta semana
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top1">1</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0f1520,#1a2535); color:#5090c0; font-size:18px;">🌊</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Blue Lock: Episode Nagi</div>
+            <div class="ranking-meta">Cap. 1–8 · Fútbol</div>
+          </div>
+          <span class="ranking-trend up" style="color:var(--blue);">NEW</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top2">2</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a0f1a,#2d1a2d); color:#c070c0; font-size:18px;">🌸</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Kaiju No. 8 Side Story</div>
+            <div class="ranking-meta">Cap. 1–4 · Acción</div>
+          </div>
+          <span class="ranking-trend up" style="color:var(--blue);">NEW</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num top3">3</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a1a0f,#2d2d1a); color:#c0c060; font-size:18px;">⚙</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Oshi no Ko Season 2</div>
+            <div class="ranking-meta">Cap. 1–6 · Drama</div>
+          </div>
+          <span class="ranking-trend up" style="color:var(--blue);">NEW</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">4</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#0f1a15,#1a2d22); color:#50b08a; font-size:18px;">🗻</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">The Witch and the Beast</div>
+            <div class="ranking-meta">Cap. 1–3 · Dark Fantasy</div>
+          </div>
+          <span class="ranking-trend up" style="color:var(--blue);">NEW</span>
+        </div>
+        <div class="ranking-item">
+          <span class="ranking-num other">5</span>
+          <div class="ranking-cover">
+            <div class="placeholder-img"
+              style="background:linear-gradient(145deg,#1a0a10,#2d1020); color:#c05070; font-size:18px;">❤</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="ranking-title">Akane-banashi Season 2</div>
+            <div class="ranking-meta">Cap. 1–2 · Slice of Life</div>
+          </div>
+          <span class="ranking-trend up" style="color:var(--blue);">NEW</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════ FEATURES ═══════════ -->
+  <div class="features-strip">
+    <h2 class="features-title">¿POR QUÉ KAMI ES DIFERENTE?</h2>
+    <p class="features-subtitle">Hecho para lectores reales. Sin fricción, sin caídas, sin perder tu progreso.</p>
+    <div class="features-grid">
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(232,51,74,0.15); color:var(--accent);">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+        </div>
+        <div class="feature-name">Biblioteca inteligente</div>
+        <div class="feature-desc">Tu progreso se guarda solo. Sin marcar capítulos manualmente. La plataforma lo detecta
+          por ti.</div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8m-4-4v4" />
+          </svg>
+        </div>
+        <div class="feature-name">Lector ultra rápido</div>
+        <div class="feature-desc">Carga progresiva, precarga inteligente y modo offline. Vertical, horizontal, webtoon y
+          doble página.</div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(245,200,66,0.15); color:var(--accent-gold);">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+        </div>
+        <div class="feature-name">Sincronización total</div>
+        <div class="feature-desc">Continúa exactamente donde lo dejaste, en cualquier dispositivo. Página exacta, scroll
+          incluido.</div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(45,202,122,0.15); color:var(--green);">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="feature-name">Comunidad activa</div>
+        <div class="feature-desc">Comenta por página, teorías, spoilers ocultos. Ve qué leen tus amigos en tiempo real.
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(120,80,255,0.15); color:#a080ff;">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z" />
+            <circle cx="12" cy="9" r="2.5" />
+          </svg>
+        </div>
+        <div class="feature-name">IA anti-olvido</div>
+        <div class="feature-desc">Si no lees un manga durante semanas, la IA te resume los últimos capítulos antes de
+          continuar.</div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" style="background:rgba(232,51,74,0.12); color:var(--accent);">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </div>
+        <div class="feature-name">Listas personalizadas</div>
+        <div class="feature-desc">Crea colecciones tipo Spotify: "Romance bueno", "Pendientes largos", "Top Seinen".
+          Públicas o privadas.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ PROMO BANNER ═══════════ -->
+  <div class="promo-banner">
+    <div class="promo-left">
+      <div class="promo-tag">⚡ KAMI Premium — acceso anticipado</div>
+      <h2 class="promo-title">SIN ANUNCIOS.<br>SIN ESPERAS.<br>SIN LÍMITES.</h2>
+      <p class="promo-desc">KAMI trabaja activamente para licenciar el contenido directamente con editoriales. Apoya la
+        plataforma y el manga legal en español.</p>
+      <div class="promo-features">
+        <div class="promo-feature-item">
+          <div class="promo-feature-dot"></div> Sin anuncios
+        </div>
+        <div class="promo-feature-item">
+          <div class="promo-feature-dot"></div> Descarga offline
+        </div>
+        <div class="promo-feature-item">
+          <div class="promo-feature-dot"></div> Capítulos anticipados
+        </div>
+        <div class="promo-feature-item">
+          <div class="promo-feature-dot"></div> Soporte legal
+        </div>
+        <div class="promo-feature-item">
+          <div class="promo-feature-dot"></div> Lector sin límite
+        </div>
+      </div>
+    </div>
+    <div class="promo-actions">
+      <button class="btn-promo">✦ Apoya KAMI — 3,99€/mes</button>
+      <p class="promo-note">Cancela cuando quieras · Sin permanencia</p>
+      <p class="promo-note" style="max-width:200px; line-height:1.5;">El 40% va destinado a acuerdos con editoriales
+        para legalizar el contenido.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-logo">
+          <div class="nav-logo-mark">神</div>
+          KAMI
+        </div>
+        <p class="footer-brand-desc">La plataforma de lectura de manga, manhwa y manhua más moderna en español. Pensada
+          para el lector, construida con cariño.</p>
+        <div class="footer-legal-note">
+          📋 <strong>Nota legal:</strong> KAMI opera bajo un modelo de transición legal. Trabajamos activamente para
+          firmar acuerdos de licencia con editoriales y distribuidores. Todo el contenido de scanlation está sujeto a
+          retirada inmediata si el editor lo solicita.
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Explorar</div>
+        <ul class="footer-links">
+          <li><a href="#">Catálogo completo</a></li>
+          <li><a href="#">Manga</a></li>
+          <li><a href="#">Manhwa</a></li>
+          <li><a href="#">Manhua</a></li>
+          <li><a href="#">Géneros</a></li>
+          <li><a href="#">Rankings</a></li>
+          <li><a href="#">Novedades</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Plataforma</div>
+        <ul class="footer-links">
+          <li><a href="#">Mi biblioteca</a></li>
+          <li><a href="#">Mi perfil</a></li>
+          <li><a href="#">Mis listas</a></li>
+          <li><a href="#">Estadísticas</a></li>
+          <li><a href="#">Configuración</a></li>
+          <li><a href="#">App móvil</a></li>
+          <li><a href="#">KAMI Premium</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Scans & Info</div>
+        <ul class="footer-links">
+          <li><a href="#">Panel de scans</a></li>
+          <li><a href="#">Subir capítulo</a></li>
+          <li><a href="#">Reportar error</a></li>
+          <li><a href="#">Contacto</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Discord</a></li>
+          <li><a href="#">Estado del servidor</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 <span>KAMI</span> — Hecho con ❤ para la comunidad manga hispanohablante</div>
+      <div class="footer-legal-links">
+        <a href="#">Aviso legal</a>
+        <a href="#">Política de privacidad</a>
+        <a href="#">Cookies</a>
+        <a href="#">DMCA / Retiradas</a>
+        <a href="#">Términos de uso</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Filter chips interaction
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Continue card hover glow
+    document.querySelectorAll('.continue-card').forEach(card => {
+      card.addEventListener('mouseenter', function () {
+        this.style.boxShadow = '0 8px 32px rgba(232,51,74,0.12)';
+      });
+      card.addEventListener('mouseleave', function () {
+        this.style.boxShadow = '';
+      });
+    });
+
+    // Manga card hover glow
+    document.querySelectorAll('.manga-card').forEach(card => {
+      card.addEventListener('mouseenter', function () {
+        this.querySelector('.manga-card-cover').style.boxShadow = '0 12px 32px rgba(0,0,0,0.5)';
+      });
+      card.addEventListener('mouseleave', function () {
+        this.querySelector('.manga-card-cover').style.boxShadow = '';
+      });
+    });
+  </script>
+
+  <script src="/js/auth.js"></script>
+  </body>
+
+</html>

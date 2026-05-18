@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar manga-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/kmi-card.css">
+    <style>
+        :root {
+            --bg: #0d0d14;
+            --surface: #13131e;
+            --surface2: #1a1a28;
+            --border: rgba(255,255,255,0.07);
+            --accent: #e8334a;
+            --accent-gold: #f5c842;
+            --blue: #4c9df5;
+            --green: #2dca7a;
+            --text-primary: #f2f2fa;
+            --text-muted: #6b6b8a;
+            --radius: 12px;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
+
+        /* BANNER */
+        .manga-banner { position: relative; min-height: 320px; display: flex; align-items: center; padding: 48px 32px; overflow: hidden; }
+        .manga-banner-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(40px) brightness(0.25); transform: scale(1.1); z-index: 0; }
+        .manga-banner-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.6) 50%, rgba(13,13,20,0.85) 100%); z-index: 1; }
+        .manga-banner-content { position: relative; z-index: 2; display: flex; gap: 36px; max-width: 1100px; margin: 0 auto; width: 100%; align-items: flex-start; }
+
+        .manga-cover { width: 220px; min-width: 220px; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); background: var(--surface2); position: relative; cursor: pointer; }
+        .manga-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; border-radius: 12px; }
+        .manga-cover:hover .cover-overlay { opacity: 1; }
+        .cover-overlay span { font-size: 28px; }
+
+        .manga-info { flex: 1; min-width: 0; }
+        .manga-title { font-family: var(--font-display); font-size: 36px; letter-spacing: 2px; margin-bottom: 8px; line-height: 1.1; }
+        .manga-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+        .manga-rating { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.25); border-radius: 20px; font-size: 14px; font-weight: 700; color: var(--accent-gold); margin-bottom: 16px; }
+
+        .desc-wrap { position: relative; }
+        .desc-text { font-size: 14px; line-height: 1.8; color: rgba(242,242,250,0.8); max-width: 600px; margin-bottom: 16px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background .2s; }
+        .desc-text:hover { background: rgba(255,255,255,0.04); }
+        .desc-edit-icon { position: absolute; top: 0; right: 0; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; transition: all .2s; display: none; }
+        .desc-wrap:hover .desc-edit-icon { display: block; }
+        .desc-edit-icon:hover { color: var(--accent); background: rgba(232,51,74,0.1); }
+        .desc-textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; line-height: 1.8; resize: vertical; min-height: 100px; outline: none; margin-bottom: 8px; }
+        .desc-actions { display: flex; gap: 8px; margin-bottom: 16px; }
+        .btn-save { padding: 6px 16px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-cancel { padding: 6px 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; }
+
+        .manga-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .manga-tag { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-muted); }
+
+        /* CHAPTERS */
+        .chapters-section { max-width: 1100px; margin: 0 auto; padding: 32px; }
+        .chapters-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .chapters-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; }
+        .chapters-count { font-size: 13px; color: var(--text-muted); }
+        .chapters-actions { display: flex; gap: 8px; }
+        .btn-add-chapter { padding: 8px 18px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .btn-add-chapter:hover { opacity: .9; transform: translateY(-1px); }
+
+        .chapter-list { display: flex; flex-direction: column; gap: 6px; }
+        .chapter-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: all .18s; }
+        .chapter-item:hover { border-color: rgba(255,255,255,0.15); }
+        .chapter-info { flex: 1; }
+        .chapter-num { font-weight: 600; font-size: 14px; }
+        .chapter-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .chapter-actions { display: flex; gap: 6px; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all .18s; }
+        .btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+        .btn-icon.edit:hover { border-color: var(--blue); color: var(--blue); background: rgba(76,157,245,0.1); }
+        .btn-icon.delete:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,51,74,0.1); }
+
+        .chapter-empty { text-align: center; padding: 48px; color: var(--text-muted); font-size: 14px; }
+
+        /* TOAST */
+        .toast { position: fixed; bottom: 32px; right: 32px; padding: 14px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 9999; display: none; animation: slideUp .3s ease; }
+        .toast.show { display: block; }
+        .toast.success { background: rgba(45,202,122,0.15); border: 1px solid rgba(45,202,122,0.3); color: var(--green); }
+        .toast.error { background: rgba(232,51,74,0.15); border: 1px solid rgba(232,51,74,0.3); color: var(--accent); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+        .modal-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; margin-bottom: 20px; }
+        .modal-field { margin-bottom: 16px; }
+        .modal-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+        .modal-field input, .modal-field textarea, .modal-field select { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none; }
+        .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent); }
+        .modal-field input[type="file"] { padding: 8px; background: rgba(255,255,255,0.02); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
+        .modal-btn.primary { background: var(--accent); color: #fff; }
+        .modal-btn.primary:hover { opacity: .9; }
+        .modal-btn.primary:disabled { opacity: .5; cursor: not-allowed; }
+        .modal-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-muted); }
+        .modal-btn.secondary:hover { color: var(--text-primary); background: rgba(255,255,255,0.1); }
+
+        /* ── GENRE CHECKBOXES (from biblioteca) ── */
+        .adv-section { margin-bottom: 20px; }
+        .adv-section:last-child { margin-bottom: 0; }
+        .genre-group-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+        .genre-group-list { display: flex; flex-direction: column; gap: 2px; }
+        .genre-check { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: all .15s; user-select: none; }
+        .genre-check:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+        .genre-check input[type="checkbox"] { appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; background: transparent; cursor: pointer; position: relative; flex-shrink: 0; transition: all .15s; }
+        .genre-check input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+        .genre-check input[type="checkbox"]:checked::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; }
+
+        .loading { text-align: center; padding: 80px; color: var(--text-muted); font-size: 16px; }
+        .error-page { text-align: center; padding: 80px; }
+        .error-page h2 { font-family: var(--font-display); font-size: 28px; margin-bottom: 8px; }
+        .error-page p { color: var(--text-muted); }
+        .error-page .btn-back { display: inline-block; margin-top: 16px; padding: 10px 24px; background: var(--accent); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; }
+
+        /* ── EDIT INFO BUTTON ── */
+        .btn-edit-info { padding: 8px 18px; background: rgba(76,157,245,0.15); border: 1px solid rgba(76,157,245,0.3); border-radius: 8px; color: var(--blue); font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .btn-edit-info:hover { background: rgba(76,157,245,0.25); transform: translateY(-1px); }
+
+        /* ── GENRE CHIPS IN MODAL ── */
+        .modal-genre-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .modal-genre-chip { padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; transition: all .18s; user-select: none; }
+        .modal-genre-chip.active { background: rgba(232,51,74,0.18); border-color: var(--accent); color: var(--accent); }
+        .modal-genre-chip:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+
+        .modal-alt-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+        .modal-alt-item { display: flex; gap: 4px; align-items: center; }
+        .modal-alt-item input { flex: 1; }
+        .modal-btn-rm { background: rgba(232,51,74,0.15); border: 1px solid rgba(232,51,74,0.3); color: var(--accent); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: all .18s; }
+        .modal-btn-rm:hover { background: rgba(232,51,74,0.3); }
+        .modal-btn-add-alt { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 6px 12px; font-size: 11px; font-family: var(--font-body); cursor: pointer; transition: all .2s; width: 100%; margin-top: 2px; }
+        .modal-btn-add-alt:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+
+        .modal-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* ── SOCIAL LINKS ── */
+        .social-field { display: flex; align-items: center; gap: 8px; }
+        .social-field .social-icon { font-size: 16px; width: 20px; text-align: center; }
+        .social-field input { flex: 1; }
+    </style>
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div id="loading" class="loading">Cargando manga…</div>
+    <div id="error-page" class="error-page" style="display:none;">
+        <h2>Manga no encontrado</h2>
+        <p>El manga que buscas no existe o ha sido eliminado.</p>
+        <a href="/menu-edit" class="btn-back">← Volver al panel</a>
+    </div>
+
+    <div id="manga-content" style="display:none;">
+        <!-- BANNER -->
+        <div class="manga-banner" id="manga-banner">
+            <div class="manga-banner-bg" id="banner-bg"></div>
+            <div class="manga-banner-overlay"></div>
+            <div class="manga-banner-content">
+                <div class="manga-cover" id="manga-cover" onclick="document.getElementById('cover-input').click()">
+                    <div class="cover-overlay"><span>✎</span></div>
+                </div>
+                <input type="file" id="cover-input" accept="image/*" style="display:none" onchange="uploadCover(this)">
+                <div class="manga-info">
+                    <div class="manga-title" id="manga-title"></div>
+                    <div class="manga-subtitle" id="manga-subtitle"></div>
+                    <div class="manga-rating" id="manga-rating"></div>
+                    <div class="desc-wrap">
+                        <div class="desc-text" id="manga-description" onclick="editDescription()"></div>
+                        <div class="desc-edit-icon" onclick="editDescription()">✎</div>
+                        <div id="desc-editor" style="display:none;">
+                            <textarea class="desc-textarea" id="desc-textarea"></textarea>
+                            <div class="desc-actions">
+                                <button class="btn-save" onclick="saveDescription()">Guardar</button>
+                                <button class="btn-cancel" onclick="cancelEditDescription()">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manga-tags" id="manga-tags"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAPTERS -->
+        <div class="chapters-section">
+            <div class="chapters-header">
+                <div class="chapters-title">CAPÍTULOS</div>
+                <div class="chapters-actions">
+                    <span class="chapters-count" id="chapters-count"></span>
+                    <button class="btn-edit-info" onclick="openEditInfoModal()">✎ Editar info</button>
+                    <button class="btn-add-chapter" onclick="window.location.href='/manga/' + mangaId + '/upload-chapter'">+ Añadir capítulo</button>
+                </div>
+            </div>
+            <div class="chapter-list" id="chapter-list"></div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- EDIT INFO MODAL -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal" style="max-width:640px;">
+            <div class="modal-title">EDITAR INFORMACIÓN</div>
+            <form id="edit-form">
+                <div class="modal-field">
+                    <label>Título principal</label>
+                    <input type="text" id="edit-title">
+                </div>
+                <div class="modal-field">
+                    <label>Títulos alternativos</label>
+                    <div class="modal-alt-list" id="edit-alt-list"></div>
+                    <button type="button" class="modal-btn-add-alt" onclick="addEditAltTitle()">+ Añadir título alternativo</button>
+                </div>
+                <div class="modal-field-row">
+                    <div class="modal-field">
+                        <label>Tipo</label>
+                        <select id="edit-type">
+                            <option value="manga">Manga</option>
+                            <option value="manhwa">Manhwa</option>
+                            <option value="manhua">Manhua</option>
+                            <option value="oneshot">One-shot</option>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label>Estado</label>
+                        <select id="edit-status">
+                            <option value="ongoing">En emisión</option>
+                            <option value="completed">Completado</option>
+                            <option value="hiatus">En hiato</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label>Descripción</label>
+                    <textarea id="edit-desc" rows="4"></textarea>
+                </div>
+                <div class="modal-field-row">
+                    <div class="modal-field">
+                        <label>Autor</label>
+                        <input type="text" id="edit-author">
+                    </div>
+                    <div class="modal-field">
+                        <label>Artista</label>
+                        <input type="text" id="edit-artist">
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label>Target demográfico</label>
+                    <select id="edit-demo">
+                        <option value="">— Ninguno —</option>
+                        <option value="shonen">Shōnen</option>
+                        <option value="shoujo">Shōjo</option>
+                        <option value="seinen">Seinen</option>
+                        <option value="josei">Josei</option>
+                        <option value="kodomomuke">Kodomomuke</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label>Géneros — Incluir</label>
+                    <div class="adv-section">
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:6px;" id="edit-inc-genres">
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Acción y Aventura</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Acción"> Acción</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Aventura"> Aventura</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Artes Marciales"> Artes Marciales</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Militar"> Militar</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Drama y Romance</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Drama"> Drama</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Romance"> Romance</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Slice of Life"> Slice of Life</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Tragedia"> Tragedia</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Fantasía y Ciencia Ficción</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Fantasía"> Fantasía</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Isekai"> Isekai</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Ciencia Ficción"> Ciencia Ficción</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Mecha"> Mecha</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Sistema"> Sistema</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Dark Fantasy"> Dark Fantasy</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Comedia y Costumbrista</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Comedia"> Comedia</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Escolar"> Escolar</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Recuentos de la vida"> Recuentos de la vida</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Deportes"> Deportes</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Terror y Suspenso</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Horror"> Horror</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Misterio"> Misterio</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Thriller"> Thriller</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Psicológico"> Psicológico</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Sobrenatural"> Sobrenatural</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Historia y Cultura</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Histórico"> Histórico</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Historia"> Historia</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Música"> Música</label>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Demográficos y Especiales</div>
+                                <div style="display:flex;flex-direction:column;gap:2px;">
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Seinen"> Seinen</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Shonen"> Shonen</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Shoujo"> Shoujo</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Josei"> Josei</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Ecchi"> Ecchi</label>
+                                    <label class="genre-check"><input type="checkbox" name="edit-genre" value="Harem"> Harem</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label>Redes sociales</label>
+                    <div class="social-field" style="margin-bottom:6px;">
+                        <span class="social-icon">🐦</span>
+                        <input type="text" id="edit-social-twitter" placeholder="Twitter / X (URL)">
+                    </div>
+                    <div class="social-field" style="margin-bottom:6px;">
+                        <span class="social-icon">💬</span>
+                        <input type="text" id="edit-social-discord" placeholder="Discord (invite URL)">
+                    </div>
+                    <div class="social-field" style="margin-bottom:6px;">
+                        <span class="social-icon">🌐</span>
+                        <input type="text" id="edit-social-website" placeholder="Sitio web">
+                    </div>
+                    <div class="social-field">
+                        <span class="social-icon">💰</span>
+                        <input type="text" id="edit-social-patreon" placeholder="Patreon / Ko-fi (URL)">
+                    </div>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeEditInfoModal()">Cancelar</button>
+                <button class="modal-btn primary" id="btn-save-info" onclick="saveEditInfo()">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CHAPTER MODAL -->
+    <div class="modal-overlay" id="chapter-modal">
+        <div class="modal">
+            <div class="modal-title" id="modal-title">AÑADIR CAPÍTULO</div>
+            <form id="chapter-form">
+                <div class="modal-field">
+                    <label>Número de capítulo <span style="color:var(--accent)">*</span></label>
+                    <input type="number" id="ch-num" min="1" required>
+                </div>
+                <div class="modal-field">
+                    <label>Título (opcional)</label>
+                    <input type="text" id="ch-title" placeholder="Ej: El comienzo">
+                </div>
+                <div class="modal-field">
+                    <label>Scan group (opcional)</label>
+                    <input type="text" id="ch-scan" placeholder="Ej: KAMI Scans">
+                </div>
+                <div class="modal-field">
+                    <label>Páginas del capítulo <span style="color:var(--accent)">*</span></label>
+                    <input type="file" id="ch-pages" accept="image/*" multiple required>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Selecciona todas las páginas en orden</div>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" id="modal-cancel" onclick="closeChapterModal()">Cancelar</button>
+                <button class="modal-btn primary" id="modal-submit" onclick="submitChapter()">Guardar capítulo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pathParts = window.location.pathname.split('/');
+        const mangaId = pathParts[2];
+        if (!mangaId) { showError(); }
+
+        let mangaData = null;
+        let editingChapterNum = null;
+
+        async function loadManga() {
+            try {
+                const [mangaRes, chaptersRes] = await Promise.all([
+                    fetch(`/api/manga/${mangaId}`),
+                    fetch(`/api/chapters/${mangaId}?limit=200`)
+                ]);
+                if (!mangaRes.ok) throw new Error('Not found');
+                mangaData = (await mangaRes.json()).manga;
+                const chaptersData = await chaptersRes.json();
+                renderManga(mangaData, chaptersData.chapters || []);
+            } catch {
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-page').style.display = 'block';
+        }
+
+        function renderManga(manga, chapters) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('manga-content').style.display = 'block';
+            document.title = `Editar: ${manga.title} — KAMI`;
+
+            document.getElementById('manga-title').textContent = manga.title;
+
+            const typeLabels = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', oneshot:'One-shot' };
+            const statusLabels = { ongoing:'En emisión', completed:'Completado', hiatus:'En hiato', cancelled:'Cancelado' };
+            const authorText = manga.author ? `Por ${manga.author}` : '';
+            document.getElementById('manga-subtitle').textContent = `${typeLabels[manga.type] || manga.type} · ${statusLabels[manga.status] || manga.status} · ${authorText}`;
+
+            const ratingEl = document.getElementById('manga-rating');
+            if (manga.rating > 0) {
+                ratingEl.textContent = `★ ${manga.rating.toFixed(1)}`;
+                ratingEl.style.display = 'inline-flex';
+            } else {
+                ratingEl.style.display = 'none';
+            }
+
+            document.getElementById('manga-description').textContent = manga.description || 'Sin descripción.';
+            document.getElementById('desc-textarea').value = manga.description || '';
+
+            const tagsEl = document.getElementById('manga-tags');
+            tagsEl.innerHTML = (manga.genres || []).map(g => `<span class="manga-tag">${g}</span>`).join('');
+
+            const coverEl = document.getElementById('manga-cover');
+            if (manga.cover) {
+                coverEl.innerHTML = '<img src="' + manga.cover + '" alt="' + (manga.title||'') + '" onerror="kamiReplaceCover(this,\'' + (manga.type||'') + '\')"><div class="cover-overlay"><span>\u270e</span></div>';
+                } else {
+                    coverEl.innerHTML = window.kamiDefaultCover(manga.type) + '<div class="cover-overlay"><span>✎</span></div>';
+                }
+
+            if (manga.cover) {
+                document.getElementById('banner-bg').style.backgroundImage = `url(${manga.cover})`;
+            }
+
+            document.getElementById('chapters-count').textContent = `${chapters.length} capítulos`;
+
+            const chapterListEl = document.getElementById('chapter-list');
+            if (chapters.length === 0) {
+                chapterListEl.innerHTML = '<div class="chapter-empty" style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">📭 Aún no hay capítulos. Añade el primero.</div>';
+            } else {
+                chapterListEl.innerHTML = chapters.sort(function(a,b){return b.number - a.number}).map(function(ch) {
+                    var dateStr = ch.releaseDate ? new Date(ch.releaseDate).toLocaleDateString('es-ES') : '';
+                    return '<div class="chapter-item">' +
+                        '<div style="display:flex;align-items:center;gap:14px;">' +
+                            '<div style="width:36px;height:36px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">#' + ch.number + '</div>' +
+                            '<div>' +
+                                '<div style="font-weight:600;font-size:14px;">Cap\u00edtulo ' + ch.number + (ch.title ? ': ' + ch.title : '') + '</div>' +
+                                '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' +
+                                    (ch.pages ? ch.pages + ' p\u00e1gs' : '') +
+                                    (ch.scanGroup ? ' \u00b7 ' + ch.scanGroup : '') +
+                                    (dateStr ? ' \u00b7 ' + dateStr : '') +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div style="display:flex;gap:6px;">' +
+                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="window.location.href=\'/manga/' + mangaId + '/upload-chapter\'" title="Subir versi\u00f3n">⬆</button>' +
+                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="openEditChapterModal(' + ch.number + ',\'' + (ch.title||'').replace(/\'/g,"\\'") + '\',\'' + (ch.scanGroup||'').replace(/\'/g,"\\'") + '\')" title="Editar">\u270e</button>' +
+                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);transition:all .12s;" onclick="deleteChapter(' + ch.number + ')" title="Eliminar">\u2716</button>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+        }
+
+        // ── COVER ──────────────────────────────────
+        async function uploadCover(input) {
+            if (!input.files?.[0]) return;
+            const fd = new FormData();
+            fd.append('coverImage', input.files[0]);
+            try {
+                const res = await fetch(`/api/manga/${mangaId}`, { method: 'PUT', body: fd });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                showToast('Portada actualizada ✓', 'success');
+                loadManga();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+            input.value = '';
+        }
+
+        // ── DESCRIPTION ────────────────────────────
+        let descOriginal = '';
+        function editDescription() {
+            document.getElementById('manga-description').style.display = 'none';
+            document.getElementById('desc-editor').style.display = 'block';
+            descOriginal = document.getElementById('desc-textarea').value;
+        }
+        function cancelEditDescription() {
+            document.getElementById('desc-textarea').value = descOriginal;
+            document.getElementById('manga-description').style.display = 'block';
+            document.getElementById('desc-editor').style.display = 'none';
+        }
+        async function saveDescription() {
+            const newDesc = document.getElementById('desc-textarea').value.trim();
+            const fd = new FormData();
+            fd.append('description', newDesc);
+            try {
+                const res = await fetch(`/api/manga/${mangaId}`, { method: 'PUT', body: fd });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                document.getElementById('manga-description').textContent = newDesc || 'Sin descripción.';
+                document.getElementById('manga-description').style.display = 'block';
+                document.getElementById('desc-editor').style.display = 'none';
+                showToast('Descripción guardada ✓', 'success');
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        // ── CHAPTER CRUD ───────────────────────────
+        function openAddChapterModal() {
+            editingChapterNum = null;
+            document.getElementById('modal-title').textContent = 'AÑADIR CAPÍTULO';
+            document.getElementById('modal-submit').textContent = 'Guardar capítulo';
+            document.getElementById('chapter-form').reset();
+            document.getElementById('ch-num').value = getNextChapterNumber();
+            document.getElementById('chapter-modal').classList.add('show');
+        }
+
+        function openEditChapterModal(num, title, scanGroup) {
+            editingChapterNum = num;
+            document.getElementById('modal-title').textContent = `EDITAR CAPÍTULO ${num}`;
+            document.getElementById('modal-submit').textContent = 'Actualizar capítulo';
+            document.getElementById('ch-num').value = num;
+            document.getElementById('ch-num').disabled = true;
+            document.getElementById('ch-title').value = title;
+            document.getElementById('ch-scan').value = scanGroup;
+            document.getElementById('ch-pages').required = false;
+            document.getElementById('chapter-modal').classList.add('show');
+        }
+
+        function closeChapterModal() {
+            document.getElementById('chapter-modal').classList.remove('show');
+            document.getElementById('ch-num').disabled = false;
+            document.getElementById('ch-pages').required = true;
+            editingChapterNum = null;
+        }
+
+        function getNextChapterNumber() {
+            const items = document.querySelectorAll('.chapter-item');
+            let max = 0;
+            items.forEach(item => {
+                const txt = item.querySelector('.chapter-num')?.textContent || '';
+                const m = txt.match(/\d+/);
+                if (m) max = Math.max(max, parseInt(m[0]));
+            });
+            return max + 1;
+        }
+
+        async function submitChapter() {
+            const num = parseInt(document.getElementById('ch-num').value);
+            if (!num || num < 1) { showToast('Número de capítulo inválido', 'error'); return; }
+
+            const btn = document.getElementById('modal-submit');
+            btn.disabled = true;
+            btn.textContent = 'Guardando…';
+
+            try {
+                if (editingChapterNum) {
+                    // UPDATE chapter metadata
+                    const res = await fetch(`/api/chapters/${mangaId}/${editingChapterNum}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: document.getElementById('ch-title').value.trim(),
+                            scanGroup: document.getElementById('ch-scan').value.trim(),
+                        }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    showToast(`Capítulo ${num} actualizado ✓`, 'success');
+                } else {
+                    // CREATE chapter with pages
+                    const fd = new FormData();
+                    fd.append('chapterNumber', num);
+                    fd.append('title', document.getElementById('ch-title').value.trim());
+                    fd.append('scanGroup', document.getElementById('ch-scan').value.trim());
+                    const fileInput = document.getElementById('ch-pages');
+                    if (fileInput.files?.length > 0) {
+                        for (const f of fileInput.files) {
+                            fd.append('pages', f);
+                        }
+                    }
+                    const res = await fetch(`/api/chapters/${mangaId}`, { method: 'POST', body: fd });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    showToast(`Capítulo ${num} añadido ✓`, 'success');
+                }
+
+                closeChapterModal();
+                loadManga();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = editingChapterNum ? 'Actualizar capítulo' : 'Guardar capítulo';
+            }
+        }
+
+        async function deleteChapter(num) {
+            if (!confirm(`¿Eliminar el capítulo ${num} permanentemente?`)) return;
+            try {
+                const res = await fetch(`/api/chapters/${mangaId}/${num}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                showToast(`Capítulo ${num} eliminado ✓`, 'success');
+                loadManga();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        }
+
+        // ── EDIT INFO MODAL ────────────────────────
+        let editAltCount = 0;
+
+        function getEditSelectedGenres() {
+            return [...document.querySelectorAll('#edit-inc-genres input[name="edit-genre"]:checked')]
+                .map(cb => cb.value);
+        }
+
+        function setEditSelectedGenres(genres) {
+            const set = new Set(genres || []);
+            document.querySelectorAll('#edit-inc-genres input[name="edit-genre"]').forEach(cb => {
+                cb.checked = set.has(cb.value);
+            });
+        }
+
+        function addEditAltTitle(value) {
+            const list = document.getElementById('edit-alt-list');
+            const id = `edit-alt-${editAltCount++}`;
+            const div = document.createElement('div');
+            div.className = 'modal-alt-item';
+            div.id = id;
+            div.innerHTML = `<input type="text" value="${(value||'').replace(/"/g,'&quot;')}"><button type="button" class="modal-btn-rm" onclick="document.getElementById('${id}').remove()">✕</button>`;
+            list.appendChild(div);
+        }
+
+        function getEditAltTitles() {
+            return [...document.querySelectorAll('#edit-alt-list .modal-alt-item input')]
+                .map(i => i.value.trim()).filter(Boolean);
+        }
+
+        function openEditInfoModal() {
+            if (!mangaData) return;
+
+            document.getElementById('edit-title').value = mangaData.title || '';
+            document.getElementById('edit-type').value = mangaData.type || 'manga';
+            document.getElementById('edit-status').value = mangaData.status || 'ongoing';
+            document.getElementById('edit-desc').value = mangaData.description || '';
+            document.getElementById('edit-author').value = mangaData.author || '';
+            document.getElementById('edit-artist').value = mangaData.artist || '';
+            document.getElementById('edit-demo').value = mangaData.demographicTarget || '';
+
+            // Genres
+            setEditSelectedGenres(mangaData.genres || []);
+
+            // Alternative titles
+            document.getElementById('edit-alt-list').innerHTML = '';
+            (mangaData.alternativeTitles || []).forEach(t => addEditAltTitle(t));
+            if ((mangaData.alternativeTitles || []).length === 0) addEditAltTitle('');
+
+            // Social links
+            const sl = mangaData.socialLinks || {};
+            document.getElementById('edit-social-twitter').value = sl.twitter || '';
+            document.getElementById('edit-social-discord').value = sl.discord || '';
+            document.getElementById('edit-social-website').value = sl.website || '';
+            document.getElementById('edit-social-patreon').value = sl.patreon || '';
+
+            document.getElementById('edit-modal').classList.add('show');
+        }
+
+        function closeEditInfoModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+        }
+
+        async function saveEditInfo() {
+            const btn = document.getElementById('btn-save-info');
+            btn.disabled = true;
+            btn.textContent = 'Guardando…';
+
+            try {
+                const fd = new FormData();
+                fd.append('title', document.getElementById('edit-title').value.trim());
+                fd.append('type', document.getElementById('edit-type').value);
+                fd.append('status', document.getElementById('edit-status').value);
+                fd.append('description', document.getElementById('edit-desc').value.trim());
+                fd.append('author', document.getElementById('edit-author').value.trim());
+                fd.append('artist', document.getElementById('edit-artist').value.trim());
+                fd.append('demographicTarget', document.getElementById('edit-demo').value);
+                fd.append('genres', JSON.stringify(getEditSelectedGenres()));
+                fd.append('alternativeTitles', JSON.stringify(getEditAltTitles()));
+                fd.append('socialLinks', JSON.stringify({
+                    twitter: document.getElementById('edit-social-twitter').value.trim(),
+                    discord: document.getElementById('edit-social-discord').value.trim(),
+                    website: document.getElementById('edit-social-website').value.trim(),
+                    patreon: document.getElementById('edit-social-patreon').value.trim(),
+                }));
+
+                const res = await fetch(`/api/manga/${mangaId}`, { method: 'PUT', body: fd });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                showToast('Información guardada ✓', 'success');
+                closeEditInfoModal();
+                loadManga();
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Guardar cambios';
+            }
+        }
+
+        // ── TOAST ──────────────────────────────────
+        function showToast(msg, type) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = `toast ${type} show`;
+            clearTimeout(el._timer);
+            el._timer = setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // ── INIT ───────────────────────────────────
+        loadManga();
+    </script>
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

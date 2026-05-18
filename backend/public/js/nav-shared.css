@@ -1,0 +1,284 @@
+/**
+ * KAMI — nav-shared.css
+ * Estilos del dropdown y componentes compartidos del nav
+ * Incluir en todas las páginas: <link rel="stylesheet" href="/css/nav-shared.css">
+ */
+
+:root {
+    --bg-base: #07070e;
+    --bg-surface: #0f0f1a;
+    --bg-card: #14141f;
+    --bg-card-hover: #1a1a2a;
+    --accent: #e8334a;
+    --accent-glow: rgba(232, 51, 74, 0.15);
+    --text-primary: #f2f2fa;
+    --text-secondary: #8888a0;
+    --text-muted: #4a4a62;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-hover: rgba(255, 255, 255, 0.14);
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* NAV AVATAR (Avatar del usuario en la esquina) */
+/* ═══════════════════════════════════════════════════════ */
+
+.nav-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), #f5c842);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 101;
+    transition: var(--transition);
+    box-shadow: 0 4px 12px rgba(232, 51, 74, 0.2);
+}
+
+.nav-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(232, 51, 74, 0.3);
+}
+
+.nav-avatar.open {
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 4px 12px rgba(232, 51, 74, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* NAV DROPDOWN */
+/* ═══════════════════════════════════════════════════════ */
+
+.nav-dropdown {
+    position: absolute;
+    top: 44px;
+    right: 0;
+    width: 240px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: none;
+    flex-direction: column;
+    z-index: 100;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all var(--transition);
+    backdrop-filter: blur(16px);
+}
+
+.nav-dropdown.open {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.nav-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.nav-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-dropdown::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+/* ─── HEADER DEL DROPDOWN ─── */
+
+.nav-dropdown-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-dropdown-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.nav-dropdown-email {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.nav-dropdown-badge {
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* ─── ITEMS DEL DROPDOWN ─── */
+
+.nav-dropdown-item {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.nav-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.nav-dropdown-item svg {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.nav-dropdown-item:hover svg {
+    opacity: 1;
+}
+
+.nav-dropdown-item.danger {
+    color: var(--accent);
+}
+
+.nav-dropdown-item.danger:hover {
+    background: rgba(232, 51, 74, 0.1);
+}
+
+/* ─── DIVIDER ─── */
+
+.nav-dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 0;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* NAV BUTTONS (para cuando no hay sesión) */
+/* ═══════════════════════════════════════════════════════ */
+
+.nav-btn {
+    height: 34px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition);
+}
+
+.nav-btn-ghost {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.nav-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+}
+
+.nav-btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.nav-btn-primary:hover {
+    background: #c8283d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(232, 51, 74, 0.2);
+}
+
+.nav-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* RESPONSIVE */
+/* ═══════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+    .nav-dropdown {
+        width: 200px;
+    }
+
+    .nav-dropdown-item {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+
+    .nav-dropdown-item svg {
+        width: 13px;
+        height: 13px;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ANIMACIONES */
+/* ═══════════════════════════════════════════════════════ */
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nav-dropdown.open {
+    animation: slideDown var(--transition);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ACCESIBILIDAD */
+/* ═══════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .nav-avatar,
+    .nav-dropdown,
+    .nav-dropdown-item {
+        transition: none;
+    }
+
+    .nav-dropdown.open {
+        animation: none;
+    }
+}
+
+/* Focus visible para navegación por teclado */
+.nav-avatar:focus-visible,
+.nav-dropdown-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}

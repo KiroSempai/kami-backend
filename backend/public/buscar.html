@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar · KAMI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#0e0e1e; color:#e0e0e0; font-family:'Plus Jakarta Sans',sans-serif; }
+    .buscar-layout { display: flex; max-width: 800px; margin: 0 auto; min-height: calc(100vh - 64px); flex-direction: column; }
+    .buscar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .buscar-query { font-size: 20px; font-weight: 700; color: #e0e0e0; }
+    .buscar-result-count { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
+    .buscar-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .buscar-tab { flex: 1; padding: 14px 0; text-align: center; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.4); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+    .buscar-tab:hover { color: #e0e0e0; background: rgba(255,255,255,0.03); }
+    .buscar-tab.active { color: #e0e0e0; border-bottom-color: #e8344a; font-weight: 600; }
+    .buscar-content { padding: 24px; flex: 1; }
+    .buscar-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.15); font-size: 14px; }
+    .buscar-empty i { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3; }
+  </style>
+</head>
+<body>
+  <script src="/js/menu-global.js"></script>
+
+  <div class="buscar-layout">
+    <div class="buscar-header">
+      <div class="buscar-query" id="buscar-query">—</div>
+      <div class="buscar-result-count" id="buscar-count">0 resultados</div>
+    </div>
+    <div class="buscar-tabs">
+      <button class="buscar-tab active" data-tab="top" onclick="switchTab('top')">Destacados</button>
+      <button class="buscar-tab" data-tab="latest" onclick="switchTab('latest')">Más recientes</button>
+      <button class="buscar-tab" data-tab="people" onclick="switchTab('people')">Personas</button>
+      <button class="buscar-tab" data-tab="photos" onclick="switchTab('photos')">Fotos</button>
+      <button class="buscar-tab" data-tab="videos" onclick="switchTab('videos')">Videos</button>
+    </div>
+    <div class="buscar-content" id="buscar-content">
+      <div class="buscar-empty"><i class="ti ti-search"></i>Resultados de búsqueda aparecerán aquí</div>
+    </div>
+  </div>
+
+  <script>
+    function qs(name) { var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)')); return m ? decodeURIComponent(m[1]) : ''; }
+
+    var query = qs('q');
+    if (query) {
+      document.getElementById('buscar-query').textContent = query;
+      document.getElementById('buscar-count').textContent = 'Mostrando resultados';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.buscar-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.tab === tab); });
+      document.getElementById('buscar-content').innerHTML = '<div class="buscar-empty"><i class="ti ti-' + tabIcon(tab) + '"></i>Resultados de <strong>' + tabLabel(tab) + '</strong> para «' + query + '»</div>';
+    }
+
+    function tabIcon(t) { return { top:'stars', latest:'clock', people:'users', photos:'photo', videos:'video' }[t] || 'search'; }
+    function tabLabel(t) { return { top:'Destacados', latest:'Más recientes', people:'Personas', photos:'Fotos', videos:'Videos' }[t] || t; }
+  </script>
+</body>
+</html>

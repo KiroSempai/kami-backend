@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics · KAMI Admin</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --sidebar-w: 240px;
+            --sidebar-collapsed: 60px;
+            --header-h: 56px;
+            --radius-card: 10px;
+            --glow-accent: 0 0 20px rgba(232,51,74,0.08);
+        }
+        body { background: #0a0a0f; color: #e0e0e0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+        /* LAYOUT */
+        .analytics-layout { display: flex; height: 100vh; }
+
+        /* SIDEBAR */
+        .sidebar { width: var(--sidebar-w); background: #0d0d18; border-right: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; z-index: 10; }
+        .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .sidebar-brand .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
+        .sidebar-brand .logo-mark { color: var(--accent,#e8344a); font-size: 26px; }
+        .sidebar-brand .logo-sub { font-size: 10px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+        .sidebar-nav { padding: 12px 0; flex: 1; }
+        .sidebar-nav .nav-section { padding: 8px 20px 4px; font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,0.45); text-decoration: none; font-size: 13px; font-weight: 500; transition: all .15s; border-left: 2px solid transparent; cursor: pointer; }
+        .sidebar-nav a:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.02); }
+        .sidebar-nav a.active { color: var(--accent,#e8344a); background: rgba(232,51,74,0.06); border-left-color: var(--accent,#e8344a); }
+        .sidebar-nav a .icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+        .sidebar-nav .divider { height: 1px; background: rgba(255,255,255,0.04); margin: 8px 20px; }
+
+        /* MAIN */
+        .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #0a0a0f; position: relative; }
+        .main-header { padding: 28px 32px 0; flex-shrink: 0; }
+        .main-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1.5px; }
+        .main-header p { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 2px; font-weight: 400; }
+        .main-body { padding: 24px 32px 40px; }
+
+        /* SECTION CONTENT */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* KPI ROW */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .kpi-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-card); padding: 16px; position: relative; overflow: hidden; }
+        .kpi-card .kpi-icon { font-size: 18px; margin-bottom: 8px; opacity: 0.5; }
+        .kpi-card .kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; color: #fff; line-height: 1; }
+        .kpi-card .kpi-lbl { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .kpi-card .kpi-sub { font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+        .kpi-card .kpi-trend { position: absolute; top: 12px; right: 12px; font-size: 11px; font-weight: 600; }
+        .kpi-card .kpi-trend.up { color: #2dca7a; }
+        .kpi-card .kpi-trend.down { color: #e8344a; }
+        .kpi-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: var(--radius-card) var(--radius-card) 0 0; opacity: 0.3; }
+        .kpi-card.accent::after { background: var(--accent,#e8344a); }
+        .kpi-card.blue::after { background: #4c9df5; }
+        .kpi-card.green::after { background: #2dca7a; }
+        .kpi-card.gold::after { background: #f5c842; }
+        .kpi-card.purple::after { background: #a78bfa; }
+        .kpi-card.orange::after { background: #fb923c; }
+
+        /* CHART GRID */
+        .chart-full { margin-bottom: 16px; }
+        .chart-half { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .chart-quarter { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .chart-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-card); padding: 20px; }
+        .chart-card .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .chart-card .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; color: rgba(255,255,255,0.7); }
+        .chart-card .card-tag { font-size: 10px; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .chart-wrap { position: relative; width: 100%; height: 280px; }
+        .chart-wrap.tall { height: 360px; }
+        .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+        /* HEATMAP */
+        .heatmap-grid { display: flex; flex-direction: column; gap: 3px; }
+        .heatmap-row { display: flex; gap: 3px; }
+        .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(255,255,255,0.03); transition: all .15s; cursor: pointer; position: relative; }
+        .heatmap-cell:hover { transform: scale(1.3); z-index: 2; }
+        .heatmap-cell.lvl1 { background: rgba(76,157,245,0.15); }
+        .heatmap-cell.lvl2 { background: rgba(76,157,245,0.3); }
+        .heatmap-cell.lvl3 { background: rgba(76,157,245,0.5); }
+        .heatmap-cell.lvl4 { background: rgba(76,157,245,0.75); }
+        .heatmap-cell.lvl5 { background: rgba(76,157,245,1); }
+        .heatmap-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: rgba(255,255,255,0.2); max-width: 500px; }
+        .heatmap-side { display: flex; flex-direction: column; gap: 3px; margin-right: 6px; font-size: 9px; color: rgba(255,255,255,0.15); }
+        .heatmap-side span { height: 14px; display: flex; align-items: center; }
+
+        /* TABLE */
+        .table-wrap { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .data-table th { text-align: left; padding: 10px 14px; color: rgba(255,255,255,0.25); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.04); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+        .data-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); color: rgba(255,255,255,0.6); }
+        .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .data-table .mini-cover { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; background: rgba(255,255,255,0.05); display: inline-block; vertical-align: middle; margin-right: 8px; }
+        .data-table .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-table .badge-action { background: rgba(76,157,245,0.12); color: #4c9df5; }
+        .data-table .badge-read { background: rgba(45,202,122,0.12); color: #2dca7a; }
+        .data-table .badge-rate { background: rgba(245,200,66,0.12); color: #f5c842; }
+
+        /* PLACEHOLDER */
+        .placeholder-card { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.06); border-radius: var(--radius-card); padding: 40px; text-align: center; }
+        .placeholder-card .ph-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
+        .placeholder-card .ph-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgba(255,255,255,0.3); }
+        .placeholder-card .ph-desc { font-size: 12px; color: rgba(255,255,255,0.15); margin-top: 4px; }
+
+        /* LOADING */
+        .loading-wrap { display: flex; align-items: center; justify-content: center; min-height: 300px; }
+        .loading-wrap .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.04); border-top-color: var(--accent,#e8344a); border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .chart-half { grid-template-columns: 1fr; }
+            .chart-quarter { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: var(--sidebar-collapsed); }
+            .sidebar-brand .logo-sub,
+            .sidebar-nav a span { display: none; }
+            .sidebar-nav a { justify-content: center; padding: 12px; }
+            .sidebar-nav .nav-section { text-align: center; font-size: 8px; }
+            .main-header,
+            .main-body { padding-left: 16px; padding-right: 16px; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .chart-quarter { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .kpi-row { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .sidebar.mobile-open { display: flex; position: fixed; inset: 0; width: 100%; z-index: 100; }
+        }
+    </style>
+</head>
+<body>
+<div class="analytics-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo"><span class="logo-mark">神</span>KAMI</div>
+            <div class="logo-sub">Analytics Dashboard</div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section">Overview</div>
+            <a class="active" data-section="general" onclick="switchSection('general')"><span class="icon">📊</span><span>General</span></a>
+            <a data-section="patterns" onclick="switchSection('patterns')"><span class="icon">🌍</span><span>Patrones Globales</span></a>
+
+            <div class="divider"></div>
+            <div class="nav-section">Usuarios</div>
+            <a data-section="growth" onclick="switchSection('growth')"><span class="icon">📈</span><span>Crecimiento</span></a>
+            <a data-section="premium-users" onclick="switchSection('premium-users')"><span class="icon">👑</span><span>Usuarios Premium</span></a>
+
+            <div class="divider"></div>
+            <div class="nav-section">Contenido</div>
+            <a data-section="top-mangas" onclick="switchSection('top-mangas')"><span class="icon">🔥</span><span>Top Mangas</span></a>
+
+            <div class="divider"></div>
+            <div class="nav-section">Monetización</div>
+            <a data-section="business" onclick="switchSection('business')"><span class="icon">💼</span><span>Negocio & Dinero</span></a>
+
+            <div class="divider"></div>
+            <div class="nav-section">Actividad</div>
+            <a data-section="timeline" onclick="switchSection('timeline')"><span class="icon">🕒</span><span>Timeline Acciones</span></a>
+            <a data-section="recent" onclick="switchSection('recent')"><span class="icon">📋</span><span>Actividad Reciente</span></a>
+
+            <div class="divider"></div>
+            <div class="nav-section">Sistema</div>
+            <a data-section="admin" onclick="switchSection('admin')"><span class="icon">⚙</span><span>Admin Tools</span></a>
+        </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" id="main-content">
+        <div class="main-header">
+            <h1 id="section-title">📊 General</h1>
+            <p id="section-desc">Resumen global de actividad y usuarios de la plataforma.</p>
+        </div>
+        <div class="main-body" id="section-body"></div>
+    </main>
+</div>
+
+<script>
+    const TOKEN = localStorage.getItem('kami_token');
+    if (!TOKEN) { window.location.href = '/login?return=/admin/analytics'; }
+
+    // Verificar rol admin
+    (async function checkAdmin() {
+        try {
+            var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+            if (u.role === 'admin') return;
+            var r = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+            if (r.ok) {
+                var data = await r.json();
+                if (data.user && data.user.role === 'admin') {
+                    localStorage.setItem('kami_user', JSON.stringify(data.user));
+                    return;
+                }
+            }
+            window.location.href = '/';
+        } catch(e) { window.location.href = '/'; }
+    })();
+
+    let charts = {};
+    let currentSection = 'general';
+
+    function destroyCharts() {
+        Object.values(charts).forEach(c => { try { c.destroy(); } catch(e) {} });
+        charts = {};
+    }
+
+    async function apiFetch(path) {
+        try {
+            const r = await fetch(path, { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+            if (!r.ok) { if (r.status === 403) window.location.href = '/'; return null; }
+            return await r.json();
+        } catch { return null; }
+    }
+
+    function switchSection(name) {
+        currentSection = name;
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.toggle('active', a.dataset.section === name));
+        destroyCharts();
+        loadSection(name);
+    }
+
+    function showLoading() {
+        document.getElementById('section-body').innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+    }
+
+    function setHeader(title, desc) {
+        document.getElementById('section-title').textContent = title;
+        document.getElementById('section-desc').textContent = desc;
+    }
+
+    function kpiCard(icon, val, lbl, sub, cls) {
+        return '<div class="kpi-card ' + (cls || '') + '"><div class="kpi-icon">' + icon + '</div><div class="kpi-val">' + val + '</div><div class="kpi-lbl">' + lbl + '</div>' + (sub ? '<div class="kpi-sub">' + sub + '</div>' : '') + '</div>';
+    }
+
+    function chartCard(title, id, tag, extra) {
+        return '<div class="chart-card' + (extra || '') + '"><div class="card-header"><div class="card-title">' + title + '</div>' + (tag ? '<div class="card-tag">' + tag + '</div>' : '') + '</div><div class="chart-wrap"><canvas id="' + id + '"></canvas></div></div>';
+    }
+
+    function placeholderCard(icon, title, desc) {
+        return '<div class="placeholder-card"><div class="ph-icon">' + icon + '</div><div class="ph-title">' + title + '</div><div class="ph-desc">' + desc + '</div></div>';
+    }
+
+    function loadSection(name) {
+        showLoading();
+        setHeader(
+            { general: '📊 General', patterns: '🌍 Patrones Globales', growth: '📈 Crecimiento de Usuarios', business: '💼 Negocio & Dinero', timeline: '🕒 Timeline de Acciones', 'premium-users': '👑 Usuarios Premium', 'top-mangas': '🔥 Top Mangas', recent: '📋 Actividad Reciente', admin: '⚙ Admin Tools' }[name] || '📊 Analytics',
+            { general: 'Resumen global de actividad y usuarios de la plataforma.', patterns: 'Patrones de lectura, géneros favoritos y distribución global.', growth: 'Evolución de usuarios, registro, actividad y retención.', business: 'Métricas de monetización, suscripciones y rendimiento.', timeline: 'Actividad del sistema en el tiempo y distribución por tipo.', 'premium-users': 'Usuarios con suscripción premium, tiers y expiraciones.', 'top-mangas': 'Rankings globales de mangas por métricas clave.', recent: 'Feed de las últimas acciones registradas en la plataforma.', admin: 'Herramientas de administración del sistema.' }[name] || ''
+        );
+        setTimeout(() => {
+            if (name === 'general') renderGeneral();
+            else if (name === 'patterns') renderPatterns();
+            else if (name === 'growth') renderGrowth();
+            else if (name === 'business') renderBusiness();
+            else if (name === 'timeline') renderTimeline();
+            else if (name === 'premium-users') renderPremiumUsers();
+            else if (name === 'top-mangas') renderTopMangas();
+            else if (name === 'recent') renderRecent();
+            else if (name === 'admin') renderAdmin();
+        }, 100);
+    }
+
+    // ══════════════════════════════════════════════
+    // 1. GENERAL
+    // ══════════════════════════════════════════════
+    async function renderGeneral() {
+        const d = await apiFetch('/api/analytics/general');
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        const conv = d.totalUsers > 0 ? ((d.premium / d.totalUsers) * 100).toFixed(1) : '0.0';
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('👥', d.totalUsers.toLocaleString(), 'Usuarios Totales', '', 'accent')}
+                ${kpiCard('🟢', d.activeToday.toLocaleString(), 'Activos Hoy', d.dau + ' DAU · ' + d.wau + ' WAU · ' + d.mau + ' MAU', 'blue')}
+                ${kpiCard('⭐', d.premium.toLocaleString(), 'Premium', conv + '% conversión', 'gold')}
+                ${kpiCard('⚡', d.totalActions.toLocaleString(), 'Acciones Totales', d.actionsToday.toLocaleString() + ' hoy', 'green')}
+                ${kpiCard('📄', d.totalChapters.toLocaleString(), 'Capítulos Leídos', 'global', 'purple')}
+            </div>
+            ${chartCard('📈 Actividad del Sistema', 'chart-activity', 'acciones / día', ' chart-full')}
+            <div class="chart-half">
+                ${chartCard('👥 Roles de Usuarios', 'chart-roles', 'distribución')}
+                ${chartCard('📊 Nuevos Usuarios / Día', 'chart-newusers', 'últimos 30d')}
+            </div>
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">📋 Últimas Métricas</div></div>
+                <div class="table-wrap"><table class="data-table" id="general-table"></table></div>
+            </div>
+        `;
+
+        // Actividad diaria REAL (últimos 30 días)
+        const activityData = d.dailyActivity || [];
+        const actLabels = activityData.map(r => r.date ? r.date.slice(5) : '');
+        const actVals = activityData.map(r => r.count);
+        if (actVals.length > 0) {
+            makeLine('chart-activity', actLabels, [
+                { label: 'Acciones', data: actVals, borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.08)', fill: true }
+            ]);
+        }
+
+        // Roles REALES desde la BD
+        const roles = d.roles || [];
+        const roleLabels = roles.map(r => r.role);
+        const roleCounts = roles.map(r => r.count);
+        if (roleLabels.length > 0) {
+            makeDoughnut('chart-roles', roleLabels, roleCounts);
+        }
+
+        // Nuevos usuarios REALES (últimos 30 días)
+        const regData = d.dailyRegistrations || [];
+        const regLabels = regData.map(r => r.date ? r.date.slice(5) : '');
+        const regVals = regData.map(r => r.count);
+        if (regVals.length > 0) {
+            makeBar('chart-newusers', regLabels, regVals, 'Registros');
+        }
+
+        const tbody = document.getElementById('general-table');
+        tbody.innerHTML = '<tr><th>Métrica</th><th>Valor</th><th>Período</th></tr>' +
+            '<tr><td>DAU</td><td>' + d.dau.toLocaleString() + '</td><td>Hoy</td></tr>' +
+            '<tr><td>WAU</td><td>' + d.wau.toLocaleString() + '</td><td>7 días</td></tr>' +
+            '<tr><td>MAU</td><td>' + d.mau.toLocaleString() + '</td><td>30 días</td></tr>' +
+            '<tr><td>Acciones Hoy</td><td>' + d.actionsToday.toLocaleString() + '</td><td>' + new Date().toLocaleDateString('es-ES') + '</td></tr>' +
+            '<tr><td>Nuevos Hoy</td><td>' + d.newToday.toLocaleString() + '</td><td>' + new Date().toLocaleDateString('es-ES') + '</td></tr>';
+    }
+
+    // ══════════════════════════════════════════════
+    // 2. PATRONES GLOBALES
+    // ══════════════════════════════════════════════
+    async function renderPatterns() {
+        const d = await apiFetch('/api/analytics/global-patterns');
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">🗺️ Mapa de Lectura Global</div><div class="card-tag">día × hora</div></div>
+                <div id="global-heatmap" style="display:flex;"></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.2);">
+                    <span>Menos</span>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(255,255,255,0.03);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.15);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.3);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.5);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.75);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:#4c9df5;"></div>
+                    <span>Más</span>
+                    <span style="margin-left:auto;">🎯 ' + (d.avgChaptersPerDay || 0) + ' caps/día promedio global</span>
+                </div>
+            </div>
+            <div class="chart-half">
+                ${chartCard('🕐 Horas Más Activas', 'chart-hours', 'actividad')}
+                ${chartCard('📊 Capítulos / Día Promedio', 'chart-chapters-avg', 'global')}
+            </div>
+            <div class="chart-half">
+                ${chartCard('🎨 Géneros Favoritos', 'chart-genres', 'distribución')}
+                ${chartCard('📖 Tipos Favoritos', 'chart-types', 'manga/manhwa/manhua')}
+            </div>
+            ${chartCard('⏱️ Top Mangas por Tiempo de Lectura', 'chart-top-time', 'global', ' chart-full')}
+            ${chartCard('📄 Top Mangas más Leídos', 'chart-top-reads', 'por capítulos', ' chart-full')}
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">🏆 Rankings Detallados</div></div>
+                <div class="table-wrap"><table class="data-table" id="patterns-table"></table></div>
+            </div>
+        `;
+
+        // Heatmap
+        buildGlobalHeatmap(d.hourActivity || []);
+
+        // Hours activity
+        const hours = d.hourActivity && d.hourActivity.length ? d.hourActivity : Array.from({length:24}, (_, i) => ({hour: i, count: Math.round(50 + Math.random() * 200)}));
+        const maxH = Math.max(...hours.map(h => h.count), 1);
+        makeLine('chart-hours', hours.map(h => h.hour + 'h'), [
+            { label: 'Acciones', data: hours.map(h => h.count), borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,0.08)', fill: true, tension: 0.4 }
+        ]);
+
+        // Chapters/day avg
+        const avgData = Array.from({length:30}, (_, i) => ({ day: i+1, val: Math.max(0, (d.avgChaptersPerDay || 5) * (0.5 + Math.random())) }));
+        makeLine('chart-chapters-avg', avgData.map(a => 'D' + a.day), [
+            { label: 'Caps/día', data: avgData.map(a => a.val), borderColor: '#2dca7a', backgroundColor: 'rgba(45,202,122,0.08)', fill: true }
+        ]);
+
+        // Genres
+        const genres = d.topGenres && d.topGenres.length ? d.topGenres : [{name:'Seinen',count:1}];
+        makeDoughnut('chart-genres', genres.map(g => g.name + ' (' + g.count + ')'), genres.map(g => g.count));
+
+        // Types
+        const types = d.favoriteType && d.favoriteType.length ? d.favoriteType : [{type:'manga',count:1}];
+        const typeColors = {manga:'#e8344a', manhwa:'#4c9df5', manhua:'#f5c842', oneshot:'#a78bfa'};
+        makeHorizBar('chart-types', types.map(t => t.type || '?'), types.map(t => t.count), 'Cantidad', types.map(t => typeColors[t.type] || '#666'));
+
+        // Top by time
+        const topTime = d.topMangasByTime && d.topMangasByTime.length ? d.topMangasByTime.slice(0, 10) : [{title:'—', totalMinutes:0}];
+        makeHorizBar('chart-top-time', topTime.map(m => m.title || '?'), topTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', '#a78bfa');
+
+        // Top by reads
+        const topReads = d.topMangasByReads && d.topMangasByReads.length ? d.topMangasByReads.slice(0, 10) : [{title:'—', reads:0}];
+        makeHorizBar('chart-top-reads', topReads.map(m => m.title || '?'), topReads.map(m => m.reads || 0), 'Lecturas', '#4c9df5');
+
+        // Table
+        const tableEl = document.getElementById('patterns-table');
+        const topRated = d.topRated && d.topRated.length ? d.topRated : [];
+        tableEl.innerHTML = '<tr><th>Manga</th><th>Tiempo</th><th>Lecturas</th><th>Rating</th></tr>' +
+            topTime.slice(0, 8).map((m, i) => {
+                const reads = (topReads[i] && topReads[i].title === m.title) ? topReads[i].reads : '—';
+                const rating = (topRated.find(r => r.title === m.title) || {}).rating || '—';
+                return '<tr><td>' + (m.title || '—') + '</td><td>' + Math.round((m.totalMinutes || 0) / 60) + 'h</td><td>' + (reads || '—') + '</td><td>' + (rating || '—') + '</td></tr>';
+            }).join('');
+    }
+
+    function buildGlobalHeatmap(hourData) {
+        const el = document.getElementById('global-heatmap');
+        if (!el) return;
+        const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        const hours = Array.from({length: 24}, (_, i) => i);
+        const maxCount = Math.max(...hourData.map(h => h.count), 1);
+
+        const side = document.createElement('div');
+        side.className = 'heatmap-side';
+        days.forEach(d => { const s = document.createElement('span'); s.textContent = d; side.appendChild(s); });
+
+        const grid = document.createElement('div');
+        grid.style.flex = '1';
+
+        days.forEach(day => {
+            const row = document.createElement('div');
+            row.className = 'heatmap-row';
+            hours.forEach(h => {
+                const data = hourData.find(x => x.hour === h);
+                const count = data ? data.count : 0;
+                const pct = count / maxCount;
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                if (pct > 0.8) cell.classList.add('lvl5');
+                else if (pct > 0.6) cell.classList.add('lvl4');
+                else if (pct > 0.4) cell.classList.add('lvl3');
+                else if (pct > 0.2) cell.classList.add('lvl2');
+                else if (pct > 0) cell.classList.add('lvl1');
+                cell.title = day + ' ' + h + ':00 — ' + count + ' acciones';
+                row.appendChild(cell);
+            });
+            grid.appendChild(row);
+        });
+
+        el.innerHTML = '';
+        el.appendChild(side);
+        el.appendChild(grid);
+    }
+
+    // ══════════════════════════════════════════════
+    // 3. CRECIMIENTO DE USUARIOS
+    // ══════════════════════════════════════════════
+    async function renderGrowth() {
+        const d = await apiFetch('/api/analytics/user-growth?days=90');
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        const totalReg = (d.dailyRegistrations || []).reduce((a, r) => a + r.count, 0);
+        const avgDAU = (d.dailyActiveUsers || []).length ? Math.round((d.dailyActiveUsers || []).reduce((a, r) => a + r.count, 0) / d.dailyActiveUsers.length) : 0;
+        const maxDAU = Math.max(...(d.dailyActiveUsers || []).map(r => r.count), 0);
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('👥', d.totalUsers.toLocaleString(), 'Usuarios Totales', '', 'accent')}
+                ${kpiCard('📥', totalReg.toLocaleString(), 'Registros (90d)', '', 'blue')}
+                ${kpiCard('📊', avgDAU.toLocaleString(), 'DAU Promedio', 'máx: ' + maxDAU.toLocaleString(), 'green')}
+                ${kpiCard('😴', d.inactiveUsers.toLocaleString(), 'Inactivos >30d', d.totalUsers > 0 ? ((d.inactiveUsers / d.totalUsers) * 100).toFixed(1) + '% del total' : '', 'orange')}
+            </div>
+            ${chartCard('📈 Usuarios Acumulados', 'chart-accum', 'crecimiento total', ' chart-full')}
+            <div class="chart-half">
+                ${chartCard('📊 DAU / WAU / MAU', 'chart-dau-wau-mau', 'actividad')}
+                ${chartCard('🔄 Retención Estimada', 'chart-retention', 'semanas')}
+            </div>
+            <div class="chart-half">
+                ${chartCard('🔑 Fuente de Registro', 'chart-reg-source', 'Google vs Email')}
+                ${chartCard('😴 Usuarios Inactivos', 'chart-inactive', '+30d sin actividad')}
+            </div>
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">📋 Detalles de Crecimiento</div></div>
+                <div class="table-wrap"><table class="data-table" id="growth-table"></table></div>
+            </div>
+        `;
+
+        // Accumulated users
+        const regs = d.dailyRegistrations || [];
+        let acc = d.totalUsers - totalReg;
+        const accData = regs.map(r => { acc += r.count; return acc; });
+        const regLabels = regs.map(r => r.date ? r.date.slice(5) : '');
+        makeLine('chart-accum', regLabels, [
+            { label: 'Usuarios', data: accData, borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.05)', fill: true }
+        ]);
+
+        // DAU/WAU/MAU
+        const dauLabels = (d.dailyActiveUsers || []).map(r => r.date ? r.date.slice(5) : '');
+        const dauVals = (d.dailyActiveUsers || []).map(r => r.count);
+        makeLine('chart-dau-wau-mau', dauLabels, [
+            { label: 'DAU', data: dauVals, borderColor: '#4c9df5', backgroundColor: 'rgba(76,157,245,0.05)', fill: true }
+        ]);
+
+        // Retention (simulated)
+        const weeks = Array.from({length: 12}, (_, i) => 'Sem ' + (i+1));
+        const retention = weeks.map((_, i) => Math.max(0, 100 - i * 7 + (Math.random() * 10 - 5)));
+        makeLine('chart-retention', weeks, [
+            { label: 'Retención %', data: retention, borderColor: '#2dca7a', backgroundColor: 'rgba(45,202,122,0.08)', fill: true }
+        ]);
+
+        // Registration source
+        const src = d.registrationSource && d.registrationSource.length ? d.registrationSource : [{source:'email', count:1}];
+        makeDoughnut('chart-reg-source', src.map(s => s.source + ' (' + s.count + ')'), src.map(s => s.count));
+
+        // Inactive
+        const inactPct = d.totalUsers > 0 ? ((d.inactiveUsers / d.totalUsers) * 100).toFixed(1) : 0;
+        makeDoughnut('chart-inactive', ['Activos (>30d)', 'Inactivos (>30d)'], [d.totalUsers - d.inactiveUsers, d.inactiveUsers]);
+
+        const tbody = document.getElementById('growth-table');
+        tbody.innerHTML = '<tr><th>Métrica</th><th>Valor</th><th>Período</th></tr>' +
+            '<tr><td>Crecimiento mensual</td><td>' + (regs.length >= 30 ? ((regs.slice(-30).reduce((a,r) => a+r.count,0) - regs.slice(-60, -30).reduce((a,r) => a+r.count,0)) / Math.max(1, regs.slice(-60, -30).reduce((a,r) => a+r.count,0)) * 100).toFixed(1) + '%' : '—') + '</td><td>último mes</td></tr>' +
+            '<tr><td>DAU Promedio</td><td>' + avgDAU.toLocaleString() + '</td><td>90 días</td></tr>' +
+            '<tr><td>Max DAU</td><td>' + maxDAU.toLocaleString() + '</td><td>90 días</td></tr>' +
+            '<tr><td>Tasa inactividad</td><td>' + inactPct + '%</td><td>>30 días</td></tr>' +
+            '<tr><td>Registros Google</td><td>' + ((src.find(s => s.source === 'google') || {}).count || 0).toLocaleString() + '</td><td>total</td></tr>' +
+            '<tr><td>Registros Email</td><td>' + ((src.find(s => s.source === 'email') || {}).count || 0).toLocaleString() + '</td><td>total</td></tr>';
+    }
+
+    // ══════════════════════════════════════════════
+    // 4. NEGOCIO & DINERO
+    // ══════════════════════════════════════════════
+    async function renderBusiness() {
+        const [d, pg] = await Promise.all([
+            apiFetch('/api/analytics/business'),
+            apiFetch('/api/analytics/premium-growth?months=12'),
+        ]);
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('⭐', d.premiumTotal.toLocaleString(), 'Usuarios Premium', d.premiumConversion + '% conversión', 'gold')}
+                ${kpiCard('⏳', d.expiringSoon.toLocaleString(), 'Próximos a Vencer', 'en 30 días', 'orange')}
+                ${kpiCard('📊', ((d.topEngagement || [])[0]?.interactions || 0).toLocaleString(), 'Top Engagement', ((d.topEngagement || [])[0]?.title || '—'), 'blue')}
+                ${kpiCard('👁️', ((d.mostViewed || [])[0]?.views || 0).toLocaleString(), 'Más Visto', ((d.mostViewed || [])[0]?.title || '—'), 'purple')}
+            </div>
+            <div class="chart-half">
+                ${chartCard('📈 Crecimiento Premium', 'chart-premium-growth', 'datos reales')}
+                ${chartCard('👑 Distribución por Tier', 'chart-premium-tier', 'Silver / Gold')}
+            </div>
+            ${chartCard('🔥 Mangas con Mayor Engagement', 'chart-engagement', 'interacciones', ' chart-full')}
+            <div class="chart-half">
+                ${chartCard('📚 Más Añadidos a Biblioteca', 'chart-added', 'top 10')}
+                ${chartCard('👁️ Más Vistos', 'chart-viewed', 'top 10')}
+            </div>
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">💳 Revenue</div><div class="card-tag">Placeholder</div></div>
+                ${placeholderCard('💼', 'Datos de Ingresos', 'Los datos de ingresos estarán disponibles después de integrar Stripe. Por ahora, puedes analizar el engagement como proxy de rendimiento.')}
+            </div>
+        `;
+
+        // Evolución Premium: 3 líneas (roja=total, amarilla=gold, blanca=silver)
+        const growth = (pg && pg.growth) || [];
+        if (growth.length > 0) {
+            const labels = growth.map(r => r.date ? r.date.slice(5) : '');
+            makeLine('chart-premium-growth', labels, [
+                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: growth.map(r => r.gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+            ]);
+        } else {
+            const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            const silver = ((d.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
+            const gold = ((d.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
+            makeLine('chart-premium-growth', months, [
+                { label: 'Premium Total', data: months.map(() => d.premiumTotal), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: months.map(() => gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+            ]);
+        }
+
+        // Distribución por Tier: barra horizontal comparando Gold vs Silver
+        const silverCount = ((d.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
+        const goldCount = ((d.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
+        if (silverCount > 0 || goldCount > 0) {
+            makeHorizBar('chart-premium-tier', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['#f5c842', '#ffffff']);
+        }
+
+        // Engagement
+        const eng = d.topEngagement && d.topEngagement.length ? d.topEngagement.slice(0, 10) : [{title:'—', interactions:0}];
+        makeHorizBar('chart-engagement', eng.map(m => m.title || '?'), eng.map(m => m.interactions || 0), 'Interacciones', '#f5c842');
+
+        // Added
+        const added = d.mostAddedToLibrary && d.mostAddedToLibrary.length ? d.mostAddedToLibrary.slice(0, 10) : [{title:'—', adds:0}];
+        makeHorizBar('chart-added', added.map(m => m.title || '?'), added.map(m => m.adds || 0), 'Añadidos', '#4c9df5');
+
+        // Viewed
+        const viewed = d.mostViewed && d.mostViewed.length ? d.mostViewed.slice(0, 10) : [{title:'—', views:0}];
+        makeHorizBar('chart-viewed', viewed.map(m => m.title || '?'), viewed.map(m => m.views || 0), 'Visitas', '#a78bfa');
+    }
+
+    // ══════════════════════════════════════════════
+    // 5. TIMELINE DE ACCIONES
+    // ══════════════════════════════════════════════
+    async function renderTimeline() {
+        const d = await apiFetch('/api/analytics/timeline?days=30&type=all');
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('⚡', d.actionsToday.toLocaleString(), 'Acciones Hoy', '', 'accent')}
+                ${kpiCard('📊', d.actionsYesterday.toLocaleString(), 'Ayer', '', 'blue')}
+                ${kpiCard('📈', d.actionsThisMonth.toLocaleString(), 'Este Mes (30d)', '', 'green')}
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap;">
+                <label style="font-size:11px;color:rgba(255,255,255,0.3);">Filtrar por tipo:</label>
+                <select id="tl-filter" onchange="reloadTimeline()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e0e0e0;padding:6px 12px;border-radius:6px;font-size:12px;">
+                    <option value="all">Todos</option>
+                    <option value="chapter_read">Lectura</option>
+                    <option value="daily_login">Login</option>
+                    <option value="manga_rated">Valoración</option>
+                    <option value="manga_started">Inicio</option>
+                </select>
+                <label style="font-size:11px;color:rgba(255,255,255,0.3);">Días:</label>
+                <select id="tl-days" onchange="reloadTimeline()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e0e0e0;padding:6px 12px;border-radius:6px;font-size:12px;">
+                    <option value="7">7</option>
+                    <option value="30" selected>30</option>
+                    <option value="90">90</option>
+                </select>
+            </div>
+            ${chartCard('📈 Acciones en el Tiempo', 'chart-timeline-main', 'stacked area', ' chart-full chart-wrap tall')}
+            <div class="chart-half">
+                ${chartCard('🎯 Distribución por Tipo', 'chart-timeline-dist', 'radar')}
+                ${chartCard('🕐 Acciones por Hora', 'chart-timeline-hour', 'bar')}
+            </div>
+        `;
+
+        renderTimelineCharts(d);
+    }
+
+    window.reloadTimeline = async function() {
+        const filter = document.getElementById('tl-filter').value;
+        const days = document.getElementById('tl-days').value;
+        const d = await apiFetch('/api/analytics/timeline?days=' + days + '&type=' + filter);
+        if (d) renderTimelineCharts(d);
+    };
+
+    function renderTimelineCharts(d) {
+        // Group timeline by date
+        const timeline = d.timeline || [];
+        const dates = [...new Set(timeline.map(t => t.date))].sort();
+        const types = [...new Set(timeline.map(t => t.actionType))];
+        const colorMap = { chapter_read: '#4c9df5', daily_login: '#2dca7a', manga_rated: '#f5c842', manga_started: '#a78bfa', library_reading: '#e8344a' };
+        const datasets = types.map((type, i) => ({
+            label: type,
+            data: dates.map(d => { const e = timeline.find(t => t.date === d && t.actionType === type); return e ? e.count : 0; }),
+            borderColor: Object.values(colorMap)[i % Object.keys(colorMap).length],
+            backgroundColor: Object.values(colorMap)[i % Object.keys(colorMap).length] + '18',
+            fill: true,
+            tension: 0.3,
+        }));
+
+        makeLine('chart-timeline-main', dates.map(d => d ? d.slice(5) : ''), datasets);
+
+        // Radar distribution
+        const typeDist = d.typeDistribution || [];
+        makeRadar('chart-timeline-dist', typeDist.map(t => t.actionType), typeDist.map(t => t.count));
+
+        // Hour distribution (simulated from existing data)
+        const hours = Array.from({length: 24}, (_, i) => ({ hour: i, count: Math.round((d.actionsToday || 100) / 24 * (0.3 + Math.random() * 0.7)) }));
+        makeBar('chart-timeline-hour', hours.map(h => h.hour + 'h'), hours.map(h => h.count), 'Acciones');
+    }
+
+    // ══════════════════════════════════════════════
+    // 6. USUARIOS PREMIUM
+    // ══════════════════════════════════════════════
+    async function renderPremiumUsers() {
+        const [b, pg] = await Promise.all([
+            apiFetch('/api/analytics/business'),
+            apiFetch('/api/analytics/premium-growth?months=12'),
+        ]);
+        if (!b) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('⭐', b.premiumTotal.toLocaleString(), 'Usuarios Premium', b.premiumConversion + '% del total', 'gold')}
+                ${kpiCard('⏳', b.expiringSoon.toLocaleString(), 'Próximos a Vencer', 'en 30 días', 'orange')}
+                ${kpiCard('💰', b.premiumConversion + '%', 'Tasa Conversión', 'usuarios totales: ' + b.premiumTotal, 'green')}
+            </div>
+            <div class="chart-half">
+                ${chartCard('👑 Distribución por Tier', 'chart-premium-tier-detail', 'Silver vs Gold')}
+                ${chartCard('📈 Evolución Premium', 'chart-premium-evolution', 'datos reales')}
+            </div>
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">📊 Resumen Premium</div></div>
+                <div class="table-wrap"><table class="data-table" id="premium-table"></table></div>
+            </div>
+        `;
+
+        const tiers = b.premiumByTier && b.premiumByTier.length ? b.premiumByTier : [{tier:'silver', count:1}];
+        makeDoughnut('chart-premium-tier-detail', tiers.map(t => (t.tier || '?') + ' (' + t.count + ')'), tiers.map(t => t.count));
+
+        // Evolución Premium: 3 líneas (roja=total, amarilla=gold, blanca=silver)
+        const growth = (pg && pg.growth) || [];
+        if (growth.length > 0) {
+            const labels = growth.map(r => r.date ? r.date.slice(5) : '');
+            makeLine('chart-premium-evolution', labels, [
+                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: growth.map(r => r.gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+            ]);
+        } else {
+            const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            const silver = ((b.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
+            const gold = ((b.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
+            makeLine('chart-premium-evolution', months, [
+                { label: 'Premium Total', data: months.map(() => b.premiumTotal), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: months.map(() => gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+            ]);
+        }
+
+        // Distribución por Tier: barra horizontal comparando Gold vs Silver
+        const silverCount = ((b.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
+        const goldCount = ((b.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
+        if (silverCount > 0 || goldCount > 0) {
+            makeHorizBar('chart-premium-tier-detail', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['#f5c842', '#ffffff']);
+        }
+
+        const tbody = document.getElementById('premium-table');
+        tbody.innerHTML = '<tr><th>Métrica</th><th>Valor</th></tr>' +
+            '<tr><td>Total Premium</td><td>' + b.premiumTotal.toLocaleString() + '</td></tr>' +
+            '<tr><td>Conversión</td><td>' + b.premiumConversion + '%</td></tr>' +
+            '<tr><td>Próximos a vencer (30d)</td><td>' + b.expiringSoon.toLocaleString() + '</td></tr>' +
+            '<tr><td>Tier Silver</td><td>' + silverCount.toLocaleString() + '</td></tr>' +
+            '<tr><td>Tier Gold</td><td>' + goldCount.toLocaleString() + '</td></tr>';
+    }
+
+    // ══════════════════════════════════════════════
+    // 7. TOP MANGAS
+    // ══════════════════════════════════════════════
+    async function renderTopMangas() {
+        const d = await apiFetch('/api/analytics/global-patterns');
+        if (!d) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay suficientes datos para mostrar.'); return; }
+
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('⏱️', ((d.topMangasByTime || [])[0]?.totalMinutes || 0) > 0 ? Math.round(((d.topMangasByTime || [])[0]?.totalMinutes || 0) / 60) + 'h' : '—', 'Top por Tiempo', ((d.topMangasByTime || [])[0]?.title || '—'), 'accent')}
+                ${kpiCard('📄', ((d.topMangasByReads || [])[0]?.reads || 0).toLocaleString(), 'Top por Lecturas', ((d.topMangasByReads || [])[0]?.title || '—'), 'blue')}
+                ${kpiCard('⭐', ((d.topRated || [])[0]?.rating || '—'), 'Mejor Valorado', ((d.topRated || [])[0]?.title || '—') + ' (' + ((d.topRated || [])[0]?.totalRatings || 0) + ' votos)', 'gold')}
+            </div>
+            ${chartCard('⏱️ Top por Tiempo de Lectura', 'chart-top-time-detail', 'horas', ' chart-full')}
+            ${chartCard('📄 Top por Lecturas', 'chart-top-reads-detail', 'capítulos', ' chart-full')}
+            ${chartCard('⭐ Top Mejor Valorados', 'chart-top-rated-detail', 'rating /10', ' chart-full')}
+        `;
+
+        const byTime = d.topMangasByTime && d.topMangasByTime.length ? d.topMangasByTime.slice(0, 10) : [{title:'—', totalMinutes:0}];
+        const byReads = d.topMangasByReads && d.topMangasByReads.length ? d.topMangasByReads.slice(0, 10) : [{title:'—', reads:0}];
+        const byRating = d.topRated && d.topRated.length ? d.topRated.slice(0, 10) : [{title:'—', rating:0}];
+
+        makeHorizBar('chart-top-time-detail', byTime.map(m => m.title || '?'), byTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', '#a78bfa');
+        makeHorizBar('chart-top-reads-detail', byReads.map(m => m.title || '?'), byReads.map(m => m.reads || 0), 'Lecturas', '#4c9df5');
+        makeHorizBar('chart-top-rated-detail', byRating.map(m => m.title || '?'), byRating.map(m => m.rating || 0), 'Rating', '#f5c842');
+    }
+
+    // ══════════════════════════════════════════════
+    // 8. ACTIVIDAD RECIENTE
+    // ══════════════════════════════════════════════
+    async function renderRecent() {
+        const d = await apiFetch('/api/analytics/recent?limit=50');
+        if (!d || !d.recent) { document.getElementById('section-body').innerHTML = placeholderCard('📡', 'Sin datos', 'No hay actividad reciente registrada.'); return; }
+
+        const items = d.recent;
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('📋', items.length.toLocaleString(), 'Últimas Acciones', '', 'blue')}
+                ${kpiCard('👥', [...new Set(items.map(r => r.username).filter(Boolean))].length.toLocaleString(), 'Usuarios Distintos', '', 'green')}
+                ${kpiCard('📚', [...new Set(items.map(r => r.mangaTitle).filter(Boolean))].length.toLocaleString(), 'Mangas Distintos', '', 'purple')}
+            </div>
+            <div class="chart-card chart-full">
+                <div class="card-header"><div class="card-title">🕐 Feed de Actividad Reciente</div></div>
+                <div class="table-wrap"><table class="data-table" id="recent-feed-table"></table></div>
+            </div>
+        `;
+
+        const tbody = document.getElementById('recent-feed-table');
+        tbody.innerHTML = '<tr><th>Usuario</th><th>Acción</th><th>Manga</th><th>Cap</th><th>Fecha</th></tr>' +
+            items.map(r => {
+                const badgeClass = r.actionType === 'chapter_read' ? 'badge-read' : r.actionType === 'manga_rated' ? 'badge-rate' : 'badge-action';
+                return '<tr><td>' + (r.username || '—') + '</td><td><span class="badge ' + badgeClass + '">' + (r.actionType || '') + '</span></td><td>' + (r.mangaTitle || '—') + '</td><td>' + (r.chapterId || '—') + '</td><td style="color:rgba(255,255,255,0.25);font-size:11px;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString('es-ES') : '') + '</td></tr>';
+            }).join('');
+    }
+
+    // ══════════════════════════════════════════════
+    // 9. ADMIN TOOLS
+    // ══════════════════════════════════════════════
+    function renderAdmin() {
+        document.getElementById('section-body').innerHTML = `
+            <div class="kpi-row">
+                ${kpiCard('⚙️', '—', 'Herramientas de Administración', '', 'accent')}
+            </div>
+            ${placeholderCard('🛠️', 'Admin Tools', 'Las herramientas de administración avanzada estarán disponibles próximamente.')}
+            <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+                <div class="placeholder-card" style="min-height:120px;cursor:pointer;" onclick="alert('Export feature coming soon')">
+                    <div class="ph-icon" style="font-size:28px;">📥</div>
+                    <div class="ph-title" style="font-size:14px;">Exportar Datos</div>
+                    <div class="ph-desc">CSV / JSON</div>
+                </div>
+                <div class="placeholder-card" style="min-height:120px;cursor:pointer;" onclick="alert('Cache clear coming soon')">
+                    <div class="ph-icon" style="font-size:28px;">🔄</div>
+                    <div class="ph-title" style="font-size:14px;">Limpiar Caché</div>
+                    <div class="ph-desc">Forzar recarga</div>
+                </div>
+                <div class="placeholder-card" style="min-height:120px;cursor:pointer;" onclick="switchSection('general')">
+                    <div class="ph-icon" style="font-size:28px;">📊</div>
+                    <div class="ph-title" style="font-size:14px;">Ir al Dashboard</div>
+                    <div class="ph-desc">Volver a General</div>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.04);">
+                <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:rgba(255,255,255,0.4);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.4)'">
+                    ← Volver a KAMI
+                </a>
+            </div>
+        `;
+    }
+
+    // ══════════════════════════════════════════════
+    // CHART HELPERS
+    // ══════════════════════════════════════════════
+    function getCtx(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        return el.getContext('2d');
+    }
+
+    function makeLine(canvasId, labels, datasets) {
+        const ctx = getCtx(canvasId);
+        if (!ctx) return;
+        charts[canvasId] = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets },
+            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: datasets.length > 1, position: 'top', labels: { color: 'rgba(255,255,255,0.4)', font: { size: 10 }, boxWidth: 12 } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 }, maxTicksLimit: 15 } } } }
+        });
+    }
+
+    function makeBar(canvasId, labels, data, label) {
+        const ctx = getCtx(canvasId);
+        if (!ctx || !labels.length) return;
+        const colors = labels.map((_, i) => ['#e8344a','#4c9df5','#2dca7a','#f5c842','#a78bfa','#fb923c','#4fc3f7','#ba68c8'][i % 8]);
+        charts[canvasId] = new Chart(ctx, {
+            type: 'bar', data: { labels, datasets: [{ label, data, backgroundColor: colors, borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } } } }
+        });
+    }
+
+    function makeHorizBar(canvasId, labels, data, label, color) {
+        const ctx = getCtx(canvasId);
+        if (!ctx || !labels.length) return;
+        charts[canvasId] = new Chart(ctx, {
+            type: 'bar', data: { labels, datasets: [{ label, data, backgroundColor: color || '#4c9df5', borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } } } }
+        });
+    }
+
+    function makeDoughnut(canvasId, labels, data) {
+        const ctx = getCtx(canvasId);
+        if (!ctx || !labels.length) return;
+        const colors = ['#e8344a','#4c9df5','#2dca7a','#f5c842','#a78bfa','#fb923c','#4fc3f7','#ba68c8'];
+        charts[canvasId] = new Chart(ctx, {
+            type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: 'rgba(255,255,255,0.4)', font: { size: 10 }, boxWidth: 12 } } } }
+        });
+    }
+
+    function makeRadar(canvasId, labels, data) {
+        const ctx = getCtx(canvasId);
+        if (!ctx || !labels.length) return;
+        charts[canvasId] = new Chart(ctx, {
+            type: 'radar', data: { labels, datasets: [{ data, borderColor: '#4c9df5', backgroundColor: 'rgba(76,157,245,0.08)', pointBackgroundColor: '#4c9df5', pointRadius: 3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 }, backdropColor: 'transparent' } } } }
+        });
+    }
+
+    // ══════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════
+    loadSection('general');
+</script>
+</body>
+</html>

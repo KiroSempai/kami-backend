@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunidad · KAMI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body { background:#0e0e1e; color:#e0e0e0; font-family:'Plus Jakarta Sans',sans-serif; }
+
+    .comunidad-layout { display: flex; max-width: 1200px; margin: 0 auto; height: calc(100vh - 64px); }
+
+    /* ─── Sidebar estilo X ─── */
+    .com-sidebar {
+      width: 260px; flex-shrink: 0; position: sticky; top: 64px;
+      height: calc(100vh - 64px); overflow-y: auto;
+      padding: 12px 8px 20px;
+      display: flex; flex-direction: column;
+    }
+    .com-sidebar::-webkit-scrollbar { width: 4px; }
+    .com-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+
+    .com-logo {
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      padding: 12px 12px; margin-bottom: 4px;
+    }
+    .com-logo img { height: 28px; width: auto; }
+    .com-logo-text { font-family:'Bebas Neue',sans-serif; font-size:22px; color:#e8344a; letter-spacing:2px; }
+
+    .com-nav-item {
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 12px; border-radius: 999px;
+      font-size: 15px; font-weight: 400; color: #e0e0e0;
+      text-decoration: none; cursor: pointer; transition: .15s;
+      border: none; background: none; font-family: inherit; width: 100%; text-align: left;
+    }
+    .com-nav-item:hover { background: rgba(255,255,255,0.06); }
+    .com-nav-item i { font-size: 22px; width: 24px; text-align: center; flex-shrink: 0; }
+    .com-nav-item.active { font-weight: 700; }
+    .com-nav-item.active i { font-weight: 700; }
+
+    .com-spacer { flex: 1; }
+
+    .com-post-btn {
+      display: block; width: 100%; padding: 14px; margin-top: 12px;
+      border-radius: 999px; border: none;
+      background: #e8344a; color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: .15s;
+      text-align: center;
+    }
+    .com-post-btn:hover { background: #c8283d; }
+
+    /* ─── Post Composer ─── */
+    .composer-overlay { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); }
+    .composer-overlay.open { display:block; }
+    .composer { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:501; width:min(560px,92vw); background:rgba(14,14,30,0.96); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column; max-height:90vh; }
+    .composer.open { display:flex; }
+    .comp-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .comp-close,.comp-drafts { width:32px; height:32px; border-radius:50%; border:none; background:rgba(255,255,255,0.06); color:#8888a0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:.15s; }
+    .comp-close:hover,.comp-drafts:hover { background:rgba(232,52,74,0.12); color:#e8344a; }
+    .comp-body { display:flex; gap:12px; padding:16px 20px; flex:1; min-height:120px; }
+    .comp-avatar { width:40px; height:40px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; background:linear-gradient(135deg,#e8344a,#f5c842); overflow:hidden; }
+    .comp-avatar img { width:100%; height:100%; object-fit:cover; }
+    .comp-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+    .comp-audience { background:rgba(232,52,74,0.1); border:1px solid rgba(232,52,74,0.2); color:#e8344a; font-size:11px; font-weight:600; padding:4px 10px; border-radius:999px; cursor:pointer; font-family:inherit; outline:none; max-width:200px; }
+    .comp-textarea-wrap { position:relative; flex:1; }
+    .comp-textarea { width:100%; background:none; border:none; outline:none; color:#e0e0e0; font-family:inherit; font-size:18px; resize:none; min-height:100px; line-height:1.5; }
+    .comp-textarea::placeholder { color:rgba(255,255,255,0.15); }
+    .comp-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-top:1px solid rgba(255,255,255,0.06); }
+    .comp-tools { display:flex; align-items:center; gap:4px; }
+    .comp-tool { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:#e8344a; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:.15s; }
+    .comp-tool:hover { background:rgba(232,52,74,0.1); }
+    .comp-actions { display:flex; align-items:center; gap:12px; }
+    .comp-thread-btn { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:#e8344a; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:.15s; }
+    .comp-thread-btn:hover { background:rgba(232,52,74,0.1); }
+    .comp-counter { font-size:13px; color:rgba(255,255,255,0.25); min-width:24px; text-align:center; font-variant-numeric:tabular-nums; }
+    .comp-counter.warning { color:#f5c842; }
+    .comp-counter.over { color:#e8344a; }
+    .comp-submit { padding:8px 20px; border-radius:999px; border:none; background:#e8344a; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-submit:disabled { opacity:0.4; cursor:default; }
+    .comp-submit:hover:not(:disabled) { background:#c8283d; }
+
+    /* ─── Composer manga-specific ─── */
+    .comp-link-manga { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:999px; border:1px solid rgba(76,157,245,0.25); background:rgba(76,157,245,0.08); color:#4c9df5; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-link-manga:hover { background:rgba(76,157,245,0.15); border-color:rgba(76,157,245,0.4); }
+    .comp-link-manga i { font-size:14px; }
+    .comp-manga-tag { display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:12px; color:#4c9df5; cursor:pointer; transition:.1s; }
+    .comp-manga-tag:hover { background:rgba(76,157,245,0.1); }
+    .comp-manga-tag img { width:24px; height:32px; border-radius:4px; object-fit:cover; }
+    .comp-manga-search { position:relative; z-index:10; margin-bottom:4px; }
+    .comp-manga-search input { width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#e0e0e0; font-family:inherit; font-size:13px; outline:none; box-sizing:border-box; }
+    .comp-manga-search input:focus { border-color:rgba(76,157,245,0.4); }
+    .comp-manga-search input::placeholder { color:rgba(255,255,255,0.15); }
+    .comp-manga-results { position:absolute; top:100%; left:0; right:0; background:rgba(18,18,36,0.95); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.06); border-radius:8px; margin-top:4px; max-height:200px; overflow-y:auto; }
+    .comp-manga-result { display:flex; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; transition:.1s; }
+    .comp-manga-result:hover { background:rgba(255,255,255,0.04); }
+    .comp-manga-result img { width:20px; height:28px; border-radius:4px; object-fit:cover; }
+    .comp-manga-result span { font-size:13px; color:#e0e0e0; }
+
+    /* Spoiler toggle */
+    .comp-spoiler-row { display:flex; align-items:center; margin-bottom:2px; }
+    .comp-spoiler-toggle { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; color:rgba(255,255,255,0.3); user-select:none; }
+    .comp-spoiler-toggle input { display:none; }
+    .comp-spoiler-slider { width:36px; height:20px; background:rgba(255,255,255,0.08); border-radius:10px; position:relative; transition:.2s; }
+    .comp-spoiler-slider::before { content:''; position:absolute; left:2px; top:2px; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.2); transition:.2s; }
+    .comp-spoiler-toggle input:checked + .comp-spoiler-slider { background:rgba(232,52,74,0.3); }
+    .comp-spoiler-toggle input:checked + .comp-spoiler-slider::before { transform:translateX(16px); background:#e8344a; }
+    .comp-spoiler-toggle input:checked ~ .comp-spoiler-label { color:#e8344a; }
+    .comp-spoiler-label { display:flex; align-items:center; gap:4px; font-weight:600; font-size:12px; }
+    .comp-textarea-wrap.spoiler { border:2px solid rgba(232,52,74,0.3); border-radius:10px; padding:8px; margin:-10px; background:rgba(232,52,74,0.04); }
+
+    /* Content type pills */
+    .comp-type-pills { display:flex; gap:4px; flex-wrap:wrap; }
+    .comp-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:rgba(255,255,255,0.3); font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-pill:hover { border-color:rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); }
+    .comp-pill.active { border-color:rgba(232,52,74,0.3); background:rgba(232,52,74,0.08); color:#e8344a; }
+
+    /* ─── Main content ─── */
+    .com-main { flex: 1; min-width: 0; overflow-y: auto; position: relative;
+      border-left: 1px solid rgba(255,255,255,0.06);
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .com-header {
+      padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 18px; font-weight: 700; color: #e0e0e0;
+      position: sticky; top: 64px; background: rgba(14,14,30,0.85);
+      backdrop-filter: blur(8px); z-index: 10;
+    }
+    .com-feed { padding: 0; }
+    .com-right { width:300px; flex-shrink:0; padding:12px 16px; display:flex; flex-direction:column; gap:12px; position:sticky; top:64px; height:calc(100vh - 64px); overflow-y:auto; }
+    .com-right::-webkit-scrollbar { width:4px; }
+    .com-right::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.06); border-radius:4px; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+    /* ─── Right sidebar cards ─── */
+    .cr-card { background:rgba(20,20,36,0.6); border-radius:14px; overflow:hidden; }
+    .cr-card-title { font-size:16px; font-weight:700; color:#e0e0e0; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .cr-search { display:flex; align-items:center; gap:10px; background:rgba(30,30,50,0.6); border:1px solid rgba(255,255,255,0.08); border-radius:999px; padding:10px 16px; transition:.15s; cursor:text; position:relative; }
+    .cr-search:focus-within { border-color:#e8344a; background:rgba(30,30,50,0.8); }
+    .cr-search svg { color:rgba(255,255,255,0.3); flex-shrink:0; }
+    .cr-search input { background:none; border:none; outline:none; color:#e0e0e0; font-family:inherit; font-size:13px; width:100%; }
+    .cr-search input::placeholder { color:rgba(255,255,255,0.25); }
+    .cr-search-panel { display:none; position:absolute; top:calc(100% + 8px); left:0; width:100%; min-width:320px; background:rgba(14,14,30,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:14px; box-shadow:0 12px 48px rgba(0,0,0,0.5); z-index:50; overflow:hidden; }
+    .cr-search-panel.open { display:block; }
+    .cr-sp-section { padding:8px 0; }
+    .cr-sp-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 6px; font-size:13px; font-weight:700; color:rgba(255,255,255,0.4); }
+    .cr-sp-item { display:flex; align-items:center; gap:10px; padding:8px 16px; cursor:pointer; transition:.1s; }
+    .cr-sp-item:hover { background:rgba(255,255,255,0.04); }
+    .cr-sp-item i { font-size:16px; color:rgba(255,255,255,0.3); flex-shrink:0; }
+    .cr-sp-item span { font-size:13px; color:#e0e0e0; }
+    .cr-sp-item .cr-sp-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; }
+    .cr-sp-empty { padding:30px 20px; text-align:center; font-size:13px; color:rgba(255,255,255,0.2); }
+    .cr-premium { padding:16px; }
+    .cr-premium-title { font-size:16px; font-weight:700; color:#e0e0e0; margin-bottom:6px; }
+    .cr-premium-desc { font-size:13px; color:rgba(255,255,255,0.4); line-height:1.5; margin-bottom:12px; }
+    .cr-premium-btn { display:inline-block; padding:8px 18px; border-radius:999px; border:none; background:#e8344a; color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; text-decoration:none; }
+    .cr-premium-btn:hover { background:#c8283d; }
+    .cr-trend-item { display:flex; align-items:flex-start; justify-content:space-between; padding:12px 16px; cursor:pointer; transition:.1s; }
+    .cr-trend-item:hover { background:rgba(255,255,255,0.03); }
+    .cr-trend-cat { font-size:11px; color:rgba(255,255,255,0.25); }
+    .cr-trend-name { font-size:13px; font-weight:700; color:#e0e0e0; margin-top:2px; }
+    .cr-trend-posts { font-size:11px; color:rgba(255,255,255,0.25); margin-top:2px; }
+    .cr-trend-more { background:none; border:none; color:rgba(255,255,255,0.2); cursor:pointer; padding:4px; border-radius:50%; transition:.1s; display:flex; align-items:center; justify-content:center; }
+    .cr-trend-more:hover { background:rgba(232,52,74,0.1); color:#e8344a; }
+    .cr-more-link { display:block; padding:14px 16px; font-size:13px; color:#e8344a; text-decoration:none; transition:.1s; }
+    .cr-more-link:hover { background:rgba(255,255,255,0.03); }
+    .cr-follow-item { display:flex; align-items:center; gap:10px; padding:10px 16px; cursor:pointer; transition:.1s; }
+    .cr-follow-item:hover { background:rgba(255,255,255,0.03); }
+    .cr-follow-avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+    .cr-follow-info { flex:1; min-width:0; }
+    .cr-follow-name { font-size:13px; font-weight:700; color:#e0e0e0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cr-follow-user { font-size:11px; color:rgba(255,255,255,0.3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cr-follow-btn { padding:6px 16px; border-radius:999px; border:none; background:#e0e0e0; color:#0e0e1e; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; flex-shrink:0; }
+    .cr-follow-btn:hover { background:#fff; }
+    .cr-follow-btn.following { background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.5); }
+    .cr-follow-btn.following:hover { border-color:rgba(232,51,74,0.3); color:#e8344a; }
+
+    /* ─── Feed tabs ─── */
+    .feed-tabs { display:flex; border-bottom:1px solid rgba(255,255,255,0.06); position:sticky; top:0; background:rgba(14,14,30,0.85); backdrop-filter:blur(8px); z-index:10; }
+    .feed-tab { flex:1; padding:14px 0; text-align:center; font-size:13px; font-weight:500; color:rgba(255,255,255,0.4); cursor:pointer; border-bottom:2px solid transparent; transition:.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
+    .feed-tab:hover { color:#e0e0e0; background:rgba(255,255,255,0.03); }
+    .feed-tab.active { color:#e0e0e0; border-bottom-color:#e8344a; font-weight:600; }
+    .feed-filter { display:flex; gap:4px; padding:8px 16px; border-bottom:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; position:sticky; top:48px; background:rgba(14,14,30,0.85); backdrop-filter:blur(8px); z-index:9; }
+    .feed-filter-btn { padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:rgba(255,255,255,0.25); font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .feed-filter-btn:hover { border-color:rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); }
+    .feed-filter-btn.active { border-color:rgba(232,52,74,0.3); background:rgba(232,52,74,0.08); color:#e8344a; }
+
+    /* ─── Post card ─── */
+    .feed-post { display:flex; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); transition:.1s; }
+    .feed-post:hover { background:rgba(255,255,255,0.02); }
+    .feed-post-avatar { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; text-decoration:none; }
+    .feed-post-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .feed-post-avatar:hover { opacity:0.9; }
+
+    .feed-post-body { flex:1; min-width:0; }
+    .feed-post-header { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+    .feed-post-user { font-size:14px; font-weight:700; color:#f0f0f0; display:flex; align-items:center; gap:4px; text-decoration:none; }
+    .feed-post-user:hover { text-decoration:underline; }
+    .feed-post-handle { font-size:12px; color:rgba(255,255,255,0.25); text-decoration:none; }
+    .feed-post-handle:hover { text-decoration:underline; color:rgba(255,255,255,0.4); }
+    .feed-post-time { font-size:11px; color:rgba(255,255,255,0.2); margin-left:auto; white-space:nowrap; }
+
+    /* ─── Role badges ─── */
+    .role-badge-admin { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ff1493; border:1px solid rgba(255,20,147,0.3); background:rgba(255,20,147,0.06); line-height:1.4; }
+    .role-badge-golden { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ffd700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); line-height:1.4; }
+    .role-badge-silver { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#c0c0c0; border:1px solid rgba(192,192,192,0.3); background:rgba(192,192,192,0.06); line-height:1.4; }
+    .feed-post-reading { font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(76,157,245,0.1); color:#4c9df5; font-weight:600; }
+    .feed-post-text { font-size:13px; color:#e0e0e0; line-height:1.5; margin-top:4px; word-wrap:break-word; }
+    .feed-post-text .spoiler-blur { filter:blur(6px); cursor:pointer; transition:.2s; user-select:none; display:inline; }
+    .feed-post-text .spoiler-blur:hover { filter:blur(3px); }
+    .feed-post-text .spoiler-blur.revealed { filter:none; }
+    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
+    .feed-post-manga:hover { background:rgba(255,255,255,0.05); }
+    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+    .feed-post-manga-info { flex:1; min-width:0; }
+    .feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
+    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
+    .feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+    .feed-post-actions { display:flex; align-items:center; gap:24px; margin-top:10px; }
+    .feed-post-action { display:flex; align-items:center; gap:4px; background:none; border:none; color:rgba(255,255,255,0.25); font-size:11px; cursor:pointer; font-family:inherit; padding:4px; border-radius:4px; transition:.1s; }
+    .feed-post-action:hover { color:#e8344a; }
+    .feed-post-action i { font-size:16px; }
+    .feed-post-action.liked { color:#e8344a; }
+    .feed-post-action.tuerca { margin-left:auto; }
+    .feed-post-action.tuerca:hover { color:#f5c842; }
+
+    /* Algorithm breakdown modal */
+    .algo-modal-overlay { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.5); }
+    .algo-modal-overlay.open { display:block; }
+    .algo-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:601; width:min(400px,92vw); background:rgba(14,14,30,0.96); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column; max-height:80vh; }
+    .algo-modal.open { display:flex; }
+    .algo-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .algo-header h3 { font-size:15px; font-weight:700; color:#e0e0e0; display:flex; align-items:center; gap:8px; }
+    .algo-header h3 i { color:#f5c842; }
+    .algo-close { width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.06); color:#8888a0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; transition:.15s; }
+    .algo-close:hover { background:rgba(232,52,74,0.12); color:#e8344a; }
+    .algo-body { padding:16px 18px; overflow-y:auto; }
+    .algo-score { text-align:center; padding:12px 0 16px; }
+    .algo-score-num { font-size:36px; font-weight:800; color:#e8344a; }
+    .algo-score-label { font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px; }
+    .algo-bar { display:flex; align-items:center; gap:10px; padding:6px 0; }
+    .algo-bar-label { font-size:12px; color:rgba(255,255,255,0.5); width:120px; flex-shrink:0; }
+    .algo-bar-track { flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,0.06); overflow:hidden; }
+    .algo-bar-fill { height:100%; border-radius:3px; transition:width .3s; }
+    .algo-bar-fill.positive { background:#2dca7a; }
+    .algo-bar-fill.negative { background:#e8344a; }
+    .algo-bar-fill.neutral { background:#4c9df5; }
+    .algo-bar-value { font-size:11px; font-weight:600; width:40px; text-align:right; flex-shrink:0; }
+    .algo-bar-value.pos { color:#2dca7a; }
+    .algo-bar-value.neg { color:#e8344a; }
+    .algo-bar-value.neu { color:#4c9df5; }
+    .algo-footer { padding:10px 18px; border-top:1px solid rgba(255,255,255,0.06); font-size:10px; color:rgba(255,255,255,0.15); text-align:center; }
+    .feed-skeleton { pointer-events:none; }
+    .sk-pulse { animation:skPulse 1.5s ease-in-out infinite; }
+    @keyframes skPulse { 0%,100% { opacity:0.3; transform:scale(1); } 50% { opacity:0.6; transform:scale(1.02); } }
+    .feed-post-spoiler { position:relative; }
+    .spoiler-overlay { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(232,52,74,0.15); backdrop-filter:blur(6px); border-radius:0; cursor:pointer; color:rgba(255,255,255,0.5); font-size:13px; font-weight:600; transition:.2s; }
+    .spoiler-overlay:hover { background:rgba(232,52,74,0.25); color:#fff; }
+    .spoiler-overlay i { font-size:20px; }
+    .feed-post-spoiler .feed-post-avatar,
+    .feed-post-spoiler .feed-post-body { opacity:0.3; pointer-events:none; filter:blur(2px); }
+
+    /* ─── Toast ─── */
+    .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+    .toast { padding:14px 20px; border-radius:12px; background:rgba(10,10,22,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.4); display:flex; align-items:center; gap:10px; font-size:13px; color:#e0e0e0; max-width:400px; pointer-events:auto; animation:toastIn .3s ease; }
+    .toast.success { border-color:rgba(45,202,122,0.3); }
+    .toast.success i { color:#2dca7a; }
+    .toast.error { border-color:rgba(232,52,74,0.3); }
+    .toast.error i { color:#e8344a; }
+    .toast.warning { border-color:rgba(245,200,66,0.3); }
+    .toast.warning i { color:#f5c842; }
+    @keyframes toastIn { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes toastOut { from{transform:translateY(0);opacity:1} to{transform:translateY(20px);opacity:0} }
+
+    @media(max-width: 1000px) {
+      .com-sidebar { width: 72px; align-items: center; }
+      .com-sidebar .com-nav-item { justify-content: center; padding: 12px; }
+      .com-sidebar .com-nav-item span { display: none; }
+      .com-logo-text { display: none; }
+      .com-post-btn { font-size: 0; padding: 12px; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+      .com-post-btn::after { content: '+'; font-size: 22px; font-weight: 700; }
+      .com-right { display: none; }
+    }
+    @media(max-width: 600px) {
+      .comunidad-layout { flex-direction: column; }
+      .com-sidebar { width: 100%; height: auto; position: static; flex-direction: row; overflow-x: auto; padding: 8px; gap: 4px; }
+      .com-sidebar .com-nav-item { flex-shrink: 0; padding: 8px 14px; }
+      .com-sidebar .com-nav-item span { display: inline; }
+      .com-logo { display: none; }
+      .com-post-btn { display: none; }
+      .com-main { border-left: none; }
+    }
+
+    /* ─── GIF Picker ─── */
+    .gif-picker-overlay { position:fixed; inset:0; z-index:9998; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); }
+    .gif-picker { width:480px; max-width:90vw; height:80vh; max-height:80vh; background:var(--bg-surface); border:1px solid var(--border); border-radius:16px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 16px 64px rgba(0,0,0,0.5); }
+    .gif-picker-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); font-weight:700; font-size:15px; }
+    .gif-picker-close { background:none; border:none; color:var(--text-secondary); font-size:20px; cursor:pointer; padding:4px; border-radius:6px; transition:.2s; }
+    .gif-picker-close:hover { background:rgba(255,255,255,0.06); color:var(--text-primary); }
+    .gif-picker-search { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid var(--border); }
+    .gif-picker-search i { color:var(--text-muted); font-size:18px; flex-shrink:0; }
+    .gif-picker-search input { flex:1; background:rgba(255,255,255,0.06); border:none; border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:13px; outline:none; }
+    .gif-picker-search input:focus { background:rgba(255,255,255,0.1); }
+    .gif-picker-search input::placeholder { color:var(--text-muted); }
+    .gif-categories { display:flex; gap:6px; padding:10px 18px; flex-wrap:wrap; border-bottom:1px solid var(--border); }
+    .gif-cat-btn { background:rgba(255,255,255,0.06); border:none; border-radius:20px; padding:6px 14px; font-size:12px; color:var(--text-secondary); cursor:pointer; transition:.2s; white-space:nowrap; }
+    .gif-cat-btn:hover { background:rgba(232,51,74,0.15); color:var(--accent); }
+    .gif-cat-btn.active { background:var(--accent); color:#fff; }
+    .gif-results { flex:1; min-height:0; overflow-y:scroll; padding:8px 8px 0; }
+    .gif-grid { display:flex; flex-wrap:wrap; margin:-4px; }
+    .gif-grid .gif-error,
+    .gif-grid .gif-loading { width:100%; text-align:center; padding:40px 20px; color:var(--text-muted); font-size:13px; }
+    .gif-result-item { position:relative; border-radius:8px; overflow:hidden; cursor:pointer; background:rgba(255,255,255,0.03); transition:.2s; width:50%; padding:4px; aspect-ratio:16/9; box-sizing:border-box; }
+    .gif-result-item:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+    .gif-result-item img { width:100%; height:100%; object-fit:cover; display:block; border-radius:8px; }
+    .gif-result-item .gif-label { position:absolute; bottom:6px; left:6px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; letter-spacing:0.5px; }
+
+    /* ─── GIF preview in composer ─── */
+    .comp-gif-preview { position:relative; margin:8px 0; border-radius:12px; overflow:hidden; max-height:200px; background:rgba(0,0,0,0.2); }
+    .comp-gif-preview img { width:100%; max-height:200px; object-fit:contain; display:block; border-radius:12px; }
+    .comp-gif-remove { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); border:none; color:#fff; font-size:16px; width:28px; height:28px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; }
+    .comp-gif-remove:hover { background:rgba(232,51,74,0.8); }
+    .comp-gif-badge { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; }
+
+    /* ─── Media in feed posts ─── */
+    .feed-post-media { position:relative; margin-top:10px; border-radius:14px; overflow:hidden; }
+    .feed-post-media img { width:100%; display:block; border-radius:14px; max-height:300px; object-fit:cover; background:rgba(255,255,255,0.03); }
+    .feed-post-media-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; z-index:1; }
+
+    /* ─── Repost menu ─── */
+    .repost-menu { z-index:9999; background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; padding:4px; min-width:160px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .repost-menu-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-radius:8px; font-size:13px; color:var(--text-primary); transition:.15s; }
+    .repost-menu-item:hover { background:rgba(255,255,255,0.06); }
+    .repost-menu-item i { font-size:16px; color:var(--text-secondary); }
+
+    /* ─── Quote preview in composer ─── */
+    .comp-quote-preview { margin:8px 0; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .comp-quote-header { padding:8px 12px; font-size:11px; font-weight:600; color:var(--text-muted); background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:0.5px; }
+    .comp-quote-body { display:flex; gap:10px; padding:12px; }
+    .comp-quote-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+    .comp-quote-avatar img { width:100%; height:100%; object-fit:cover; }
+    .comp-quote-content { flex:1; min-width:0; }
+    .comp-quote-user { font-size:12px; font-weight:600; color:var(--text-primary); }
+    .comp-quote-text { font-size:12px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* ─── Quote in feed ─── */
+    .feed-post-quote { display:flex; align-items:center; gap:8px; margin-top:8px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:12px; color:var(--text-secondary); transition:.15s; }
+    .feed-post-quote:hover { background:rgba(255,255,255,0.04); border-color:var(--border-hover); }
+    .feed-post-quote i { font-size:14px; color:var(--accent); }
+
+    /* ─── Interaction states ─── */
+    .feed-post-action.liked { color:var(--accent); }
+    .feed-post-action.liked i.ti-heart { animation:heartPop .3s ease; }
+    .feed-post-action.reposted { color:var(--green); }
+    .feed-post-action.bookmarked { color:var(--blue); }
+    @keyframes heartPop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+    /* ─── Notification badge ─── */
+    .notif-badge { position:absolute; top:4px; right:4px; min-width:16px; height:16px; border-radius:8px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px; pointer-events:none; }
+
+    /* ─── Notification panel ─── */
+    .notif-panel { padding:16px; }
+    .notif-panel h2 { font-size:20px; font-weight:700; margin-bottom:16px; }
+    .notif-item { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-radius:12px; cursor:pointer; transition:.15s; }
+    .notif-item:hover { background:var(--bg-card-hover); }
+    .notif-item.unread { background:rgba(232,51,74,0.04); border-left:3px solid var(--accent); }
+    .notif-item .notif-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .notif-item .notif-icon.like { background:rgba(232,51,74,0.12); color:var(--accent); }
+    .notif-item .notif-icon.repost { background:rgba(45,202,122,0.12); color:var(--green); }
+    .notif-item .notif-icon.bookmark { background:rgba(76,157,245,0.12); color:var(--blue); }
+    .notif-item .notif-icon.reply { background:rgba(245,200,66,0.12); color:var(--accent-gold); }
+    .notif-item .notif-body { flex:1; min-width:0; }
+    .notif-item .notif-text { font-size:13px; color:var(--text-primary); line-height:1.4; }
+    .notif-item .notif-text strong { font-weight:600; }
+    .notif-item .notif-time { font-size:11px; color:var(--text-muted); margin-top:2px; }
+    .notif-empty { text-align:center; padding:60px 20px; color:var(--text-muted); font-size:14px; }
+    .notif-loading { text-align:center; padding:60px 20px; color:var(--text-muted); font-size:14px; }
+
+    /* ─── Section containers ─── */
+    .section-content { display:none; }
+    .section-content.active { display:block; }
+
+    /* ─── Community tabs ─── */
+    .comm-tab.active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
+    .comm-feed { min-height:200px; }
+    .explore-tab.active, .explore-home-tab.active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
+    #comm-chat-messages { flex:1; overflow-y:auto; min-height:300px; max-height:calc(80vh - 200px); }
+
+  </style>
+</head>
+<body>
+  <script src="/js/menu-global.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <div class="comunidad-layout">
+    <!-- Sidebar estilo X -->
+    <aside class="com-sidebar">
+      <a href="/" class="com-logo">
+        <img src="/assets/logo-kami.png" alt="KAMI">
+        <span class="com-logo-text">KAMI</span>
+      </a>
+
+      <button class="com-nav-item active" data-section="inicio" onclick="goToSection('inicio')">
+        <i class="ti ti-home"></i>
+        <span>Inicio</span>
+      </button>
+      <button class="com-nav-item" data-section="explorar" onclick="goToSection('explorar')">
+        <i class="ti ti-search"></i>
+        <span>Explorar</span>
+      </button>
+      <button class="com-nav-item" data-section="notificaciones" onclick="goToSection('notificaciones')" id="notif-nav-btn">
+        <i class="ti ti-bell"></i>
+        <span>Notificaciones</span>
+        <span class="notif-badge" id="notif-badge" style="display:none">0</span>
+      </button>
+      <button class="com-nav-item" data-section="mensajes" onclick="goToSection('mensajes')">
+        <i class="ti ti-message"></i>
+        <span>Mensajes</span>
+      </button>
+      <button class="com-nav-item" data-section="listas" onclick="goToSection('listas')">
+        <i class="ti ti-list"></i>
+        <span>Listas</span>
+      </button>
+      <button class="com-nav-item" data-section="marcadores" onclick="goToSection('marcadores')">
+        <i class="ti ti-bookmark"></i>
+        <span>Marcadores</span>
+      </button>
+
+      <div class="com-spacer"></div>
+
+      <button class="com-post-btn" onclick="openComposer()">Postear</button>
+    </aside>
+
+    <!-- ─── Post Composer Modal ─── -->
+    <div class="composer-overlay" id="composer-overlay" onclick="closeComposer()"></div>
+    <div class="composer" id="composer">
+      <div class="comp-header">
+        <button onclick="closeComposer()" class="comp-close"><i class="ti ti-x"></i></button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="comp-drafts" onclick="loadDraft()" title="Borradores"><i class="ti ti-file-text"></i></button>
+        </div>
+      </div>
+      <div class="comp-body">
+        <div class="comp-avatar" id="comp-avatar">?</div>
+        <div class="comp-main">
+          <!-- Top row: comunidad + vínculo manga -->
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <select class="comp-audience" id="comp-community">
+              <option value="">Mi perfil</option>
+              <option value="seinen">Comunidad Seinen</option>
+              <option value="shonen">Comunidad Shonen</option>
+              <option value="fanart">Club de Arte/Fanart</option>
+              <option value="lectores">Lectores Avanzados</option>
+            </select>
+            <button class="comp-link-manga" onclick="openMangaSearch()" id="comp-link-btn"><i class="ti ti-book"></i> Vincular manga</button>
+          </div>
+
+          <!-- Manga vinculado tag -->
+          <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;" onclick="unlinkManga()">
+            <img id="comp-manga-cover" src="" alt="">
+            <span id="comp-manga-name">Manga</span>
+            <span id="comp-manga-chapter" style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:4px;cursor:pointer;" onclick="event.stopPropagation();openChapterSelector()"></span>
+            <span style="margin-left:auto;color:rgba(255,255,255,0.2);font-size:14px;cursor:pointer;">✕</span>
+          </div>
+
+          <!-- Manga search dropdown -->
+          <div class="comp-manga-search" id="comp-manga-search" style="display:none;">
+            <input type="text" id="comp-manga-input" placeholder="Buscar manga..." oninput="searchManga(this.value)" autocomplete="off">
+            <div id="comp-manga-results"></div>
+          </div>
+
+          <!-- Spoiler toggle -->
+          <div class="comp-spoiler-row" id="comp-spoiler-row">
+            <label class="comp-spoiler-toggle">
+              <input type="checkbox" id="comp-spoiler" onchange="toggleSpoiler(this.checked)">
+              <span class="comp-spoiler-slider"></span>
+              <span class="comp-spoiler-label"><i class="ti ti-eye-off"></i> Contiene spoilers</span>
+            </label>
+          </div>
+
+          <div class="comp-textarea-wrap" id="comp-textarea-wrap">
+            <textarea class="comp-textarea" id="comp-textarea" placeholder="¿Qué está pasando?" maxlength="280" oninput="compUpdate(this)"></textarea>
+            <div class="comp-preview" id="comp-preview"></div>
+          </div>
+
+          <!-- Selected GIF preview -->
+          <div class="comp-gif-preview" id="comp-gif-preview" style="display:none">
+            <img id="comp-gif-img" src="" alt="GIF">
+            <button class="comp-gif-remove" onclick="removeGif()"><i class="ti ti-x"></i></button>
+            <span class="comp-gif-badge">GIF</span>
+          </div>
+
+          <!-- Content type pills -->
+          <div class="comp-type-pills" id="comp-type-pills">
+            <button class="comp-pill" data-type="fanart" onclick="togglePill(this)"><i class="ti ti-artboard"></i> FanArt</button>
+            <button class="comp-pill" data-type="review" onclick="togglePill(this)"><i class="ti ti-notes"></i> Reseña</button>
+            <button class="comp-pill" data-type="theory" onclick="togglePill(this)"><i class="ti ti-bulb"></i> Teoría</button>
+            <button class="comp-pill" data-type="collection" onclick="togglePill(this)"><i class="ti ti-package"></i> Coleccionismo</button>
+            <button class="comp-pill" data-type="memes" onclick="togglePill(this)"><i class="ti ti-mood-smile"></i> Memes</button>
+          </div>
+        </div>
+      </div>
+      <div class="comp-creator-options" id="comp-creator-options" style="display:none;padding:8px 16px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--text-secondary);">
+          <input type="checkbox" id="comp-is-news">
+          📢 Destacar en "Últimas Noticias"
+        </label>
+        <label id="comp-global-opt" style="display:none;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#ff4a4a;">
+          <input type="checkbox" id="comp-is-global">
+          👑 Anuncio Global del Sitio
+        </label>
+      </div>
+      <div class="comp-footer">
+        <div class="comp-tools">
+          <button class="comp-tool" onclick="document.getElementById('comp-media-input').click()" title="Media"><i class="ti ti-photo"></i></button>
+          <input type="file" id="comp-media-input" accept="image/*,video/*" multiple style="display:none">
+          <button class="comp-tool" onclick="openGifPicker()" title="GIF"><i class="ti ti-gif"></i></button>
+          <button class="comp-tool" onclick="openChapterSelector()" title="Capítulo"><i class="ti ti-bookmark"></i></button>
+          <button class="comp-tool" title="Panel"><i class="ti ti-layout-grid"></i></button>
+          <button class="comp-tool" title="Encuesta"><i class="ti ti-chart-bar"></i></button>
+        </div>
+        <div class="comp-actions">
+          <button class="comp-thread-btn" title="Añadir hilo"><i class="ti ti-plus"></i></button>
+          <div class="comp-counter" id="comp-counter">0</div>
+          <button class="comp-submit" id="comp-submit" disabled onclick="submitPost()">Postear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── GIF Picker ─── -->
+    <div class="gif-picker-overlay" id="gif-picker" style="display:none" onclick="if(event.target===this)closeGifPicker()">
+      <div class="gif-picker">
+        <div class="gif-picker-header">
+          <span>Buscar GIF</span>
+          <button onclick="closeGifPicker()" class="gif-picker-close"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="gif-picker-search">
+          <i class="ti ti-search"></i>
+          <input type="text" id="gif-search-input" placeholder="Buscar GIFs..." oninput="debounceGifSearch(this.value)" autocomplete="off">
+        </div>
+        <div class="gif-categories" id="gif-categories"></div>
+        <div class="gif-results" id="gif-results">
+          <div class="gif-grid" id="gif-grid"></div>
+          <div id="scroll-sentinel" style="height:20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Members Panel ─── -->
+    <div class="gif-picker-overlay" id="members-panel" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+      <div class="gif-picker" style="height:auto;max-height:70vh;display:flex;flex-direction:column;">
+        <div class="gif-picker-header">
+          <span id="members-panel-title">Miembros</span>
+          <button onclick="document.getElementById('members-panel').style.display='none'" class="gif-picker-close"><i class="ti ti-x"></i></button>
+        </div>
+        <div id="members-panel-list" style="flex:1;min-height:0;overflow-y:auto;padding:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Main feed -->
+    <main class="com-main">
+      <div class="section-content active" id="section-inicio">
+        <div id="inicio-main-view">
+          <div class="feed-tabs">
+          <button class="feed-tab active" data-feed="foryou" onclick="switchFeed('foryou')">Para ti</button>
+          <button class="feed-tab" data-feed="communities" onclick="switchFeed('communities')">Mis Comunidades</button>
+          <button class="feed-tab" data-feed="latest" onclick="switchFeed('latest')">Al Día</button>
+        </div>
+        <div class="feed-filter">
+          <button class="feed-filter-btn active" onclick="toggleFilter(this)">Todos</button>
+          <button class="feed-filter-btn" onclick="toggleFilter(this)">FanArt</button>
+          <button class="feed-filter-btn" onclick="toggleFilter(this)">Reseña</button>
+          <button class="feed-filter-btn" onclick="toggleFilter(this)">Teoría</button>
+          <button class="feed-filter-btn" onclick="toggleFilter(this)">Coleccionismo</button>
+          <button class="feed-filter-btn" onclick="toggleFilter(this)">Memes</button>
+        </div>
+        <!-- In-Feed Composer (expandible como X.com) -->
+        <div class="in-feed-composer" id="in-feed-container" onclick="activarInFeedComposer()" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--border);">
+          <img id="composer-current-avatar" src="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+          <div style="flex:1;">
+            <textarea id="in-feed-textarea" placeholder="¿Qué está pasando?" oninput="autoResizeTextarea(this)" onfocus="activarInFeedComposer()" style="width:100%;border:none;background:none;resize:none;color:var(--text-primary);font-size:16px;outline:none;min-height:30px;padding-top:4px;font-family:inherit;"></textarea>
+            <div id="in-feed-expandable-zone" style="display:none;flex-direction:column;margin-top:12px;">
+              <div id="in-feed-creator-options" style="display:none;flex-direction:column;gap:4px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px;">
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--text-secondary);">
+                  <input type="checkbox" id="in-feed-is-news"> 📢 Destacar en mi Canal
+                </label>
+                <label id="in-feed-admin-opt" style="display:none;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#ff4a4a;">
+                  <input type="checkbox" id="in-feed-is-global"> 👑 Anuncio Global
+                </label>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;gap:16px;color:var(--accent);font-size:18px;cursor:pointer;">
+                  <i class="ti ti-photo" onclick="triggerInFeedMediaUpload(event)"></i>
+                  <i class="ti ti-gif" onclick="openGifPicker(event)"></i>
+                </div>
+                <button onclick="publishFromInFeed(event)" id="in-feed-submit-btn" style="background:var(--accent);color:#fff;border:none;padding:6px 18px;border-radius:20px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;opacity:0.5;pointer-events:none;">Postear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="in-feed-file-input" style="display:none;" accept="image/*">
+        <div class="com-feed" id="com-feed">
+          <!-- Posts rendered by JS -->
+        </div>
+        <div id="comunidades-feed-view" style="display:none;width:100%;">
+          <div style="padding:12px 16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:10px;">Comunidades unidas</div>
+            <div id="lista-comunidades-unidas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;"></div>
+            <div id="btn-ver-mas-unidas" style="text-align:center;margin-top:10px;display:none;">
+              <button class="reply-toggle" onclick="window.location.hash='#/explorar'">Ver m&aacute;s</button>
+            </div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+          <div style="padding:0 16px 12px 16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:10px;">Comunidades sugeridas</div>
+            <div id="lista-comunidades-sugeridas" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;"></div>
+            <div id="btn-ver-mas-sugeridas" style="text-align:center;margin-top:10px;display:none;">
+              <button class="reply-toggle">Ver m&aacute;s</button>
+            </div>
+          </div>
+          <hr style="border:none;border-top:8px solid var(--bg-muted);margin:0;">
+          <div id="comunidades-posts-feed" style="width:100%;padding:12px 0;"></div>
+        </div>
+      </div>
+      <div id="inicio-post-detail-view" style="display:none;">
+        <div class="post-detail-header">
+          <button onclick="cerrarHiloPost()" class="post-detail-back"><i class="ti ti-arrow-left"></i></button>
+          <span class="post-detail-title">Post</span>
+        </div>
+        <div id="post-detail-content"></div>
+      </div>
+      </div>
+
+      <div class="section-content" id="section-notificaciones">
+        <div class="notif-panel">
+          <h2>Notificaciones</h2>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+
+      <div class="section-content" id="section-explorar">
+        <div style="padding:16px;">
+          <div style="position:relative;margin-bottom:12px;">
+            <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:16px;z-index:1;"></i>
+            <input type="text" id="explore-search-input" placeholder="Buscar posts, mangas o usuarios..." oninput="exploreSearch(this.value)" autocomplete="off" style="width:100%;padding:12px 14px 12px 40px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;transition:.2s;">
+          </div>
+          <div id="explore-results" style="display:none;">
+            <div style="display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border);">
+              <button class="explore-tab active" data-etab="posts" onclick="switchExploreTab('posts')" style="flex:1;padding:8px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;">Posts</button>
+              <button class="explore-tab" data-etab="mangas" onclick="switchExploreTab('mangas')" style="flex:1;padding:8px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;">Mangas / Comunidades</button>
+              <button class="explore-tab" data-etab="usuarios" onclick="switchExploreTab('usuarios')" style="flex:1;padding:8px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;">Usuarios</button>
+            </div>
+            <div id="explore-results-content"></div>
+          </div>
+          <div id="explorer-main-view">
+            <div id="explore-default">
+              <div style="display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border);">
+                <button class="explore-home-tab active" data-ehtab="foryou" onclick="switchExploreHomeTab('foryou')" style="flex:1;padding:10px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;">👉 Para ti</button>
+                <button class="explore-home-tab" data-ehtab="comunidades" onclick="switchExploreHomeTab('comunidades')" style="flex:1;padding:10px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;">Comunidades</button>
+              </div>
+              <div id="explore-home-content"></div>
+            </div>
+          </div>
+          <div id="explorer-channel-view" style="display:none;">
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0 12px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+              <button onclick="closeNewsChannel()" style="background:none;border:none;color:var(--text-primary);font-size:20px;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <i class="ti ti-arrow-left"></i>
+              </button>
+              <div>
+                <div style="font-size:16px;font-weight:700;" id="news-channel-title">Canal</div>
+                <div style="font-size:12px;color:var(--text-muted);">Novedades oficiales</div>
+              </div>
+            </div>
+            <div id="news-channel-body"></div>
+          </div>
+          <div id="explorar-comunidad-detail-view" style="display:none;">
+            <div class="post-detail-header">
+              <button onclick="cerrarVistaComunidad()" class="post-detail-back"><i class="ti ti-arrow-left"></i></button>
+              <span style="font-size:16px;font-weight:700;" id="comunidad-detail-title"></span>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;" id="comunidad-detail-join-btn"></div>
+            </div>
+            <div id="comunidad-detail-banner" class="comm-hover-edit" style="width:100%;height:140px;background:linear-gradient(135deg,var(--accent),#1d9bf0);background-size:cover;background-position:center;position:relative;">
+              <div class="comm-hover-overlay" id="comm-banner-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:600;cursor:pointer;border-radius:0;"><i class="ti ti-camera"></i> Cambiar banner</div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:12px;padding:0 16px 12px;margin-top:-32px;position:relative;z-index:2;">
+              <div class="comm-hover-edit" style="width:80px;height:80px;min-width:80px;border-radius:50%;border:3px solid var(--bg-primary);position:relative;">
+                <div id="comunidad-detail-avatar" style="width:100%;height:100%;border-radius:50%;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-weight:700;font-size:32px;overflow:hidden;"></div>
+                <div class="comm-hover-overlay" id="comm-avatar-overlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;color:#fff;font-size:18px;cursor:pointer;"><i class="ti ti-camera"></i></div>
+              </div>
+              <div style="flex:1;">
+                <div id="comunidad-detail-description" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></div>
+                <div id="comunidad-detail-meta" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+              </div>
+            </div>
+            <div id="comunidad-infeed-composer"></div>
+            <div id="comunidad-detail-posts"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section-content" id="section-mensajes">
+        <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">✉️ Mensajes — Próximamente</div>
+      </div>
+      <div class="section-content" id="section-listas">
+        <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">📋 Listas — Próximamente</div>
+      </div>
+      <div class="section-content" id="section-marcadores">
+        <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">🔖 Marcadores — Próximamente</div>
+      </div>
+      <div class="section-content" id="section-comunidades">
+        <div id="communities-list-view">
+          <div style="padding:16px;">
+            <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">Comunidades</h2>
+            <div id="communities-list"></div>
+          </div>
+        </div>
+        <div id="community-detail-view" style="display:none;">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+            <button onclick="backToCommunitiesList()" style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer;padding:4px;"><i class="ti ti-arrow-left"></i></button>
+            <div style="font-weight:600;flex:1;font-size:16px;" id="community-detail-name"></div>
+            <button id="community-join-btn" onclick="toggleCommunityJoin()" style="padding:6px 16px;border-radius:20px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Unirse</button>
+          </div>
+          <div style="display:flex;border-bottom:1px solid var(--border);">
+            <button class="comm-tab active" data-commtab="posts" onclick="switchCommTab('posts')" style="flex:1;padding:10px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;">📝 Posts</button>
+            <button class="comm-tab" data-commtab="chat" onclick="switchCommTab('chat')" style="flex:1;padding:10px;text-align:center;border:none;background:none;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;">💬 Chat</button>
+          </div>
+          <div id="comm-posts-view">
+            <div class="comm-feed" id="comm-feed"></div>
+          </div>
+          <div id="comm-chat-view" style="display:none;">
+            <div class="comm-chat" id="comm-chat">
+              <div class="comm-chat-messages" id="comm-chat-messages"></div>
+              <div class="comm-chat-input" style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+                <input type="text" id="comm-chat-msg" placeholder="Mensaje..." style="flex:1;padding:10px 14px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:13px;font-family:inherit;outline:none;">
+                <button onclick="sendCommChat()" style="padding:10px 16px;border-radius:20px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-family:inherit;">Enviar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right sidebar (Descubrimiento) -->
+    <aside class="com-right">
+      <!-- Search -->
+      <div class="cr-search" id="cr-search" onclick="openSearch()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="cr-search-input" placeholder="Buscar en Comunidad" onkeydown="searchKeydown(event)" oninput="searchSuggest(this.value)" autocomplete="off">
+      </div>
+      <!-- Search panel -->
+      <div class="cr-search-panel" id="cr-search-panel">
+        <div class="cr-sp-section" id="cr-sp-recent">
+          <div class="cr-sp-header">Recientes <button onclick="clearRecent()" style="background:none;border:none;color:#e8344a;cursor:pointer;font-size:12px;font-family:inherit;">Borrar todo</button></div>
+          <div id="cr-sp-recent-list"></div>
+        </div>
+        <div class="cr-sp-section" id="cr-sp-suggest" style="display:none;">
+          <div class="cr-sp-header">Sugerencias</div>
+          <div id="cr-sp-suggest-list"></div>
+        </div>
+        <div class="cr-sp-empty" id="cr-sp-empty">Busca cuentas, términos o comandos avanzados<br><span style="font-size:11px;color:rgba(255,255,255,0.15);">from:usuario · since:2025-01-01 · "frase exacta"</span></div>
+      </div>
+
+      <!-- Premium -->
+      <div class="cr-card cr-premium">
+        <div class="cr-premium-title">Suscríbete a Premium</div>
+        <div class="cr-premium-desc">Accede a insignias exclusivas, herramientas de moderación y una experiencia sin anuncios.</div>
+        <a href="/premium" class="cr-premium-btn">Suscribirse</a>
+      </div>
+
+      <!-- Qué está pasando -->
+      <div class="cr-card">
+        <div class="cr-card-title">Qué está pasando</div>
+        <div class="cr-trend-item">
+          <div>
+            <div class="cr-trend-cat">Tendencia en KAMI</div>
+            <div class="cr-trend-name">#NuevosLanzamientos</div>
+            <div class="cr-trend-posts">12.5 mil posts</div>
+          </div>
+          <button class="cr-trend-more"><i class="ti ti-dots"></i></button>
+        </div>
+        <div class="cr-trend-item">
+          <div>
+            <div class="cr-trend-cat">Manga · Tendencia</div>
+            <div class="cr-trend-name">One Piece</div>
+            <div class="cr-trend-posts">8.2 mil posts</div>
+          </div>
+          <button class="cr-trend-more"><i class="ti ti-dots"></i></button>
+        </div>
+        <div class="cr-trend-item">
+          <div>
+            <div class="cr-trend-cat">Manhwa · Tendencia</div>
+            <div class="cr-trend-name">Solo Leveling</div>
+            <div class="cr-trend-posts">6.7 mil posts</div>
+          </div>
+          <button class="cr-trend-more"><i class="ti ti-dots"></i></button>
+        </div>
+        <div class="cr-trend-item">
+          <div>
+            <div class="cr-trend-cat">Anime · Tendencia</div>
+            <div class="cr-trend-name">#TemporadaPrimavera</div>
+            <div class="cr-trend-posts">4.1 mil posts</div>
+          </div>
+          <button class="cr-trend-more"><i class="ti ti-dots"></i></button>
+        </div>
+        <a href="/tendencias" class="cr-more-link">Mostrar más</a>
+      </div>
+
+      <!-- A quién seguir -->
+      <div class="cr-card">
+        <div class="cr-card-title">A quién seguir</div>
+        <div class="cr-follow-item">
+          <a href="/profile/PaniniManga" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+            <div class="cr-follow-avatar" style="background:linear-gradient(135deg,#e8344a,#f5c842);">PA</div>
+            <div class="cr-follow-info">
+              <div class="cr-follow-name">PaniniManga</div>
+              <div class="cr-follow-user">@PaniniManga</div>
+            </div>
+          </a>
+          <button class="cr-follow-btn" onclick="toggleSidebarFollow('dfff7e62-dcad-4313-9c33-cde71e08e121', this)">Seguir</button>
+        </div>
+        <div class="cr-follow-item">
+          <a href="/profile/MangaReviewer" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+            <div class="cr-follow-avatar" style="background:#a78bfa;">MR</div>
+            <div class="cr-follow-info">
+              <div class="cr-follow-name">MangaReviewer</div>
+              <div class="cr-follow-user">@MangaReviewer</div>
+            </div>
+          </a>
+          <button class="cr-follow-btn" onclick="toggleSidebarFollow('99dec202-b6ad-448d-b6a7-e8fa1784cdf8', this)">Seguir</button>
+        </div>
+        <div class="cr-follow-item">
+          <a href="/profile/Kiro" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+            <div class="cr-follow-avatar" style="background:#e8344a;">KI</div>
+            <div class="cr-follow-info">
+              <div class="cr-follow-name">Kiro</div>
+              <div class="cr-follow-user">@Kiro</div>
+            </div>
+          </a>
+          <button class="cr-follow-btn" onclick="toggleSidebarFollow('a2b35e88-224e-4655-aae1-38075ef4a571', this)">Seguir</button>
+        </div>
+        <a href="/generos" class="cr-more-link">Mostrar más</a>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // ── Sidebar navigation ──
+    function goToSection(section) {
+      // Guardar scroll antes de salir
+      var curHash = window.location.hash || '#inicio';
+      sessionStorage.setItem('kami_scroll_' + curHash, window.scrollY);
+      // Setear hash — el evento hashchange hará el resto
+      if (window.location.hash.replace('#', '') !== section) {
+        window.location.hash = section;
+      } else {
+        // Misma sección: scroll al tope estilo X.com
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // ── Notifications ──
+    function checkNotifs() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/feed/notifications?limit=1', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) {
+          var badge = document.getElementById('notif-badge');
+          if (d.unread_count > 0) {
+            badge.textContent = d.unread_count > 9 ? '9+' : d.unread_count;
+            badge.style.display = 'flex';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+      }).catch(function(){});
+    }
+
+    function loadNotifications() {
+      var list = document.getElementById('notif-list');
+      list.innerHTML = '<div class="notif-loading">Cargando notificaciones...</div>';
+      var token = localStorage.getItem('kami_token');
+      if (!token) { list.innerHTML = '<div class="notif-empty">Inicia sesión para ver notificaciones</div>'; return; }
+      fetch('/api/feed/notifications', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).then(function(r){return r.json()}).then(function(d){
+        if (!d.success || !d.notifications.length) {
+          list.innerHTML = '<div class="notif-empty">Sin notificaciones aún. Interactúa con la comunidad para recibir alertas.</div>';
+          return;
+        }
+        var icons = { like:'❤️', repost:'🔁', bookmark:'🔖', reply:'💬' };
+        list.innerHTML = d.notifications.map(function(n){
+          return '<div class="notif-item' + (n.read ? '' : ' unread') + '" onclick="goToSection(\'inicio\')">' +
+            '<div class="notif-icon ' + n.type + '">' + (icons[n.type] || '🔔') + '</div>' +
+            '<div class="notif-body">' +
+              '<div class="notif-text"><strong>' + n.actor.username + '</strong> ' +
+                (n.type === 'like' ? 'le dio like a tu post' :
+                 n.type === 'repost' ? 'compartió tu post' :
+                 n.type === 'bookmark' ? 'guardó tu post en marcadores' :
+                 n.type === 'reply' ? 'respondió a tu post' : 'interactuó con tu post') +
+              '</div>' +
+              '<div class="notif-time">' + timeAgo(n.created_at) + '</div>' +
+            '</div></div>';
+        }).join('');
+        checkNotifs();
+      }).catch(function(){
+        list.innerHTML = '<div class="notif-empty">Error al cargar notificaciones</div>';
+      });
+    }
+
+    function markNotifsRead() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/feed/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({})
+      }).then(function(){ checkNotifs(); }).catch(function(){});
+    }
+
+    function timeAgo(dateStr) {
+      var diff = Date.now() - new Date(dateStr).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Ahora';
+      if (mins < 60) return mins + 'm';
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h';
+      var days = Math.floor(hrs / 24);
+      return days + 'd';
+    }
+
+    // ── Explore (search + trending + tabs) ──
+    var _exploreTimer = null;
+    var _exploreData = { posts: [], mangas: [], users: [] };
+
+    function exploreSearch(val) {
+      clearTimeout(_exploreTimer);
+      if (!val.trim()) {
+        document.getElementById('explore-results').style.display = 'none';
+        document.getElementById('explore-default').style.display = '';
+        return;
+      }
+      document.getElementById('explore-default').style.display = 'none';
+      document.getElementById('explore-results').style.display = '';
+      var content = document.getElementById('explore-results-content');
+      content.innerHTML = '<div class="notif-loading">Buscando...</div>';
+      _exploreTimer = setTimeout(function() {
+        fetch('/api/communities/search?q=' + encodeURIComponent(val))
+          .then(function(r){return r.json()}).then(function(d){
+            if (!d.success) { content.innerHTML = '<div class="notif-empty">Error</div>'; return; }
+            _exploreData = d;
+            switchExploreTab('posts');
+          }).catch(function(){ content.innerHTML = '<div class="notif-empty">Error de conexión</div>'; });
+      }, 300);
+    }
+
+    function switchExploreTab(tab) {
+      document.querySelectorAll('.explore-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.etab === tab); });
+      var content = document.getElementById('explore-results-content');
+      var d = _exploreData;
+      var html = '';
+      if (tab === 'posts') {
+        if (d.posts && d.posts.length) {
+          d.posts.forEach(function(p){ html += '<div class="notif-item" onclick="goToSection(\'inicio\')" style="gap:10px;padding:10px 12px;"><div style="width:32px;height:32px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (p.username?p.username.charAt(0):'?') + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;">' + (p.content||'').substring(0,150) + '</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + timeAgo(p.created_at) + '</div></div></div>'; });
+        } else html = '<div class="notif-empty">Sin posts</div>';
+      } else if (tab === 'mangas') {
+        if (d.mangas && d.mangas.length) {
+          d.mangas.forEach(function(m){ html += '<div class="notif-item" style="gap:10px;padding:10px 12px;"><div style="width:36px;height:36px;border-radius:6px;background:#e8344a;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">' + (m.cover&&m.cover.indexOf('/')>=0?'<img src="'+m.cover+'" style="width:100%;height:100%;object-fit:cover;">':m.title.charAt(0)) + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;font-weight:600;">' + m.title + '</div></div></div>'; });
+        } else html = '<div class="notif-empty">Sin mangas</div>';
+      } else if (tab === 'usuarios') {
+        if (d.users && d.users.length) {
+          d.users.forEach(function(u){ html += '<div class="notif-item" style="gap:10px;padding:10px 12px;"><div style="width:32px;height:32px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (u.username?u.username.charAt(0):'?') + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;">@' + u.username + '</div></div></div>'; });
+        } else html = '<div class="notif-empty">Sin usuarios</div>';
+      }
+      content.innerHTML = html;
+    }
+
+    function switchExploreHomeTab(tab) {
+      document.querySelectorAll('.explore-home-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.ehtab === tab); });
+      var content = document.getElementById('explore-home-content');
+      var token = localStorage.getItem('kami_token');
+      var headers = token ? { 'Authorization':'Bearer '+token } : {};
+
+      if (tab === 'foryou') {
+        content.innerHTML = '<div class="notif-loading">Cargando...</div>';
+        Promise.all([
+          token ? fetch('/api/communities', { headers }).then(function(r){return r.json()}).catch(function(){return{}}) : Promise.resolve({}),
+          fetch('/api/communities/trending', { headers }).then(function(r){return r.json()}).catch(function(){return{}}),
+          fetch('/api/communities/trending/topics').then(function(r){return r.json()}).catch(function(){return{}}),
+          fetch('/api/communities/trending/hashtags').then(function(r){return r.json()}).catch(function(){return{}}),
+          fetch('/api/communities/trending/channels').then(function(r){return r.json()}).catch(function(){return{}}),
+        ]).then(function(results){
+          var commData = results[0], trendData = results[1], topicData = results[2], hashData = results[3], channelData = results[4];
+          var html = '';
+
+          // ── Bloque 1: Canales de Noticias (agrupado por entidad) ──
+          html += '<div style="font-size:14px;font-weight:600;margin-bottom:8px;">📰 Canales de Noticias</div>';
+          if (channelData && channelData.success && channelData.channels && channelData.channels.length) {
+            html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+            channelData.channels.forEach(function(ch) {
+              var isAdmin = ch.entity_role === 'admin';
+              var isCreator = ch.entity_role === 'creator';
+              var title = isAdmin ? '📢 Noticias KAMI' : isCreator ? '✍️ Canal de ' + ch.entity_name : '🏢 ' + ch.entity_name;
+              var subtitle = isAdmin ? 'Actualizaciones oficiales del sitio'
+                : isCreator ? 'Espacio de creador de contenido - ' + (ch.posts_this_week||0) + ' posts esta semana'
+                : (ch.posts_this_week||0) + ' publicaciones esta semana';
+              var avatarLetter = ch.entity_name ? ch.entity_name.charAt(0).toUpperCase() : '?';
+              var avatarBg = isAdmin ? 'var(--accent)' : isCreator ? '#a78bfa' : '#4c9df5';
+              var avatarHtml = ch.entity_avatar && ch.entity_avatar.indexOf('/') >= 0
+                ? '<img src="' + ch.entity_avatar + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">'
+                : '<div style="width:40px;height:40px;border-radius:8px;background:' + avatarBg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;">' + avatarLetter + '</div>';
+
+              html += '<div class="notif-item" onclick="openNewsChannel(\'' + ch.entity_id + '\',\'' + title.replace(/'/g,"\\'") + '\',\'' + ch.entity_name + '\')" style="gap:12px;padding:12px 14px;">' +
+                avatarHtml +
+                '<div class="notif-body" style="flex:1;">' +
+                  '<div style="font-size:13px;font-weight:600;">' + title + '</div>' +
+                  '<div style="font-size:11px;color:var(--text-muted);">' + subtitle + '</div>' +
+                '</div>' +
+                '<div style="font-size:11px;background:var(--accent);color:#fff;padding:4px 12px;border-radius:12px;font-weight:600;flex-shrink:0;">Ver</div>' +
+              '</div>';
+            });
+            html += '</div>';
+          } else {
+            html += '<div style="font-size:13px;color:var(--text-muted);padding:12px;">Sin canales de noticias aún</div>';
+          }
+
+          // ── Bloque 2: Trending ──
+          html += '<div style="margin-top:16px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Trending</div>';
+          if (topicData && topicData.success && topicData.topics && topicData.topics.length) {
+            topicData.topics.forEach(function(t){
+              html += '<div class="notif-item" style="gap:8px;padding:8px 12px;cursor:pointer;" onclick="doSearch(\'' + t.topic + '\')">' +
+                '<div style="font-size:13px;font-weight:600;flex:1;">' + t.topic + '</div>' +
+                '<div style="font-size:11px;color:var(--text-muted);">' + t.label + ' posts</div></div>';
+            });
+          } else {
+            html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">Aún no hay tendencias</div>';
+          }
+          html += '</div>';
+
+          // ── Bloque 3: Hashtags populares ──
+          html += '<div style="margin-top:16px;"><div style="font-size:13px;font-weight:600;margin-bottom:6px;"># Hashtags populares</div>';
+          if (hashData && hashData.success && hashData.hashtags && hashData.hashtags.length) {
+            hashData.hashtags.slice(0,5).forEach(function(h){
+              html += '<div class="notif-item" style="gap:8px;padding:6px 12px;cursor:pointer;" onclick="doSearch(\'' + h.tag.replace('#','') + '\')">' +
+                '<div style="font-size:13px;font-weight:600;color:var(--accent);flex:1;">' + h.tag + '</div>' +
+                '<div style="font-size:11px;color:var(--text-muted);">' + h.count + ' posts hoy</div></div>';
+            });
+          } else {
+            html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">Sin hashtags trending hoy</div>';
+          }
+          html += '</div>';
+
+          // ── Bloque 4: Posts para ti (mismo formato que Inicio) ──
+          html += '<div style="margin-top:16px;"><div style="font-size:14px;font-weight:600;margin-bottom:8px;">📝 Posts para ti</div>';
+          if (trendData && trendData.success && trendData.trending_posts && trendData.trending_posts.length) {
+            var mappedPosts = trendData.trending_posts.map(function(p) {
+              return {
+                id: p.id,
+                user: p.username || 'Anónimo',
+                handle: '@' + (p.username || 'anon').toLowerCase(),
+                avatar: p.avatar || null,
+                text: p.content || '',
+                media_url: p.media_url || null,
+                manga: p.manga_title ? { id: p.manga_id, title: p.manga_title } : undefined,
+                likes: parseInt(p.like_count) || 0,
+                replies: parseInt(p.reply_count) || 0,
+                reposts: parseInt(p.repost_count) || 0,
+                views_count: parseInt(p.views_count) || 0,
+                author_role: p.author_role || 'user',
+                created_at: p.created_at,
+                user_has_liked: false, user_has_reposted: false, user_has_bookmarked: false,
+              };
+            });
+            html += renderFeedPosts(mappedPosts);
+          } else {
+            html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">Sin posts destacados aún</div>';
+          }
+          html += '</div>';
+
+          content.innerHTML = html;
+        }).catch(function(){ content.innerHTML = '<div class="notif-empty">Error de conexión</div>'; });
+
+      } else if (tab === 'comunidades') {
+        content.innerHTML = '<div class="notif-loading">Cargando comunidades...</div>';
+        content.style.padding = '0';
+        fetch('/api/communities', { headers }).then(function(r){return r.json()}).then(function(d){
+          if (!d.success || !d.communities.length) { content.innerHTML = '<div class="notif-empty">No hay comunidades a&uacute;n<br><span style="font-size:12px;color:var(--text-muted);">Las comunidades se crean autom&aacute;ticamente al a&ntilde;adir un KMI</span></div>'; return; }
+          content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px;">' +
+            d.communities.map(function(c) {
+              return renderMiniCardKMI(c);
+            }).join('') +
+            '</div>';
+        }).catch(function(){ content.innerHTML = '<div class="notif-empty">Error de conexi&oacute;n</div>'; });
+      }
+    }
+
+    // ── News Channel (in-feed navigation) ──
+    var scrollPositionAntesDeEntrar = 0;
+
+    function openNewsChannel(entityId, title, entityName) {
+      scrollPositionAntesDeEntrar = window.scrollY;
+      document.getElementById('explorer-main-view').style.display = 'none';
+      document.getElementById('explorer-channel-view').style.display = 'block';
+      document.getElementById('news-channel-title').innerHTML = '<a href="/profile/' + (entityName || '') + '" style="color:var(--text-primary);text-decoration:none;">' + title + '</a>';
+      document.getElementById('news-channel-body').innerHTML = '<div class="notif-loading">Cargando...</div>';
+      window.scrollTo(0, 0);
+      var token = localStorage.getItem('kami_token');
+      var opts = { headers: {} };
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+      fetch('/api/feed/company-posts?user_id=' + entityId, opts)
+        .then(function(r){return r.json()})
+        .then(function(d){
+          if (!d.success || !d.posts || !d.posts.length) {
+            document.getElementById('news-channel-body').innerHTML = '<div class="notif-empty" style="padding:40px;">Sin publicaciones aún</div>';
+            return;
+          }
+          document.getElementById('news-channel-body').innerHTML = renderFeedPosts(d.posts);
+          setTimeout(trackFeedViews, 200);
+        })
+        .catch(function(){
+          document.getElementById('news-channel-body').innerHTML = '<div class="notif-empty">Error de conexión</div>';
+        });
+    }
+
+    function closeNewsChannel() {
+      document.getElementById('explorer-channel-view').style.display = 'none';
+      document.getElementById('explorer-main-view').style.display = '';
+      window.scrollTo(0, scrollPositionAntesDeEntrar);
+    }
+
+    // ── Community detail (posts + chat con WebSocket) ──
+    var _currentCommunityId = null;
+    var _chatObserver = null;
+
+    function openCommunity(id) {
+      _currentCommunityId = id;
+      document.getElementById('communities-list-view').style.display = 'none';
+      document.getElementById('community-detail-view').style.display = '';
+      var token = localStorage.getItem('kami_token');
+      fetch('/api/communities/' + id, { headers: token ? { 'Authorization': 'Bearer ' + token } : {} })
+        .then(function(r){return r.json()}).then(function(d){
+          if (!d.success) return;
+          var c = d.community;
+          document.getElementById('community-detail-name').textContent = c.name;
+          var btn = document.getElementById('community-join-btn');
+          btn.textContent = c.my_role ? (c.my_role === 'admin' ? 'Admin' : 'Miembro') : 'Unirse';
+          btn.style.borderColor = c.my_role ? 'var(--green)' : 'var(--accent)';
+          btn.style.color = c.my_role ? 'var(--green)' : 'var(--accent)';
+          loadCommPosts(id);
+          resetCommChat();
+        }).catch(function(){});
+    }
+
+    function backToCommunitiesList() {
+      _currentCommunityId = null;
+      document.getElementById('community-detail-view').style.display = 'none';
+      document.getElementById('communities-list-view').style.display = '';
+      if (socket && _chatObserver) { socket.emit('leave-post', 'comm-chat:' + _chatObserver); _chatObserver = null; }
+    }
+
+    function toggleCommunityJoin() {
+      if (!_currentCommunityId) return;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      var btn = document.getElementById('community-join-btn');
+      var isMember = btn.textContent !== 'Unirse';
+      fetch('/api/communities/' + _currentCommunityId + '/' + (isMember ? 'leave' : 'join'), {
+        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token }
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) openCommunity(_currentCommunityId);
+      }).catch(function(){});
+    }
+
+    function switchCommTab(tab) {
+      document.querySelectorAll('.comm-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.commtab === tab); });
+      document.getElementById('comm-posts-view').style.display = tab === 'posts' ? '' : 'none';
+      document.getElementById('comm-chat-view').style.display = tab === 'chat' ? '' : 'none';
+      if (tab === 'chat') loadCommChat();
+    }
+
+    function loadCommPosts(communityId) {
+      var container = document.getElementById('comm-feed');
+      container.innerHTML = '<div class="notif-loading">Cargando posts...</div>';
+      fetch('/api/communities/' + communityId + '/posts').then(function(r){return r.json()}).then(function(d){
+        if (!d.success || !d.posts.length) { container.innerHTML = '<div class="notif-empty">Sin posts en esta comunidad.<br><span style="font-size:12px;color:var(--text-muted);">Publica algo usando el compositor con esta comunidad seleccionada.</span></div>'; return; }
+        container.innerHTML = d.posts.map(function(p){
+          return '<div class="feed-post" style="padding:12px 16px;">' +
+            '<div class="feed-post-body"><div class="feed-post-header"><span class="feed-post-user">' + (p.username||'Anónimo') + '</span></div>' +
+            '<div class="feed-post-text">' + (p.content||'').replace(/\n/g,'<br>') + '</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">' + timeAgo(p.created_at) + '</div></div></div>';
+        }).join('');
+      }).catch(function(){ container.innerHTML = '<div class="notif-empty">Error al cargar</div>'; });
+    }
+
+    function resetCommChat() {
+      document.getElementById('comm-chat-messages').innerHTML = '';
+      document.getElementById('comm-chat-msg').value = '';
+      if (socket && _chatObserver) { socket.emit('leave-post', 'comm-chat:' + _chatObserver); _chatObserver = null; }
+    }
+
+    function loadCommChat() {
+      var messages = document.getElementById('comm-chat-messages');
+      messages.innerHTML = '<div class="notif-loading">Cargando chat...</div>';
+      fetch('/api/communities/' + _currentCommunityId + '/chat').then(function(r){return r.json()}).then(function(d){
+        if (!d.success) { messages.innerHTML = '<div class="notif-empty">Error</div>'; return; }
+        if (!d.messages.length) { messages.innerHTML = '<div class="notif-empty" style="padding:40px 20px;">Sin mensajes aún. ¡Sé el primero en escribir!</div>'; } else {
+          messages.innerHTML = d.messages.map(function(m){
+            return '<div style="display:flex;gap:8px;padding:8px 16px;">' +
+              '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
+              (m.avatar && m.avatar.indexOf('/')>=0 ? '<img src="'+m.avatar+'" style="width:100%;height:100%;object-fit:cover;">' : (m.username?m.username.charAt(0):'?')) + '</div>' +
+              '<div><div style="font-size:12px;font-weight:600;">' + (m.username||'Anónimo') + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">' + timeAgo(m.created_at) + '</span></div>' +
+              '<div style="font-size:13px;margin-top:2px;">' + m.message + '</div></div></div>';
+          }).join('');
+        }
+        // Unirse al room de WebSocket para chat en vivo
+        if (socket) {
+          var room = 'comm-chat:' + _currentCommunityId;
+          socket.emit('join-post', room);
+          if (_chatObserver && _chatObserver !== _currentCommunityId) socket.emit('leave-post', 'comm-chat:' + _chatObserver);
+          _chatObserver = _currentCommunityId;
+        }
+        messages.scrollTop = messages.scrollHeight;
+      }).catch(function(){ messages.innerHTML = '<div class="notif-empty">Error</div>'; });
+    }
+
+    function sendCommChat() {
+      var input = document.getElementById('comm-chat-msg');
+      var msg = input.value.trim();
+      if (!msg || !_currentCommunityId) return;
+      input.value = '';
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + _currentCommunityId + '/chat', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ message: msg })
+      }).then(function(r){return r.json()}).catch(function(){});
+    }
+
+    // Escuchar mensajes de chat en vivo
+    if (socket) {
+      socket.on('chat-message', function(data) {
+        var container = document.getElementById('comm-chat-messages');
+        if (!container) return;
+        var empty = container.querySelector('.notif-empty');
+        if (empty) container.innerHTML = '';
+        container.insertAdjacentHTML('beforeend',
+          '<div style="display:flex;gap:8px;padding:8px 16px;">' +
+          '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
+          (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" style="width:100%;height:100%;object-fit:cover;">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
+          '<div><div style="font-size:12px;font-weight:600;">' + data.username + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">Ahora</span></div>' +
+          '<div style="font-size:13px;margin-top:2px;">' + data.message + '</div></div></div>'
+        );
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    // ── Navigation + community list ──
+    var _origGoToSection = goToSection;
+    goToSection = function(section) {
+      _origGoToSection(section);
+      if (section === 'inicio') {
+        initInFeedComposer();
+      }
+      if (section === 'explorar') {
+        closeNewsChannel();
+        document.getElementById('explore-search-input').value = '';
+        document.getElementById('explore-results').style.display = 'none';
+        document.getElementById('explore-default').style.display = '';
+        switchExploreHomeTab('foryou');
+      }
+    };
+
+    function loadCommunitiesList() {
+      var token = localStorage.getItem('kami_token');
+      var list = document.getElementById('communities-list');
+      if (!token) { list.innerHTML = '<div class="notif-empty">Inicia sesión para ver comunidades</div>'; return; }
+      list.innerHTML = '<div class="notif-loading">Cargando...</div>';
+      fetch('/api/communities', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r){return r.json()}).then(function(d){
+          if (!d.success || !d.communities.length) { list.innerHTML = '<div class="notif-empty">No hay comunidades aún<br><span style="font-size:12px;color:var(--text-muted);">Las comunidades se crean automáticamente al añadir un KMI</span></div>'; return; }
+          list.innerHTML = d.communities.map(function(c){
+            return '<div class="notif-item" onclick="openCommunity(\'' + c.id + '\')" style="gap:12px;padding:14px 16px;">' +
+              '<div style="width:40px;height:40px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;">' + c.name.charAt(0) + '</div>' +
+              '<div class="notif-body"><div class="notif-text" style="font-size:14px;font-weight:600;">' + c.name + '</div>' +
+              '<div style="font-size:12px;color:var(--text-muted);">' + (c.member_count||0) + ' miembros' + (c.my_role ? ' · ' + c.my_role : '') + '</div>' +
+              (c.description ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + c.description.substring(0,100) + '</div>' : '') +
+              '</div></div>';
+          }).join('');
+        }).catch(function(){ list.innerHTML = '<div class="notif-empty">Error de conexión</div>'; });
+    }
+
+    // ── Feed system (real API + cache + skeleton) ──
+    var currentFeed = 'foryou';
+    var currentFilter = 'Todos';
+    var feedApiOffset = 0;
+    var feedHasMore = true;
+    var isFeedLoading = false;
+    var selectedGifUrl = null;
+    var gifDebounceTimer = null;
+    var composerState = {
+      inicio: { linkedManga: null, selectedGifUrl: null },
+      modal:  { linkedManga: null, selectedGifUrl: null },
+      hilo:   { linkedManga: null, selectedGifUrl: null },
+    };
+    var replyToPostId = null;
+    var quotePostId = null;
+    var _currentCommunityId = null;
+    var detailViewPostId = null;
+
+    // ── Socket.io conexión para tiempo real ──
+    var socket = null;
+    try {
+      if (typeof io !== 'undefined') {
+        socket = io();
+        socket.on('connect', function() { console.log('[socket] conectado'); });
+        socket.on('new-reply', function(data) {
+          if (data.parent_id && data.parent_id === detailViewPostId) {
+            fetchRepliesAndRefresh(data.parent_id);
+          }
+        });
+      }
+    } catch(e) {}
+
+    // ── Session observer ──
+    var centeredPostId = '';
+    var feedObserver = null;
+
+    function initFeedObserver() {
+      if (feedObserver) feedObserver.disconnect();
+      centeredPostId = '';
+      var root = document.querySelector('.com-main');
+      if (!root) return;
+      feedObserver = new IntersectionObserver(function(entries) {
+        var best = null, bestDist = Infinity;
+        var rootRect = root.getBoundingClientRect();
+        var centerY = rootRect.top + rootRect.height / 2;
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          var rect = entry.boundingClientRect;
+          var elCenter = rect.top + rect.height / 2;
+          var dist = Math.abs(elCenter - centerY);
+          if (dist < bestDist) { bestDist = dist; best = entry; }
+        });
+        if (best) centeredPostId = best.target.getAttribute('data-post-id') || '';
+      }, { root: root, threshold: [0, 0.25, 0.5, 0.75, 1] });
+    }
+
+    window.observePosts = function() {
+      initFeedObserver();
+      document.querySelectorAll('.feed-post[data-post-id]').forEach(function(el) {
+        if (feedObserver) feedObserver.observe(el);
+      });
+    };
+
+    function skeletonPosts(count) {
+      var sk = '';
+      for (var i = 0; i < (count || 4); i++) {
+        sk += '' +
+          '<div class="feed-post feed-skeleton">' +
+            '<div class="feed-post-avatar sk-pulse" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.04);flex-shrink:0;"></div>' +
+            '<div class="feed-post-body" style="gap:8px;">' +
+              '<div class="sk-pulse" style="width:40%;height:14px;border-radius:4px;background:rgba(255,255,255,0.04);"></div>' +
+              '<div class="sk-pulse" style="width:100%;height:12px;border-radius:4px;background:rgba(255,255,255,0.03);"></div>' +
+              '<div class="sk-pulse" style="width:70%;height:12px;border-radius:4px;background:rgba(255,255,255,0.03);"></div>' +
+              '<div style="display:flex;gap:20px;margin-top:6px;">' +
+                '<div class="sk-pulse" style="width:40px;height:16px;border-radius:4px;background:rgba(255,255,255,0.03);"></div>' +
+                '<div class="sk-pulse" style="width:40px;height:16px;border-radius:4px;background:rgba(255,255,255,0.03);"></div>' +
+                '<div class="sk-pulse" style="width:40px;height:16px;border-radius:4px;background:rgba(255,255,255,0.03);"></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      }
+      return sk;
+    }
+
+    function renderFeedPosts(posts, isReply) {
+      var _isAdmin = false;
+      try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); _isAdmin = _u && _u.role === 'admin'; } catch(e) {}
+      var isReplyMode = isReply === true;
+      return posts.map(function(p) {
+        var avatarStyle, avatarContent;
+        var avatarSize = isReplyMode || p.parent_id ? '32px' : '40px';
+        var avatarBorderRadius = isReplyMode || p.parent_id ? '50%' : '50%';
+        if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
+          avatarStyle = 'background:rgba(232,52,74,0.08);padding:0;';
+          avatarContent = '<img src="' + p.avatar + '" alt="">';
+        } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
+          avatarStyle = p.avatar;
+          avatarContent = '<span>' + p.user.charAt(0) + '</span>';
+        } else if (p.avatar && p.avatar.indexOf('base64') >= 0) {
+          avatarStyle = 'padding:0;';
+          avatarContent = '<img src="' + p.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+        } else {
+          avatarStyle = 'background:' + (p.avatar || '#e8344a') + ';';
+          avatarContent = p.user.charAt(0);
+        }
+        var mangaBlock = p.manga && p.manga.title ? '' +
+          '<div class="feed-post-manga" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">' +
+            '<div class="feed-post-manga-cover"' +
+              (p.manga.cover && p.manga.cover.indexOf('/') >= 0
+                ? ' style="background:transparent;overflow:hidden;"><img src="' + p.manga.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;">'
+                : ' style="background:' + (p.manga.cover || '#e8344a') + ';">' + p.manga.title.charAt(0)) +
+            '</div>' +
+            '<div class="feed-post-manga-info"><div class="feed-post-manga-title">' + p.manga.title + (p.chapter ? ' · Cap. ' + p.chapter : '') + '</div></div>' +
+            '<button class="feed-post-manga-add" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">📢 Comunidad</button>' +
+          '</div>' : '';
+        var spoilerClass = p.spoiler ? ' feed-post-spoiler' : '';
+        var spoilerOverlay = '';
+        if (p.spoiler) {
+          spoilerOverlay = '<div class="spoiler-overlay" onclick="this.parentElement.classList.remove(\'feed-post-spoiler\');this.style.display=\'none\';if(window.feedSpoilerRevealed)feedSpoilerRevealed(' + p.id + ')"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>';
+        }
+        var replyContext = '';
+        if ((isReplyMode || p.parent_id) && p.parent_id) {
+          replyContext = '<div class="reply-context"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/' + (p.replyToUser || 'usuario') + '">@' + (p.replyToUser || 'usuario') + '</a></div>';
+        }
+        var onClickAttr = ' onclick="abrirHiloPost(' + p.id + ', event)"';
+        var postClass = (isReplyMode || p.parent_id) ? ' feed-post-reply' : '';
+        return '' +
+          '<div class="feed-post' + spoilerClass + postClass + '" id="post-id-' + p.id + '" data-post-id="' + p.id + '"' + onClickAttr + '>' +
+            spoilerOverlay +
+            '<a href="/profile/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + 'width:' + avatarSize + ';height:' + avatarSize + ';min-width:' + avatarSize + ';">' + avatarContent + '</a>' +
+            '<div class="feed-post-body">' +
+              '<div class="feed-post-header">' +
+                '<a href="/profile/' + p.user + '" class="feed-post-user">' + p.user +
+                  (p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
+                   p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
+                   p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : '') +
+                '</a>' +
+                '<a href="/profile/' + p.user + '" class="feed-post-handle">' + p.handle + '</a>' +
+                '<span class="feed-post-time">' + timeAgo(p.created_at) + (p.views_count !== undefined ? ' · ' + p.views_count + ' vistas' : '') + '</span>' +
+              '</div>' +
+              replyContext +
+              '<div class="feed-post-text">' + (p.text || '').replace(/\n/g, '<br>') + '</div>' +
+              (p.media_url ? '<div class="feed-post-media"><div class="feed-post-media-badge">GIF</div><img src="' + p.media_url + '" alt="GIF" loading="lazy"></div>' : '') +
+              mangaBlock +
+              (p.quoted_post_id ? '<div class="feed-post-quote" title="Ver post citado"><i class="ti ti-quote"></i> Citando un post</div>' : '') +
+              '<div class="feed-post-actions">' +
+                '<button class="feed-post-action" onclick="event.stopPropagation();openReply(' + p.id + ')"><i class="ti ti-message"></i> ' + (p.replies || 0) + '</button>' +
+                '<button class="feed-post-action' + (p.user_has_reposted ? ' reposted' : '') + '" onclick="event.stopPropagation();openRepostMenu(this,' + p.id + ')"><i class="ti ti-repeat"></i> <span class="repost-count">' + (p.reposts || 0) + '</span></button>' +
+                '<button class="feed-post-action' + (p.user_has_liked ? ' liked' : '') + '" onclick="event.stopPropagation();likePost(this);feedInteract(' + p.id + ',\'like\')"><i class="ti ti-heart"></i> <span class="like-count">' + (p.likes || 0) + '</span></button>' +
+                '<button class="feed-post-action' + (p.user_has_bookmarked ? ' bookmarked' : '') + '" onclick="event.stopPropagation();feedInteract(' + p.id + ',\'bookmark\')"><i class="ti ti-bookmark"></i></button>' +
+                '<button class="feed-post-action" onclick="event.stopPropagation();openDotsMenu(this,' + p.id + ',\'' + (p.user || '').replace(/'/g,"\\'") + '\')" title="Más opciones"><i class="ti ti-dots"></i></button>' +
+                (_isAdmin && p.score !== undefined ? '<button class="feed-post-action tuerca" onclick="event.stopPropagation();showAlgorithm(' + p.id + ')" title="Algoritmo" data-score="' + (p.score || 0) + '" data-breakdown=\'' + JSON.stringify(p.scoreBreakdown || {}).replace(/'/g, '&#39;') + '\'><i class="ti ti-settings"></i></button>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    /* ── Post detail view (X.com thread style) ── */
+    function abrirHiloPost(postId, event) {
+      console.log('[HILOS INFINITOS] abrirHiloPost disparado para ID:', postId, 'Evento:', event ? event.type : 'null');
+      if (event && (event.target.closest('.post-detail-action') || event.target.closest('a') || event.target.closest('img') || event.target.closest('.feed-post-manga'))) {
+        console.log('[HILOS INFINITOS] Clic cancelado (botón/avatar/link)');
+        return;
+      }
+      // Guardar ID del post actual para restaurar scroll por anclaje
+      var curHash = window.location.hash || '#inicio';
+      sessionStorage.setItem('kami_last_post_id_' + curHash, postId);
+      // Navegar al hash del post — hashchange hará el resto
+      window.location.hash = 'post/' + postId;
+    }
+
+    function cerrarHiloPost() {
+      // El navegador restaura el hash anterior → hashchange maneja la UI
+      window.history.back();
+    }
+
+    /* ── Enrutador por Hash (SPA nativo) ── */
+    function renderizarSeccionFisica(name) {
+      document.querySelectorAll('.com-nav-item').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.section === name);
+      });
+      document.querySelectorAll('.section-content').forEach(function(el) {
+        el.classList.toggle('active', el.id === 'section-' + name);
+      });
+      if (name === 'notificaciones') {
+        loadNotifications();
+        markNotifsRead();
+      }
+    }
+
+    function procesarEnrutamientoGlobal(event) {
+      var hash = window.location.hash.replace('#', '') || 'inicio';
+
+      if (hash.startsWith('post/')) {
+        var postId = parseInt(hash.split('/')[1]);
+        if (isNaN(postId)) return;
+        // Leave WebSocket room del post anterior
+        if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
+        detailViewPostId = postId;
+        document.getElementById('inicio-main-view').style.display = 'none';
+        document.getElementById('inicio-post-detail-view').style.display = 'block';
+        document.getElementById('post-detail-content').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">Cargando...</div>';
+        window.scrollTo(0, 0);
+        if (document.activeElement) document.activeElement.blur();
+        cargarDatosDelHilo(postId);
+      } else if (hash.startsWith('comunidad/')) {
+        var comId = hash.split('/')[1];
+        document.getElementById('inicio-post-detail-view').style.display = 'none';
+        document.getElementById('explorer-channel-view').style.display = 'none';
+        document.getElementById('explorar-comunidad-detail-view').style.display = 'block';
+        renderizarSeccionFisica('explorar');
+        var emv = document.getElementById('explorer-main-view');
+        if (emv) emv.style.display = 'none';
+        window.scrollTo(0, 0);
+        cargarDatosDeComunidad(comId);
+      } else {
+        document.getElementById('inicio-post-detail-view').style.display = 'none';
+        document.getElementById('explorer-channel-view').style.display = 'none';
+        document.getElementById('explorar-comunidad-detail-view').style.display = 'none';
+        var mv = document.getElementById('inicio-main-view');
+        if (mv) { mv.style.opacity = '0'; mv.style.display = ''; }
+        if (document.getElementById('explorer-main-view')) document.getElementById('explorer-main-view').style.display = '';
+        if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
+        detailViewPostId = null;
+        renderizarSeccionFisica(hash);
+        setTimeout(trackFeedViews, 300);
+        // Restaurar posición con telón de opacidad (sin frame fantasma)
+        if (hash === 'inicio') {
+          var lastId = sessionStorage.getItem('kami_last_post_id_#inicio');
+          if (lastId) {
+            setTimeout(function() {
+              var el = document.getElementById('post-id-' + lastId);
+              if (el) el.scrollIntoView({ block: 'center', behavior: 'auto' });
+              if (mv) mv.style.opacity = '1';
+              sessionStorage.removeItem('kami_last_post_id_#inicio');
+            }, 60);
+          } else {
+            if (mv) mv.style.opacity = '1';
+          }
+        } else {
+          if (mv) mv.style.opacity = '1';
+        }
+      }
+    }
+
+    window.addEventListener('hashchange', procesarEnrutamientoGlobal);
+    window.addEventListener('DOMContentLoaded', procesarEnrutamientoGlobal);
+
+    function cargarDatosDelHilo(postId) {
+      var token = localStorage.getItem('kami_token');
+      var opts = { headers: {} };
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+
+      Promise.all([
+        fetch('/api/feed/post/' + postId, opts).then(function(r) { return r.json(); }),
+        fetch('/api/feed/replies/' + postId).then(function(r) { return r.json(); })
+      ])
+      .then(function(results) {
+        var postData = results[0];
+        var repliesData = results[1];
+        if (!postData.success) {
+          document.getElementById('post-detail-content').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">Post no encontrado</div>';
+          return;
+        }
+        var p = postData.post;
+        var r = repliesData.success ? (repliesData.replies || []) : [];
+        r.forEach(function(rep) { rep.replyToUser = p.user; });
+        renderPostDetail(p, r, postData.parent_post || null);
+      })
+      .catch(function() {
+        document.getElementById('post-detail-content').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">Error al cargar la conversación</div>';
+      });
+    }
+
+    /* ── Comunidad in-feed view (como canales de noticias) ── */
+    function cerrarVistaComunidad() {
+      document.getElementById('explorar-comunidad-detail-view').style.display = 'none';
+      document.getElementById('explorer-main-view').style.display = '';
+      window.history.back();
+    }
+
+    function cargarDatosDeComunidad(comId) {
+      _currentCommunityId = comId;
+      var token = localStorage.getItem('kami_token');
+      var opts = { headers: {} };
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+
+      Promise.all([
+        fetch('/api/communities/' + comId, opts).then(function(r) { return r.json(); }),
+        fetch('/api/communities/' + comId + '/posts').then(function(r) { return r.json(); })
+      ])
+      .then(function(results) {
+        var data = results[0];
+        var postsData = results[1];
+        if (!data.success) { document.getElementById('comunidad-detail-posts').innerHTML = '<div class="notif-empty">Comunidad no encontrada</div>'; return; }
+        var c = data.community;
+        document.getElementById('comunidad-detail-title').textContent = c.name;
+
+        // Banner
+        var bannerEl = document.getElementById('comunidad-detail-banner');
+        bannerEl.style.background = c.banner_url ? 'url(' + c.banner_url + ') center/cover no-repeat' : 'linear-gradient(135deg,var(--accent),#1d9bf0)';
+
+        // Avatar
+        var avatarEl = document.getElementById('comunidad-detail-avatar');
+        var avatarSrc = c.avatar_url || c.manga_cover;
+        if (avatarSrc) {
+          avatarEl.innerHTML = '<img src="' + avatarSrc + '" style="width:100%;height:100%;object-fit:cover;">';
+        } else {
+          avatarEl.textContent = (c.name || '?').charAt(0).toUpperCase();
+        }
+
+        // Description + meta
+        document.getElementById('comunidad-detail-description').textContent = c.description || 'Comunidad oficial de la obra.';
+        document.getElementById('comunidad-detail-meta').innerHTML = '<span style="cursor:pointer;color:var(--accent);" onclick="abrirPanelMiembros(\'' + comId + '\')">' + (c.member_count || 0) + ' miembros</span>';
+
+        // Admin hover triggers
+        initCommHoverEdit(comId);
+
+        // Join/Postear button en header
+        var joinBtn = document.getElementById('comunidad-detail-join-btn');
+        if (joinBtn) {
+          if (c.my_role) {
+            joinBtn.innerHTML = '<button onclick="toggleCommMembership(\'' + comId + '\')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✓ Unido</button>';
+          } else {
+            joinBtn.innerHTML = '<button onclick="toggleCommMembership(\'' + comId + '\')" style="padding:5px 14px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">+ Unirse</button>';
+          }
+        }
+
+        // In-feed composer (solo si es miembro)
+        var composerContainer = document.getElementById('comunidad-infeed-composer');
+        if (composerContainer) {
+          if (c.my_role) {
+            composerContainer.innerHTML =
+              '<div onclick="openComposer(\'' + comId + '\')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--border);cursor:pointer;">' +
+                '<div style="width:40px;height:40px;min-width:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;overflow:hidden;" id="comm-composer-avatar"></div>' +
+                '<div style="flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:14px;color:var(--text-muted);">Publicar algo en ' + c.name + '...</div>' +
+              '</div>';
+            try {
+              var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+              var a = document.getElementById('comm-composer-avatar');
+              if (u.avatar && (u.avatar.indexOf('/') === 0 || u.avatar.indexOf('http') === 0 || u.avatar.indexOf('data:') === 0)) {
+                a.innerHTML = '<img src="' + u.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+              } else {
+                a.textContent = (u.username || '?').charAt(0).toUpperCase();
+              }
+            } catch(e) {}
+          } else {
+            composerContainer.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--text-muted);font-size:13px;border-bottom:1px solid var(--border);"><i class="ti ti-lock"></i> &Uacute;nete a la comunidad para publicar</div>';
+          }
+        }
+
+        // Posts
+        var pc = document.getElementById('comunidad-detail-posts');
+        if (postsData.success && postsData.posts && postsData.posts.length) {
+          pc.innerHTML = renderFeedPosts(postsData.posts);
+        } else {
+          pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin publicaciones a&uacute;n. S&eacute; el primero en publicar.</div>';
+        }
+        setTimeout(trackFeedViews, 150);
+      })
+      .catch(function() {
+        document.getElementById('comunidad-detail-posts').innerHTML = '<div class="notif-empty">Error al cargar la comunidad</div>';
+      });
+    }
+
+    function toggleCommMembership(comId) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + comId + '/join', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(function(r){return r.json()})
+      .then(function(d){
+        if (d.success) cargarDatosDeComunidad(comId);
+      })
+      .catch(function(){});
+    }
+
+    function abrirPanelMiembros(comId) {
+      document.getElementById('members-panel').style.display = 'flex';
+      document.getElementById('members-panel-list').innerHTML = '<div class="notif-loading">Cargando...</div>';
+      fetch('/api/communities/' + comId + '/members')
+        .then(function(r){return r.json()})
+        .then(function(d){
+          if (!d.success || !d.members.length) {
+            document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Sin miembros</div>';
+            return;
+          }
+          document.getElementById('members-panel-list').innerHTML = d.members.map(function(m){
+            var av = '';
+            if (m.avatar && typeof m.avatar === 'string' && (m.avatar.indexOf('/') === 0 || m.avatar.indexOf('http') === 0 || m.avatar.indexOf('base64') >= 0)) {
+              av = '<img src="' + m.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+            } else {
+              av = '<span style="font-size:14px;font-weight:700;color:#fff;">' + (m.username||'?').charAt(0).toUpperCase() + '</span>';
+            }
+            var badge = m.role === 'admin' ? '<span style="font-size:10px;color:var(--accent);font-weight:700;margin-left:6px;background:rgba(29,155,240,0.1);padding:2px 6px;border-radius:4px;">ADMIN</span>' : '';
+            var nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
+            return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);">' +
+              '<div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;" onclick="' + nav + '">' + av + '</div>' +
+              '<div style="flex:1;min-width:0;">' +
+                '<div style="display:flex;align-items:center;gap:4px;">' +
+                  '<span onclick="' + nav + '" style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;">' + m.username + '</span>' + badge +
+                '</div>' +
+                '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + (m.role === 'admin' ? 'Administrador' : 'Miembro') + '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        })
+        .catch(function(){ document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Error al cargar</div>'; });
+    }
+
+    function doCommUpload(file, type, comId) {
+      var fd = new FormData();
+      fd.append(type, file);
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + comId + '/' + type, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: fd
+      })
+      .then(function(r) { return r.json().then(function(d) { d.status = r.status; return d; }); })
+      .then(function(d) {
+        if (d.success) {
+          if (type === 'banner') {
+            document.getElementById('comunidad-detail-banner').style.background = 'url(' + d.banner_url + ') center/cover no-repeat';
+          } else if (type === 'avatar') {
+            document.getElementById('comunidad-detail-avatar').innerHTML = '<img src="' + d.avatar_url + '" style="width:100%;height:100%;object-fit:cover;">';
+          }
+          if (typeof showToast === 'function') showToast('success', type === 'banner' ? 'Banner actualizado' : 'Avatar actualizado');
+        } else {
+          console.error('[upload] Error:', d.status, d.error);
+          if (typeof showToast === 'function') showToast('error', 'Error: ' + (d.error || 'desconocido'));
+        }
+      })
+      .catch(function(e) {
+        console.error('[upload] Error de red:', e);
+        if (typeof showToast === 'function') showToast('error', 'Error de red');
+      });
+    }
+
+    function triggerCommUpload(type, comId) {
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.style.display = 'none';
+      input.onchange = function() {
+        if (input.files && input.files[0]) doCommUpload(input.files[0], type, comId);
+        if (input.parentNode) input.parentNode.removeChild(input);
+      };
+      document.body.appendChild(input);
+      input.click();
+      setTimeout(function() { if (input.parentNode) input.parentNode.removeChild(input); }, 60000);
+    }
+
+    // Admin hover + drag-drop for banner & avatar
+    function initCommHoverEdit(comId) {
+      try {
+        if (!localStorage.getItem('kami_token')) return;
+        var bannerOverlay = document.getElementById('comm-banner-overlay');
+        var avatarOverlay = document.getElementById('comm-avatar-overlay');
+        if (bannerOverlay) bannerOverlay.onclick = function() { triggerCommUpload('banner', comId); };
+        if (avatarOverlay) avatarOverlay.onclick = function() { triggerCommUpload('avatar', comId); };
+
+        var bannerEl = document.getElementById('comunidad-detail-banner');
+        if (bannerEl) {
+          bannerEl.addEventListener('dragover', function(e) { e.preventDefault(); bannerEl.style.opacity = '0.7'; });
+          bannerEl.addEventListener('dragleave', function() { bannerEl.style.opacity = ''; });
+          bannerEl.addEventListener('drop', function(e) {
+            e.preventDefault();
+            bannerEl.style.opacity = '';
+            if (e.dataTransfer.files.length) doCommUpload(e.dataTransfer.files[0], 'banner', comId);
+          });
+        }
+
+        var avatarWrapper = document.querySelector('#comunidad-detail-avatar');
+        if (avatarWrapper) {
+          avatarWrapper = avatarWrapper.parentNode;
+          avatarWrapper.addEventListener('dragover', function(e) { e.preventDefault(); avatarWrapper.style.opacity = '0.7'; });
+          avatarWrapper.addEventListener('dragleave', function() { avatarWrapper.style.opacity = ''; });
+          avatarWrapper.addEventListener('drop', function(e) {
+            e.preventDefault();
+            avatarWrapper.style.opacity = '';
+            if (e.dataTransfer.files.length) doCommUpload(e.dataTransfer.files[0], 'avatar', comId);
+          });
+        }
+      } catch(e) {}
+    }
+
+    function renderPostDetail(post, replies, parentPost) {
+      var html = '';
+
+      // 0. Si el post clickeado es un comentario, mostrar el post padre arriba
+      if (parentPost) {
+        html += '<div class="parent-thread-context">';
+        // Asegurar que renderFeedPosts tenga el handle correcto
+        if (!parentPost.handle) parentPost.handle = '@' + (parentPost.user || 'anon').toLowerCase();
+        html += renderFeedPosts([parentPost]);
+        html += '</div>';
+      }
+
+      // 1. Post principal expandido (1-columna estilo X.com)
+      var aStyle, aContent;
+      if (post.avatar && typeof post.avatar === 'string' && (post.avatar.indexOf('/') === 0 || post.avatar.indexOf('http') === 0)) {
+        aStyle = 'background:rgba(232,52,74,0.08);padding:0;';
+        aContent = '<img src="' + post.avatar + '" alt="">';
+      } else if (post.avatar && post.avatar.indexOf('linear-gradient') >= 0) {
+        aStyle = post.avatar;
+        aContent = '<span>' + post.user.charAt(0) + '</span>';
+      } else if (post.avatar && post.avatar.indexOf('base64') >= 0) {
+        aStyle = 'padding:0;';
+        aContent = '<img src="' + post.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+      } else {
+        aStyle = 'background:' + (post.avatar || 'var(--accent)') + ';';
+        aContent = post.user.charAt(0);
+      }
+      var roleBadge = post.author_role === 'admin' ? '<span class="role-badge-admin">&#9889;ADMIN</span>' :
+                      post.author_role === 'golden' ? '<span class="role-badge-golden">&#128081;GOLDEN</span>' :
+                      post.author_role === 'silver' ? '<span class="role-badge-silver">&#11088;SILVER</span>' : '';
+      var formatTime = new Date(post.created_at).toLocaleDateString('es-ES', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short', year:'numeric' });
+
+      // Counters: inline inside action buttons (X.com style)
+      var sReply = post.reply_count || replies.length || 0;
+      var sRepost = post.repost_count || 0;
+      var sLike = post.like_count || 0;
+      var rTxt = sReply > 0 ? sReply.toLocaleString() : '';
+      var rpTxt = sRepost > 0 ? sRepost.toLocaleString() : '';
+      var lTxt = sLike > 0 ? sLike.toLocaleString() : '';
+
+      // Action icons: active classes desde flags de interacción
+      var likeIcon = post.user_has_liked ? 'ti ti-heart-filled' : 'ti ti-heart';
+      var likeCls = post.user_has_liked ? ' liked' : '';
+      var repostCls = post.user_has_reposted ? ' reposted' : '';
+      var bmCls = post.user_has_bookmarked ? ' bookmarked' : '';
+
+      html += '<div class="post-detail-main">' +
+        // Author row: avatar left + name/badge/handle in column
+        '<div class="post-detail-author-row">' +
+          '<a href="/profile/' + post.user + '" class="post-detail-avatar" style="' + aStyle + '">' + aContent + '</a>' +
+          '<div style="display:flex;flex-direction:column;">' +
+            '<div style="display:flex;align-items:center;gap:4px;">' +
+              '<a href="/profile/' + post.user + '" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">' + post.user + '</a>' +
+              roleBadge +
+            '</div>' +
+            '<div style="font-size:13px;color:var(--text-muted);">' + (post.handle || '@anon') + '</div>' +
+          '</div>' +
+        '</div>' +
+        // Text: full width below
+        '<div class="post-detail-text">' + (post.text || '').replace(/\n/g, '<br>') + '</div>' +
+        // Media: full width, with border
+        (post.media_url ? '<div class="post-detail-media"><img src="' + post.media_url + '" alt="media" loading="lazy"></div>' : '') +
+        // Manga link
+        (post.manga ? '<div class="post-detail-manga" onclick="openCommunity(\'com-' + post.manga.id + '\')"><i class="ti ti-book"></i> ' + post.manga.title + (post.chapter ? ' · Cap. ' + post.chapter : '') + '</div>' : '') +
+        // Meta: date + views
+        '<div class="post-detail-meta">' + formatTime + (post.views_count !== undefined ? ' · <span style="color:var(--text-primary);font-weight:600;">' + post.views_count + '</span> vistas' : '') + '</div>' +
+        // Actions: icon + counter inline, space-between
+        '<div class="post-detail-actions">' +
+          '<div class="post-detail-action" onclick="openReply(' + post.id + ')"><i class="ti ti-message"></i><span class="action-cnt" id="detail-reply-cnt">' + rTxt + '</span></div>' +
+          '<div class="post-detail-action' + repostCls + '" onclick="openRepostMenu(this,' + post.id + ')"><i class="ti ti-repeat"></i><span class="action-cnt" id="detail-repost-cnt">' + rpTxt + '</span></div>' +
+          '<div class="post-detail-action' + likeCls + '" onclick="likePost(this);feedInteract(' + post.id + ',\'like\')"><i class="ti ' + likeIcon + '"></i><span class="action-cnt like-count" id="detail-like-cnt">' + lTxt + '</span></div>' +
+          '<div class="post-detail-action' + bmCls + '" onclick="feedInteract(' + post.id + ',\'bookmark\')"><i class="ti ti-bookmark"></i></div>' +
+          '<div class="post-detail-action" onclick="navigator.share?navigator.share({title:\'Post de ' + post.user.replace(/'/g,"\\'") + '\',text:\'' + (post.text||'').substring(0,50).replace(/'/g,"\\'") + '...\',url:window.location.href}):navigator.clipboard.writeText(window.location.href)"><i class="ti ti-share"></i></div>' +
+        '</div>' +
+      '</div>';
+
+      // 2. Mini reply composer inline
+      html += renderMiniReplyComposer(post.id);
+
+      // 3. Thread line + replies
+      html += '<div class="post-thread-replies" id="post-thread-replies">';
+      if (replies.length > 0) {
+        replies.forEach(function(r) { r.replyToUser = post.user; });
+        html += renderFeedPosts(replies, true);
+      } else {
+        html += '<div class="post-thread-empty">No hay respuestas aún. Sé el primero en responder.</div>';
+      }
+      html += '</div>';
+
+      document.getElementById('post-detail-content').innerHTML = html;
+
+      // 3b. Join WebSocket room for live replies
+      if (typeof socket !== 'undefined' && socket) socket.emit('join-post', post.id);
+
+      // 3c. Re-observar vistas para el nuevo post principal en detalle
+      setTimeout(trackFeedViews, 100);
+    }
+
+    function renderMiniReplyComposer(postId) {
+      return '<div class="mini-reply-composer" id="mini-reply-' + postId + '">' +
+        '<textarea id="mini-textarea-' + postId + '" class="mini-reply-textarea" placeholder="Escribe tu respuesta..." oninput="miniReplyCheck(' + postId + ');autoResizeTextarea(this)" rows="1"></textarea>' +
+        '<button id="mini-submit-' + postId + '" class="mini-reply-submit" onclick="submitMiniReply(' + postId + ')" disabled>Responder</button>' +
+      '</div>';
+    }
+
+    function miniReplyCheck(postId) {
+      var ta = document.getElementById('mini-textarea-' + postId);
+      var btn = document.getElementById('mini-submit-' + postId);
+      if (!ta || !btn) return;
+      btn.disabled = !ta.value.trim();
+    }
+
+    /* ── Composer Universal (Fase 1+2: cerebro único de publicación) ── */
+    function publicarPostUniversal(idInstancia, texto, extraPayload, callbackExito) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      var estado = composerState[idInstancia] || {};
+      // Lectura tolerante con fallback a variables globales del modal
+      var mangaId = null;
+      try { mangaId = estado.linkedManga ? estado.linkedManga.id : (typeof linkedManga !== 'undefined' && linkedManga ? linkedManga.id : null); } catch(e) {}
+      var gifUrl = null;
+      try { gifUrl = estado.selectedGifUrl || (typeof selectedGifUrl !== 'undefined' ? selectedGifUrl : null); } catch(e) {}
+      var postType = 'post';
+      try { postType = Array.from(document.querySelectorAll('.comp-pill.active')).map(function(p) { return p.dataset.type; }).join(',') || 'post'; } catch(e) {}
+      var communityId = null;
+      try { communityId = document.getElementById('comp-community') ? document.getElementById('comp-community').value || null : null; } catch(e) {}
+      var spoiler = false;
+      try { var cs = document.getElementById('comp-spoiler') || document.getElementById('in-feed-is-spoiler'); spoiler = cs ? cs.checked : false; } catch(e) {}
+      var isNews = false;
+      try { var cn = document.getElementById('comp-is-news') || document.getElementById('in-feed-is-news'); isNews = cn ? cn.checked : false; } catch(e) {}
+      var isGlobal = false;
+      try { var cg = document.getElementById('comp-is-global') || document.getElementById('in-feed-is-global'); isGlobal = cg ? cg.checked : false; } catch(e) {}
+      var quotedId = null;
+      try { quotedId = typeof quotePostId !== 'undefined' ? quotePostId : null; } catch(e) {}
+
+      var payload = {
+        content: texto, is_news: isNews, is_global_announcement: isGlobal,
+        is_spoiler: spoiler, media_url: gifUrl, manga_id: mangaId,
+        post_type: postType, community_id: communityId, title: '',
+        quoted_post_id: quotedId,
+      };
+      for (var k in extraPayload) { if (extraPayload.hasOwnProperty(k)) payload[k] = extraPayload[k]; }
+
+      fetch('/api/feed/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(payload)
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        if (data.success) {
+          composerState[idInstancia] = { linkedManga: null, selectedGifUrl: null };
+          if (typeof callbackExito === 'function') callbackExito(data);
+        } else {
+          throw new Error(data.error || 'Error desconocido');
+        }
+      })
+      .catch(function(err) {
+        console.warn('[composer] Error:', err.message);
+        try {
+          var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+          saved.push({ content: texto, manga_id: payload.manga_id, failed_at: Date.now() });
+          localStorage.setItem('kami_borradores', JSON.stringify(saved));
+        } catch(e) {}
+        showToast('error', 'No se pudo publicar. Se ha guardado en Borradores.');
+      });
+    }
+
+    function submitMiniReply(postId) {
+      var ta = document.getElementById('mini-textarea-' + postId);
+      if (!ta || !ta.value.trim()) return;
+      var text = ta.value.trim();
+      ta.value = '';
+      document.getElementById('mini-submit-' + postId).disabled = true;
+      document.getElementById('mini-submit-' + postId).textContent = 'Responder';
+
+      // Detectar si es una comunidad (com-KMI-xxxxxx) o un reply normal
+      var isCommunity = typeof postId === 'string' && postId.indexOf('com-') === 0;
+
+      if (isCommunity) {
+        composerState.modal.selectedGifUrl = null;
+        publicarPostUniversal('modal', text, { community_id: postId, parent_id: null }, function() {
+          cargarDatosDeComunidad(postId);
+        });
+      } else {
+        composerState.hilo.selectedGifUrl = null;
+        publicarPostUniversal('hilo', text, { parent_id: postId }, function() {
+          fetchRepliesAndRefresh(postId);
+        });
+      }
+    }
+
+    function fetchRepliesAndRefresh(postId) {
+      var token = localStorage.getItem('kami_token');
+      var opts = {};
+      if (token) opts.headers = { 'Authorization': 'Bearer ' + token };
+
+      Promise.all([
+        fetch('/api/feed/post/' + postId, opts).then(function(r) { return r.json(); }),
+        fetch('/api/feed/replies/' + postId).then(function(r) { return r.json(); })
+      ])
+      .then(function(results) {
+        var postData = results[0];
+        var repliesData = results[1];
+        if (!postData.success) return;
+        var post = postData.post;
+        var replies = repliesData.success ? (repliesData.replies || []) : [];
+        var threadContainer = document.getElementById('post-thread-replies');
+        if (threadContainer) {
+          replies.forEach(function(r) { r.replyToUser = post.user; });
+          threadContainer.innerHTML = replies.length > 0 ? renderFeedPosts(replies, true) : '<div class="post-thread-empty">No hay respuestas aún.</div>';
+        }
+        // Update counters inside action buttons
+        var rC = replies.length, rpC = post.reposts || 0, lC = post.likes || 0;
+        var el;
+        el = document.getElementById('detail-reply-cnt'); if (el) el.textContent = rC > 0 ? rC.toLocaleString() : '';
+        el = document.getElementById('detail-repost-cnt'); if (el) el.textContent = rpC > 0 ? rpC.toLocaleString() : '';
+        el = document.getElementById('detail-like-cnt'); if (el) el.textContent = lC > 0 ? lC.toLocaleString() : '';
+        setTimeout(trackFeedViews, 100);
+      })
+      .catch(function() {});
+    }
+
+    function renderFeed() {
+      var container = document.getElementById('com-feed');
+      if (!container) return;
+      container.innerHTML = skeletonPosts(4);
+      try {
+        var cache = localStorage.getItem('kami_feed_cache_' + currentFeed);
+        if (cache) { container.innerHTML = renderFeedPosts(JSON.parse(cache)); }
+      } catch(e) {}
+      feedApiOffset = 0;
+      isFeedLoading = true;
+      console.log('[feed] Solicitando posts...');
+      fetchFeedPosts(true);
+    }
+
+    function showFeedError(msg) {
+      isFeedLoading = false;
+      var el = document.getElementById('com-feed');
+      if (el) el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.15);font-size:14px;"><i class="ti ti-alert-triangle" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>' + msg + '<br><button onclick="renderFeed()" style="margin-top:12px;padding:8px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;font-size:13px;">Reintentar</button></div>';
+    }
+
+    function fetchFeedPosts(initial) {
+      if (currentFeed === 'communities') return;
+      var token = localStorage.getItem('kami_token');
+      var endpoint = '/api/feed/posts';
+      if (currentFeed === 'foryou') endpoint = '/api/feed/for-you';
+      else if (currentFeed === 'latest') endpoint = '/api/feed/latest';
+      var url = endpoint + '?limit=25&offset=' + feedApiOffset + '&t=' + Date.now();
+      var timedOut = false;
+      var timeout = setTimeout(function() {
+        timedOut = true;
+        isFeedLoading = false;
+        document.getElementById('com-feed').innerHTML = '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.15);font-size:14px;"><i class="ti ti-clock" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>El feed tardó demasiado (10s)<br><button onclick="renderFeed()" style="margin-top:12px;padding:8px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;font-size:13px;">Reintentar</button></div>';
+      }, 10000);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.onload = function() {
+        if (xhr.status !== 200) { showFeedError('HTTP ' + xhr.status); return; }
+        clearTimeout(timeout);
+        var data;
+        try { data = JSON.parse(xhr.responseText); } catch(e) { showFeedError('JSON inválido'); return; }
+        if (!data || !data.posts) { showFeedError('Sin datos'); return; }
+        feedHasMore = data.posts.length >= 25;
+        feedApiOffset += data.posts.length;
+        try { localStorage.setItem('kami_feed_cache_' + currentFeed, JSON.stringify(data.posts)); } catch(e) {}
+        var container = document.getElementById('com-feed');
+        if (initial) { container.innerHTML = renderFeedPosts(data.posts); }
+        else { container.insertAdjacentHTML('beforeend', renderFeedPosts(data.posts)); }
+        isFeedLoading = false;
+        if (window.observePosts) { window.observePosts(); }
+        setTimeout(trackFeedViews, 100);
+      };
+      xhr.onerror = function() { showFeedError('Error de red'); };
+      xhr.send();
+    }
+
+    function saveSession() {
+      var main = document.querySelector('.com-main');
+      sessionStorage.setItem('kami_session_' + currentFeed, JSON.stringify({
+        ultimo_post_visto_id: centeredPostId,
+        desplazamiento_pixel: main.scrollTop,
+        timestamp: Date.now()
+      }));
+    }
+
+    function restoreSession() {
+      var saved = sessionStorage.getItem('kami_session_' + currentFeed);
+      if (!saved) return false;
+      try {
+        var state = JSON.parse(saved);
+        var targetId = state.ultimo_post_visto_id;
+        if (targetId) {
+          var target = document.querySelector('[data-post-id="' + targetId + '"]');
+          if (target) { target.scrollIntoView({ block: 'center' }); return true; }
+        }
+        if (state.desplazamiento_pixel) {
+          document.querySelector('.com-main').scrollTop = parseInt(state.desplazamiento_pixel);
+          return true;
+        }
+      } catch(e) {}
+      return false;
+    }
+
+    // ── Infinite scroll (API) + session save ──
+    document.querySelector('.com-main').addEventListener('scroll', function() {
+      var el = this;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 600) {
+        if (!isFeedLoading && feedHasMore) {
+          isFeedLoading = true;
+          fetchFeedPosts(false);
+        }
+      }
+      saveSession();
+    });
+
+    function switchFeed(feed) {
+      // Guardado inmediato del feed actual antes de cambiar
+      var main = document.querySelector('.com-main');
+      sessionStorage.setItem('kami_session_' + currentFeed, JSON.stringify({
+        ultimo_post_visto_id: centeredPostId,
+        desplazamiento_pixel: main.scrollTop,
+        timestamp: Date.now()
+      }));
+
+      currentFeed = feed;
+
+      // Mostrar/ocultar feed general y vista de comunidades
+      var comFeed = document.getElementById('com-feed');
+      var comView = document.getElementById('comunidades-feed-view');
+      var feedFilter = document.querySelector('.feed-filter');
+
+      if (feed === 'communities') {
+        if (comFeed) comFeed.style.display = 'none';
+        if (comView) comView.style.display = 'block';
+        if (feedFilter) feedFilter.style.display = 'none';
+        cargarPestañaMisComunidades();
+      } else {
+        if (comFeed) comFeed.style.display = '';
+        if (comView) comView.style.display = 'none';
+        if (feedFilter) feedFilter.style.display = '';
+        renderFeed();
+      }
+
+      document.querySelectorAll('.feed-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.feed === feed); });
+      if (window.observePosts) window.observePosts();
+      setTimeout(trackFeedViews, 300);
+      if (!restoreSession()) {
+        main.scrollTop = 0;
+      }
+    }
+
+    /* ── Mis comunidades (sidebar-data + feed filtrado) ── */
+    function renderMiniCardKMI(c) {
+      var initial = (c.name || '?').charAt(0).toUpperCase();
+      var avatarSrc = c.avatar_url || c.manga_cover;
+      var avatarHtml = avatarSrc
+        ? '<img src="' + avatarSrc + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">'
+        : '<span style="font-size:16px;font-weight:700;">' + initial + '</span>';
+      return '<div onclick="window.location.hash=\'comunidad/' + c.id + '\'" style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-secondary);cursor:pointer;box-sizing:border-box;">' +
+        '<div style="width:40px;height:40px;min-width:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;">' + avatarHtml + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + c.name + '</div>' +
+        '<div style="font-size:12px;color:var(--text-muted);">' + (c.member_count || 0) + ' miembros</div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    function cargarPestañaMisComunidades() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return console.warn('[comunidades] Token inexistente.');
+      var opts = { headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } };
+      var pc = document.getElementById('comunidades-posts-feed');
+      if (pc) pc.innerHTML = '<div class="notif-loading">Cargando...</div>';
+
+      // 1. Sidebar data (unidas + sugeridas)
+      fetch('/api/communities/sidebar-data', opts).then(function(r){return r.json()}).then(function(d){
+        console.log('[comunidades] Datos recibidos:', d);
+        if (!d.success) return;
+        var uc = document.getElementById('lista-comunidades-unidas');
+        if (uc) {
+          var ul = d.joined || [];
+          uc.innerHTML = ul.length ? ul.slice(0, 6).map(renderMiniCardKMI).join('') : '<div style="font-size:13px;color:var(--text-muted);padding:10px;">No te has unido a ninguna comunidad a&uacute;n.</div>';
+          document.getElementById('btn-ver-mas-unidas').style.display = ul.length > 6 ? 'block' : 'none';
+        }
+        var sc = document.getElementById('lista-comunidades-sugeridas');
+        if (sc) {
+          var sl = d.suggested || [];
+          sc.innerHTML = sl.length ? sl.slice(0, 6).map(renderMiniCardKMI).join('') : '<div style="font-size:13px;color:var(--text-muted);padding:10px;">Agrega mangas a tu biblioteca para ver sugerencias.</div>';
+          document.getElementById('btn-ver-mas-sugeridas').style.display = sl.length > 6 ? 'block' : 'none';
+        }
+      }).catch(function(e){ console.error('[comunidades] Error en sidebar-data:', e); });
+
+      // 2. Feed filtrado de comunidades
+      fetch('/api/feed/communities', opts).then(function(r){return r.json()}).then(function(d){
+        if (!pc) return;
+        if (d.success && d.posts && d.posts.length) {
+          pc.innerHTML = renderFeedPosts(d.posts);
+          setTimeout(trackFeedViews, 150);
+        } else {
+          pc.innerHTML = '<div class="notif-empty" style="padding:40px;">No hay publicaciones nuevas en tus comunidades. &iexcl;S&eacute; el primero en postear!</div>';
+        }
+      }).catch(function(){ if (pc) pc.innerHTML = '<div class="notif-empty">Error de conexi&oacute;n</div>'; });
+    }
+
+    function toggleFilter(el) {
+      el.classList.toggle('active');
+      if (el.textContent.trim() === 'Todos') {
+        document.querySelectorAll('.feed-filter-btn').forEach(function(b) { b.classList.toggle('active', b === el); });
+        currentFilter = 'Todos';
+      } else {
+        document.querySelector('.feed-filter-btn:first-child').classList.remove('active');
+        currentFilter = el.textContent.trim();
+      }
+      renderFeed();
+    }
+
+    function likePost(el) {
+      el.classList.toggle('liked');
+      var span = el.querySelector('.like-count');
+      if (span) {
+        var n = parseInt(span.textContent) || 0;
+        span.textContent = el.classList.contains('liked') ? n + 1 : Math.max(0, n - 1);
+      }
+    }
+
+    function repostPost(el) {
+      el.classList.toggle('reposted');
+      var span = el.querySelector('.repost-count');
+      if (span) {
+        var n = parseInt(span.textContent) || 0;
+        span.textContent = el.classList.contains('reposted') ? n + 1 : Math.max(0, n - 1);
+      }
+    }
+
+    function openReply(postId) {
+      replyToPostId = postId;
+      openComposer();
+      var ta = document.getElementById('comp-textarea');
+      ta.placeholder = 'Escribe tu respuesta...';
+      ta.focus();
+      if (socket) socket.emit('join-post', postId);
+    }
+
+    var _repostMenuPostId = null;
+
+    function openRepostMenu(btn, postId) {
+      var existing = document.getElementById('repost-menu');
+      if (existing) existing.remove();
+      _repostMenuPostId = postId;
+      var rect = btn.getBoundingClientRect();
+      var isReposted = btn.classList.contains('reposted');
+      var menu = document.createElement('div');
+      menu.id = 'repost-menu';
+      menu.className = 'repost-menu';
+      menu.innerHTML =
+        '<div class="repost-menu-item" onclick="toggleRepost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isReposted ? 'Deshacer repost' : 'Repost simple') + '</div>' +
+        '<div class="repost-menu-item" onclick="openQuote(' + postId + ');closeRepostMenu()"><i class="ti ti-quote"></i> Citar post</div>';
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.left = rect.left + 'px';
+      document.body.appendChild(menu);
+      setTimeout(function() { document.addEventListener('click', closeRepostMenu, { once: true }); }, 10);
+    }
+
+    function closeRepostMenu() {
+      var m = document.getElementById('repost-menu');
+      if (m) m.remove();
+    }
+
+    function toggleRepost(postId) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      var btn = document.querySelector('.feed-post[data-post-id="'+postId+'"] .feed-post-action .repost-count');
+      var parent = btn ? btn.closest('.feed-post-action') : null;
+      var isReposted = parent && parent.classList.contains('reposted');
+      var method = isReposted ? 'DELETE' : 'POST';
+      var bodyData = { post_id: postId };
+
+      fetch('/api/feed/repost', {
+        method: method,
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify(bodyData)
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success && parent) {
+          var span = parent.querySelector('.repost-count');
+          var n = parseInt(span.textContent) || 0;
+          if (method === 'POST') {
+            span.textContent = n + 1;
+            parent.classList.add('reposted');
+          } else {
+            span.textContent = Math.max(0, n - 1);
+            parent.classList.remove('reposted');
+          }
+        }
+      }).catch(function(){});
+    }
+
+    // ── Dots menu (tres puntos) ──
+    function openDotsMenu(btn, postId, postUser) {
+      var existing = document.getElementById('dots-menu');
+      if (existing) existing.remove();
+      var rect = btn.getBoundingClientRect();
+      var currentUser = null;
+      try { currentUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+      var isOwner = currentUser && postUser && currentUser.username === postUser;
+      var menu = document.createElement('div');
+      menu.id = 'dots-menu';
+      menu.className = 'repost-menu';
+      menu.innerHTML =
+        '<div class="repost-menu-item" onclick="feedHidePost(' + postId + ');closeDotsMenu()"><i class="ti ti-eye-off"></i> No me interesa</div>' +
+        (isOwner ? '<div class="repost-menu-item" onclick="pinPostToProfile(' + postId + ');closeDotsMenu()"><i class="ti ti-pin"></i> Fijar en mi perfil</div>' : '');
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      document.body.appendChild(menu);
+      setTimeout(function() { document.addEventListener('click', closeDotsMenu, { once: true }); }, 10);
+    }
+
+    function closeDotsMenu() {
+      var m = document.getElementById('dots-menu');
+      if (m) m.remove();
+    }
+
+    function pinPostToProfile(postId) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/feed/pin-post', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ post_id: postId })
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) showToast('success', 'Post fijado en tu perfil');
+      }).catch(function(){});
+    }
+
+    // ── Sidebar follow toggle ──
+    function toggleSidebarFollow(userId, btn) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      btn.disabled = true;
+      fetch('/api/social/follow', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({ following_id: userId })
+      }).then(function(r){return r.json()}).then(function(d){
+        btn.disabled = false;
+        if (d.success) {
+          btn.textContent = d.following ? 'Siguiendo' : 'Seguir';
+          btn.className = 'cr-follow-btn' + (d.following ? ' following' : '');
+        }
+      }).catch(function(){ btn.disabled = false; });
+    }
+
+    // ── In-Feed Composer (expandible, solo Inicio) ──
+    var _currentInFeedRole = 'user';
+
+    function initInFeedComposer() {
+      try {
+        var u = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        if (u && u.avatar) document.getElementById('composer-current-avatar').src = u.avatar;
+        _currentInFeedRole = u ? u.role : 'user';
+        desactivarInFeedComposer();
+      } catch(e) {}
+    }
+
+    function activarInFeedComposer() {
+      var z = document.getElementById('in-feed-expandable-zone');
+      if (z) z.style.display = 'flex';
+      if (['admin','company','creator'].includes(_currentInFeedRole))
+        document.getElementById('in-feed-creator-options').style.display = 'flex';
+      if (_currentInFeedRole === 'admin')
+        document.getElementById('in-feed-admin-opt').style.display = 'flex';
+    }
+
+    function desactivarInFeedComposer() {
+      var z = document.getElementById('in-feed-expandable-zone');
+      if (z) z.style.display = 'none';
+      var ta = document.getElementById('in-feed-textarea');
+      if (ta && ta.value.trim() === '') ta.style.height = '30px';
+    }
+
+    // Click fuera contrae la caja
+    document.addEventListener('click', function(e) {
+      var c = document.getElementById('in-feed-container');
+      var ta = document.getElementById('in-feed-textarea');
+      if (c && !c.contains(e.target) && ta && ta.value.trim() === '') desactivarInFeedComposer();
+    });
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+      var btn = document.getElementById('in-feed-submit-btn');
+      if (el.value.trim().length > 0) {
+        btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+      } else {
+        btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
+      }
+    }
+
+    function publishFromInFeed(e) {
+      if (e) e.stopPropagation();
+      var ta = document.getElementById('in-feed-textarea');
+      var text = ta.value.trim();
+      if (!text) return;
+      publicarPostUniversal('inicio', text, {}, function(d) {
+        ta.value = '';
+        desactivarInFeedComposer();
+        if (document.getElementById('in-feed-is-news')) document.getElementById('in-feed-is-news').checked = false;
+        if (document.getElementById('in-feed-is-global')) document.getElementById('in-feed-is-global').checked = false;
+        var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        document.getElementById('com-feed')
+          .insertAdjacentHTML('afterbegin', renderFeedPosts([{
+            id: d.post.id, user: d.post.user || u.username || 'Tú',
+            handle: '@' + (d.post.user || u.username || 'yo').toLowerCase(),
+            avatar: d.post.avatar || u.avatar || null, text: text,
+            likes: 0, replies: 0, reposts: 0, views_count: 0,
+            author_role: u.role || 'user', created_at: new Date().toISOString(),
+            user_has_liked: false, user_has_reposted: false, user_has_bookmarked: false,
+          }]));
+      });
+    }
+
+    function triggerInFeedMediaUpload(e) {
+      e.stopPropagation();
+      document.getElementById('in-feed-file-input').click();
+    }
+
+    function openQuote(postId) {
+      replyToPostId = null;
+      quotePostId = postId;
+      openComposer();
+      var ta = document.getElementById('comp-textarea');
+      ta.placeholder = 'Añade un comentario (opcional)...';
+      ta.focus();
+
+      // Cargar datos del post original
+      fetch('/api/feed/post/' + postId)
+        .then(function(r){return r.json()})
+        .then(function(d){
+          if (d.success) {
+            var quoteHtml = document.getElementById('comp-quote-preview');
+            if (!quoteHtml) {
+              quoteHtml = document.createElement('div');
+              quoteHtml.id = 'comp-quote-preview';
+              quoteHtml.className = 'comp-quote-preview';
+              document.getElementById('comp-textarea-wrap').after(quoteHtml);
+            }
+            var p = d.post;
+            quoteHtml.innerHTML =
+              '<div class="comp-quote-header">Post original</div>' +
+              '<div class="comp-quote-body">' +
+                '<div class="comp-quote-avatar" style="background:' + (p.avatar && p.avatar.indexOf('#')>=0 ? p.avatar : '#e8344a') + '">' +
+                  (p.avatar && p.avatar.indexOf('/')>=0 ? '<img src="'+p.avatar+'" alt="">' : (p.user ? p.user.charAt(0) : '?')) +
+                '</div>' +
+                '<div class="comp-quote-content">' +
+                  '<div class="comp-quote-user">' + p.user + '</div>' +
+                  '<div class="comp-quote-text">' + (p.text || '').substring(0,150) + '</div>' +
+                '</div>' +
+              '</div>';
+            quoteHtml.style.display = 'block';
+          }
+        }).catch(function(){});
+    }
+
+    function showAlgorithm(postId) {
+      var postEl = document.querySelector('.feed-post[data-post-id="' + postId + '"]');
+      if (!postEl) return;
+      var btn = postEl.querySelector('.feed-post-action.tuerca');
+      if (!btn) return;
+      var score = parseInt(btn.getAttribute('data-score')) || 0;
+      var raw = btn.getAttribute('data-breakdown');
+      var breakdown;
+      try { breakdown = JSON.parse(raw); } catch(e) { breakdown = {}; }
+      document.getElementById('algo-total').textContent = score;
+      var body = document.getElementById('algo-body');
+      var items = body.querySelectorAll('.algo-bar');
+      items.forEach(function(i) { i.remove(); });
+      var bars = [
+        { label: 'Base', key: 'base', color: 'neutral' },
+        { label: 'Af. lectura', key: 'readingAffinity', color: 'positive' },
+        { label: 'Comunidad', key: 'communityFactor', color: 'positive' },
+        { label: 'Actualidad', key: 'recencyBonus', color: 'positive' },
+        { label: 'FandomJet', key: 'fandomJet', color: 'positive' },
+        { label: 'OtakuCred', key: 'otakuCredBonus', color: 'positive' },
+        { label: 'Repost', key: 'repostBonus', color: 'positive' },
+        { label: 'Seguridad', key: 'safetyPenalty', color: 'negative' },
+        { label: 'Estado', key: 'statusBonus', color: 'positive' },
+        { label: 'Adelantado', key: 'chapterAheadPenalty', color: 'negative' },
+        { label: 'Fatiga ×', key: 'fatigueMul', color: 'neutral' },
+        { label: 'Pje antes fatiga', key: 'antesDeFatiga', color: 'neutral' },
+      ];
+      var maxVal = Math.max(Math.abs(breakdown.base || 100), 100);
+      bars.forEach(function(bar) {
+        var val = breakdown[bar.key];
+        if (val === undefined || val === null) return;
+        var absVal = Math.abs(val);
+        var pct = Math.min(100, (absVal / maxVal) * 100);
+        var signClass = val >= 0 ? (bar.color === 'negative' ? 'neg' : 'pos') : 'neg';
+        var fillClass = val >= 0 ? bar.color : 'negative';
+        var div = document.createElement('div');
+        div.className = 'algo-bar';
+        div.innerHTML =
+          '<span class="algo-bar-label">' + bar.label + '</span>' +
+          '<div class="algo-bar-track"><div class="algo-bar-fill ' + fillClass + '" style="width:' + pct + '%"></div></div>' +
+          '<span class="algo-bar-value ' + signClass + '">' + (val >= 0 ? '+' : '') + val + '</span>';
+        body.appendChild(div);
+      });
+      document.getElementById('algo-overlay').classList.add('open');
+      document.getElementById('algo-modal').classList.add('open');
+    }
+
+    function closeAlgorithm() {
+      document.getElementById('algo-overlay').classList.remove('open');
+      document.getElementById('algo-modal').classList.remove('open');
+    }
+
+    function addToList(title) {
+      alert('"' + title + '" añadido a tu lista de Pendientes');
+    }
+
+    // ── Init feed on page load ──
+    renderFeed();
+    // observePosts() se llama desde fetchFeedPosts cuando llegan datos reales
+    restoreSession();
+
+    var mockUsers = [
+      { name:'KAMI Manga', handle:'@kamimanga', color:'linear-gradient(135deg,#e8344a,#f5c842)' },
+      { name:'Shonen Weekly', handle:'@shonenweek', color:'#4c9df5' },
+      { name:'Manga Plus', handle:'@mangaplus', color:'#2dca7a' },
+      { name:'Anime News', handle:'@animenews', color:'#a78bfa' },
+      { name:'Scanlation Club', handle:'@scanclub', color:'#fb923c' },
+    ];
+
+    function getRecent() {
+      try { return JSON.parse(localStorage.getItem('kami_search_recent') || '[]'); } catch { return []; }
+    }
+    function saveRecent(q) {
+      var recents = getRecent().filter(function(r) { return r !== q; });
+      recents.unshift(q);
+      if (recents.length > 10) recents = recents.slice(0, 10);
+      localStorage.setItem('kami_search_recent', JSON.stringify(recents));
+    }
+    function clearRecent() {
+      localStorage.removeItem('kami_search_recent');
+      renderRecent();
+    }
+    function renderRecent() {
+      var list = document.getElementById('cr-sp-recent-list');
+      var recents = getRecent();
+      list.innerHTML = recents.length ? recents.map(function(r) {
+        return '<div class="cr-sp-item" onclick="doSearch(\'' + r.replace(/'/g, "\\'") + '\')"><i class="ti ti-clock"></i><span>' + r + '</span></div>';
+      }).join('') : '<div class="cr-sp-item" style="cursor:default;"><span style="color:rgba(255,255,255,0.15);">Sin búsquedas recientes</span></div>';
+    }
+
+    function openSearch() {
+      document.getElementById('cr-search-panel').classList.add('open');
+      document.getElementById('cr-sp-suggest').style.display = 'none';
+      document.getElementById('cr-sp-recent').style.display = '';
+      renderRecent();
+      setTimeout(function() { document.getElementById('cr-search-input').focus(); }, 50);
+    }
+
+    function closeSearch() {
+      document.getElementById('cr-search-panel').classList.remove('open');
+    }
+
+    function searchSuggest(val) {
+      var suggestEl = document.getElementById('cr-sp-suggest');
+      var recentEl = document.getElementById('cr-sp-recent');
+      var suggestList = document.getElementById('cr-sp-suggest-list');
+      var emptyEl = document.getElementById('cr-sp-empty');
+      if (!val.trim()) {
+        suggestEl.style.display = 'none';
+        recentEl.style.display = '';
+        emptyEl.style.display = '';
+        return;
+      }
+      recentEl.style.display = 'none';
+      emptyEl.style.display = 'none';
+      var filtered = mockUsers.filter(function(u) {
+        return u.name.toLowerCase().indexOf(val.toLowerCase()) >= 0 || u.handle.toLowerCase().indexOf(val.toLowerCase()) >= 0;
+      });
+      if (filtered.length) {
+        suggestEl.style.display = '';
+        suggestList.innerHTML = filtered.map(function(u) {
+          var initial = u.name.charAt(0).toUpperCase();
+          return '<div class="cr-sp-item" onclick="doSearch(\'' + u.handle.replace('@', '') + '\')"><div class="cr-sp-avatar" style="background:' + u.color + '">' + initial + '</div><span>' + u.name + ' <span style="color:rgba(255,255,255,0.25);font-size:12px;">' + u.handle + '</span></span></div>';
+        }).join('');
+      } else {
+        suggestEl.style.display = '';
+        suggestList.innerHTML = '<div class="cr-sp-item" style="cursor:default;"><span style="color:rgba(255,255,255,0.15);">Buscar «' + val + '»</span></div>';
+      }
+    }
+
+    function searchKeydown(e) {
+      if (e.key === 'Enter') {
+        var val = e.target.value.trim();
+        if (val) doSearch(val);
+      }
+      if (e.key === 'Escape') closeSearch();
+    }
+
+    function doSearch(q) {
+      saveRecent(q);
+      closeSearch();
+      goToSection('explorar');
+      var input = document.getElementById('explore-search-input');
+      if (input) { input.value = q; exploreSearch(q); }
+    }
+
+    document.addEventListener('click', function(e) {
+      var panel = document.getElementById('cr-search-panel');
+      var search = document.getElementById('cr-search');
+      if (panel && search && !search.contains(e.target)) closeSearch();
+    });
+
+    // ── Post Composer (Manga Edition) ──
+    var linkedManga = null;
+
+    function loadAvatar() {
+      var el = document.getElementById('comp-avatar');
+      try {
+        var user = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        var token = localStorage.getItem('kami_token');
+        if (!user || !token) { el.textContent = '?'; return; }
+        if (user.avatar && (user.avatar.indexOf('/') === 0 || user.avatar.indexOf('http') === 0)) {
+          el.innerHTML = '<img src="' + user.avatar + '" alt="">';
+        } else {
+          el.textContent = (user.username || '?').charAt(0).toUpperCase();
+        }
+      } catch(e) { el.textContent = '?'; }
+    }
+
+    function loadInFeedAvatar() {
+      var el = document.getElementById('composer-current-avatar');
+      if (!el) return;
+      try {
+        var user = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        var token = localStorage.getItem('kami_token');
+        if (!user || !token) { el.style.display = 'none'; return; }
+        if (user.avatar && (user.avatar.indexOf('/') === 0 || user.avatar.indexOf('http') === 0 || user.avatar.indexOf('data:') === 0)) {
+          el.src = user.avatar;
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      } catch(e) { el.style.display = 'none'; }
+    }
+
+    function openComposer(communityId) {
+      document.getElementById('composer-overlay').classList.add('open');
+      document.getElementById('composer').classList.add('open');
+      loadAvatar();
+      var ta = document.getElementById('comp-textarea');
+      ta.value = '';
+      ta.focus();
+      compUpdate(ta);
+      try {
+        var draft = localStorage.getItem('kami_composer_draft');
+        if (draft) { ta.value = draft; compUpdate(ta); }
+      } catch(e) {}
+      // Mostrar opciones de creador según rol
+      document.getElementById('comp-is-news').checked = false;
+      document.getElementById('comp-is-global').checked = false;
+      try {
+        var u = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        var role = u ? u.role : 'user';
+        document.getElementById('comp-creator-options').style.display = (['admin','company','creator'].indexOf(role) >= 0) ? 'flex' : 'none';
+        document.getElementById('comp-global-opt').style.display = (role === 'admin') ? 'flex' : 'none';
+      } catch(e) {}
+      // Si se pasa communityId, seleccionarlo en el dropdown
+      if (communityId) {
+        var sel = document.getElementById('comp-community');
+        if (sel) {
+          var exists = false;
+          for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === communityId) { exists = true; break; } }
+          if (!exists) {
+            var opt = document.createElement('option');
+            opt.value = communityId; opt.textContent = communityId;
+            sel.appendChild(opt);
+          }
+          sel.value = communityId;
+        }
+      }
+    }
+
+    function closeComposerForce() {
+      document.getElementById('composer-overlay').classList.remove('open');
+      document.getElementById('composer').classList.remove('open');
+      document.getElementById('comp-manga-search').style.display = 'none';
+      var qp = document.getElementById('comp-quote-preview');
+      if (qp) { qp.style.display = 'none'; qp.innerHTML = ''; }
+      replyToPostId = null;
+      quotePostId = null;
+    }
+
+    function compUpdate(el) {
+      var len = el.value.length;
+      var max = 280;
+      var counter = document.getElementById('comp-counter');
+      var submit = document.getElementById('comp-submit');
+      counter.textContent = len;
+      counter.className = 'comp-counter';
+      if (len > max) { counter.classList.add('over'); } else if (len > max * 0.85) { counter.classList.add('warning'); }
+      submit.disabled = len === 0;
+      // Preview con auto-link
+      var preview = document.getElementById('comp-preview');
+      var val = el.value;
+      if (val) {
+        preview.style.display = 'block';
+        preview.innerHTML = val
+          .replace(/(@\w+)/g, '<span style="color:#e8344a;">$1</span>')
+          .replace(/#(\w+)/g, '<span style="color:#e8344a;">#$1</span>')
+          .replace(/(https?:\/\/[^\s]+)/g, '<span style="color:#4c9df5;text-decoration:underline;">$1</span>')
+          // Detectar captiones: cap X / capítulo X
+          .replace(/\bcap[\.\s]*(\d+)/gi, '<span style="color:#4c9df5;cursor:pointer;" onclick="openChapterSelector()">cap. $1</span>');
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+
+    // ── Manga vinculado ──
+    function openMangaSearch() {
+      var el = document.getElementById('comp-manga-search');
+      el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      if (el.style.display === 'block') document.getElementById('comp-manga-input').focus();
+    }
+
+    function searchManga(q) {
+      var results = document.getElementById('comp-manga-results');
+      if (!q.trim()) { results.innerHTML = ''; return; }
+      results.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.15);font-size:12px;">Buscando...</div>';
+      fetch('/api/manga/search?q=' + encodeURIComponent(q))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          var items = data && data.results ? data.results : (Array.isArray(data) ? data : []);
+          if (!items.length) {
+            results.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.15);font-size:12px;">Sin resultados</div>';
+            return;
+          }
+          results.innerHTML = items.map(function(m){
+            var initial = m.title ? m.title.charAt(0) : '?';
+            var coverStyle = m.cover ? 'background:transparent;' : 'background:#e8344a;';
+            var coverHtml = m.cover && m.cover.indexOf('/') >= 0
+              ? '<img src="' + m.cover + '" style="width:100%;height:100%;object-fit:cover;">'
+              : '<span style="font-size:9px;color:#fff;">' + initial + '</span>';
+            return '<div class="comp-manga-result" onclick="linkManga(\'' + m.id + '\',\'' + m.title.replace(/'/g,"\\'") + '\',\'' + (m.cover || '') + '\')">' +
+              '<div style="width:20px;height:28px;border-radius:4px;' + coverStyle + 'display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">' + coverHtml + '</div>' +
+              '<span>' + m.title + '</span></div>';
+          }).join('');
+        })
+        .catch(function(){
+          results.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.15);font-size:12px;">Error al buscar</div>';
+        });
+    }
+
+    function linkManga(id, title, cover) {
+      linkedManga = { id: id, title: title, cover: cover };
+      document.getElementById('comp-link-btn').style.display = 'none';
+      document.getElementById('comp-manga-search').style.display = 'none';
+      var tag = document.getElementById('comp-manga-tag');
+      tag.style.display = 'flex';
+      document.getElementById('comp-manga-name').textContent = title;
+      // Auto-rellenar capítulo desde la biblioteca
+      var token = localStorage.getItem('kami_token');
+      if (token) {
+        fetch('/api/library/check/' + id, { headers: { 'Authorization': 'Bearer ' + token } })
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            if (d.inLibrary && d.progress) {
+              document.getElementById('comp-manga-chapter').textContent = '· Cap. ' + d.progress;
+            }
+          })
+          .catch(function(){});
+      }
+    }
+
+    function unlinkManga() {
+      linkedManga = null;
+      document.getElementById('comp-link-btn').style.display = '';
+      document.getElementById('comp-manga-tag').style.display = 'none';
+    }
+
+    function openChapterSelector() {
+      if (!linkedManga) return;
+      var current = document.getElementById('comp-manga-chapter').textContent.replace(/[^0-9]/g, '') || '';
+      var cap = prompt('Capítulo:', current);
+      if (cap !== null && cap.trim()) {
+        var num = parseInt(cap);
+        if (!isNaN(num) && num > 0) {
+          document.getElementById('comp-manga-chapter').textContent = '· Cap. ' + num;
+        }
+      }
+    }
+
+    // ── Spoiler ──
+    function toggleSpoiler(on) {
+      document.getElementById('comp-textarea-wrap').classList.toggle('spoiler', on);
+    }
+
+    // ── Content pills ──
+    function togglePill(el) {
+      el.classList.toggle('active');
+    }
+
+    function loadDraft() {
+      try {
+        var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+        if (saved.length > 0) {
+          var last = saved[saved.length - 1];
+          document.getElementById('comp-textarea').value = last.content;
+          compUpdate(document.getElementById('comp-textarea'));
+          if (last.manga_id) { linkedManga = { id: last.manga_id, title: last.manga_title || '' }; }
+          localStorage.setItem('kami_borradores', JSON.stringify(saved.slice(0, -1)));
+          showToast('warning', 'Borrador recuperado');
+          return true;
+        }
+      } catch(e) {}
+      return false;
+    }
+
+    function closeComposer() {
+      var ta = document.getElementById('comp-textarea');
+      if (ta.value.trim()) {
+        if (!confirm('¿Guardar borrador?')) { closeComposerForce(); return; }
+        try {
+          var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+          saved.push({ content: ta.value.trim(), manga_id: linkedManga ? linkedManga.id : null, manga_title: linkedManga ? linkedManga.title : null, saved_at: Date.now() });
+          localStorage.setItem('kami_borradores', JSON.stringify(saved));
+        } catch(e) {}
+      }
+      closeComposerForce();
+    }
+
+    function submitPost() {
+      var ta = document.getElementById('comp-textarea');
+      var text = ta.value.trim();
+      if (!text) return;
+      var parentId = replyToPostId || null;
+      var extra = { parent_id: parentId, quoted_post_id: quotePostId || null };
+      replyToPostId = null;
+      quotePostId = null;
+      closeComposerForce();
+      publicarPostUniversal('modal', text, extra, function(data) {
+        ta.value = '';
+        localStorage.setItem('kami_borradores', '[]');
+        showToast('success', 'Post publicado correctamente');
+        if (parentId && parentId === detailViewPostId) {
+          fetchRepliesAndRefresh(parentId);
+        }
+        if (_currentCommunityId && !parentId) {
+          cargarDatosDeComunidad(_currentCommunityId);
+        }
+      });
+    }
+
+    function showToast(type, message) {
+      var container = document.getElementById('toast-container');
+      if (!container) return;
+      var icons = { success:'ti ti-check', error:'ti ti-alert-triangle', warning:'ti ti-alert-circle' };
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.innerHTML = '<i class="' + (icons[type] || 'ti ti-info-circle') + '" style="font-size:18px;flex-shrink:0;"></i>' +
+        '<span style="flex:1;">' + message + '</span>' +
+        '<button onclick="this.parentElement.style.animation=\'toastOut .3s ease forwards\';setTimeout(function(){this.parentElement.remove()}.bind(this),300)" style="background:none;border:none;color:rgba(255,255,255,0.2);cursor:pointer;font-size:14px;padding:0;"><i class="ti ti-x"></i></button>';
+      container.appendChild(toast);
+      setTimeout(function() {
+        toast.style.animation = 'toastOut .3s ease forwards';
+        setTimeout(function() { if (toast.parentElement) toast.remove(); }, 300);
+      }, 5000);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('composer').classList.contains('open')) closeComposer();
+    });
+
+    // ── View tracking (Opción D: IntersectionObserver + batch) ──
+    var _viewedSession = {};
+    var _viewQueue = [];
+    var _viewTimer = null;
+    var _viewObserver = null;
+
+    function trackFeedViews() {
+      if (_viewObserver) _viewObserver.disconnect();
+      var elements = document.querySelectorAll('.feed-post[data-post-id]:not(.feed-post-reply)');
+      console.log('[vistas] Elementos detectados en el DOM:', elements.length);
+      if (elements.length === 0) return;
+      _viewObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var id = entry.target.getAttribute('data-post-id');
+            console.log('[vistas] Post cruzó la pantalla, ID:', id, 'ya visto?:', !!_viewedSession[id]);
+            if (id && !_viewedSession[id]) {
+              _viewedSession[id] = true;
+              _viewQueue.push(parseInt(id));
+              flushViewBatch();
+            }
+          }
+        });
+      }, { threshold: 0.3 });
+      elements.forEach(function(el) { _viewObserver.observe(el); });
+    }
+
+    function flushViewBatch() {
+      if (_viewTimer) clearTimeout(_viewTimer);
+      _viewTimer = setTimeout(function() {
+        if (!_viewQueue.length) return;
+        var batch = _viewQueue.slice();
+        _viewQueue = [];
+        var token = localStorage.getItem('kami_token');
+        console.log('[vistas] Disparando lote al backend:', batch, 'Con token:', !!token);
+        if (!token) return;
+        fetch('/api/feed/track-views', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+          body: JSON.stringify({ post_ids: batch })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { console.log('[vistas] Respuesta del servidor:', d); })
+        .catch(function(e) { console.error('[vistas] Fallo crítico:', e); });
+      }, 3000);
+    }
+
+    // Hookear renderFeed para reiniciar observador tras cada render
+    var _origRenderFeed = renderFeed;
+    renderFeed = function() {
+      _origRenderFeed();
+      setTimeout(trackFeedViews, 200);
+    };
+
+    // ── Init: cargar feed + notificaciones + avatar + inicializar hash ──
+    loadInFeedAvatar();
+    renderFeed();
+    checkNotifs();
+    setInterval(checkNotifs, 30000);
+    // El enrutador lee el hash actual y muestra post detail o sección
+    procesarEnrutamientoGlobal();
+  </script>
+  <script src="/js/feed-tracker.js"></script>
+  <!-- Algorithm breakdown modal -->
+  <div class="algo-modal-overlay" id="algo-overlay" onclick="closeAlgorithm()"></div>
+  <div class="algo-modal" id="algo-modal">
+    <div class="algo-header">
+      <h3><i class="ti ti-settings"></i> Algoritmo · Manga Mixer</h3>
+      <button class="algo-close" onclick="closeAlgorithm()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="algo-body" id="algo-body">
+      <div class="algo-score">
+        <div class="algo-score-num" id="algo-total">0</div>
+        <div class="algo-score-label">Puntuación total del algoritmo</div>
+      </div>
+    </div>
+    <div class="algo-footer">El algoritmo Manga Mixer combina señales de lectura, reputación, conexiones y seguridad.</div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+</body>
+</html>

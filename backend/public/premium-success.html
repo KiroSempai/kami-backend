@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suscripción-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <style>
+        .success-page { margin-top: 100px; text-align: center; padding: 40px 24px; }
+        .success-icon { font-size: 80px; margin-bottom: 16px; }
+        .success-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 2px; margin-bottom: 8px; color: var(--accent-gold); }
+        .success-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; }
+        .success-btn { display: inline-block; padding: 12px 28px; background: var(--accent); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: opacity .2s; }
+        .success-btn:hover { opacity: .9; }
+        .success-note { margin-top: 24px; font-size: 12px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+  <script src="/js/menu-global.js"></script>
+<div class="success-page">
+        <div class="success-icon">🌟</div>
+        <div class="success-title" style="display:flex;align-items:center;justify-content:center;gap:10px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--accent);border-radius:8px;color:#fff;font-size:22px;">神</span> SUSCRIPCIÓN ACTIVADA</div>
+        <div class="success-sub">Gracias por confiar en KAMI. Tu badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color:#fff;font-size:10px;vertical-align:middle;margin:0 2px;">神</span> ya está activo en tu perfil.</div>
+        <a href="/profile/" class="success-btn" id="success-profile-btn">Ir a mi perfil</a>
+        <div class="success-note">Si no ves el cambio, prueba a recargar la página.</div>
+    </div>
+
+    <script>
+        const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        const profileBtn = document.getElementById('success-profile-btn');
+        if (stored.username) {
+            profileBtn.href = '/profile/' + encodeURIComponent(stored.username);
+        }
+
+        // Refrescar datos del usuario para que recoja el nuevo role
+        const token = localStorage.getItem('kami_token');
+        if (token) {
+            fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.user) {
+                        const st = JSON.parse(localStorage.getItem('kami_user') || '{}');
+                        st.role = data.user.role;
+                        st.premiumExpiresAt = data.user.premiumExpiresAt;
+                        localStorage.setItem('kami_user', JSON.stringify(st));
+                        if (typeof window.kamiRefreshNav === 'function') window.kamiRefreshNav();
+                    }
+                })
+                .catch(() => {});
+        }
+    </script>
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

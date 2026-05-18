@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración-KAMImanga</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+    rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<!-- ═══════════ CONTAINER ═══════════ -->
+  <div class="container">
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">GENERAL</div>
+        <div class="sidebar-link active" onclick="showSection('basic')">
+          <span class="sidebar-link-icon">👤</span>
+          <span>Perfil</span>
+        </div>
+        <div class="sidebar-link" onclick="showSection('security')">
+          <span class="sidebar-link-icon">🔒</span>
+          <span>Seguridad</span>
+        </div>
+        <div class="sidebar-link" onclick="showSection('preferences')">
+          <span class="sidebar-link-icon">⚙️</span>
+          <span>Lectura</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">BIBLIOTECA</div>
+        <div class="sidebar-link" onclick="showSection('library')">
+          <span class="sidebar-link-icon">📚</span>
+          <span>Automatización</span>
+        </div>
+        <div class="sidebar-link" onclick="showSection('notifications')">
+          <span class="sidebar-link-icon">🔔</span>
+          <span>Notificaciones</span>
+        </div>
+        <div class="sidebar-link" onclick="showSection('backup')">
+          <span class="sidebar-link-icon">💾</span>
+          <span>Backup</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">PRIVACIDAD</div>
+        <div class="sidebar-link" onclick="showSection('privacy')">
+          <span class="sidebar-link-icon">👁️</span>
+          <span>Privacidad</span>
+        </div>
+        <div class="sidebar-link" onclick="showSection('accessibility')">
+          <span class="sidebar-link-icon">♿</span>
+          <span>Accesibilidad</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══════════ MAIN CONTENT ═══════════ -->
+    <main class="main-content">
+
+      <!-- BASIC INFO SECTION -->
+      <div id="basic" class="section-content active">
+        <div class="page-header">
+          <h1 class="page-title">INFORMACIÓN BÁSICA</h1>
+          <p class="page-subtitle">Gestiona tu perfil y datos personales</p>
+        </div>
+
+        <div class="settings-section">
+
+          <!-- INFO DEL USUARIO (rellenado desde localStorage) -->
+          <div style="display:flex;align-items:center;gap:16px;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--border);">
+            <div id="settings-user-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e8334a,#f5c842);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Plus Jakarta Sans',sans-serif;">YU</div>
+            <div>
+              <div id="settings-user-name" style="font-size:18px;font-weight:700;color:#f2f2fa;">Usuario</div>
+              <div id="settings-user-email" style="font-size:13px;color:var(--text-muted);margin-top:2px;">email@ejemplo.com</div>
+              <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                <span id="settings-user-role" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#8888a0;">user</span>
+                <span id="settings-user-premium" style="display:none;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.28);color:#f5c842;">★ Premium</span>
+                <span id="settings-user-joined" style="font-size:10px;color:var(--text-muted);padding:2px 7px;">Miembro desde —</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">👤</div>
+            Datos del perfil
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Nombre de usuario</label>
+              <div class="form-description">Visible públicamente</div>
+            </div>
+            <input type="text" class="form-input" id="settings-username" placeholder="Tu usuario" disabled>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Email</label>
+              <div class="form-description">Tu email de cuenta</div>
+            </div>
+            <input type="email" class="form-input" id="settings-email" placeholder="tu@email.com" disabled>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">País</label>
+              <div class="form-description">Para recomendaciones locales</div>
+            </div>
+            <select class="form-select" id="settings-country">
+              <option value="">Seleccionar país</option>
+              <option value="España">España 🇪🇸</option>
+              <option value="México">México 🇲🇽</option>
+              <option value="Argentina">Argentina 🇦🇷</option>
+              <option value="Colombia">Colombia 🇨🇴</option>
+              <option value="Chile">Chile 🇨🇱</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Idioma</label>
+              <div class="form-description">Preferencia de idioma</div>
+            </div>
+            <select class="form-select">
+              <option>Español</option>
+              <option>English</option>
+              <option>Português</option>
+              <option>日本語</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Zona horaria</label>
+              <div class="form-description">Para sincronización de contenido</div>
+            </div>
+            <select class="form-select">
+              <option>CET (España, Francia) +1:00</option>
+              <option>CST (México) -6:00</option>
+              <option>ART (Argentina) -3:00</option>
+              <option>JST (Japón) +9:00</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 28px;">
+            <button class="btn btn-primary" id="settings-save-btn">Guardar cambios</button>
+            <button class="btn btn-secondary">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY SECTION -->
+      <div id="security" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">SEGURIDAD</h1>
+          <p class="page-subtitle">Protege tu cuenta y tu información</p>
+        </div>
+
+        <div class="alert alert-warning" id="pw-old-warning" style="display:none;">
+          <span>⚠️</span>
+          <span>Tu contraseña no ha sido cambiada en los últimos 6 meses. Te recomendamos actualizarla.</span>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">🔐</div>
+            Contraseña
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Contraseña actual</label>
+              <div class="form-description">Requerida para cambiar</div>
+            </div>
+            <input type="password" class="form-input" id="pw-current" placeholder="Ingresa tu contraseña actual" autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Nueva contraseña</label>
+              <div class="form-description">Mínimo 8 caracteres</div>
+            </div>
+            <input type="password" class="form-input" id="pw-new" placeholder="Nueva contraseña" autocomplete="new-password">
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Confirmar contraseña</label>
+              <div class="form-description">Debe coincidir con la nueva</div>
+            </div>
+            <input type="password" class="form-input" id="pw-confirm" placeholder="Confirma la contraseña" autocomplete="new-password">
+          </div>
+
+          <div id="pw-error" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(232,51,74,0.1);border:1px solid rgba(232,51,74,0.3);color:#e8334a;margin-bottom:16px;"></div>
+
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-primary" id="pw-btn">Cambiar contraseña</button>
+            <button class="btn btn-secondary">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">🔑</div>
+            Autenticación de dos factores (2FA)
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Estado 2FA</label>
+              <div class="form-description">Añade protección adicional a tu cuenta</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="alert alert-success">
+            <span>✓</span>
+            <span>2FA habilitado mediante autenticador (Google Authenticator)</span>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary">Ver códigos de respaldo</button>
+            <button class="btn btn-secondary">Cambiar método 2FA</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-green">📱</div>
+            Sesiones activas
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Dispositivos conectados a tu cuenta. Cierra cualquier sesión sospechosa.
+          </p>
+
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-device">🖥️ Chrome · Windows 11</div>
+              <div class="session-meta">Barcelona, España · últimas 24h</div>
+            </div>
+            <span class="session-current">ACTUAL</span>
+          </div>
+
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-device">📱 Safari · iPhone 15</div>
+              <div class="session-meta">Barcelona, España · hace 2 horas</div>
+            </div>
+            <button class="btn btn-secondary btn-small">Cerrar sesión</button>
+          </div>
+
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-device">🖥️ Firefox · Linux</div>
+              <div class="session-meta">Barcelona, España · hace 3 días</div>
+            </div>
+            <button class="btn btn-secondary btn-small">Cerrar sesión</button>
+          </div>
+
+          <button class="btn btn-secondary" style="margin-top: 12px; width: 100%;">Cerrar todas las demás
+            sesiones</button>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">🚨</div>
+            Actividad reciente
+          </div>
+
+          <div style="font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 12px;">
+            <div
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              <span>✓ Login exitoso</span>
+              <span style="color: var(--text-muted);">hace 2 horas</span>
+            </div>
+            <div
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              <span>✓ Cambio de contraseña</span>
+              <span style="color: var(--text-muted);">hace 5 días</span>
+            </div>
+            <div
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              <span>✓ Login desde nuevo dispositivo</span>
+              <span style="color: var(--text-muted);">hace 1 semana</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- READING PREFERENCES SECTION -->
+      <div id="preferences" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">PREFERENCIAS DE LECTURA</h1>
+          <p class="page-subtitle">Personaliza tu experiencia de lectura</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">📖</div>
+            Modo de lectura predeterminado
+          </div>
+
+          <div class="preferences-grid">
+            <div class="preference-card active">
+              <div class="preference-card-title">📖 Vertical</div>
+              <div class="preference-card-desc">Scroll vertical. Ideal móvil</div>
+            </div>
+            <div class="preference-card">
+              <div class="preference-card-title">↔️ Horizontal</div>
+              <div class="preference-card-desc">Página por página. Clásico</div>
+            </div>
+            <div class="preference-card">
+              <div class="preference-card-title">📱 Webtoon</div>
+              <div class="preference-card-desc">Scroll continuo infinito</div>
+            </div>
+            <div class="preference-card">
+              <div class="preference-card-title">📖📖 Doble página</div>
+              <div class="preference-card-desc">Dos páginas a la vez</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">⚙️</div>
+            Lector
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Calidad de imágenes al leer</label>
+              <div class="form-description">Las imágenes se procesan con IA para mejorar su resolución original</div>
+            </div>
+            <select class="form-select" id="image-quality-select">
+              <option value="master">🌟 Master 2x (Premium) — Mejor calidad</option>
+              <option value="1080" selected>✅ Alta 1080px — Recomendado</option>
+              <option value="720">📱 Normal 720px — Ahorro de datos</option>
+              <option value="480">💾 Eco 480px — Máxima velocidad</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Precarga de capítulos</label>
+              <div class="form-description">Descargar siguiente cap. automáticamente</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Modo oscuro / luz</label>
+              <div class="form-description">Tema de la interfaz</div>
+            </div>
+            <select class="form-select">
+              <option>Oscuro (Actual)</option>
+              <option>Claro</option>
+              <option>Automático según hora</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Filtro nocturno</label>
+              <div class="form-description">Reduce luz azul para leer de noche</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Guardar progreso automático</label>
+              <div class="form-description">Guardará página y scroll exacto</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Ocultar spoilers en comentarios</label>
+              <div class="form-description">No mostrar comentarios spoiler</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">🎨</div>
+            Temas de color
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+            Personaliza la paleta de colores del lector
+          </p>
+
+          <div class="color-grid">
+            <div class="color-option active" style="background: linear-gradient(135deg, #0a0a0f, #1a1a2f);"></div>
+            <div class="color-option" style="background: linear-gradient(135deg, #0f0f0f, #2a2a2a);"></div>
+            <div class="color-option" style="background: linear-gradient(135deg, #1a0810, #2d1520);"></div>
+            <div class="color-option" style="background: linear-gradient(135deg, #0f1a1f, #1a2d35);"></div>
+            <div class="color-option" style="background: linear-gradient(135deg, #1f1f1f, #3d3d3d);"></div>
+            <div class="color-option" style="background: linear-gradient(135deg, #f5f5f5, #ffffff);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIBRARY AUTOMATION SECTION -->
+      <div id="library" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">AUTOMATIZACIÓN DE BIBLIOTECA</h1>
+          <p class="page-subtitle">Configurar cómo se organiza tu biblioteca automáticamente</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-green">📚</div>
+            Comportamiento automático
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Auto-marcar capítulos anteriores</label>
+              <div class="form-description">Si lees cap. 50, marcar 1-49 como leído</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Añadir automáticamente a "Continuando"</label>
+              <div class="form-description">Al leer un manga, aparecerá automáticamente en Continuando</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Mover a "Terminados" automáticamente</label>
+              <div class="form-description">Cuando llegues al último capítulo</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Marcar como "Abandonado" tras inactividad</label>
+              <div class="form-description">Después de X meses sin leer</div>
+            </div>
+            <select class="form-select">
+              <option>Nunca</option>
+              <option>3 meses</option>
+              <option selected>6 meses</option>
+              <option>1 año</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Ocultar mangas abandonados</label>
+              <div class="form-description">No mostrar en la biblioteca principal</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">🔄</div>
+            Sincronización
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Sincronización entre dispositivos</label>
+              <div class="form-description">Guarda progreso en todos tus dispositivos</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="alert alert-info">
+            <span>ℹ️</span>
+            <span>Tu biblioteca se sincroniza en tiempo real en todos tus dispositivos registrados.</span>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Frecuencia de sincronización</label>
+              <div class="form-description">Cada cuánto sincronizar cambios</div>
+            </div>
+            <select class="form-select">
+              <option>En tiempo real (recomendado)</option>
+              <option>Cada 5 minutos</option>
+              <option>Cada 15 minutos</option>
+              <option>Manual</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">📊</div>
+            Estadísticas
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Rastrear estadísticas de lectura</label>
+              <div class="form-description">Registrar cuándo lees y cuánto tiempo dedicas</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Incluir en estadísticas públicas</label>
+              <div class="form-description">Mostrar en tu perfil público</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS SECTION -->
+      <div id="notifications" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">NOTIFICACIONES</h1>
+          <p class="page-subtitle">Controla cuándo y cómo quieres ser notificado</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">🔔</div>
+            Tipos de notificaciones
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Nuevos capítulos</label>
+              <div class="form-description">De tus mangas favoritos</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Respuestas a comentarios</label>
+              <div class="form-description">Cuando alguien responde tu comentario</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Nuevos seguidores</label>
+              <div class="form-description">Notificación cuando te sigue alguien</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Recomendaciones IA</label>
+              <div class="form-description">Mangas que podrían gustarte</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Actualizaciones del scan favorito</label>
+              <div class="form-description">De los escaners que sigues</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">📲</div>
+            Método de notificación
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">En la plataforma (campana)</label>
+              <div class="form-description">Pop-ups y notificaciones en KAMI</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Email</label>
+              <div class="form-description">Notificaciones por email</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Push notifications</label>
+              <div class="form-description">Notificaciones del navegador</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Discord webhook</label>
+              <div class="form-description">Enviar notificaciones a tu servidor Discord</div>
+            </div>
+            <input type="text" class="form-input" placeholder="https://discord.com/api/webhooks/...">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">⏰</div>
+            Horario de notificaciones
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Horario no molestar</label>
+              <div class="form-description">No recibir notificaciones en estos horarios</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">De</label>
+            </div>
+            <input type="time" class="form-input" value="22:00">
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Hasta</label>
+            </div>
+            <input type="time" class="form-input" value="08:00">
+          </div>
+        </div>
+      </div>
+
+      <!-- BACKUP SECTION -->
+      <div id="backup" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">BACKUP Y SINCRONIZACIÓN</h1>
+          <p class="page-subtitle">Gestiona tus datos y copias de seguridad</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-green">💾</div>
+            Exportar datos
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Descarga todos tus datos en formato JSON para hacer backup o transferir a otra plataforma.
+          </p>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-primary">📥 Exportar biblioteca completa</button>
+            <button class="btn btn-secondary">📥 Exportar historial de lectura</button>
+            <button class="btn btn-secondary">📥 Exportar comentarios</button>
+            <button class="btn btn-secondary">📥 Exportar todo (ZIP)</button>
+          </div>
+
+          <div class="alert alert-info" style="margin-top: 16px;">
+            <span>ℹ️</span>
+            <span>Última exportación: hace 2 semanas</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">📤</div>
+            Importar datos
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Importa tu biblioteca desde MyAnimeList, AniList u otra plataforma.
+          </p>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn btn-secondary">📤 Desde MyAnimeList</button>
+            <button class="btn btn-secondary">📤 Desde AniList</button>
+            <button class="btn btn-secondary">📤 Desde archivo JSON</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">☁️</div>
+            Backup automático en la nube
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Backup automático habilitado</label>
+              <div class="form-description">Se realiza cada 24 horas automáticamente</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Espacio usado</label>
+              <div class="form-description">De tu almacenamiento en la nube</div>
+            </div>
+            <div
+              style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; overflow: hidden;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+                <span>234 MB</span>
+                <span>1 GB</span>
+              </div>
+              <div
+                style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                <div style="width: 23.4%; height: 100%; background: var(--green);"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-success" style="margin-top: 16px;">
+            <span>✓</span>
+            <span>Último backup realizado hace 4 horas</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">⚠️</div>
+            Zona de peligro
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Acciones que no se pueden deshacer.
+          </p>
+
+          <button class="btn"
+            style="background: rgba(232,51,74,0.15); color: var(--accent); border: 1px solid rgba(232,51,74,0.3);">
+            🗑️ Eliminar toda mi biblioteca
+          </button>
+
+          <button class="btn"
+            style="background: rgba(232,51,74,0.15); color: var(--accent); border: 1px solid rgba(232,51,74,0.3); margin-top: 10px;">
+            🚫 Eliminar mi cuenta permanentemente
+          </button>
+        </div>
+      </div>
+
+      <!-- PRIVACY SECTION -->
+      <div id="privacy" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">PRIVACIDAD</h1>
+          <p class="page-subtitle">Controla qué información es visible públicamente</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">👁️</div>
+            Visibilidad del perfil
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Perfil público / Privado</label>
+              <div class="form-description">¿Pueden otros ver tu perfil?</div>
+            </div>
+            <select class="form-select">
+              <option selected>Público</option>
+              <option>Privado (solo yo)</option>
+              <option>Solo amigos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Mostrar mi actividad reciente</label>
+              <div class="form-description">Que tus seguidores vean qué lees</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Ocultar mi biblioteca pública</label>
+              <div class="form-description">Los demás no ven mis mangas</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Ocultar mis favoritos</label>
+              <div class="form-description">Solo tú podrás ver tu lista de favoritos</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Permitir seguidores</label>
+              <div class="form-description">¿Pueden seguirte?</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">📊</div>
+            Estadísticas públicas
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Mostrar estadísticas totales</label>
+              <div class="form-description">Cuántos mangas leídos, capítulos, etc.</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Mostrar heatmap de lectura</label>
+              <div class="form-description">Calendario de días que has leído</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">🔗</div>
+            Datos y conexiones externas
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Compartir con redes sociales</label>
+              <div class="form-description">Permite que KAMI publique en tus redes</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Permitir análisis de uso</label>
+              <div class="form-description">Nos ayuda a mejorar, datos anónimos</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Cookies de marketing</label>
+              <div class="form-description">Para publicidad personalizada</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCESSIBILITY SECTION -->
+      <div id="accessibility" class="section-content">
+        <div class="page-header">
+          <h1 class="page-title">ACCESIBILIDAD</h1>
+          <p class="page-subtitle">Opciones para adaptar la interfaz a tus necesidades</p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-green">🔤</div>
+            Texto
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Tamaño de fuente</label>
+              <div class="form-description">En la interfaz principal</div>
+            </div>
+            <select class="form-select">
+              <option>Pequeño (12px)</option>
+              <option selected>Normal (15px)</option>
+              <option>Grande (18px)</option>
+              <option>Muy grande (22px)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Alto contraste</label>
+              <div class="form-description">Aumenta el contraste para mejor legibilidad</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Subrayar enlaces</label>
+              <div class="form-description">Todos los enlaces subrayados</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-blue">⚡</div>
+            Movimiento
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Reducir animaciones</label>
+              <div class="form-description">Minimiza efectos y transiciones</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Desactivar autoplay de miniaturas</label>
+              <div class="form-description">No reproducir previsualizaciones</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-red">⌨️</div>
+            Navegación
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Navegación por teclado mejorada</label>
+              <div class="form-description">Focus más visible, atajos accesibles</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Lector simplificado</label>
+              <div class="form-description">Interfaz de lectura más simple</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+              <span>Deshabilitado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <div class="settings-section-icon icon-gold">🔊</div>
+            Otras opciones
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Mostrar descripciones de imágenes</label>
+              <div class="form-description">Para lectores de pantalla</div>
+            </div>
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <span style="color: var(--green);">Habilitado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <label class="form-label">Modo monocromático</label>
+              <div class="form-description">Escala de grises para daltonismo</div>
+            </div>
+            <select class="form-select">
+              <option>Deshabilitado</option>
+              <option>Protanopia (rojo-verde)</option>
+              <option>Deuteranopia (rojo-verde)</option>
+              <option>Tritanopia (azul-amarillo)</option>
+              <option>Acromatopsia (sin color)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    (function() {
+      try {
+        var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        if (u.username) {
+          document.title = 'Configuraci\u00f3n-' + u.username;
+          var un = document.getElementById('settings-username');
+          if (un) un.value = u.username;
+        }
+        if (u.email) {
+          var em = document.getElementById('settings-email');
+          if (em) em.value = u.email;
+        }
+      } catch(e) {}
+
+      function showSection(id) {
+        document.querySelectorAll('.section-content').forEach(function(s) { s.classList.remove('active'); });
+        document.querySelectorAll('.sidebar-link').forEach(function(l) { l.classList.remove('active'); });
+        document.getElementById(id).classList.add('active');
+        event.target.closest('.sidebar-link').classList.add('active');
+      }
+
+      document.querySelectorAll('.preference-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          document.querySelectorAll('.preference-card').forEach(function(c) { c.classList.remove('active'); });
+          this.classList.add('active');
+        });
+      });
+    })();
+  </script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

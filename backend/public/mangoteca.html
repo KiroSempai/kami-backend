@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mangoteca · KAMI</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { background: #0e0e1e; color: #f2f2fa; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; }
+    .mangoteca-layout { display: flex; flex: 1; padding-top: 64px; }
+    .mangoteca-sidebar { width: 220px; flex-shrink: 0; background: rgba(18,18,36,0.6); border-right: 1px solid rgba(255,255,255,0.10); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .mangoteca-sidebar .sb-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgba(255,255,255,0.30); margin-bottom: 12px; padding: 0 8px; }
+    .mangoteca-sidebar .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #a0a0b8; cursor: pointer; transition: 0.15s; border: none; background: none; font-family: inherit; width: 100%; text-align: left; }
+    .mangoteca-content { flex: 1; overflow-y: auto; padding: 0; background: #0e0e1e; min-height: 100%; }
+    .mangoteca-content iframe { width: 100%; height: 100%; border: none; display: block; }
+    @media(max-width:768px) {
+      .mangoteca-sidebar { width: 60px; padding: 24px 8px; }
+      .mangoteca-sidebar .sb-title { display: none; }
+      .mangoteca-sidebar .sb-item span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <script src="/js/menu-global.js"></script>
+
+  <div class="mangoteca-layout">
+    <aside class="mangoteca-sidebar" id="mangoteca-sidebar">
+      <div class="sb-title">Mangoteca</div>
+      <button class="sb-item active" data-page="inicio" onclick="loadMangotecaPage('inicio')">
+        <i class="ti ti-home"></i>
+        <span>Inicio</span>
+      </button>
+    </aside>
+    <main class="mangoteca-content" id="mangoteca-content">
+      <iframe id="mangoteca-iframe" src="/inicio-mangoteca"></iframe>
+    </main>
+  </div>
+
+  <script>
+    function loadMangotecaPage(page) {
+      var map = { inicio: '/inicio-mangoteca' };
+      var url = map[page];
+      if (!url) return;
+      document.getElementById('mangoteca-iframe').src = url;
+      document.querySelectorAll('.sb-item').forEach(function(el) { el.classList.remove('active'); });
+      var btn = document.querySelector('.sb-item[data-page="' + page + '"]');
+      if (btn) btn.classList.add('active');
+    }
+
+    // Inyectar interceptor en TODAS las páginas que cargue el iframe
+    document.getElementById('mangoteca-iframe').addEventListener('load', function() {
+      try {
+        var win = this.contentWindow;
+        if (!win || win.__mangotecaPatched) return;
+        win.__mangotecaPatched = true;
+
+        // 1. Interceptar clicks en <a> (fase captura)
+        win.document.addEventListener('click', function(e) {
+          var a = e.target.closest('a');
+          if (a && a.href && a.href.indexOf('#') !== 0 && a.href.indexOf('javascript:') !== 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.top.location.href = a.href;
+          }
+        }, true);
+
+        // 2. Interceptar cualquier window.location.href que intente navegar al lector
+        var _loc = win.location;
+        var _origHref = Object.getOwnPropertyDescriptor(win.Location.prototype, 'href');
+        try {
+          Object.defineProperty(_loc, 'href', {
+            get: function() { return _origHref.get.call(_loc); },
+            set: function(v) {
+              if (typeof v === 'string' && (v.indexOf('/reader/') === 0 || v.indexOf('/manga/') === 0)) {
+                window.top.location.href = v;
+              } else {
+                _origHref.set.call(_loc, v);
+              }
+            }
+          });
+        } catch(e) {}
+
+        // 3. Override kamiOpenReader
+        win.kamiOpenReader = function(mangaId, chapterNum) {
+          window.top.location.href = '/reader/' + mangaId + '/' + chapterNum;
+        };
+
+        // 4. Monitorear navegación del iframe para redirigir al top
+        var checkNav = setInterval(function() {
+          try {
+            var src = win.location.pathname || '';
+            if (src.indexOf('/reader/') === 0 || src.indexOf('/manga/') === 0) {
+              clearInterval(checkNav);
+              window.top.location.href = src;
+            }
+          } catch(e) { clearInterval(checkNav); }
+        }, 200);
+      } catch(e) {}
+    });
+  </script>
+</body>
+</html>

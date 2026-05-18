@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Mejora de Imágenes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; color: #e0e0e0; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; margin-bottom: 4px; }
+    .subtitle { color: rgba(255,255,255,0.3); font-size: 13px; margin-bottom: 32px; }
+    .upload-area { width: 100%; max-width: 600px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px; padding: 60px 20px; text-align: center; cursor: pointer; transition: .2s; background: rgba(255,255,255,0.02); }
+    .upload-area:hover { border-color: rgba(232,51,74,0.4); background: rgba(232,51,74,0.03); }
+    .upload-area.dragover { border-color: #e8344a; background: rgba(232,51,74,0.06); }
+    .upload-area.has-image { padding: 20px; border-style: solid; border-color: rgba(255,255,255,0.06); }
+    .upload-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+    .upload-text { font-size: 14px; color: rgba(255,255,255,0.3); }
+    .upload-text strong { color: rgba(255,255,255,0.6); }
+    #file-input { display: none; }
+    #preview-image { max-width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 16px; display: none; object-fit: contain; background: rgba(0,0,0,0.3); }
+    .info-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin: 24px 0; }
+    .info-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px 20px; text-align: center; min-width: 120px; }
+    .info-card .val { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #fff; letter-spacing: 1px; }
+    .info-card .lbl { font-size: 10px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+    .quality-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; width: 100%; max-width: 1000px; margin-top: 24px; }
+    .quality-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; text-align: center; }
+    .quality-card img { width: 100%; border-radius: 6px; margin-bottom: 8px; background: rgba(0,0,0,0.3); min-height: 100px; object-fit: contain; }
+    .quality-card .qname { font-weight: 600; font-size: 14px; }
+    .quality-card .qsize { font-size: 12px; color: rgba(255,255,255,0.3); }
+    .quality-card .qtag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .qtag-premium { background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.28); color: #f5c842; }
+    .qtag-free { background: rgba(76,157,245,0.12); border: 1px solid rgba(76,157,245,0.28); color: #4c9df5; }
+    .btn { padding: 12px 28px; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: .2s; margin-top: 20px; }
+    .btn-primary { background: #e8344a; color: #fff; }
+    .btn-primary:hover { background: #c8283d; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .loading { display: none; align-items: center; gap: 10px; margin-top: 24px; color: rgba(255,255,255,0.3); font-size: 13px; }
+    .loading .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.04); border-top-color: #e8344a; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .compare-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 1000px; margin-top: 24px; }
+    .compare-wrap img { width: 100%; border-radius: 8px; background: rgba(0,0,0,0.3); object-fit: contain; }
+    .compare-label { text-align: center; font-size: 11px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+    #error-msg { display: none; color: #e8344a; font-size: 13px; margin-top: 16px; padding: 10px 14px; background: rgba(232,51,74,0.08); border-radius: 8px; }
+    .back-link { color: rgba(255,255,255,0.2); font-size: 12px; text-decoration: none; margin-top: 32px; }
+    .back-link:hover { color: rgba(255,255,255,0.5); }
+  </style>
+</head>
+<body>
+  <h1>🧪 Preview de Imágenes</h1>
+  <p class="subtitle">Prueba el sistema de mejora antes de implementarlo en capítulos</p>
+
+  <div class="upload-area" id="upload-area">
+    <div class="upload-icon">🖼️</div>
+    <div class="upload-text">Arrastra una imagen o <strong>haz clic para seleccionar</strong></div>
+    <div class="upload-text" style="font-size:11px;margin-top:6px;">JPG o PNG · Máx 20MB</div>
+    <img id="preview-image" alt="Vista previa">
+  </div>
+  <input type="file" id="file-input" accept=".jpg,.jpeg,.png">
+
+  <div id="error-msg"></div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Procesando imagen con IA...</span>
+  </div>
+
+  <button class="btn btn-primary" id="process-btn" style="display:none;" onclick="processImage()">🔄 Procesar y comparar</button>
+
+  <div id="results" style="display:none;width:100%;max-width:1000px;">
+    <div class="info-row" id="info-row"></div>
+
+    <div class="compare-wrap" id="compare-wrap">
+      <div>
+        <img id="compare-original" alt="Original">
+        <div class="compare-label">Original</div>
+      </div>
+      <div>
+        <img id="compare-master" alt="Master 2x">
+        <div class="compare-label">🌟 Master (2x)</div>
+      </div>
+    </div>
+
+    <div class="quality-grid" id="quality-grid"></div>
+  </div>
+
+  <a href="/" class="back-link">← Volver al inicio</a>
+
+  <script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const previewImg = document.getElementById('preview-image');
+    const processBtn = document.getElementById('process-btn');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    const errorMsg = document.getElementById('error-msg');
+    const compareOriginal = document.getElementById('compare-original');
+    const compareMaster = document.getElementById('compare-master');
+    const infoRow = document.getElementById('info-row');
+    const qualityGrid = document.getElementById('quality-grid');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    let currentFile = null;
+
+    function handleFile(file) {
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+        uploadArea.classList.add('has-image');
+        uploadArea.querySelector('.upload-icon').style.display = 'none';
+        uploadArea.querySelector('.upload-text').innerHTML = `<strong>${file.name}</strong> · ${(file.size / 1024).toFixed(1)} KB`;
+        processBtn.style.display = 'inline-block';
+        results.style.display = 'none';
+        errorMsg.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function processImage() {
+      if (!currentFile) return;
+      processBtn.disabled = true;
+      loading.style.display = 'flex';
+      errorMsg.style.display = 'none';
+
+      const form = new FormData();
+      form.append('image', currentFile);
+
+      try {
+        const res = await fetch('/api/preview/process', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error);
+
+        const o = data.original;
+        const r = data.result;
+
+        infoRow.innerHTML = `
+          <div class="info-card"><div class="val">${o.width}×${o.height}</div><div class="lbl">Original</div></div>
+          <div class="info-card"><div class="val">${r.master.width}×${r.master.height}</div><div class="lbl">Master 2x</div></div>
+          <div class="info-card"><div class="val">${(o.size / 1024).toFixed(1)} KB</div><div class="lbl">Peso original</div></div>
+        `;
+
+        compareOriginal.src = previewImg.src;
+        compareMaster.src = data.versions.master.url;
+
+        qualityGrid.innerHTML = '';
+        const qualities = [
+          { key: 'master', label: '🌟 Master 2x', cls: 'qtag-premium' },
+          { key: '1080', label: '✅ Alta 1080px', cls: 'qtag-free' },
+          { key: '720', label: '📱 Normal 720px', cls: 'qtag-free' },
+          { key: '480', label: '💾 Eco 480px', cls: 'qtag-free' },
+        ];
+        for (const q of qualities) {
+          const v = data.versions[q.key];
+          if (!v) continue;
+          qualityGrid.innerHTML += `
+            <div class="quality-card">
+              <img src="${v.url}" alt="${q.label}">
+              <div class="qname">${q.label}</div>
+              <div class="qsize">${(v.size / 1024).toFixed(1)} KB</div>
+              <div class="qtag ${q.cls}">${q.key === 'master' ? 'Premium' : 'Todos'}</div>
+            </div>
+          `;
+        }
+
+        results.style.display = 'block';
+      } catch (e) {
+        errorMsg.textContent = e.message;
+        errorMsg.style.display = 'block';
+      }
+
+      processBtn.disabled = false;
+      loading.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

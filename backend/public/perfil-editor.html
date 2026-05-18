@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar perfil-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=4">
+    <link rel="stylesheet" href="/css/perfil.css">
+    <style>
+        .editor-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.25); border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--accent); }
+        .editor-save-bar { position:sticky; bottom:0; left:0; right:0; background:rgba(15,15,26,0.95); backdrop-filter:blur(12px); border-top:1px solid var(--border); padding:12px 32px; display:flex; justify-content:flex-end; gap:10px; z-index:100; }
+        .editor-save-bar .btn-cancel { padding:10px 22px; border-radius:8px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--text-muted); cursor:pointer; font-size:13px; font-weight:600; font-family:var(--font-body); transition:all .2s; }
+        .editor-save-bar .btn-cancel:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+        .editor-save-bar .btn-save { padding:10px 28px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--accent),#c0223a); color:#fff; cursor:pointer; font-size:13px; font-weight:700; font-family:var(--font-body); transition:all .2s; }
+        .editor-save-bar .btn-save:hover { opacity:.9; transform:translateY(-1px); }
+        .editor-save-bar .btn-save:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+        .editor-save-bar .btn-save .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; margin-right:6px; vertical-align:middle; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        .editable-textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; resize:vertical; outline:none; line-height:1.6; min-height:80px; transition:border-color .2s; box-sizing:border-box; }
+        .editable-textarea:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+
+        .tag-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px dashed var(--border); background:rgba(255,255,255,0.04); color:var(--text-muted); cursor:pointer; transition:all .18s; font-family:var(--font-body); }
+        .tag-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,51,74,0.06); }
+        .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:16px; font-size:11px; font-weight:600; background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.25); color:var(--accent); }
+        .tag-chip .tag-rm { cursor:pointer; font-size:13px; line-height:1; opacity:.6; }
+        .tag-chip .tag-rm:hover { opacity:1; }
+
+        .edit-tag { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
+        .edit-tag.readonly { border-style:dashed; opacity:.7; }
+
+        .editable-avatar-wrap { flex-shrink:0; position:relative; cursor:pointer; margin-top:4px; }
+        .editable-avatar-wrap .profile-avatar { width:80px; height:80px; font-size:28px; }
+        .editable-avatar-wrap:hover .upload-overlay { opacity:1; }
+
+        .overlay-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:3000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+        .overlay-modal.open { display:flex; }
+        .modal-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); width:min(520px,94vw); max-height:82vh; display:flex; flex-direction:column; }
+        .modal-box-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 0; }
+        .modal-box-title { font-family:var(--font-display); font-size:20px; letter-spacing:1px; }
+        .modal-box-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; padding:4px; line-height:1; }
+        .modal-box-close:hover { color:var(--text-primary); }
+        .modal-box-body { padding:16px 24px 20px; overflow-y:auto; flex:1; }
+        .modal-box-footer { display:flex; justify-content:flex-end; gap:8px; padding:0 24px 20px; }
+        .modal-btn { padding:9px 20px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+        .modal-btn.primary { background:var(--accent); color:#fff; }
+        .modal-btn.primary:hover { opacity:.9; }
+        .modal-btn.secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
+        .modal-btn.secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+
+        .genre-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; }
+        .genre-picker-item { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:500; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:var(--text-secondary); cursor:pointer; transition:all .15s; text-align:center; user-select:none; }
+        .genre-picker-item:hover { border-color:rgba(255,255,255,0.2); color:var(--text-primary); }
+        .genre-picker-item.selected { background:rgba(232,51,74,0.15); border-color:var(--accent); color:var(--accent); font-weight:600; }
+
+        .emoji-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:12px; overflow-x:auto; }
+        .emoji-tab { padding:8px 14px; font-size:18px; cursor:pointer; border:none; background:none; opacity:.4; transition:all .15s; border-bottom:2px solid transparent; flex-shrink:0; }
+        .emoji-tab:hover { opacity:.7; }
+        .emoji-tab.active { opacity:1; border-bottom-color:var(--accent); }
+        .emoji-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(40px,1fr)); gap:4px; }
+        .emoji-item { font-size:26px; text-align:center; padding:4px; cursor:pointer; border-radius:6px; transition:background .12s; }
+        .emoji-item:hover { background:rgba(255,255,255,0.08); transform:scale(1.15); }
+
+        .upload-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; cursor:pointer; border-radius:inherit; }
+        .upload-overlay:hover { opacity:1; }
+        .upload-overlay span { color:#fff; font-size:22px; }
+
+        .locked-tab-content { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px; text-align:center; gap:12px; }
+        .locked-icon { font-size:64px; opacity:0.3; }
+        .locked-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; color:var(--text-muted); }
+        .locked-desc { font-size:14px; color:var(--text-muted); max-width:360px; line-height:1.6; }
+        .locked-btn { display:inline-flex; padding:10px 24px; background:var(--accent); color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px; margin-top:8px; }
+
+        .status-msg { display:none; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:12px; }
+        .status-msg.show { display:block; }
+        .status-msg.success { background:rgba(45,202,122,0.12); border:1px solid rgba(45,202,122,0.3); color:var(--green); }
+        .status-msg.error { background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.3); color:var(--accent); }
+
+        .profile-banner { position:relative; overflow:hidden; }
+        .profile-banner::after { display:none; }
+        #editor-content .profile-hero { margin-top:0; }
+    </style>
+</head>
+<body>
+  <script src="/js/menu-global.js"></script>
+    <div id="loading" style="text-align:center;padding:120px 24px;color:var(--text-muted);font-size:15px;">
+        <div style="font-size:48px;margin-bottom:16px;opacity:.4;">✏️</div>
+        Cargando editor…
+    </div>
+
+    <div id="error-page" style="display:none;text-align:center;padding:80px 24px;">
+        <div style="font-size:64px;margin-bottom:16px;">🔒</div>
+        <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:1px;margin-bottom:8px;">Acceso denegado</h2>
+        <p style="color:var(--text-muted);margin-bottom:20px;" id="error-msg">No puedes editar este perfil.</p>
+        <a href="/" class="locked-btn">← Volver al inicio</a>
+    </div>
+
+    <div id="editor-content" style="display:none;">
+
+        <div class="profile-hero">
+
+            <div class="profile-banner" id="edit-banner" style="cursor:pointer;position:relative;background:#0f0f1a;">
+                <div class="profile-banner-manga" id="edit-banner-manga"></div>
+                <div class="upload-overlay" onclick="document.getElementById('banner-file-input').click()">
+                    <span>🖼 Cambiar banner</span>
+                </div>
+                <input id="banner-file-input" type="file" accept="image/*" hidden onchange="handleBannerImage(this)">
+            </div>
+
+            <div class="profile-info-bar" id="edit-info-bar">
+                <div class="profile-info-inner" style="align-items:flex-start;">
+                    <div class="editable-avatar-wrap" onclick="document.getElementById('avatar-file-input').click()">
+                        <div class="profile-avatar" id="edit-avatar">?</div>
+                        <div class="upload-overlay" style="border-radius:50%;">
+                            <span style="font-size:18px;">📷</span>
+                        </div>
+                        <input id="avatar-file-input" type="file" accept="image/*" hidden onchange="handleAvatarImage(this)">
+                    </div>
+
+                    <div class="profile-meta" style="flex:1;min-width:0;">
+                        <div class="profile-username-row">
+                            <span class="profile-username" id="edit-username"></span>
+                            <span class="editor-badge">✎ Modo edición</span>
+                        </div>
+
+                        <div style="margin-bottom:10px;">
+                            <textarea class="editable-textarea" id="edit-bio" maxlength="300" rows="3" placeholder="Escribe una descripción…"></textarea>
+                            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right;" id="bio-counter">0/300</div>
+                        </div>
+
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                            <span class="edit-tag readonly" id="edit-country-tag">🌍 Cargando…</span>
+                            <span class="edit-tag readonly" id="edit-joined-tag">📅 Cargando…</span>
+                            <div id="selected-tags-display" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+                            <button class="tag-btn" onclick="openGenrePicker()">🏷️ Tags+</button>
+                            <button class="tag-btn" onclick="openEmojiPicker()">✨ Emoji <span id="selected-emoji-preview" style="font-size:16px;"></span></button>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tags+: selecciona hasta 2 géneros · Emoji: elige uno</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="max-width:1100px;margin:0 auto;padding:0 32px;">
+            <div class="status-msg" id="status-msg"></div>
+        </div>
+
+        <div class="profile-tabs" id="profile-tabs">
+            <button class="tab-btn active">📚 Biblioteca</button>
+            <button class="tab-btn">📊 Estadísticas</button>
+            <button class="tab-btn">🕐 Historial</button>
+            <button class="tab-btn">👥 Actividad</button>
+            <button class="tab-btn">🎵 Listas</button>
+            <button class="tab-btn">🏆 Logros</button>
+        </div>
+
+        <div class="tab-content active" id="content-biblioteca">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">BIBLIOTECA BLOQUEADA</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn">← Ver perfil público</a>
+            </div>
+        </div>
+        <div class="tab-content" id="content-estadisticas">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">ESTADÍSTICAS BLOQUEADAS</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn2">← Ver perfil público</a>
+            </div>
+        </div>
+        <div class="tab-content" id="content-historial">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">HISTORIAL BLOQUEADO</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn3">← Ver perfil público</a>
+            </div>
+        </div>
+        <div class="tab-content" id="content-actividad">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">ACTIVIDAD BLOQUEADA</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn4">← Ver perfil público</a>
+            </div>
+        </div>
+        <div class="tab-content" id="content-listas">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">LISTAS BLOQUEADAS</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn5">← Ver perfil público</a>
+            </div>
+        </div>
+        <div class="tab-content" id="content-logros">
+            <div class="locked-tab-content">
+                <div class="locked-icon">🔒</div>
+                <div class="locked-title">LOGROS BLOQUEADOS</div>
+                <div class="locked-desc">Disponible en tu perfil público.</div>
+                <a href="/profile/" class="locked-btn" id="view-profile-btn6">← Ver perfil público</a>
+            </div>
+        </div>
+
+        <div class="editor-save-bar">
+            <button class="btn-cancel" id="btn-cancel">Cancelar</button>
+            <button class="btn-save" id="btn-save" onclick="saveProfile()">Guardar cambios</button>
+        </div>
+    </div>
+
+    <div class="overlay-modal" id="genre-modal">
+        <div class="modal-box">
+            <div class="modal-box-header">
+                <div class="modal-box-title">SELECCIONAR GÉNEROS</div>
+                <button class="modal-box-close" onclick="closeGenrePicker()">&times;</button>
+            </div>
+            <div class="modal-box-body">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Elige hasta <strong>2 géneros</strong> favoritos</div>
+                <div class="genre-picker-grid" id="genre-picker-grid"></div>
+            </div>
+            <div class="modal-box-footer">
+                <button class="modal-btn secondary" onclick="closeGenrePicker()">Cancelar</button>
+                <button class="modal-btn primary" onclick="confirmGenres()">Aceptar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay-modal" id="emoji-modal">
+        <div class="modal-box">
+            <div class="modal-box-header">
+                <div class="modal-box-title">SELECCIONAR EMOJI</div>
+                <button class="modal-box-close" onclick="closeEmojiPicker()">&times;</button>
+            </div>
+            <div class="modal-box-body">
+                <div class="emoji-tabs" id="emoji-tabs"></div>
+                <div class="emoji-grid" id="emoji-grid"></div>
+            </div>
+            <div class="modal-box-footer">
+                <button class="modal-btn secondary" onclick="closeEmojiPicker()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const username = window.location.pathname.split('/').pop();
+        if (!username) window.location.href = '/';
+
+        let userData = null;
+        let avatarImage = null;
+        let bannerImage = null;
+        let selectedFavGenres = [];
+        let tempSelectedGenres = [];
+        let selectedEmoji = '';
+
+        const GENRE_OPTIONS = [
+            'Acción','Aventura','Artes marciales','Militar',
+            'Drama','Romance','Slice of Life','Tragedia',
+            'Fantasía','Isekai','Ciencia Ficción','Mecha','Sistema','Dark Fantasy',
+            'Comedia','Escolar','Recuentos de la vida','Deportes',
+            'Horror','Misterio','Thriller','Psicológico','Sobrenatural',
+            'Histórico','Historia','Música',
+            'Seinen','Shonen','Shoujo','Josei','Ecchi','Harem'
+        ];
+
+        const EMOJI_CATEGORIES = {
+            '😀 Caras': ['😀','😃','😄','😁','😆','😂','🤣','🥲','☺️','😊','😇','🙂','😉','😌','😍','🥰','😘','😗','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫡','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮','😯','😲','😳','🥺','😢','😭','😤','😡','🤬','😈','👿','💀','☠️'],
+            '🐻 Animales': ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🪲','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
+            '🍕 Comida': ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌽','🥕','🧄','🧅','🥔','🍠','🥐','🍞','🥖','🥨','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍘','🍥','🥠','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯'],
+            '⚽ Deportes': ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','🤺','⛵','🚣','🏊','🤽'],
+            '🌍 Viajes': ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🛺','🚲','🛴','🛹','🚏','🛣️','🛤️','⛽','🛳️','⛴️','🛥️','🚢','✈️','🛩️','🛫','🛬','🪂','💺','🚀','🛸','🚁','🛶','⛺','🏕️','🏖️','🏜️','🏝️','🏔️','🗻','🌋','🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏯','🏰'],
+            '💡 Símbolos': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚕️','♿','🚹','🚺','🚻','🚼','🚾','🛂','🛃','🛄','🛅','⚠️','🚸','⛔','🚫','🚳','🚭','🚯','🚱','🚷','📵','🔞','☢️','☣️','💯','♻️','✅','❌','❓','❗','➕','➖','➗','♾️'],
+            '🎵 Otros': ['🎵','🎶','🎼','🎤','🎧','📻','🎷','🎸','🎺','🎻','🪕','🥁','🎲','♟️','🎭','🎨','🧩','🪅','🪆','🎪','🎬','🎤','🎯','🎳','🎮','🕹️','🎰','🎡','🎢','🎠','💎','🎁','🎈','🎉','🎊','🎃','🎄','🎃','🎆','🎇','✨','🎗️','🎟️','🎫','🏆','🏅','🥇','🥈','🥉','⚽','🏀','🏈','🎽','🏿','🏻','🏼','🏽','🏾']
+        };
+        const EMOJI_CAT_KEYS = Object.keys(EMOJI_CATEGORIES);
+
+        async function loadEditor() {
+            const token = localStorage.getItem('kami_token');
+            if (!token) { showError('Debes iniciar sesión. <a href="/login" style="color:var(--accent);text-decoration:underline;">Iniciar sesión</a>'); return; }
+            try {
+                const res = await fetch('/api/auth/profile/editor', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.status === 401) { localStorage.removeItem('kami_token'); showError('Sesión expirada. <a href="/login" style="color:var(--accent);text-decoration:underline;">iniciar sesión</a>.'); return; }
+                if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.error||'Error (HTTP '+res.status+')'); }
+                const data = await res.json(), u = data.user;
+                if (u.username.toLowerCase() !== username.toLowerCase()) { window.location.href='/perfil-editor/'+encodeURIComponent(u.username); return; }
+                userData = u;
+                renderEditor(u);
+            } catch(e) { showError('Error al cargar el editor: '+e.message); }
+        }
+
+        function showError(m) { document.getElementById('loading').style.display='none'; document.getElementById('error-page').style.display='block'; document.getElementById('error-msg').innerHTML=m; }
+
+        function renderEditor(u) {
+            document.getElementById('loading').style.display='none'; document.getElementById('editor-content').style.display='block';
+            document.title='Editar perfil-'+u.username;
+            document.getElementById('edit-username').textContent=u.username;
+            document.getElementById('edit-bio').value=u.bio||'';
+            updateBioCounter();
+            updateAvatarDisplay(u.avatar);
+            updateBannerDisplay(u.banner);
+            document.getElementById('edit-country-tag').textContent='🌍 '+(u.country||'No especificado');
+            const joined=u.createdAt?new Date(u.createdAt).toLocaleDateString('es-ES',{year:'numeric',month:'long'}):'Desconocido';
+            document.getElementById('edit-joined-tag').textContent='📅 Miembro desde '+joined;
+            selectedEmoji=u.emoji||'';
+            document.getElementById('selected-emoji-preview').textContent=selectedEmoji;
+            selectedFavGenres=u.favoriteGenres||[];
+            renderSelectedTags();
+            document.querySelectorAll('[id^="view-profile-btn"]').forEach(el=>el.href='/profile/'+u.username);
+            document.getElementById('btn-cancel').onclick=function(){ window.location.href='/profile/'+u.username; };
+        }
+
+        function handleAvatarImage(i) {
+            const f=i.files[0]; if(!f) return;
+            const r=new FileReader(); r.onload=function(e){avatarImage=e.target.result;updateAvatarDisplay(avatarImage);}; r.readAsDataURL(f);
+        }
+        function updateAvatarDisplay(src) {
+            const el=document.getElementById('edit-avatar');
+            if(src&&src.startsWith('data:image/')){ el.style.cssText="background-image: url('"+src+"') !important; background-size: cover !important; background-position: center !important;"; el.textContent=''; }
+            else if(userData&&userData.username){ el.style.cssText=''; el.style.background='linear-gradient(135deg,#e8334a,#f5c842)'; el.textContent=userData.username.charAt(0).toUpperCase(); }
+        }
+
+        function handleBannerImage(i) {
+            const f=i.files[0]; if(!f) return;
+            const r=new FileReader(); r.onload=function(e){bannerImage=e.target.result;updateBannerDisplay(bannerImage);}; r.readAsDataURL(f);
+        }
+        function updateBannerDisplay(src) {
+            const el=document.getElementById('edit-banner');
+            if(src&&src.startsWith('data:image/')){ el.style.cssText="cursor:pointer;position:relative;background-image: url('"+src+"') !important; background-size: cover !important; background-position: center !important;"; }
+            else { el.style.cssText='cursor:pointer;position:relative;background:#0f0f1a;'; }
+        }
+
+        document.getElementById('edit-bio').addEventListener('input', updateBioCounter);
+        function updateBioCounter() { var l=document.getElementById('edit-bio').value.length; document.getElementById('bio-counter').textContent=l+'/300'; }
+
+        function renderSelectedTags() {
+            var el=document.getElementById('selected-tags-display');
+            var html='';
+            for(var i=0;i<selectedFavGenres.length;i++){ var g=selectedFavGenres[i]; html+='<span class="tag-chip">'+g+'<span class="tag-rm" onclick="removeFavGenre(\''+g+'\')">&times;</span></span>'; }
+            el.innerHTML=html;
+        }
+        function removeFavGenre(g) { selectedFavGenres=selectedFavGenres.filter(function(x){return x!==g;}); renderSelectedTags(); }
+
+        function openGenrePicker() {
+            tempSelectedGenres=selectedFavGenres.slice();
+            var grid=document.getElementById('genre-picker-grid');
+            var html='';
+            for(var i=0;i<GENRE_OPTIONS.length;i++){ var g=GENRE_OPTIONS[i]; html+='<div class="genre-picker-item'+(tempSelectedGenres.indexOf(g)>=0?' selected':'')+'" onclick="toggleTempGenre(this,\''+g+'\')">'+g+'</div>'; }
+            grid.innerHTML=html;
+            document.getElementById('genre-modal').classList.add('open');
+        }
+        function toggleTempGenre(el,g) {
+            var idx=tempSelectedGenres.indexOf(g);
+            if(idx>=0){ tempSelectedGenres.splice(idx,1); el.classList.remove('selected'); }
+            else if(tempSelectedGenres.length<2){ tempSelectedGenres.push(g); el.classList.add('selected'); }
+        }
+        function confirmGenres() { selectedFavGenres=tempSelectedGenres.slice(); renderSelectedTags(); closeGenrePicker(); }
+        function closeGenrePicker() { document.getElementById('genre-modal').classList.remove('open'); }
+
+        function openEmojiPicker() {
+            var tabs=document.getElementById('emoji-tabs'), grid=document.getElementById('emoji-grid');
+            var tabHtml='';
+            for(var i=0;i<EMOJI_CAT_KEYS.length;i++){ var k=EMOJI_CAT_KEYS[i]; tabHtml+='<button class="emoji-tab'+(i===0?' active':'')+'" onclick="switchEmojiTab(this,'+i+')">'+EMOJI_CATEGORIES[k][0]+'</button>'; }
+            tabs.innerHTML=tabHtml;
+            showEmojiCategory(0);
+            document.getElementById('emoji-modal').classList.add('open');
+        }
+        function switchEmojiTab(el,i) {
+            var tabs=document.querySelectorAll('.emoji-tab');
+            for(var t=0;t<tabs.length;t++) tabs[t].classList.remove('active');
+            el.classList.add('active');
+            showEmojiCategory(i);
+        }
+        function showEmojiCategory(i) {
+            var cat=EMOJI_CAT_KEYS[i], grid=document.getElementById('emoji-grid');
+            var emojis=EMOJI_CATEGORIES[cat];
+            var html='';
+            for(var e=0;e<emojis.length;e++) html+='<div class="emoji-item" onclick="pickEmoji(\''+emojis[e]+'\')">'+emojis[e]+'</div>';
+            grid.innerHTML=html;
+        }
+        function pickEmoji(e) { selectedEmoji=e; document.getElementById('selected-emoji-preview').textContent=e; closeEmojiPicker(); }
+        function closeEmojiPicker() { document.getElementById('emoji-modal').classList.remove('open'); }
+
+        async function saveProfile() {
+            var btn=document.getElementById('btn-save'), statusEl=document.getElementById('status-msg');
+            var bio=document.getElementById('edit-bio').value.trim();
+            statusEl.className='status-msg'; btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Guardando…';
+            var token=localStorage.getItem('kami_token');
+            if(!token){ showStatus('error','Sesión expirada.'); btn.disabled=false; btn.innerHTML='Guardar cambios'; return; }
+            var body={bio:bio};
+            if(avatarImage) body.avatar=avatarImage;
+            if(bannerImage) body.banner=bannerImage;
+            body.favoriteGenres=selectedFavGenres;
+            body.emoji=selectedEmoji;
+            try {
+                var r=await fetch('/api/auth/profile/edit',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
+                var d=await r.json();
+                if(!r.ok) throw new Error(d.error||'Error del servidor');
+                var u=d.user;
+                var st=JSON.parse(localStorage.getItem('kami_user')||'{}');
+                st.bio=u.bio; st.emoji=u.emoji; st.favoriteGenres=u.favoriteGenres;
+                st.country=u.country||userData.country||st.country;
+                if(avatarImage) st.avatar=u.avatar;
+                if(bannerImage) st.banner=u.banner;
+                st.role=u.role;
+                localStorage.setItem('kami_user',JSON.stringify(st));
+                showStatus('success','✓ Perfil actualizado correctamente');
+                if(typeof window.kamiRefreshNav==='function') window.kamiRefreshNav();
+                setTimeout(function(){ window.location.href='/profile/'+userData.username; },1500);
+            } catch(e){ showStatus('error','✕ '+e.message); btn.disabled=false; btn.innerHTML='Guardar cambios'; }
+        }
+        function showStatus(t,m) { var e=document.getElementById('status-msg'); e.textContent=m; e.className='status-msg '+t+' show'; }
+
+        loadEditor();
+    </script>
+  <script src="/js/notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css?v=9">
+    <link rel="stylesheet" href="/css/perfil.css">
+    <link rel="stylesheet" href="/css/biblioteca.css">
+    <link rel="stylesheet" href="/css/kmi-card.css">
+</head>
+
+<body>
+  <script src="/js/menu-global.js"></script>
+<div id="page-loader">
+      <div class="spinner"></div>
+      <p style="color:var(--text-muted);font-size:14px;">Cargando biblioteca...</p>
+    </div>
+
+    <div id="page-content">
+    <!-- ═══════════ MAIN CONTENT ═══════════ -->
+    <div class="main-content">
+
+        <div class="page-header">
+            <h1 class="page-title">BIBLIOTECA</h1>
+            <p class="page-subtitle">Explora todos los mangas disponibles en KAMI</p>
+        </div>
+
+        <!-- BUSCADOR -->
+        <div class="search-bar" id="search-bar">
+            <!-- Input de búsqueda -->
+            <div class="search-input-wrap">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" id="search-input" placeholder="Buscar manga, manhwa, manhua...">
+            </div>
+
+            <!-- Botón: Buscar por (Título / Autor) -->
+            <div class="sb-dropdown-wrap">
+                <button class="search-btn" id="btn-search-by" onclick="toggleDropdown('dd-search-by')">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h6"/></svg>
+                    <span id="search-by-label">Título</span>
+                    <span class="arrow">▾</span>
+                </button>
+                <div class="sb-dropdown" id="dd-search-by">
+                    <div class="sb-dd-item selected" data-value="titulo" onclick="selectSearchBy(this)">Título <span class="check">✓</span></div>
+                    <div class="sb-dd-item" data-value="autor" onclick="selectSearchBy(this)">Autor <span class="check">✓</span></div>
+                </div>
+            </div>
+
+            <!-- Botón: Ordenar -->
+            <div class="sb-dropdown-wrap">
+                <button class="search-btn" id="btn-sort" onclick="toggleDropdown('dd-sort')">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5h10M11 9h7M11 13h4M3 17l4 4 4-4M7 3v18"/></svg>
+                    <span id="sort-label">Rating</span>
+                    <span class="arrow">▾</span>
+                </button>
+                <div class="sb-dropdown" id="dd-sort">
+                    <div class="sb-dd-item selected" data-value="rating" onclick="selectSort(this)">Rating <span class="check">✓</span></div>
+                    <div class="sb-dd-item" data-value="puntuacion" onclick="selectSort(this)">Puntuación <span class="check">✓</span></div>
+                    <div class="sb-dd-item" data-value="alfabetico" onclick="selectSort(this)">Alfabético <span class="check">✓</span></div>
+                    <div class="sb-dd-divider"></div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;">
+                        <span style="font-size:12px;color:var(--text-muted);">Dirección</span>
+                        <button class="sort-dir-toggle" id="sort-dir-btn" onclick="toggleSortDir(event)" title="Ascendente">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón: Avanzado -->
+            <button class="search-btn" id="btn-advanced" onclick="toggleAdvanced()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Avanzado
+            </button>
+        </div>
+
+        <!-- PANEL AVANZADO -->
+        <div class="advanced-panel" id="advanced-panel">
+            <!-- Tipo -->
+            <div class="adv-section">
+                <div class="adv-label">Tipo de obra</div>
+                <div class="type-toggles">
+                    <button class="type-toggle active" data-type="all" onclick="toggleType(this)">Todos</button>
+                    <button class="type-toggle" data-type="manga" onclick="toggleType(this)">📘 Manga</button>
+                    <button class="type-toggle" data-type="manhwa" onclick="toggleType(this)">📗 Manhwa</button>
+                    <button class="type-toggle" data-type="manhua" onclick="toggleType(this)">📙 Manhua</button>
+                </div>
+            </div>
+
+            <div class="adv-divider"></div>
+
+            <!-- Incluir géneros -->
+            <div class="adv-section">
+                <div class="adv-label">Incluir géneros</div>
+                <div class="genre-grid">
+                    <div>
+                        <div class="genre-group-title">Acción y Aventura</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="accion"> Acción</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="aventura"> Aventura</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="artes-marciales"> Artes Marciales</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="militar"> Militar</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Drama y Romance</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="drama"> Drama</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="romance"> Romance</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="slice-of-life"> Slice of Life</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="tragedia"> Tragedia</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Fantasía y Ciencia Ficción</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="fantasia"> Fantasía</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="isekai"> Isekai</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="ciencia-ficcion"> Ciencia Ficción</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="mecha"> Mecha</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="sistema"> Sistema</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="dark-fantasy"> Dark Fantasy</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Comedia y Costumbrista</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="comedia"> Comedia</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="escolar"> Escolar</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="recuentos-de-la-vida"> Recuentos de la vida</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="deportes"> Deportes</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Terror y Suspenso</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="horror"> Horror</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="misterio"> Misterio</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="thriller"> Thriller</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="psicologico"> Psicológico</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="sobrenatural"> Sobrenatural</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Historia y Cultura</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="historico"> Histórico</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="historia"> Historia</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="musica"> Música</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Demográficos y Especiales</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="seinen"> Seinen</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="shonen"> Shonen</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="shoujo"> Shoujo</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="josei"> Josei</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="ecchi"> Ecchi</label>
+                            <label class="genre-check"><input type="checkbox" name="inc-genre" value="harem"> Harem</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adv-divider"></div>
+
+            <!-- Excluir géneros -->
+            <div class="adv-section">
+                <div class="adv-label">Excluir géneros</div>
+                <div class="genre-grid">
+                    <div>
+                        <div class="genre-group-title">Acción y Aventura</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="accion"> Acción</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="aventura"> Aventura</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="artes-marciales"> Artes Marciales</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="militar"> Militar</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Drama y Romance</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="drama"> Drama</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="romance"> Romance</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="slice-of-life"> Slice of Life</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="tragedia"> Tragedia</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Fantasía y Ciencia Ficción</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="fantasia"> Fantasía</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="isekai"> Isekai</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="ciencia-ficcion"> Ciencia Ficción</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="mecha"> Mecha</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="sistema"> Sistema</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="dark-fantasy"> Dark Fantasy</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Comedia y Costumbrista</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="comedia"> Comedia</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="escolar"> Escolar</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="recuentos-de-la-vida"> Recuentos de la vida</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="deportes"> Deportes</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Terror y Suspenso</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="horror"> Horror</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="misterio"> Misterio</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="thriller"> Thriller</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="psicologico"> Psicológico</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="sobrenatural"> Sobrenatural</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Historia y Cultura</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="historico"> Histórico</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="historia"> Historia</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="musica"> Música</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="genre-group-title">Demográficos y Especiales</div>
+                        <div class="genre-group-list">
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="seinen"> Seinen</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="shonen"> Shonen</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="shoujo"> Shoujo</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="josei"> Josei</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="ecchi"> Ecchi</label>
+                            <label class="genre-check exclude"><input type="checkbox" name="exc-genre" value="harem"> Harem</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="adv-actions">
+                <button class="adv-btn-reset" onclick="resetAdvanced()">Limpiar filtros</button>
+                <button class="adv-btn-apply" onclick="applyAdvanced()">Aplicar</button>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="filters-bar">
+            <div class="filter-chips">
+                <div class="chip active" onclick="filterByGenre(this, 'all')">
+                    📚 Todos
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'shonen')">
+                    ⚔️ Shōnen
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'seinen')">
+                    🗡️ Seinen
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'shojo')">
+                    🌸 Shōjo
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'isekai')">
+                    🌀 Isekai
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'slice-of-life')">
+                    ☕ Slice of Life
+                </div>
+                <div class="chip" onclick="filterByGenre(this, 'horror')">
+                    👻 Horror
+                </div>
+            </div>
+
+            <select class="sort-select" id="sort-select">
+                <option>Más populares</option>
+                <option>Título A–Z</option>
+                <option>Puntuación</option>
+                <option>Más recientes</option>
+                <option>Capítulos</option>
+            </select>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            <h2 class="empty-title">Aún no hay obras disponibles</h2>
+            <p class="empty-desc">
+                Pronto encontrarás aquí todas las obras de manga, manhwa y manhua publicadas en KAMI.
+                ¡Estamos preparando el catálogo!
+            </p>
+            <a href="/">
+                <button class="btn">
+                    <span>🏠</span>
+                    Volver al inicio
+                </button>
+            </a>
+        </div>
+
+        <!-- GRID (Para cuando haya contenido) -->
+        <div class="kmi-grid" id="manga-grid" style="display:none;">
+            <!-- Llenado dinámicamente por JavaScript -->
+        </div>
+
+    </div>
+    </div>
+
+    <!-- ═══════════ SCRIPTS ═══════════ -->
+    <script src="/js/offline.js?v=2"></script>
+    <script>
+        /**
+         * Funcionalidad de biblioteca
+         */
+
+        function filterByGenre(element, genre) {
+            document.querySelectorAll('.chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            element.classList.add('active');
+            console.log('Filtrar por género:', genre);
+        }
+
+        /* ── Buscador: Dropdowns ── */
+        let currentDropdown = null;
+
+        function toggleDropdown(id) {
+            const dd = document.getElementById(id);
+            if (currentDropdown && currentDropdown !== dd) currentDropdown.classList.remove('open');
+            dd.classList.toggle('open');
+            currentDropdown = dd.classList.contains('open') ? dd : null;
+        }
+
+        function selectSearchBy(item) {
+            const dd = item.closest('.sb-dropdown');
+            dd.querySelectorAll('.sb-dd-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            document.getElementById('search-by-label').textContent = item.textContent.trim();
+            dd.classList.remove('open');
+            currentDropdown = null;
+            document.getElementById('search-input').placeholder =
+                item.dataset.value === 'autor' ? 'Buscar por autor...' : 'Buscar manga, manhwa, manhua...';
+        }
+
+        function selectSort(item) {
+            const dd = item.closest('.sb-dropdown');
+            dd.querySelectorAll('.sb-dd-item').forEach(i => i.classList.remove('selected'));
+            item.classList.add('selected');
+            document.getElementById('sort-label').textContent = item.textContent.trim();
+        }
+
+        function toggleSortDir(e) {
+            e.stopPropagation();
+            const btn = document.getElementById('sort-dir-btn');
+            btn.classList.toggle('desc');
+            btn.title = btn.classList.contains('desc') ? 'Descendente' : 'Ascendente';
+        }
+
+        function toggleAdvanced() {
+            document.getElementById('advanced-panel').classList.toggle('open');
+            document.getElementById('btn-advanced').classList.toggle('active');
+        }
+
+        function toggleType(el) {
+            if (el.dataset.type === 'all') {
+                el.closest('.type-toggles').querySelectorAll('.type-toggle').forEach(t => t.classList.remove('active'));
+                el.classList.add('active');
+            } else {
+                el.closest('.type-toggles').querySelector('[data-type="all"]').classList.remove('active');
+                el.classList.toggle('active');
+                if (!el.closest('.type-toggles').querySelector('.type-toggle.active:not([data-type="all"])')) {
+                    el.closest('.type-toggles').querySelector('[data-type="all"]').classList.add('active');
+                }
+            }
+        }
+
+        function resetAdvanced() {
+            document.querySelectorAll('.advanced-panel input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.type-toggle').forEach(t => t.classList.remove('active'));
+            document.querySelector('.type-toggle[data-type="all"]').classList.add('active');
+        }
+
+        function applyAdvanced() {
+            const inc = [...document.querySelectorAll('input[name="inc-genre"]:checked')].map(c => c.value);
+            const exc = [...document.querySelectorAll('input[name="exc-genre"]:checked')].map(c => c.value);
+            const types = [...document.querySelectorAll('.type-toggle.active:not([data-type="all"])')].map(t => t.dataset.type);
+            console.log('Filtros:', { types: types.length ? types : ['all'], include: inc, exclude: exc });
+            toggleAdvanced();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (currentDropdown && !e.target.closest('.sb-dropdown-wrap')) {
+                currentDropdown.classList.remove('open');
+                currentDropdown = null;
+            }
+        });
+
+        let allMangas = [];
+        let userLibrary = {};
+
+        /**
+         * Cargar catálogo desde API
+         */
+        async function loadCatalog() {
+            try {
+                const [mangaResult, libraryResult] = await Promise.all([
+                    kamiOffline.safeFetch('/api/manga?limit=100', {}, { cacheKey: 'kami_catalog', maxAge: 24*60*60*1000 }),
+                    (() => {
+                        const token = localStorage.getItem('kami_token');
+                        return token
+                            ? kamiOffline.safeFetch('/api/library', { headers: { 'Authorization': 'Bearer ' + token } }, { cacheKey: 'kami_library', maxAge: 24*60*60*1000 })
+                            : Promise.resolve({ ok: true, data: { library: {} } });
+                    })(),
+                ]);
+
+                if (!mangaResult.ok) throw new Error('Error al cargar catálogo');
+                allMangas = mangaResult.data.mangas || [];
+
+                const lib = (libraryResult.ok ? libraryResult.data : {}).library || {};
+                userLibrary = {};
+                Object.keys(lib).forEach(status => {
+                    (lib[status] || []).forEach(m => { userLibrary[m.mangaId] = status; });
+                });
+
+                renderCatalog(allMangas);
+            } catch (err) {
+                console.error('Error cargando catálogo:', err);
+                document.querySelector('.empty-state').style.display = 'block';
+            }
+        }
+
+        // Show content after catalog loads
+
+        function renderCatalog(items) {
+            const grid = document.getElementById('manga-grid');
+            const emptyState = document.querySelector('.empty-state');
+            const searchInput = document.getElementById('search-input');
+
+            if (!grid) return;
+            if (emptyState) emptyState.style.display = 'none';
+            grid.style.display = 'grid';
+            grid.innerHTML = '';
+
+            if (items.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;opacity:0.3;">🔍</div><div style="font-size:15px;">Sin resultados</div></div>';
+                return;
+            }
+
+            items.forEach(function(m) {
+                var status = userLibrary[m.id];
+                var label = status ? ({ reading:'Leyendo', continuing:'Continuando', planned:'Pendientes', favorite:'Favoritos', completed:'Terminados', dropped:'Abandonados', rereading:'Releyendo' })[status] || status : null;
+                var overlay = '';
+                overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
+                overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>' + (m.type||'manga') + '</span><span style="color:#f5c842;">★ ' + (m.rating ? m.rating.toFixed(1) : '—') + '</span></div>';
+                overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:0%;height:100%;background:var(--blue);border-radius:2px;"></div></div></div>';
+                overlay += '<div onclick="event.stopPropagation();addToLibrary(\'' + m.id + '\',\'' + (m.title||'').replace(/'/g,"\\'") + '\')" style="font-size:11px;font-weight:600;color:#fff;background:var(--accent);text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + (status ? label : '+ Añadir') + '</div>';
+                overlay += '</div>';
+                if (status) overlay += '<div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--bg-surface);z-index:2;"></div>';
+                var html = window.kamiMangaCard(m, { showRating: false, extraOverlay: overlay });
+                var tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                grid.appendChild(tmp.firstElementChild);
+            });
+        }
+
+        async function addToLibrary(mangaId, title) {
+            const token = localStorage.getItem('kami_token');
+            if (!token) {
+                if (confirm('Debes iniciar sesión para añadir mangas. ¿Ir al login?')) {
+                    window.location.href = '/login?return=' + encodeURIComponent('/biblioteca');
+                }
+                return;
+            }
+            try {
+                const r = await fetch('/api/library/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ manga_id: mangaId, status: 'reading' }),
+                });
+                if (r.ok) {
+                    userLibrary[mangaId] = 'reading';
+                    renderCatalog(allMangas);
+                } else {
+                    const d = await r.json();
+                    alert(d.error || 'Error al añadir');
+                }
+            } catch (err) {
+                alert('Error al añadir a biblioteca');
+            }
+        }
+
+        // Search input handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('search-input');
+            if (input) {
+                input.addEventListener('input', () => {
+                    const q = input.value.toLowerCase().trim();
+                    if (!q) {
+                        renderCatalog(allMangas);
+                        return;
+                    }
+                    const filtered = allMangas.filter(m =>
+                        m.title.toLowerCase().includes(q) ||
+                        (m.author && m.author.toLowerCase().includes(q)) ||
+                        (m.alternativeTitles || []).some(t => t.toLowerCase().includes(q))
+                    );
+                    renderCatalog(filtered);
+                });
+            }
+        });
+
+        // Load catalog on page load
+        // Set dynamic title with username
+        try {
+          const u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+          document.title = `Biblioteca-KAMImanga`;
+        } catch {}
+
+        async function initPage() {
+            await loadCatalog();
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+                const input = document.getElementById('search-input');
+                if (input) {
+                    input.value = q;
+                    input.dispatchEvent(new Event('input'));
+                }
+            }
+            kamiOffline.showContent();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage);
+        } else {
+            initPage();
+        }
+    </script>
+
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

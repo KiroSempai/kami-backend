@@ -1,0 +1,228 @@
+/* ═══════════════════════════════════════════════
+   KAMI — kmi-card.css
+   Layout maestro centralizado para carteleras KMI
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --kmi-card-bg: var(--bg-surface);
+  --kmi-card-border: 1px solid var(--border);
+  --kmi-card-radius: var(--radius-md);
+  --kmi-card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  --kmi-card-hover-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  --kmi-card-hover-transform: translateY(-4px);
+  --kmi-card-hover-border: rgba(255,255,255,0.15);
+
+  --kmi-cover-aspect: 2 / 3;
+  --kmi-cover-bg: var(--bg-card);
+
+  --kmi-gap: 8px;
+  --kmi-padding-x: 10px;
+  --kmi-padding-y: 12px;
+
+  --kmi-title-size: 13px;
+  --kmi-title-weight: 700;
+  --kmi-title-color: var(--text-primary);
+
+  --kmi-meta-size: 11px;
+  --kmi-meta-color: var(--text-secondary);
+
+  --kmi-badge-rank-size: 26px;
+  --kmi-badge-rank-bg: var(--accent);
+  --kmi-badge-rank-color: #fff;
+
+  --kmi-badge-rating-bg: rgba(0,0,0,0.75);
+  --kmi-badge-rating-color: #f5c842;
+  --kmi-badge-rating-size: 11px;
+
+  --kmi-overlay-gradient: linear-gradient(transparent, rgba(0,0,0,0.85));
+}
+
+.kmi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kmi-gap);
+  background: var(--kmi-card-bg);
+  border: var(--kmi-card-border);
+  border-radius: var(--kmi-card-radius);
+  overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--kmi-card-shadow);
+}
+.kmi-card:hover {
+  border-color: var(--kmi-card-hover-border);
+  transform: var(--kmi-card-hover-transform);
+  box-shadow: var(--kmi-card-hover-shadow);
+}
+
+.kmi-cover-wrap {
+  aspect-ratio: var(--kmi-cover-aspect);
+  overflow: hidden;
+  background: var(--kmi-cover-bg);
+  position: relative;
+}
+.kmi-cover-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+.kmi-card:hover .kmi-cover-wrap img {
+  transform: scale(1.05);
+}
+.kmi-cover-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  transition: transform 0.3s;
+}
+.kmi-card:hover .kmi-cover-fallback {
+  transform: scale(1.05);
+}
+
+.kmi-badge-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  width: var(--kmi-badge-rank-size);
+  height: var(--kmi-badge-rank-size);
+  border-radius: 50%;
+  background: var(--kmi-badge-rank-bg);
+  color: var(--kmi-badge-rank-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.kmi-badge-rating {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 2;
+  background: var(--kmi-badge-rating-bg);
+  color: var(--kmi-badge-rating-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: var(--kmi-badge-rating-size);
+  font-weight: 700;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+}
+.kmi-badge-fav {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  font-size: 14px;
+  line-height: 1;
+}
+.kmi-status-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.kmi-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 24px 8px 8px;
+  background: var(--kmi-overlay-gradient);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kmi-overlay-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.kmi-overlay-progress {
+  display: flex;
+  gap: 4px;
+}
+.kmi-overlay-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.kmi-overlay-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.kmi-overlay-btn {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  text-align: center;
+  padding: 4px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  line-height: 1.3;
+}
+
+.kmi-info {
+  padding: 0 var(--kmi-padding-x) var(--kmi-padding-y);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.kmi-title {
+  font-size: var(--kmi-title-size);
+  font-weight: var(--kmi-title-weight);
+  color: var(--kmi-title-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kmi-meta {
+  font-size: var(--kmi-meta-size);
+  color: var(--kmi-meta-color);
+  line-height: 1.3;
+}
+
+/* ─── GRIDS ─── */
+.kmi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 18px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .kmi-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+}
+@media (max-width: 500px) {
+  .kmi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}

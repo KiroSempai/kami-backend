@@ -743,7 +743,15 @@
             }
         });
 
-        function trackAction() {}
+        function trackAction(action_type, manga_id, metadata) {
+          var t = localStorage.getItem('kami_token');
+          if (!t) return;
+          fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + t },
+            body: JSON.stringify({ action_type, manga_id: manga_id || null, metadata: metadata || {} })
+          }).catch(function(){});
+        }
 
         // ── Interaction functions (copiado de index.html) ──
         function likePost(el) {

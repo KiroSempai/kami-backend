@@ -106,9 +106,9 @@ router.get('/:username', async (req, res) => {
       [userId]
     );
 
-    // Chapters completed
+    // Chapters completed (distintos por manga_id + chapter_number para no duplicar)
     const chaptersDone = await pool.query(
-      `SELECT COUNT(*) AS count FROM user_tracking WHERE user_id = $1 AND action_type = 'chapter_read'`,
+      `SELECT COUNT(DISTINCT (manga_id, metadata->>'chapter')) AS count FROM user_tracking WHERE user_id = $1 AND action_type = 'chapter_read'`,
       [userId]
     );
 

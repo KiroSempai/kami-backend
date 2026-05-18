@@ -2298,7 +2298,12 @@
           overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
           overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>Cap. ' + (m.progress || 0) + '/' + (m.totalChapters || '?') + '</span><span>' + pct + '%</span></div>';
           overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
-          overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + (m.progress + 1)) + '</div>';
+          var btnText = (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + (m.progress + 1));
+          if (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned') {
+            overlay += '<div onclick="event.stopPropagation();marcarLecturaManual(\'' + m.mangaId + '\',\'' + (m.title || '').replace(/'/g,"\\'") + '\',' + (m.progress + 1) + ')" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+          } else {
+            overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+          }
           overlay += '</div>';
           if (statusKey) overlay += '<div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:' + statusColor + ';border:2px solid var(--bg-surface);z-index:2;"></div>';
           if (m.isFavorite) overlay += '<div style="position:absolute;top:8px;left:8px;font-size:14px;z-index:2;">❤️</div>';
@@ -2365,6 +2370,25 @@
         } catch (e) {
           console.error('Error eliminando manga:', e);
         }
+      }
+
+      async function marcarLecturaManual(mangaId, title, chapterNumber) {
+        let token = localStorage.getItem('kami_token');
+        if (!token) return;
+        try {
+          await fetch('/api/stats/track', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+            body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNumber, minutes: 5 })
+          });
+          let toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#2dca7a;color:white;padding:12px 20px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-weight:500;transition:all 0.4s ease;';
+          toast.innerHTML = '📖 <strong>' + title + '</strong> · Cap. ' + chapterNumber + ' marcado';
+          document.body.appendChild(toast);
+          setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 400); }, 3000);
+          loadLibrary();
+          if (typeof loadStats === 'function') loadStats();
+        } catch (e) { console.error('[track] Error manual:', e); }
       }
 
       async function loadStats() {

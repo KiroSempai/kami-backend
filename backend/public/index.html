@@ -1572,6 +1572,8 @@
         if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
         detailViewPostId = postId;
         document.getElementById('inicio-main-view').style.display = 'none';
+        document.getElementById('explorar-comunidad-detail-view').style.display = 'none';
+        document.getElementById('explorer-channel-view').style.display = 'none';
         document.getElementById('inicio-post-detail-view').style.display = 'block';
         document.getElementById('post-detail-content').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">Cargando...</div>';
         window.scrollTo(0, 0);

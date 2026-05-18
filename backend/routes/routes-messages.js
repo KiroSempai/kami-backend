@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// ✉️ KAMI — routes-messages.js
+// Mensajería directa entre usuarios y threads de conversación.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

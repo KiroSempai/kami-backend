@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📌 KAMI — routes-story-pins.js
+// "Story Pins": posts destacados temporales en el perfil del usuario.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

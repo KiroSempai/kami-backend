@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏷️ KAMI — routes-annotations.js
+// Anotaciones del lector sobre páginas de capítulos (marcado, notas).
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

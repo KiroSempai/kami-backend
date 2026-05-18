@@ -1,31 +1,8 @@
-/* KAMI - index.css */
-
-:root {
-      --bg-base: #0e0e1e;
-      --bg-surface: #16162a;
-      --bg-card: #1c1c34;
-      --bg-card-hover: #22223c;
-      --accent: #e8334a;
-      --accent-glow: rgba(232, 51, 74, 0.15);
-      --accent-gold: #f5c842;
-      --accent-gold-glow: rgba(245, 200, 66, 0.12);
-      --text-primary: #f2f2fa;
-      --text-secondary: #a0a0b8;
-      --text-muted: #6a6a82;
-      --border: rgba(255, 255, 255, 0.10);
-      --border-hover: rgba(255, 255, 255, 0.18);
-      --red-badge: #e8334a;
-      --green: #2dca7a;
-      --blue: #4c9df5;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-      --radius-xl: 22px;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-body: 'Plus Jakarta Sans', sans-serif;
-      --font-jp: 'Noto Sans JP', sans-serif;
-      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+/* ═══════════════════════════════════════════════════════
+   KAMI — index.css
+   Estilos específicos de la página principal (Comunidad)
+   ═══════════════════════════════════════════════════════ */
+/* :root y reset están en common.css */
 
     *,
     *::before,

@@ -1,5 +1,8 @@
-// KAMI — Feed API (Manga Mixer)
-// Endpoints para el feed algorítmico de la Comunidad
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🍱 KAMI — routes-feed.js
+// Feed algorítmico "Manga Mixer": scoring multi-factor, interacciones,
+// notificaciones, vistas, y utilidades (GIF proxy/search).
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const express = require('express');
 const router = express.Router();
@@ -192,9 +195,15 @@ async function optionalAuth(req, res, next) {
   catch(e) { req.user = null; next(); }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// GET /api/feed/for-you  — Feed algoritmo "Manga Mixer" completo
-// ═══════════════════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/for-you
+// 👤 Permiso: público (auth opcional — sin auth = feed cronológico simple)
+// 📥 Query: ?limit=25&offset=0&session=<session_id>
+// 📤 Respuesta: { feed_type, posts[], offset, limit, session, cached?, guest? }
+// 📝 Feed algorítmico "Manga Mixer". Combina 4 sub-algoritmos:
+//      OtakuCred (reputación), FandomJet (grafo conexiones),
+//      Safety (spoilers/toxicidad), Fatiga (anti-monotonía).
+//      Cachea scoring 1 minuto para evitar fluctuaciones.
+//      Guests ven feed cronológico sin personalización.
 
 // Caché de scoring para evitar fluctuaciones (1 minuto TTL)
 const forYouCache = new Map();
@@ -205,6 +214,7 @@ router.get('/for-you', optionalAuth, async (req, res) => {
     const userId = req.user?.userId || null;
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
+    const tag = req.query.tag || null;
     const guestKey = 'guest_' + Math.floor(Date.now() / 60000);
     const sessionId = req.query.session || (userId ? userId + '_' + Math.floor(Date.now() / 60000) : guestKey);
     const cacheKey = (userId || 'guest') + '_' + sessionId;
@@ -216,20 +226,21 @@ router.get('/for-you', optionalAuth, async (req, res) => {
       if (idsPagina.length === 0) return res.json({ feed_type: 'Para Ti', posts: [], offset, limit, session: sessionId });
 
       const cr = await pool.query(`
-        SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+        SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
                (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
                (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
         FROM feed_posts fp
         LEFT JOIN users u ON u.id = fp.user_id
+        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
         WHERE fp.id = ANY($1)
       `, [idsPagina]);
       const posMap = new Map(idsPagina.map((id, i) => [id, i]));
       const ordered = cr.rows.sort((a, b) => posMap.get(a.id) - posMap.get(b.id));
       const formatted = ordered.map(post => ({
-        id: post.id, user: post.username || 'Anónimo', handle: '@' + (post.username || 'anon').toLowerCase(),
+        id: post.id, user: post.username || 'Anónimo', handle: `@${(post.username || 'anon').toLowerCase()}`,
         avatar: post.avatar || null, text: post.content || '', title: post.title || '',
         type: post.post_type || 'post',
         manga: post.manga_title ? { id: post.manga_id, title: post.manga_title, cover: post.manga_cover || null } : undefined,
@@ -245,20 +256,30 @@ router.get('/for-you', optionalAuth, async (req, res) => {
 
     if (!userId) {
       // Guest: feed cronológico simple sin personalización
-      const fallback = await pool.query(`
-        SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+      let guestQuery = `
+        SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
                (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
                (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
         FROM feed_posts fp
         LEFT JOIN users u ON u.id = fp.user_id
+        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
-        WHERE fp.parent_id IS NULL
-        ORDER BY fp.created_at DESC LIMIT $1 OFFSET $2
-      `, [limit, offset]);
+        WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+      `;
+      let guestParams = [];
+      let gpIdx = 1;
+      if (tag) {
+        guestQuery += ` AND fp.post_type = $${gpIdx}`;
+        guestParams.push(tag.toLowerCase());
+        gpIdx++;
+      }
+      guestQuery += ` ORDER BY fp.created_at DESC LIMIT $${gpIdx} OFFSET $${gpIdx + 1}`;
+      guestParams.push(limit, offset);
+      const fallback = await pool.query(guestQuery, guestParams);
       const formatted = fallback.rows.map(post => ({
-        id: post.id, user: post.username || 'Anónimo', handle: '@' + (post.username || 'anon').toLowerCase(),
+        id: post.id, user: post.username || 'Anónimo', handle: `@${(post.username || 'anon').toLowerCase()}`,
         avatar: post.avatar || null, text: post.content || '', title: post.title || '',
         type: post.post_type || 'post',
         manga: post.manga_title ? { id: post.manga_id, title: post.manga_title, cover: post.manga_cover || null } : undefined,
@@ -279,18 +300,25 @@ router.get('/for-you', optionalAuth, async (req, res) => {
 
     // Fase 1: Sourcing — extraer candidatos
     let query = `
-      SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+      SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL
+      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
     `;
     const params = [];
     let paramIdx = 1;
+
+    if (tag) {
+      query += ` AND fp.post_type = $${paramIdx}`;
+      params.push(tag.toLowerCase());
+      paramIdx++;
+    }
 
     if (communities.length > 0) {
       query += ` AND (fp.community_id = ANY($${paramIdx}) OR fp.community_id IS NULL)`;
@@ -453,7 +481,7 @@ router.get('/for-you', optionalAuth, async (req, res) => {
     const formatted = topPosts.map(post => ({
       id: post.id,
       user: post.username || 'Anónimo',
-      handle: '@' + (post.username || 'anon').toLowerCase(),
+      handle: `@${(post.username || 'anon').toLowerCase()}`,
       avatar: post.avatar || null,
       text: post.content || '',
       title: post.title || '',
@@ -482,32 +510,47 @@ router.get('/for-you', optionalAuth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/latest  — Feed cronológico
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/latest
+// 👤 Permiso: público (auth opcional para enrichPosts)
+// 📥 Query: ?limit=25&offset=0
+// 📤 Respuesta: { feed_type, posts[], offset, limit }
+// 📝 Feed cronológico: últimos posts, sin algoritmo de scoring.
 router.get('/latest', optionalAuth, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
+    const tag = req.query.tag || null;
 
-    const result = await pool.query(`
-      SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+    let queryStr = `
+      SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL
-      ORDER BY fp.created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
+      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+    `;
+    let queryParams = [];
+    let paramIdx = 1;
+
+    if (tag) {
+      queryStr += ` AND fp.post_type = $${paramIdx}`;
+      queryParams.push(tag.toLowerCase());
+      paramIdx++;
+    }
+
+    queryStr += ` ORDER BY fp.created_at DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
+    queryParams.push(limit, offset);
+
+    const result = await pool.query(queryStr, queryParams);
 
     let posts = result.rows.map(post => ({
       id: post.id,
       user: post.username || 'Anónimo',
-      handle: '@' + (post.username || 'anon').toLowerCase(),
+      handle: `@${(post.username || 'anon').toLowerCase()}`,
       avatar: post.avatar || null,
       text: post.content || '',
       type: post.post_type || 'post',
@@ -533,9 +576,13 @@ router.get('/latest', optionalAuth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/interact  — Registrar interacción
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/interact
+// 👤 Permiso: auth
+// 📥 Body: { post_id, interaction_type, metadata? }
+// 📤 Respuesta: { success, action: 'added'|'removed' }
+// 📝 Toggle para likes/reposts/bookmarks (DELETE si ya existe).
+//      Hide/mute/report son acciones únicas.
+//      Emite WebSocket a 'post:<id>' y notifica al autor.
 router.post('/interact', auth, async (req, res) => {
   try {
     const { post_id, interaction_type, metadata } = req.body;
@@ -661,9 +708,12 @@ router.post('/interact', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/track-views  — Registrar vistas reales (Opción D)
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/track-views
+// 👤 Permiso: auth
+// 📥 Body: { post_ids: number[] }
+// 📤 Respuesta: { success, tracked: number }
+// 📝 Anti-fraude: solo cuenta vistas si no hay registro en las últimas 4h.
+//      Incrementa views_count en feed_posts y registra en viewed_posts.
 router.post('/track-views', auth, async (req, res) => {
   try {
     const { post_ids } = req.body;
@@ -700,9 +750,11 @@ router.post('/track-views', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/company-posts  — Posts de un creador/compañía (para modal)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/company-posts
+// 👤 Permiso: público (auth opcional)
+// 📥 Query: ?user_id=<id>
+// 📤 Respuesta: { success, posts[] }
+// 📝 Posts de un creador/company (is_news o is_global_announcement).
 router.get('/company-posts', async (req, res) => {
   try {
     const { user_id } = req.query;
@@ -711,7 +763,7 @@ router.get('/company-posts', async (req, res) => {
     let userId = null;
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (token) { const u = require('../config').verifyToken(token); userId = u.userId; }
+      if (token) { const u = await verifyToken(token); userId = u.userId; }
     } catch(e) {}
 
     const result = await pool.query(`
@@ -732,7 +784,7 @@ router.get('/company-posts', async (req, res) => {
 
     let posts = result.rows.map(p => ({
       id: p.id, user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null, text: p.content || '',
       title: p.title || '', type: p.post_type || 'post',
       manga: p.manga_title ? { id: p.manga_id, title: p.manga_title, cover: p.manga_cover || null } : undefined,
@@ -753,9 +805,11 @@ router.get('/company-posts', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/profile-activity  — Actividad del perfil (posts, replies, media, likes)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/profile-activity
+// 👤 Permiso: público (auth opcional)
+// 📥 Query: ?user_id=<id>&type=posts|replies|media|likes&limit=25&offset=0
+// 📤 Respuesta: { success, posts[] }
+// 📝 Filtra la actividad de un perfil según el tipo solicitado.
 router.get('/profile-activity', async (req, res) => {
   try {
     const { user_id, type, limit, offset } = req.query;
@@ -767,7 +821,7 @@ router.get('/profile-activity', async (req, res) => {
     let userId = null;
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (token) { const u = require('../config').verifyToken(token); userId = u.userId; }
+      if (token) { const u = await verifyToken(token); userId = u.userId; }
     } catch(e) {}
 
     const selectBase = `
@@ -777,12 +831,13 @@ router.get('/profile-activity', async (req, res) => {
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
-             u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+             u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT u2.username FROM feed_posts fp2 JOIN users u2 ON u2.id = fp2.user_id WHERE fp2.id = fp.parent_id) AS reply_to_user
     `;
     const joins = `FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id`;
     const order = `ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3`;
 
@@ -822,16 +877,18 @@ router.get('/profile-activity', async (req, res) => {
         WHERE fi.user_id = $1 AND fi.interaction_type = 'like' AND fp.parent_id IS NULL ` + order;
       params = [user_id, lim, off];
     } else {
-      // default: posts
-      query = selectBase + joins + ` WHERE fp.user_id = $1 AND fp.parent_id IS NULL ` + order;
+      // default: posts propios + repostes del usuario
+      query = selectBase + joins + ` WHERE ((fp.user_id = $1 AND fp.parent_id IS NULL AND fp.community_id IS NULL) OR (fp.reposter_user_id = $1)) ` + order;
       params = [user_id, lim, off];
     }
 
     const result = await pool.query(query, params);
+    console.log('[profile-activity] Query ejecutada. Tipo:', type, 'Filas:', result.rows.length);
+    result.rows.forEach(r => console.log('  → id:', r.id, 'user_id:', r.user_id, 'reposter_user_id:', r.reposter_user_id, 'reposter_username:', r.reposter_username));
 
     let posts = result.rows.map(p => ({
       id: p.id, user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null, text: p.content || '',
       title: p.title || '', type: p.post_type || 'post',
       manga: p.manga_title ? { id: p.manga_id, title: p.manga_title, cover: p.manga_cover || null } : undefined,
@@ -839,12 +896,13 @@ router.get('/profile-activity', async (req, res) => {
       media_url: p.media_url || null, parent_id: p.parent_id || null,
       quoted_post_id: p.quoted_post_id || null,
       replyToUser: p.reply_to_user || null,
+      reposter_username: p.reposter_username || null,
       parent_post: p.parent_username ? {
         id: p.parent_id, content: p.parent_text, text: p.parent_text,
         created_at: p.parent_created_at, media_url: p.parent_media_url || null,
         likes: 0, replies: 0, reposts: 0,
         views_count: parseInt(p.parent_views_count) || 0,
-        user: p.parent_username, handle: '@' + p.parent_username.toLowerCase(),
+        user: p.parent_username, handle: `@${p.parent_username.toLowerCase()}`,
         avatar: p.parent_avatar, author_role: p.parent_author_role || 'user'
       } : null,
       likes: parseInt(p.real_likes) || 0, replies: parseInt(p.real_replies) || 0,
@@ -862,9 +920,11 @@ router.get('/profile-activity', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/pin-post  — Fijar post en el perfil
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/pin-post
+// 👤 Permiso: auth (solo dueño del post)
+// 📥 Body: { post_id }
+// 📤 Respuesta: { success, pinned: true, post_id }
+// 📝 Fija un post en la cabecera del perfil del usuario.
 router.post('/pin-post', auth, async (req, res) => {
   try {
     const { post_id } = req.body;
@@ -881,9 +941,10 @@ router.post('/pin-post', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/unpin-post  — Desfijar post del perfil
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/unpin-post
+// 👤 Permiso: auth
+// 📤 Respuesta: { success, pinned: false }
+// 📝 Elimina el post fijado del perfil del usuario.
 router.post('/unpin-post', auth, async (req, res) => {
   try {
     await pool.query('UPDATE users SET pinned_post_id = NULL WHERE id = $1', [req.user.userId]);
@@ -894,9 +955,10 @@ router.post('/unpin-post', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/user-posts/:userId  — Posts + pinned de un usuario (para perfil)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/user-posts/:userId
+// 👤 Permiso: público
+// 📤 Respuesta: { success, pinned_post, posts[] }
+// 📝 Posts de un usuario (excluye el fijado que se devuelve aparte).
 router.get('/user-posts/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -933,24 +995,26 @@ router.get('/user-posts/:userId', async (req, res) => {
       }
     }
 
-    // Traer posts cronológicos excluyendo el fijado
+    // Traer posts del usuario + repostes que hizo (excluyendo el fijado)
     const postsR = await pool.query(`
       SELECT fp.*, u.username, u.avatar, m.title AS manga_title,
+             ur.username AS reposter_username,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.user_id = $1 AND fp.parent_id IS NULL
+      WHERE (fp.user_id = $1 OR fp.reposter_user_id = $1) AND fp.parent_id IS NULL
         AND ($2::INTEGER IS NULL OR fp.id <> $2)
       ORDER BY fp.created_at DESC LIMIT 25
     `, [userId, pinnedId]);
 
     const posts = postsR.rows.map(p => ({
       id: p.id, user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null, text: p.content || '', type: p.post_type || 'post',
       media_url: p.media_url || null,
       manga: p.manga_title ? { id: p.manga_id, title: p.manga_title } : undefined,
@@ -958,6 +1022,7 @@ router.get('/user-posts/:userId', async (req, res) => {
       likes: parseInt(p.real_likes) || 0, replies: parseInt(p.real_replies) || 0,
       reposts: parseInt(p.real_reposts) || 0, views_count: parseInt(p.views_count) || 0,
       author_role: p.author_role || 'user', created_at: p.created_at,
+      reposter_username: p.reposter_username || null,
     }));
 
     res.json({ success: true, pinned_post: pinnedPost, posts });
@@ -967,9 +1032,10 @@ router.get('/user-posts/:userId', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/replies/:postId  — Obtener respuestas de un post
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/replies/:postId
+// 👤 Permiso: público
+// 📤 Respuesta: { success, replies[] }
+// 📝 Respuestas de un post, ordenadas ascendentemente (máx 100).
 router.get('/replies/:postId', async (req, res) => {
   try {
     const postId = parseInt(req.params.postId);
@@ -995,7 +1061,7 @@ router.get('/replies/:postId', async (req, res) => {
     const replies = result.rows.map(p => ({
       id: p.id,
       user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null,
       text: p.content || '',
       type: p.post_type || 'reply',
@@ -1018,9 +1084,11 @@ router.get('/replies/:postId', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/notifications  — Listar notificaciones del usuario
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/notifications
+// 👤 Permiso: auth
+// 📥 Query: ?limit=20&offset=0
+// 📤 Respuesta: { success, notifications[], unread_count }
+// 📝 Notificaciones del usuario (likes, reposts, replies, bookmarks).
 router.get('/notifications', auth, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 20, 50);
@@ -1060,9 +1128,11 @@ router.get('/notifications', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/notifications/read  — Marcar como leídas
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/notifications/read
+// 👤 Permiso: auth
+// 📥 Body: { ids?: number[] } — si es null, marca todas
+// 📤 Respuesta: { success }
+// 📝 Marca notificaciones como leídas. Sin ids, marca todas.
 router.post('/notifications/read', auth, async (req, res) => {
   try {
     const { ids } = req.body; // array opcional de IDs. Si es null, marca todas
@@ -1084,72 +1154,89 @@ router.post('/notifications/read', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/repost  — Repost (compartir post)
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/repost
+// 👤 Permiso: auth
+// 📥 Body: { post_id, community_id? }
+// 📤 Respuesta: { success, action }
+// 📝 Crea un repost. Inserta en reposts_manga y feed_interactions.
+//      Emite WebSocket a 'post:<id>'.
 router.post('/repost', auth, async (req, res) => {
+  const { post_id } = req.body;
+  const callerId = req.user.userId;
+  console.log('[repost BACKEND] Usuario', callerId, 'solicita repostear post', post_id);
+  if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
+
   try {
-    const { post_id, community_id } = req.body;
-    if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
+    // Verificar si ya existe un clon de este repost (toggle)
+    const existente = await pool.query(
+      'SELECT id FROM feed_posts WHERE reposter_user_id = $1 AND reposted_from_id = $2',
+      [callerId, post_id]
+    );
+    console.log('[repost BACKEND] Clon existente?', existente.rows.length > 0);
+    if (existente.rows.length > 0) {
+      await pool.query('DELETE FROM feed_posts WHERE id = $1', [existente.rows[0].id]);
+      console.log('[repost BACKEND] Clon eliminado (unrepost)');
+      if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: callerId });
+      return res.json({ success: true, action: 'unreposted' });
+    }
 
-    // Verificar que el post existe
-    const orig = await pool.query('SELECT id, user_id, manga_id, chapter_number, is_spoiler FROM feed_posts WHERE id = $1', [post_id]);
-    if (!orig.rows.length) return res.status(404).json({ error: 'Post no encontrado' });
+    // Traer el post original con todas sus columnas
+    const orig = await pool.query('SELECT * FROM feed_posts WHERE id = $1', [post_id]);
+    if (!orig.rows.length) return res.status(404).json({ error: 'El post original no existe.' });
 
-    // Insertar repost en ambas tablas
-    await pool.query(`
-      INSERT INTO reposts_manga (usuario_id, post_original_id, comunidad_destino_id)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (usuario_id, post_original_id) DO NOTHING
-    `, [req.user.userId, post_id, community_id || null]);
+    const o = orig.rows[0];
+    console.log('[repost BACKEND] Post original encontrado. user_id:', o.user_id, 'content:', (o.content || '').substring(0, 30));
+    const realFromId = o.reposted_from_id || o.id;
 
-    await pool.query(`
-      INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
-      VALUES ($1, $2, 'repost', '{}')
-      ON CONFLICT (user_id, post_id, interaction_type) DO NOTHING
-    `, [req.user.userId, post_id]);
+    // Insertar el clon visual usando media_url
+    await pool.query(
+      `INSERT INTO feed_posts
+        (user_id, content, manga_id, community_id, media_url, reposted_from_id, reposter_user_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      [o.user_id, o.content, o.manga_id, o.community_id, o.media_url, realFromId, callerId]
+    );
+    console.log('[repost BACKEND] Clon creado exitosamente para post', post_id, 'por usuario', callerId);
 
-    // Incrementar contador directo en DB (consistente con feed_interactions)
-    await pool.query('UPDATE feed_posts SET repost_count = repost_count + 1 WHERE id = $1', [post_id]);
+    if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'added', actor_id: callerId });
 
-    // WebSocket
-    if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'added', actor_id:req.user.userId });
-
-    res.json({ success: true, action:'added' });
+    res.json({ success: true, action: 'reposted' });
   } catch (err) {
-    console.error('[feed] Error en repost:', err.message);
-    res.status(500).json({ error: 'Error al repostear' });
+    console.error('[repost BACKEND] Error en POST /repost (clon):', err.message);
+    console.error('[repost BACKEND] Stack:', err.stack);
+    res.status(500).json({ error: 'Error al procesar el repost.' });
   }
 });
 
-// ════════════════════════════════════════════════
-// DELETE /api/feed/repost  — Quitar repost
-// ════════════════════════════════════════════════
+// 🚪 [DELETE] /api/feed/repost
+// 👤 Permiso: auth
+// 📥 Body: { post_id }
+// 📤 Respuesta: { success, action }
+// 📝 Elimina un repost y decrementa el contador.
 router.delete('/repost', auth, async (req, res) => {
-  try {
-    const { post_id } = req.body;
-    if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
+  const { post_id } = req.body;
+  if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
 
-    const r = await pool.query('DELETE FROM reposts_manga WHERE usuario_id = $1 AND post_original_id = $2', [req.user.userId, post_id]);
-    if (r.rowCount > 0) {
-      await pool.query('DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = $3',
-        [req.user.userId, post_id, 'repost']);
-      await pool.query('UPDATE feed_posts SET repost_count = GREATEST(repost_count - 1, 0) WHERE id = $1', [post_id]);
-      const delta = global.interactionDeltas.get(post_id) || { likes:0, reposts:0, replies:0 };
-      delta.reposts = Math.max(0, (delta.reposts || 0) - 1);
-      global.interactionDeltas.set(post_id, delta);
-      if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id:req.user.userId });
+  try {
+    const r = await pool.query(
+      'DELETE FROM feed_posts WHERE reposter_user_id = $1 AND reposted_from_id = $2 RETURNING id',
+      [req.user.userId, post_id]
+    );
+    const deleted = r.rowCount > 0;
+    if (deleted && global.io) {
+      global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: req.user.userId });
     }
-    res.json({ success: true, action:'removed' });
+    res.json({ success: true, action: deleted ? 'unreposted' : 'none' });
   } catch (err) {
     console.error('[feed] Error al quitar repost:', err.message);
     res.status(500).json({ error: 'Error al quitar repost' });
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/post/:id  — Obtener un post individual (para detalle/quote)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/post/:id
+// 👤 Permiso: público (auth opcional)
+// 📤 Respuesta: { success, post, parent_post? }
+// 📝 Post individual con contadores dinámicos (no cacheados).
+//      Si tiene parent_id, trae el post padre como contexto.
 router.get('/post/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -1159,7 +1246,7 @@ router.get('/post/:id', async (req, res) => {
     let userId = null;
     try {
       const token = req.headers.authorization?.split(' ')[1];
-      if (token) { const u = require('../config').verifyToken(token); userId = u.userId; }
+      if (token) { const u = await verifyToken(token); userId = u.userId; }
     } catch(e) {}
 
     const r = await pool.query(`
@@ -1222,7 +1309,7 @@ router.get('/post/:id', async (req, res) => {
             pp.repost_count = parseInt(pcr.real_reposts) || 0;
           } catch(e) {}
           parentPost = {
-            id: pp.id, user: pp.username || 'Anónimo', handle: '@' + (pp.username||'anon').toLowerCase(),
+            id: pp.id, user: pp.username || 'Anónimo', handle: `@${(pp.username||'anon').toLowerCase()}`,
             avatar: pp.avatar, text: pp.content, type: pp.post_type,
             spoiler: pp.is_spoiler, media_url: pp.media_url,
             views_count: parseInt(pp.views_count) || 0, author_role: pp.author_role || 'user',
@@ -1240,7 +1327,7 @@ router.get('/post/:id', async (req, res) => {
     res.json({
       success: true,
       post: {
-        id: post.id, user: post.username || 'Anónimo', handle: '@' + (post.username||'anon').toLowerCase(),
+        id: post.id, user: post.username || 'Anónimo', handle: `@${(post.username||'anon').toLowerCase()}`,
         avatar: post.avatar, text: post.content, type: post.post_type,
         manga: post.manga_title ? { id: post.manga_id, title: post.manga_title, cover: post.manga_cover || null } : undefined,
         chapter: post.chapter_number, spoiler: post.is_spoiler, media_url: post.media_url,
@@ -1261,7 +1348,11 @@ router.get('/post/:id', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/preferences
+// 👤 Permiso: auth
+// 📥 Body: { pref_type, pref_value, action?: 'add'|'remove' }
+// 📤 Respuesta: { success }
+// 📝 Gestiona preferencias de feed (géneros ocultos, mangas silenciados, etc.).
 router.post('/preferences', auth, async (req, res) => {
   try {
     const { pref_type, pref_value, action } = req.body;
@@ -1290,9 +1381,11 @@ router.post('/preferences', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/cred  — Ver OtakuCred del usuario
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/cred
+// 👤 Permiso: auth
+// 📤 Respuesta: { creds[] }
+// 📝 Devuelve el OtakuCred del usuario (reputación por categorías).
+//      Si no tiene cred, retorna score base 100 en categoría 'general'.
 router.get('/cred', auth, async (req, res) => {
   try {
     const r = await pool.query(
@@ -1307,9 +1400,16 @@ router.get('/cred', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// POST /api/feed/post  — Publicar un post
-// ════════════════════════════════════════════════
+// 🚪 [POST] /api/feed/post
+// 👤 Permiso: auth
+// 📥 Body: { content, manga_id?, chapter_number?, community_id?, parent_id?,
+//           quoted_post_id?, is_spoiler?, post_type?, title?, media_url?,
+//           is_news?, is_global_announcement? }
+// 📤 Respuesta: { success, post: { id, created_at, user, avatar } }
+// 📝 Publica un post. Si es reply, hereda spoiler del padre.
+//      Admin/company/creator pueden marcar is_news; solo admin is_global.
+//      Si se publica en comunidad sin manga_id, auto-vincula el KMI de la comunidad.
+//      Incrementa OtakuCred del autor.
 router.post('/post', auth, async (req, res) => {
   try {
     const { content, manga_id, chapter_number, post_type, is_spoiler, community_id, media_url, title, parent_id, quoted_post_id, is_news, is_global_announcement } = req.body;
@@ -1457,13 +1557,16 @@ async function enrichPosts(posts, userId) {
   }));
 }
 
-// ════════════════════════════════════════════════
-// GET /api/feed/posts  — Feed público (sin auth)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/posts
+// 👤 Permiso: público (auth opcional para enrichPosts)
+// 📥 Query: ?limit=25&offset=0
+// 📤 Respuesta: { success, posts[], offset, limit, total }
+// 📝 Feed público cronológico. Usado por la pestaña "Mis Comunidades".
 router.get('/posts', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
+    const tag = req.query.tag || null;
 
     // Auth opcional — extraer userId si hay token
     let userId = null;
@@ -1472,27 +1575,39 @@ router.get('/posts', async (req, res) => {
       if (token) { const u = await verifyToken(token); userId = u.userId; }
     } catch (e) {}
 
-    const result = await pool.query(`
+    let queryStr = `
       SELECT fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler,
              fp.community_id, fp.manga_id, fp.media_url, fp.created_at, fp.views_count,
              fp.parent_id, fp.quoted_post_id,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
-             u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+             u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL
-      ORDER BY fp.created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
+      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+    `;
+    let queryParams = [];
+    let paramIdx = 1;
+
+    if (tag) {
+      queryStr += ` AND fp.post_type = $${paramIdx}`;
+      queryParams.push(tag.toLowerCase());
+      paramIdx++;
+    }
+
+    queryStr += ` ORDER BY fp.created_at DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
+    queryParams.push(limit, offset);
+
+    const result = await pool.query(queryStr, queryParams);
 
     let posts = result.rows.map(p => ({
       id: p.id,
       user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null,
       text: p.content || '',
       title: p.title || '',
@@ -1509,6 +1624,7 @@ router.get('/posts', async (req, res) => {
       views_count: parseInt(p.views_count) || 0,
       author_role: p.author_role || 'user',
       created_at: p.created_at,
+      reposter_username: p.reposter_username || null,
     }));
 
     posts = await enrichPosts(posts, userId);
@@ -1520,9 +1636,11 @@ router.get('/posts', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/communities  — Feed filtrado de comunidades (solo posts de KMIs que sigues)
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/communities
+// 👤 Permiso: auth
+// 📥 Query: ?limit=25&offset=0
+// 📤 Respuesta: { success, posts[], offset, limit }
+// 📝 Posts de comunidades cuyos mangas el usuario sigue (via community_members).
 router.get('/communities', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -1550,7 +1668,7 @@ router.get('/communities', auth, async (req, res) => {
 
     let posts = result.rows.map(p => ({
       id: p.id, user: p.username || 'Anónimo',
-      handle: '@' + (p.username || 'anon').toLowerCase(),
+      handle: `@${(p.username || 'anon').toLowerCase()}`,
       avatar: p.avatar || null, text: p.content || '',
       title: p.title || '', type: p.post_type || 'post',
       manga: p.manga_title ? { id: p.manga_id, title: p.manga_title, cover: p.manga_cover || null } : undefined,
@@ -1572,10 +1690,14 @@ router.get('/communities', auth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/gif-proxy  — Proxy de GIFs (evita bloqueos CORS/adblock)
-// ════════════════════════════════════════════════
-var gifProxyCache = {};
+// 🚪 [GET] /api/feed/gif-proxy
+// 👤 Permiso: público
+// 📥 Query: ?url=<encoded gif url>
+// 📤 Respuesta: binary image (Content-Type del origen)
+// 📝 Proxy para GIFs que evita bloqueos CORS/adblock.
+//      Cachea en memoria (máx 100 entradas) con TTL implícito.
+const gifProxyCache = {};
+
 router.get('/gif-proxy', async (req, res) => {
   try {
     const gifUrl = req.query.url;
@@ -1593,16 +1715,16 @@ router.get('/gif-proxy', async (req, res) => {
       if (proxyRes.statusCode >= 400) {
         return res.status(502).end();
       }
-      var chunks = [];
+      const chunks = [];
       proxyRes.on('data', function(c) { chunks.push(c); });
       proxyRes.on('end', function() {
-        var buf = Buffer.concat(chunks);
-        var contentType = proxyRes.headers['content-type'] || 'image/gif';
+        const buf = Buffer.concat(chunks);
+        const contentType = proxyRes.headers['content-type'] || 'image/gif';
         gifProxyCache[gifUrl] = { data: buf, type: contentType, time: Date.now() };
         // Limpiar caché si crece demasiado
-        var keys = Object.keys(gifProxyCache);
+        const keys = Object.keys(gifProxyCache);
         if (keys.length > 100) {
-          var oldest = keys.sort(function(a,b){return gifProxyCache[a].time - gifProxyCache[b].time}).slice(0,50);
+          const oldest = keys.sort((a,b) => gifProxyCache[a].time - gifProxyCache[b].time).slice(0,50);
           oldest.forEach(function(k) { delete gifProxyCache[k]; });
         }
         res.set('Content-Type', contentType);
@@ -1617,14 +1739,17 @@ router.get('/gif-proxy', async (req, res) => {
   }
 });
 
-// ════════════════════════════════════════════════
-// GET /api/feed/gif-search  — Buscador de GIFs
-// ════════════════════════════════════════════════
+// 🚪 [GET] /api/feed/gif-search
+// 👤 Permiso: público
+// 📥 Query: ?q=<término>&limit=30
+// 📤 Respuesta: { success, results[], next }
+// 📝 Busca GIFs vía Giphy API (si hay GIPHY_API_KEY) o usa muestra local.
+//      Los resultados pasan por gif-proxy para evitar bloqueos.
 function proxyUrl(cdnUrl) {
   return '/api/feed/gif-proxy?url=' + encodeURIComponent(cdnUrl);
 }
 
-var SAMPLE_GIFS = [
+const SAMPLE_GIFS = [
   { id:'s1',  title:'Abrazo',      cat:'reaction', url:proxyUrl('https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif'), preview:proxyUrl('https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif') },
   { id:'s2',  title:'Aplauso',     cat:'reaction', url:proxyUrl('https://media.giphy.com/media/3o7aD2saAlB5fayzGU/giphy.gif'), preview:proxyUrl('https://media.giphy.com/media/3o7aD2saAlB5fayzGU/giphy.gif') },
   { id:'s3',  title:'Triste',      cat:'reaction', url:proxyUrl('https://media.giphy.com/media/3o7aeTanxBWK4IR3aE/giphy.gif'), preview:proxyUrl('https://media.giphy.com/media/3o7aeTanxBWK4IR3aE/giphy.gif') },
@@ -1718,10 +1843,10 @@ router.get('/gif-search', async (req, res) => {
   }
 });
 
-// Garbage collector: limpiar cachés de scoring expiradas cada 5 minutos
-setInterval(function() {
-  var now = Date.now();
-  for (var [k, v] of forYouCache) {
+// Limpia cachés de scoring expiradas cada 5 minutos (mayor a CACHE_TTL)
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of forYouCache) {
     if (now - v.ts > 600000) forYouCache.delete(k);
   }
 }, 300000);

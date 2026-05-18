@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 💬 KAMI — routes-comments.js
+// Comentarios en páginas de capítulos del lector.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

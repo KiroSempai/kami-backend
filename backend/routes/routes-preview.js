@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 👁️ KAMI — routes-preview.js
+// Vista previa de imágenes subidas (para el composer/comunidad).
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const path = require('path');

@@ -19,10 +19,17 @@
     --border-hover: rgba(255, 255, 255, 0.18);
     --blue: #4c9df5;
     --green: #2dca7a;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+    --red-badge: #e8334a;
+    --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
+    --radius-xl: 22px;
     --font-display: 'Bebas Neue', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-jp: 'Noto Sans JP', sans-serif;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── RESET ─── */

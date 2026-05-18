@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📖 KAMI — routes-chapters.js
+// CRUD de capítulos: subida de páginas, edición, eliminación.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const path = require('path');

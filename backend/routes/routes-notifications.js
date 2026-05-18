@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔔 KAMI — routes-notifications.js
+// Notificaciones push y polling del sistema de alertas.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

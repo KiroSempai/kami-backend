@@ -1,8 +1,7 @@
-/**
- * KAMI - Account Routes
- * Página 3: Mi Cuenta (Configuración)
- * Requiere autenticación desde Página 2 (Perfil)
- */
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚙️ KAMI — routes-account.js
+// Gestión de la cuenta de usuario: cambio de email, contraseña, borrado.
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const express = require('express');
 const router = express.Router();

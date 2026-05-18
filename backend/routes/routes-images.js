@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🖼️ KAMI — routes-images.js
+// Procesamiento y firma de URLs de imágenes (covers, avatares).
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const path = require('path');

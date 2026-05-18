@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📈 KAMI — routes-stats.js
+// Estadísticas de lectura: seguimiento de capítulos leídos, tiempo, progreso.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

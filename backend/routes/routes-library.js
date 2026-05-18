@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📚 KAMI — routes-library.js
+// Biblioteca personal del usuario: mangas en lista (leyendo, completado, etc.).
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

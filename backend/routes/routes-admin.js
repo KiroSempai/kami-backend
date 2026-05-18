@@ -1,4 +1,7 @@
-// KAMI — Routes: Admin (rangos, moderación)
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🛠️ KAMI — routes-admin.js
+// Panel de administración: asignación de roles (creator, company).
+// ═══════════════════════════════════════════════════════════════════════════════
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

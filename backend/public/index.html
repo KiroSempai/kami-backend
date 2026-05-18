@@ -411,6 +411,20 @@
     .explore-tab.active, .explore-home-tab.active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
     #comm-chat-messages { flex:1; overflow-y:auto; min-height:300px; max-height:calc(80vh - 200px); }
 
+    /* ─── Utility classes (reemplazan style="" inline en JS) ─── */
+    .obj-cover { width:100%; height:100%; object-fit:cover; }
+    .obj-cover-round { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .flex-center-g4 { display:flex; align-items:center; gap:4px; }
+    .flex-col { display:flex; flex-direction:column; }
+    .text-muted-sm { font-size:12px; color:var(--text-muted); }
+    .text-muted-xs { font-size:11px; color:var(--text-muted); }
+    .fw-600 { font-weight:600; }
+    .w100-h100 { width:100%; height:100%; }
+    .mt-16 { margin-top:16px; }
+    .p-60 { padding:60px; }
+    .ta-center-p60 { text-align:center; padding:60px 20px; }
+    .gap-10-p10 { gap:10px; padding:10px 12px; }
+
   </style>
 </head>
 <body>
@@ -694,7 +708,7 @@
               </button>
               <div>
                 <div style="font-size:16px;font-weight:700;" id="news-channel-title">Canal</div>
-                <div style="font-size:12px;color:var(--text-muted);">Novedades oficiales</div>
+                <div class="text-muted-sm">Novedades oficiales</div>
               </div>
             </div>
             <div id="news-channel-body"></div>
@@ -869,10 +883,19 @@
   </div>
 
   <script>
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🧭 MÓDULO 1: NAVEGACIÓN Y NOTIFICACIONES
+    // ═════════════════════════════════════════════════════════════════════════
+    // goToSection: cambia la sección principal vía hash.
+    // checkNotifs / loadNotifications / markNotifsRead: polling de notificaciones.
+    // timeAgo: formatea fechas a relativo ("hace 2h").
+
+    const DEBUG = false; // Cambiar a true para ver logs de desarrollo
+
     // ── Sidebar navigation ──
     function goToSection(section) {
       // Guardar scroll antes de salir
-      var curHash = window.location.hash || '#inicio';
+      let curHash = window.location.hash || '#inicio';
       sessionStorage.setItem('kami_scroll_' + curHash, window.scrollY);
       // Setear hash — el evento hashchange hará el resto
       if (window.location.hash.replace('#', '') !== section) {
@@ -885,13 +908,13 @@
 
     // ── Notifications ──
     function checkNotifs() {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/feed/notifications?limit=1', {
         headers: { 'Authorization': 'Bearer ' + token }
       }).then(function(r){return r.json()}).then(function(d){
         if (d.success) {
-          var badge = document.getElementById('notif-badge');
+          let badge = document.getElementById('notif-badge');
           if (d.unread_count > 0) {
             badge.textContent = d.unread_count > 9 ? '9+' : d.unread_count;
             badge.style.display = 'flex';
@@ -903,9 +926,9 @@
     }
 
     function loadNotifications() {
-      var list = document.getElementById('notif-list');
+      let list = document.getElementById('notif-list');
       list.innerHTML = '<div class="notif-loading">Cargando notificaciones...</div>';
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) { list.innerHTML = '<div class="notif-empty">Inicia sesión para ver notificaciones</div>'; return; }
       fetch('/api/feed/notifications', {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -914,7 +937,7 @@
           list.innerHTML = '<div class="notif-empty">Sin notificaciones aún. Interactúa con la comunidad para recibir alertas.</div>';
           return;
         }
-        var icons = { like:'❤️', repost:'🔁', bookmark:'🔖', reply:'💬' };
+        let icons = { like:'❤️', repost:'🔁', bookmark:'🔖', reply:'💬' };
         list.innerHTML = d.notifications.map(function(n){
           return '<div class="notif-item' + (n.read ? '' : ' unread') + '" onclick="goToSection(\'inicio\')">' +
             '<div class="notif-icon ' + n.type + '">' + (icons[n.type] || '🔔') + '</div>' +
@@ -935,7 +958,7 @@
     }
 
     function markNotifsRead() {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/feed/notifications/read', {
         method: 'POST',
@@ -945,19 +968,22 @@
     }
 
     function timeAgo(dateStr) {
-      var diff = Date.now() - new Date(dateStr).getTime();
-      var mins = Math.floor(diff / 60000);
+      let diff = Date.now() - new Date(dateStr).getTime();
+      let mins = Math.floor(diff / 60000);
       if (mins < 1) return 'Ahora';
       if (mins < 60) return mins + 'm';
-      var hrs = Math.floor(mins / 60);
+      let hrs = Math.floor(mins / 60);
       if (hrs < 24) return hrs + 'h';
-      var days = Math.floor(hrs / 24);
+      let days = Math.floor(hrs / 24);
       return days + 'd';
     }
 
     // ── Explore (search + trending + tabs) ──
-    var _exploreTimer = null;
-    var _exploreData = { posts: [], mangas: [], users: [] };
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🔍 MÓDULO 2: EXPLORAR — Búsqueda, tendencias y descubrimiento
+    // ═════════════════════════════════════════════════════════════════════════
+    let _exploreTimer = null;
+    let _exploreData = { posts: [], mangas: [], users: [] };
 
     function exploreSearch(val) {
       clearTimeout(_exploreTimer);
@@ -968,7 +994,7 @@
       }
       document.getElementById('explore-default').style.display = 'none';
       document.getElementById('explore-results').style.display = '';
-      var content = document.getElementById('explore-results-content');
+      let content = document.getElementById('explore-results-content');
       content.innerHTML = '<div class="notif-loading">Buscando...</div>';
       _exploreTimer = setTimeout(function() {
         fetch('/api/communities/search?q=' + encodeURIComponent(val))
@@ -982,16 +1008,16 @@
 
     function switchExploreTab(tab) {
       document.querySelectorAll('.explore-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.etab === tab); });
-      var content = document.getElementById('explore-results-content');
-      var d = _exploreData;
-      var html = '';
+      let content = document.getElementById('explore-results-content');
+      let d = _exploreData;
+      let html = '';
       if (tab === 'posts') {
         if (d.posts && d.posts.length) {
           d.posts.forEach(function(p){ html += '<div class="notif-item" onclick="goToSection(\'inicio\')" style="gap:10px;padding:10px 12px;"><div style="width:32px;height:32px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (p.username?p.username.charAt(0):'?') + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;">' + (p.content||'').substring(0,150) + '</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + timeAgo(p.created_at) + '</div></div></div>'; });
         } else html = '<div class="notif-empty">Sin posts</div>';
       } else if (tab === 'mangas') {
         if (d.mangas && d.mangas.length) {
-          d.mangas.forEach(function(m){ html += '<div class="notif-item" style="gap:10px;padding:10px 12px;"><div style="width:36px;height:36px;border-radius:6px;background:#e8344a;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">' + (m.cover&&m.cover.indexOf('/')>=0?'<img src="'+m.cover+'" style="width:100%;height:100%;object-fit:cover;">':m.title.charAt(0)) + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;font-weight:600;">' + m.title + '</div></div></div>'; });
+          d.mangas.forEach(function(m){ html += '<div class="notif-item" style="gap:10px;padding:10px 12px;"><div style="width:36px;height:36px;border-radius:6px;background:#e8344a;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">' + (m.cover&&m.cover.indexOf('/')>=0?'<img src="'+m.cover+'" class="obj-cover">':m.title.charAt(0)) + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;font-weight:600;">' + m.title + '</div></div></div>'; });
         } else html = '<div class="notif-empty">Sin mangas</div>';
       } else if (tab === 'usuarios') {
         if (d.users && d.users.length) {
@@ -1001,11 +1027,14 @@
       content.innerHTML = html;
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // 📢 MÓDULO 3: COMUNIDADES y CANALES DE NOTICIAS
+    // ═════════════════════════════════════════════════════════════════════════
     function switchExploreHomeTab(tab) {
       document.querySelectorAll('.explore-home-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.ehtab === tab); });
-      var content = document.getElementById('explore-home-content');
-      var token = localStorage.getItem('kami_token');
-      var headers = token ? { 'Authorization':'Bearer '+token } : {};
+      let content = document.getElementById('explore-home-content');
+      let token = localStorage.getItem('kami_token');
+      let headers = token ? { 'Authorization':'Bearer '+token } : {};
 
       if (tab === 'foryou') {
         content.innerHTML = '<div class="notif-loading">Cargando...</div>';
@@ -1016,23 +1045,23 @@
           fetch('/api/communities/trending/hashtags').then(function(r){return r.json()}).catch(function(){return{}}),
           fetch('/api/communities/trending/channels').then(function(r){return r.json()}).catch(function(){return{}}),
         ]).then(function(results){
-          var commData = results[0], trendData = results[1], topicData = results[2], hashData = results[3], channelData = results[4];
-          var html = '';
+          let commData = results[0], trendData = results[1], topicData = results[2], hashData = results[3], channelData = results[4];
+          let html = '';
 
           // ── Bloque 1: Canales de Noticias (agrupado por entidad) ──
           html += '<div style="font-size:14px;font-weight:600;margin-bottom:8px;">📰 Canales de Noticias</div>';
           if (channelData && channelData.success && channelData.channels && channelData.channels.length) {
             html += '<div style="display:flex;flex-direction:column;gap:6px;">';
             channelData.channels.forEach(function(ch) {
-              var isAdmin = ch.entity_role === 'admin';
-              var isCreator = ch.entity_role === 'creator';
-              var title = isAdmin ? '📢 Noticias KAMI' : isCreator ? '✍️ Canal de ' + ch.entity_name : '🏢 ' + ch.entity_name;
-              var subtitle = isAdmin ? 'Actualizaciones oficiales del sitio'
+              let isAdmin = ch.entity_role === 'admin';
+              let isCreator = ch.entity_role === 'creator';
+              let title = isAdmin ? '📢 Noticias KAMI' : isCreator ? '✍️ Canal de ' + ch.entity_name : '🏢 ' + ch.entity_name;
+              let subtitle = isAdmin ? 'Actualizaciones oficiales del sitio'
                 : isCreator ? 'Espacio de creador de contenido - ' + (ch.posts_this_week||0) + ' posts esta semana'
                 : (ch.posts_this_week||0) + ' publicaciones esta semana';
-              var avatarLetter = ch.entity_name ? ch.entity_name.charAt(0).toUpperCase() : '?';
-              var avatarBg = isAdmin ? 'var(--accent)' : isCreator ? '#a78bfa' : '#4c9df5';
-              var avatarHtml = ch.entity_avatar && ch.entity_avatar.indexOf('/') >= 0
+              let avatarLetter = ch.entity_name ? ch.entity_name.charAt(0).toUpperCase() : '?';
+              let avatarBg = isAdmin ? 'var(--accent)' : isCreator ? '#a78bfa' : '#4c9df5';
+              let avatarHtml = ch.entity_avatar && ch.entity_avatar.indexOf('/') >= 0
                 ? '<img src="' + ch.entity_avatar + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">'
                 : '<div style="width:40px;height:40px;border-radius:8px;background:' + avatarBg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;">' + avatarLetter + '</div>';
 
@@ -1040,7 +1069,7 @@
                 avatarHtml +
                 '<div class="notif-body" style="flex:1;">' +
                   '<div style="font-size:13px;font-weight:600;">' + title + '</div>' +
-                  '<div style="font-size:11px;color:var(--text-muted);">' + subtitle + '</div>' +
+                  '<div class="text-muted-xs">' + subtitle + '</div>' +
                 '</div>' +
                 '<div style="font-size:11px;background:var(--accent);color:#fff;padding:4px 12px;border-radius:12px;font-weight:600;flex-shrink:0;">Ver</div>' +
               '</div>';
@@ -1051,12 +1080,12 @@
           }
 
           // ── Bloque 2: Trending ──
-          html += '<div style="margin-top:16px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Trending</div>';
+          html += '<div class="mt-16"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Trending</div>';
           if (topicData && topicData.success && topicData.topics && topicData.topics.length) {
             topicData.topics.forEach(function(t){
               html += '<div class="notif-item" style="gap:8px;padding:8px 12px;cursor:pointer;" onclick="doSearch(\'' + t.topic + '\')">' +
                 '<div style="font-size:13px;font-weight:600;flex:1;">' + t.topic + '</div>' +
-                '<div style="font-size:11px;color:var(--text-muted);">' + t.label + ' posts</div></div>';
+                '<div class="text-muted-xs">' + t.label + ' posts</div></div>';
             });
           } else {
             html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">Aún no hay tendencias</div>';
@@ -1064,12 +1093,12 @@
           html += '</div>';
 
           // ── Bloque 3: Hashtags populares ──
-          html += '<div style="margin-top:16px;"><div style="font-size:13px;font-weight:600;margin-bottom:6px;"># Hashtags populares</div>';
+          html += '<div class="mt-16"><div style="font-size:13px;font-weight:600;margin-bottom:6px;"># Hashtags populares</div>';
           if (hashData && hashData.success && hashData.hashtags && hashData.hashtags.length) {
             hashData.hashtags.slice(0,5).forEach(function(h){
               html += '<div class="notif-item" style="gap:8px;padding:6px 12px;cursor:pointer;" onclick="doSearch(\'' + h.tag.replace('#','') + '\')">' +
                 '<div style="font-size:13px;font-weight:600;color:var(--accent);flex:1;">' + h.tag + '</div>' +
-                '<div style="font-size:11px;color:var(--text-muted);">' + h.count + ' posts hoy</div></div>';
+                '<div class="text-muted-xs">' + h.count + ' posts hoy</div></div>';
             });
           } else {
             html += '<div style="font-size:12px;color:var(--text-muted);padding:8px 12px;">Sin hashtags trending hoy</div>';
@@ -1077,9 +1106,9 @@
           html += '</div>';
 
           // ── Bloque 4: Posts para ti (mismo formato que Inicio) ──
-          html += '<div style="margin-top:16px;"><div style="font-size:14px;font-weight:600;margin-bottom:8px;">📝 Posts para ti</div>';
+          html += '<div class="mt-16"><div style="font-size:14px;font-weight:600;margin-bottom:8px;">📝 Posts para ti</div>';
           if (trendData && trendData.success && trendData.trending_posts && trendData.trending_posts.length) {
-            var mappedPosts = trendData.trending_posts.map(function(p) {
+            let mappedPosts = trendData.trending_posts.map(function(p) {
               return {
                 id: p.id,
                 user: p.username || 'Anónimo',
@@ -1110,7 +1139,7 @@
         content.innerHTML = '<div class="notif-loading">Cargando comunidades...</div>';
         content.style.padding = '0';
         fetch('/api/communities', { headers }).then(function(r){return r.json()}).then(function(d){
-          if (!d.success || !d.communities.length) { content.innerHTML = '<div class="notif-empty">No hay comunidades a&uacute;n<br><span style="font-size:12px;color:var(--text-muted);">Las comunidades se crean autom&aacute;ticamente al a&ntilde;adir un KMI</span></div>'; return; }
+          if (!d.success || !d.communities.length) { content.innerHTML = '<div class="notif-empty">No hay comunidades a&uacute;n<br><span class="text-muted-sm">Las comunidades se crean autom&aacute;ticamente al a&ntilde;adir un KMI</span></div>'; return; }
           content.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:16px;">' +
             d.communities.map(function(c) {
               return renderMiniCardKMI(c);
@@ -1121,7 +1150,7 @@
     }
 
     // ── News Channel (in-feed navigation) ──
-    var scrollPositionAntesDeEntrar = 0;
+    let scrollPositionAntesDeEntrar = 0;
 
     function openNewsChannel(entityId, title, entityName) {
       scrollPositionAntesDeEntrar = window.scrollY;
@@ -1130,8 +1159,8 @@
       document.getElementById('news-channel-title').innerHTML = '<a href="/profile/' + (entityName || '') + '" style="color:var(--text-primary);text-decoration:none;">' + title + '</a>';
       document.getElementById('news-channel-body').innerHTML = '<div class="notif-loading">Cargando...</div>';
       window.scrollTo(0, 0);
-      var token = localStorage.getItem('kami_token');
-      var opts = { headers: {} };
+      let token = localStorage.getItem('kami_token');
+      let opts = { headers: {} };
       if (token) opts.headers['Authorization'] = 'Bearer ' + token;
       fetch('/api/feed/company-posts?user_id=' + entityId, opts)
         .then(function(r){return r.json()})
@@ -1154,13 +1183,13 @@
       window.scrollTo(0, scrollPositionAntesDeEntrar);
     }
 
-    // ── Community detail (posts + chat con WebSocket) ──
-    var _currentCommunityId = null;
-    var _chatObserver = null;
-    var _commPostsCache = [];
+    // ── Community detail posts + chat ──
+    let _currentCommunityId = null;
+    let _chatObserver = null;
+    let _commPostsCache = [];
 
     function updateSearchPlaceholder() {
-      var input = document.getElementById('cr-search-input');
+      let input = document.getElementById('cr-search-input');
       if (!input) return;
       input.placeholder = _currentCommunityId ? 'Buscar en esta comunidad...' : 'Buscar en Comunidad';
     }
@@ -1170,15 +1199,15 @@
       updateSearchPlaceholder();
       document.getElementById('communities-list-view').style.display = 'none';
       document.getElementById('community-detail-view').style.display = '';
-      var token = localStorage.getItem('kami_token');
-      var myUserId = null;
-      try { var _u2 = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u2) myUserId = _u2.id; } catch(e) {}
+      let token = localStorage.getItem('kami_token');
+      let myUserId = null;
+      try { let _u2 = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u2) myUserId = _u2.id; } catch(e) {}
       fetch('/api/communities/' + id, { headers: token ? { 'Authorization': 'Bearer ' + token } : {} })
         .then(function(r){return r.json()}).then(function(d){
           if (!d.success) return;
-          var c = d.community;
+          let c = d.community;
           document.getElementById('community-detail-name').textContent = c.name;
-          var btn = document.getElementById('community-join-btn');
+          let btn = document.getElementById('community-join-btn');
           if (c.my_role === 'creator') { btn.textContent = '👑 Creador'; btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)'; }
           else if (c.my_role === 'moderator') { btn.textContent = '🛡️ Mod'; btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)'; }
           else if (c.my_role) { btn.textContent = '✓ Miembro'; btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)'; }
@@ -1198,10 +1227,10 @@
 
     function toggleCommunityJoin() {
       if (!_currentCommunityId) return;
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
-      var btn = document.getElementById('community-join-btn');
-      var isMember = btn.textContent !== 'Unirse';
+      let btn = document.getElementById('community-join-btn');
+      let isMember = btn.textContent !== 'Unirse';
       fetch('/api/communities/' + _currentCommunityId + '/' + (isMember ? 'leave' : 'join'), {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token }
       }).then(function(r){return r.json()}).then(function(d){
@@ -1217,10 +1246,10 @@
     }
 
     function loadCommPosts(communityId) {
-      var container = document.getElementById('comm-feed');
+      let container = document.getElementById('comm-feed');
       container.innerHTML = '<div class="notif-loading">Cargando posts...</div>';
       fetch('/api/communities/' + communityId + '/posts').then(function(r){return r.json()}).then(function(d){
-        if (!d.success || !d.posts.length) { container.innerHTML = '<div class="notif-empty">Sin posts en esta comunidad.<br><span style="font-size:12px;color:var(--text-muted);">Publica algo usando el compositor con esta comunidad seleccionada.</span></div>'; return; }
+        if (!d.success || !d.posts.length) { container.innerHTML = '<div class="notif-empty">Sin posts en esta comunidad.<br><span class="text-muted-sm">Publica algo usando el compositor con esta comunidad seleccionada.</span></div>'; return; }
         container.innerHTML = d.posts.map(function(p){
           return '<div class="feed-post" style="padding:12px 16px;">' +
             '<div class="feed-post-body"><div class="feed-post-header"><span class="feed-post-user">' + (p.username||'Anónimo') + '</span></div>' +
@@ -1237,7 +1266,7 @@
     }
 
     function loadCommChat() {
-      var messages = document.getElementById('comm-chat-messages');
+      let messages = document.getElementById('comm-chat-messages');
       messages.innerHTML = '<div class="notif-loading">Cargando chat...</div>';
       fetch('/api/communities/' + _currentCommunityId + '/chat').then(function(r){return r.json()}).then(function(d){
         if (!d.success) { messages.innerHTML = '<div class="notif-empty">Error</div>'; return; }
@@ -1245,14 +1274,14 @@
           messages.innerHTML = d.messages.map(function(m){
             return '<div style="display:flex;gap:8px;padding:8px 16px;">' +
               '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
-              (m.avatar && m.avatar.indexOf('/')>=0 ? '<img src="'+m.avatar+'" style="width:100%;height:100%;object-fit:cover;">' : (m.username?m.username.charAt(0):'?')) + '</div>' +
+              (m.avatar && m.avatar.indexOf('/')>=0 ? '<img src="'+m.avatar+'" class="obj-cover">' : (m.username?m.username.charAt(0):'?')) + '</div>' +
               '<div><div style="font-size:12px;font-weight:600;">' + (m.username||'Anónimo') + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">' + timeAgo(m.created_at) + '</span></div>' +
               '<div style="font-size:13px;margin-top:2px;">' + m.message + '</div></div></div>';
           }).join('');
         }
         // Unirse al room de WebSocket para chat en vivo
         if (socket) {
-          var room = 'comm-chat:' + _currentCommunityId;
+          let room = 'comm-chat:' + _currentCommunityId;
           socket.emit('join-post', room);
           if (_chatObserver && _chatObserver !== _currentCommunityId) socket.emit('leave-post', 'comm-chat:' + _chatObserver);
           _chatObserver = _currentCommunityId;
@@ -1262,11 +1291,11 @@
     }
 
     function sendCommChat() {
-      var input = document.getElementById('comm-chat-msg');
-      var msg = input.value.trim();
+      let input = document.getElementById('comm-chat-msg');
+      let msg = input.value.trim();
       if (!msg || !_currentCommunityId) return;
       input.value = '';
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + _currentCommunityId + '/chat', {
         method: 'POST',
@@ -1278,14 +1307,14 @@
     // Escuchar mensajes de chat en vivo
     if (socket) {
       socket.on('chat-message', function(data) {
-        var container = document.getElementById('comm-chat-messages');
+        let container = document.getElementById('comm-chat-messages');
         if (!container) return;
-        var empty = container.querySelector('.notif-empty');
+        let empty = container.querySelector('.notif-empty');
         if (empty) container.innerHTML = '';
         container.insertAdjacentHTML('beforeend',
           '<div style="display:flex;gap:8px;padding:8px 16px;">' +
           '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
-          (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" style="width:100%;height:100%;object-fit:cover;">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
+          (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" class="obj-cover">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
           '<div><div style="font-size:12px;font-weight:600;">' + data.username + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">Ahora</span></div>' +
           '<div style="font-size:13px;margin-top:2px;">' + data.message + '</div></div></div>'
         );
@@ -1293,8 +1322,12 @@
       });
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🧭 MÓDULO 5: ENRUTADOR Y COMUNIDADES — Hash routing, detalle, miembros
+    // ═════════════════════════════════════════════════════════════════════════
+
     // ── Navigation + community list ──
-    var _origGoToSection = goToSection;
+    let _origGoToSection = goToSection;
     goToSection = function(section) {
       _origGoToSection(section);
       if (section === 'inicio') {
@@ -1310,49 +1343,53 @@
     };
 
     function loadCommunitiesList() {
-      var token = localStorage.getItem('kami_token');
-      var list = document.getElementById('communities-list');
+      let token = localStorage.getItem('kami_token');
+      let list = document.getElementById('communities-list');
       if (!token) { list.innerHTML = '<div class="notif-empty">Inicia sesión para ver comunidades</div>'; return; }
       list.innerHTML = '<div class="notif-loading">Cargando...</div>';
       fetch('/api/communities', { headers: { 'Authorization': 'Bearer ' + token } })
         .then(function(r){return r.json()}).then(function(d){
-          if (!d.success || !d.communities.length) { list.innerHTML = '<div class="notif-empty">No hay comunidades aún<br><span style="font-size:12px;color:var(--text-muted);">Las comunidades se crean automáticamente al añadir un KMI</span></div>'; return; }
+          if (!d.success || !d.communities.length) { list.innerHTML = '<div class="notif-empty">No hay comunidades aún<br><span class="text-muted-sm">Las comunidades se crean automáticamente al añadir un KMI</span></div>'; return; }
           list.innerHTML = d.communities.map(function(c){
             return '<div class="notif-item" onclick="openCommunity(\'' + c.id + '\')" style="gap:12px;padding:14px 16px;">' +
               '<div style="width:40px;height:40px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;">' + c.name.charAt(0) + '</div>' +
               '<div class="notif-body"><div class="notif-text" style="font-size:14px;font-weight:600;">' + c.name + '</div>' +
-              '<div style="font-size:12px;color:var(--text-muted);">' + (c.member_count||0) + ' miembros' + (c.my_role ? ' · ' + c.my_role : '') + '</div>' +
+              '<div class="text-muted-sm">' + (c.member_count||0) + ' miembros' + (c.my_role ? ' · ' + c.my_role : '') + '</div>' +
               (c.description ? '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">' + c.description.substring(0,100) + '</div>' : '') +
               '</div></div>';
           }).join('');
         }).catch(function(){ list.innerHTML = '<div class="notif-empty">Error de conexión</div>'; });
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🍱 MÓDULO 4: FEED — Posts, skeleton, WebSocket y sesión
+    // ═════════════════════════════════════════════════════════════════════════
+
     // ── Feed system (real API + cache + skeleton) ──
-    var currentFeed = 'foryou';
-    var currentFilter = 'Todos';
-    var feedApiOffset = 0;
-    var feedHasMore = true;
-    var isFeedLoading = false;
-    var selectedGifUrl = null;
-    var gifDebounceTimer = null;
-    var composerState = {
+    let currentFeed = 'foryou';
+    let currentFilter = 'Todos';
+    let feedApiOffset = 0;
+    let feedHasMore = true;
+    let isFeedLoading = false;
+    let selectedGifUrl = null;
+    let gifDebounceTimer = null;
+    let composerState = {
       inicio: { linkedManga: null, selectedGifUrl: null },
       modal:  { linkedManga: null, selectedGifUrl: null },
       hilo:   { linkedManga: null, selectedGifUrl: null },
     };
-    var replyToPostId = null;
-    var quotePostId = null;
-    var _currentCommunityId = null;
-    var _composerMangaLocked = false;
-    var detailViewPostId = null;
+    let replyToPostId = null;
+    let quotePostId = null;
+    _currentCommunityId = null; // ya declarado en MÓDULO 3
+    let _composerMangaLocked = false;
+    let detailViewPostId = null;
 
     // ── Socket.io conexión para tiempo real ──
-    var socket = null;
+    let socket = null;
     try {
       if (typeof io !== 'undefined') {
         socket = io();
-        socket.on('connect', function() { console.log('[socket] conectado'); });
+        socket.on('connect', function() { DEBUG && console.log('[socket] conectado'); });
         socket.on('new-reply', function(data) {
           if (data.parent_id && data.parent_id === detailViewPostId) {
             fetchRepliesAndRefresh(data.parent_id);
@@ -1362,23 +1399,23 @@
     } catch(e) {}
 
     // ── Session observer ──
-    var centeredPostId = '';
-    var feedObserver = null;
+    let centeredPostId = '';
+    let feedObserver = null;
 
     function initFeedObserver() {
       if (feedObserver) feedObserver.disconnect();
       centeredPostId = '';
-      var root = document.querySelector('.com-main');
+      let root = document.querySelector('.com-main');
       if (!root) return;
       feedObserver = new IntersectionObserver(function(entries) {
-        var best = null, bestDist = Infinity;
-        var rootRect = root.getBoundingClientRect();
-        var centerY = rootRect.top + rootRect.height / 2;
+        let best = null, bestDist = Infinity;
+        let rootRect = root.getBoundingClientRect();
+        let centerY = rootRect.top + rootRect.height / 2;
         entries.forEach(function(entry) {
           if (!entry.isIntersecting) return;
-          var rect = entry.boundingClientRect;
-          var elCenter = rect.top + rect.height / 2;
-          var dist = Math.abs(elCenter - centerY);
+          let rect = entry.boundingClientRect;
+          let elCenter = rect.top + rect.height / 2;
+          let dist = Math.abs(elCenter - centerY);
           if (dist < bestDist) { bestDist = dist; best = entry; }
         });
         if (best) centeredPostId = best.target.getAttribute('data-post-id') || '';
@@ -1393,8 +1430,8 @@
     };
 
     function skeletonPosts(count) {
-      var sk = '';
-      for (var i = 0; i < (count || 4); i++) {
+      let sk = '';
+      for (let i = 0; i < (count || 4); i++) {
         sk += '' +
           '<div class="feed-post feed-skeleton">' +
             '<div class="feed-post-avatar sk-pulse" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.04);flex-shrink:0;"></div>' +
@@ -1420,89 +1457,97 @@
     }
 
     function renderFeedPosts(posts, isReply) {
-      var _isAdmin = false;
-      try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); var _t = localStorage.getItem('kami_token'); _isAdmin = _u && _u.role === 'admin' && _t; } catch(e) {}
-      var isReplyMode = isReply === true;
+      let _isAdmin = false;
+      let _localUserData = null;
+      try { let _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); let _t = localStorage.getItem('kami_token'); _isAdmin = _u && _u.role === 'admin' && _t; _localUserData = _u; } catch(e) {}
+      let isReplyMode = isReply === true;
       return posts.map(function(p) {
-        var avatarStyle, avatarContent;
-        var avatarSize = isReplyMode || p.parent_id ? '32px' : '40px';
-        var avatarBorderRadius = isReplyMode || p.parent_id ? '50%' : '50%';
+        let avatarStyle, avatarContent;
+        let avatarSize = isReplyMode || p.parent_id ? '32px' : '40px';
         if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
           avatarStyle = 'background:rgba(232,52,74,0.08);padding:0;';
-          avatarContent = '<img src="' + p.avatar + '" alt="">';
+          avatarContent = `<img src="${p.avatar}" alt="">`;
         } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
           avatarStyle = p.avatar;
-          avatarContent = '<span>' + p.user.charAt(0) + '</span>';
+          avatarContent = `<span>${p.user.charAt(0)}</span>`;
         } else if (p.avatar && p.avatar.indexOf('base64') >= 0) {
           avatarStyle = 'padding:0;';
-          avatarContent = '<img src="' + p.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+          avatarContent = `<img src="${p.avatar}" alt="" class="obj-cover-round">`;
         } else {
-          avatarStyle = 'background:' + (p.avatar || '#e8344a') + ';';
+          avatarStyle = `background:${p.avatar || '#e8344a'};`;
           avatarContent = p.user.charAt(0);
         }
-        var mangaBlock = p.manga && p.manga.title ? '' +
-          '<div class="feed-post-manga" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">' +
-            '<div class="feed-post-manga-cover"' +
-              (p.manga.cover && p.manga.cover.indexOf('/') >= 0
-                ? ' style="background:transparent;overflow:hidden;"><img src="' + p.manga.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;">'
-                : ' style="background:' + (p.manga.cover || '#e8344a') + ';">' + p.manga.title.charAt(0)) +
-            '</div>' +
-            '<div class="feed-post-manga-info"><div class="feed-post-manga-title">' + p.manga.title + (p.chapter ? ' · Cap. ' + p.chapter : '') + '</div></div>' +
-            '<button class="feed-post-manga-add" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">📢 Comunidad</button>' +
-          '</div>' : '';
-        var spoilerClass = p.spoiler ? ' feed-post-spoiler' : '';
-        var spoilerOverlay = '';
+        let mangaBlock = p.manga && p.manga.title
+          ? `<div class="feed-post-manga" onclick="event.stopPropagation();openCommunity('com-${p.manga.id}')">
+              <div class="feed-post-manga-cover"${p.manga.cover && p.manga.cover.indexOf('/') >= 0
+                ? ` style="background:transparent;overflow:hidden;"><img src="${p.manga.cover}" alt="" class="obj-cover">`
+                : ` style="background:${p.manga.cover || '#e8344a'};">${p.manga.title.charAt(0)}`}
+              </div>
+              <div class="feed-post-manga-info"><div class="feed-post-manga-title">${p.manga.title}${p.chapter ? ` · Cap. ${p.chapter}` : ''}</div></div>
+              <button class="feed-post-manga-add" onclick="event.stopPropagation();openCommunity('com-${p.manga.id}')">📢 Comunidad</button>
+            </div>`
+          : '';
+        let spoilerClass = p.spoiler ? ' feed-post-spoiler' : '';
+        let spoilerOverlay = '';
         if (p.spoiler) {
-          spoilerOverlay = '<div class="spoiler-overlay" onclick="this.parentElement.classList.remove(\'feed-post-spoiler\');this.style.display=\'none\';if(window.feedSpoilerRevealed)feedSpoilerRevealed(' + p.id + ')"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>';
+          spoilerOverlay = `<div class="spoiler-overlay" onclick="this.parentElement.classList.remove('feed-post-spoiler');this.style.display='none';if(window.feedSpoilerRevealed)feedSpoilerRevealed(${p.id})"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>`;
         }
-        var replyContext = '';
+        let replyContext = '';
         if ((isReplyMode || p.parent_id) && p.parent_id) {
-          replyContext = '<div class="reply-context"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/' + (p.replyToUser || 'usuario') + '">@' + (p.replyToUser || 'usuario') + '</a></div>';
+          replyContext = `<div class="reply-context"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/${p.replyToUser || 'usuario'}">@${p.replyToUser || 'usuario'}</a></div>`;
         }
-        var onClickAttr = ' onclick="abrirHiloPost(' + p.id + ', event)"';
-        var postClass = (isReplyMode || p.parent_id) ? ' feed-post-reply' : '';
-        return '' +
-          '<div class="feed-post' + spoilerClass + postClass + '" id="post-id-' + p.id + '" data-post-id="' + p.id + '"' + onClickAttr + '>' +
-            spoilerOverlay +
-            '<a href="/profile/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + 'width:' + avatarSize + ';height:' + avatarSize + ';min-width:' + avatarSize + ';">' + avatarContent + '</a>' +
-            '<div class="feed-post-body">' +
-              '<div class="feed-post-header">' +
-                '<a href="/profile/' + p.user + '" class="feed-post-user">' + p.user +
-                  (p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
-                   p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
-                   p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : '') +
-                  getRoleBadge(p.local_role) +
-                '</a>' +
-                '<a href="/profile/' + p.user + '" class="feed-post-handle">' + p.handle + '</a>' +
-                '<span class="feed-post-time">' + timeAgo(p.created_at) + (p.views_count !== undefined ? ' · ' + p.views_count + ' vistas' : '') + '</span>' +
-              '</div>' +
-              replyContext +
-              '<div class="feed-post-text">' + (p.text || '').replace(/\n/g, '<br>') + '</div>' +
-              (p.media_url ? '<div class="feed-post-media"><div class="feed-post-media-badge">GIF</div><img src="' + p.media_url + '" alt="GIF" loading="lazy"></div>' : '') +
-              mangaBlock +
-              (p.quoted_post_id ? '<div class="feed-post-quote" title="Ver post citado"><i class="ti ti-quote"></i> Citando un post</div>' : '') +
-              '<div class="feed-post-actions">' +
-                '<button class="feed-post-action" onclick="event.stopPropagation();openReply(' + p.id + ')"><i class="ti ti-message"></i> ' + (p.replies || 0) + '</button>' +
-                '<button class="feed-post-action' + (p.user_has_reposted ? ' reposted' : '') + '" onclick="event.stopPropagation();openRepostMenu(this,' + p.id + ')"><i class="ti ti-repeat"></i> <span class="repost-count">' + (p.reposts || 0) + '</span></button>' +
-                '<button class="feed-post-action' + (p.user_has_liked ? ' liked' : '') + '" onclick="event.stopPropagation();likePost(this);feedInteract(' + p.id + ',\'like\')"><i class="ti ti-heart"></i> <span class="like-count">' + (p.likes || 0) + '</span></button>' +
-                '<button class="feed-post-action' + (p.user_has_bookmarked ? ' bookmarked' : '') + '" onclick="event.stopPropagation();feedInteract(' + p.id + ',\'bookmark\')"><i class="ti ti-bookmark"></i></button>' +
-                '<button class="feed-post-action" onclick="event.stopPropagation();openDotsMenu(this,' + p.id + ',\'' + (p.user || '').replace(/'/g,"\\'") + '\')" title="Más opciones"><i class="ti ti-dots"></i></button>' +
-                (_isAdmin && p.score !== undefined ? '<button class="feed-post-action tuerca" onclick="event.stopPropagation();showAlgorithm(' + p.id + ')" title="Algoritmo" data-score="' + (p.score || 0) + '" data-breakdown=\'' + JSON.stringify(p.scoreBreakdown || {}).replace(/'/g, '&#39;') + '\'><i class="ti ti-settings"></i></button>' : '') +
-              '</div>' +
-            '</div>' +
-          '</div>';
+        let onClickAttr = ` onclick="abrirHiloPost(${p.id}, event)"`;
+        let postClass = (isReplyMode || p.parent_id) ? ' feed-post-reply' : '';
+        let repostBanner = '';
+        if (p.reposter_username) {
+          let currentUser = (_localUserData && _localUserData.username) ? _localUserData.username : null;
+          let bannerText = (p.reposter_username === currentUser) ? 'Tú reposteaste' : `@${p.reposter_username} Reposteó`;
+          repostBanner = `<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;">🔄 ${bannerText}</div>`;
+        }
+        return (
+          `<div class="feed-post${spoilerClass}${postClass}" id="post-id-${p.id}" data-post-id="${p.id}"${onClickAttr}>
+            ${repostBanner}
+            ${spoilerOverlay}
+            <a href="/profile/${p.user}" class="feed-post-avatar" style="${avatarStyle}width:${avatarSize};height:${avatarSize};min-width:${avatarSize};">${avatarContent}</a>
+            <div class="feed-post-body">
+              <div class="feed-post-header">
+                <a href="/profile/${p.user}" class="feed-post-user">${p.user}
+                  ${p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
+                    p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
+                    p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : ''}
+                  ${getRoleBadge(p.local_role)}
+                </a>
+                <a href="/profile/${p.user}" class="feed-post-handle">${p.handle}</a>
+                <span class="feed-post-time">${timeAgo(p.created_at)}${p.views_count !== undefined ? ` · ${p.views_count} vistas` : ''}</span>
+              </div>
+              ${replyContext}
+              <div class="feed-post-text">${(p.text || '').replace(/\n/g, '<br>')}</div>
+              ${p.media_url ? `<div class="feed-post-media"><div class="feed-post-media-badge">GIF</div><img src="${p.media_url}" alt="GIF" loading="lazy"></div>` : ''}
+              ${mangaBlock}
+              ${p.quoted_post_id ? '<div class="feed-post-quote" title="Ver post citado"><i class="ti ti-quote"></i> Citando un post</div>' : ''}
+              <div class="feed-post-actions">
+                <button class="feed-post-action" onclick="event.stopPropagation();openReply(${p.id})"><i class="ti ti-message"></i> ${p.replies || 0}</button>
+                <button class="feed-post-action${p.user_has_reposted ? ' reposted' : ''}" onclick="event.stopPropagation();openRepostMenu(this,${p.id})"><i class="ti ti-repeat"></i> <span class="repost-count">${p.reposts || 0}</span></button>
+                <button class="feed-post-action${p.user_has_liked ? ' liked' : ''}" onclick="event.stopPropagation();likePost(this);feedInteract(${p.id},'like')"><i class="ti ti-heart"></i> <span class="like-count">${p.likes || 0}</span></button>
+                <button class="feed-post-action${p.user_has_bookmarked ? ' bookmarked' : ''}" onclick="event.stopPropagation();feedInteract(${p.id},'bookmark')"><i class="ti ti-bookmark"></i></button>
+                <button class="feed-post-action" onclick="event.stopPropagation();openDotsMenu(this,${p.id},'${(p.user || '').replace(/'/g,"\\'")}')" title="Más opciones"><i class="ti ti-dots"></i></button>
+                ${_isAdmin && p.score !== undefined ? `<button class="feed-post-action tuerca" onclick="event.stopPropagation();showAlgorithm(${p.id})" title="Algoritmo" data-score="${p.score || 0}" data-breakdown='${JSON.stringify(p.scoreBreakdown || {}).replace(/'/g, '&#39;')}'><i class="ti ti-settings"></i></button>` : ''}
+              </div>
+            </div>
+          </div>`
+        );
       }).join('');
     }
 
     /* ── Post detail view (X.com thread style) ── */
     function abrirHiloPost(postId, event) {
-      console.log('[HILOS INFINITOS] abrirHiloPost disparado para ID:', postId, 'Evento:', event ? event.type : 'null');
+      DEBUG && console.log('[HILOS INFINITOS] abrirHiloPost disparado para ID:', postId, 'Evento:', event ? event.type : 'null');
       if (event && (event.target.closest('.post-detail-action') || event.target.closest('a') || event.target.closest('img') || event.target.closest('.feed-post-manga'))) {
-        console.log('[HILOS INFINITOS] Clic cancelado (botón/avatar/link)');
+        DEBUG && console.log('[HILOS INFINITOS] Clic cancelado (botón/avatar/link)');
         return;
       }
       // Guardar ID del post actual para restaurar scroll por anclaje
-      var curHash = window.location.hash || '#inicio';
+      let curHash = window.location.hash || '#inicio';
       sessionStorage.setItem('kami_last_post_id_' + curHash, postId);
       // Navegar al hash del post
       window.location.hash = 'post/' + postId;
@@ -1530,10 +1575,10 @@
     }
 
     function procesarEnrutamientoGlobal(event) {
-      var hash = window.location.hash.replace('#', '') || 'inicio';
+      let hash = window.location.hash.replace('#', '') || 'inicio';
 
       if (hash.startsWith('post/')) {
-        var postId = parseInt(hash.split('/')[1]);
+        let postId = parseInt(hash.split('/')[1]);
         if (isNaN(postId)) return;
         // Leave WebSocket room del post anterior
         if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
@@ -1548,12 +1593,12 @@
         if (document.activeElement) document.activeElement.blur();
         cargarDatosDelHilo(postId);
       } else if (hash.startsWith('comunidad/')) {
-        var comId = hash.split('/')[1];
+        let comId = hash.split('/')[1];
         document.getElementById('inicio-post-detail-view').style.display = 'none';
         document.getElementById('explorer-channel-view').style.display = 'none';
         document.getElementById('explorar-comunidad-detail-view').style.display = 'block';
         renderizarSeccionFisica('explorar');
-        var emv = document.getElementById('explorer-main-view');
+        let emv = document.getElementById('explorer-main-view');
         if (emv) emv.style.display = 'none';
         window.scrollTo(0, 0);
         cargarDatosDeComunidad(comId);
@@ -1561,7 +1606,7 @@
         document.getElementById('inicio-post-detail-view').style.display = 'none';
         document.getElementById('explorer-channel-view').style.display = 'none';
         document.getElementById('explorar-comunidad-detail-view').style.display = 'none';
-        var mv = document.getElementById('inicio-main-view');
+        let mv = document.getElementById('inicio-main-view');
         if (mv) { mv.style.opacity = '0'; mv.style.display = ''; }
         if (document.getElementById('explorer-main-view')) document.getElementById('explorer-main-view').style.display = '';
         if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
@@ -1570,10 +1615,10 @@
         setTimeout(trackFeedViews, 300);
         // Restaurar posición con telón de opacidad (sin frame fantasma)
         if (hash === 'inicio') {
-          var lastId = sessionStorage.getItem('kami_last_post_id_#inicio');
+          let lastId = sessionStorage.getItem('kami_last_post_id_#inicio');
           if (lastId) {
             setTimeout(function() {
-              var el = document.getElementById('post-id-' + lastId);
+              let el = document.getElementById('post-id-' + lastId);
               if (el) el.scrollIntoView({ block: 'center', behavior: 'auto' });
               if (mv) mv.style.opacity = '1';
               sessionStorage.removeItem('kami_last_post_id_#inicio');
@@ -1591,8 +1636,8 @@
     window.addEventListener('DOMContentLoaded', procesarEnrutamientoGlobal);
 
     function cargarDatosDelHilo(postId) {
-      var token = localStorage.getItem('kami_token');
-      var opts = { headers: {} };
+      let token = localStorage.getItem('kami_token');
+      let opts = { headers: {} };
       if (token) opts.headers['Authorization'] = 'Bearer ' + token;
 
       Promise.all([
@@ -1600,14 +1645,14 @@
         fetch('/api/feed/replies/' + postId).then(function(r) { return r.json(); })
       ])
       .then(function(results) {
-        var postData = results[0];
-        var repliesData = results[1];
+        let postData = results[0];
+        let repliesData = results[1];
         if (!postData.success) {
           document.getElementById('post-detail-content').innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">Post no encontrado</div>';
           return;
         }
-        var p = postData.post;
-        var r = repliesData.success ? (repliesData.replies || []) : [];
+        let p = postData.post;
+        let r = repliesData.success ? (repliesData.replies || []) : [];
         r.forEach(function(rep) { rep.replyToUser = p.user; });
         renderPostDetail(p, r, postData.parent_post || null);
       })
@@ -1629,8 +1674,8 @@
       _currentCommunityId = comId;
       updateSearchPlaceholder();
       _commPostsCache = [];
-      var token = localStorage.getItem('kami_token');
-      var opts = { headers: {} };
+      let token = localStorage.getItem('kami_token');
+      let opts = { headers: {} };
       if (token) opts.headers['Authorization'] = 'Bearer ' + token;
 
       Promise.all([
@@ -1638,14 +1683,14 @@
         fetch('/api/communities/' + comId + '/posts').then(function(r) { return r.json(); })
       ])
       .then(function(results) {
-        var data = results[0];
-        var postsData = results[1];
+        let data = results[0];
+        let postsData = results[1];
         if (!data.success) { document.getElementById('comunidad-detail-posts').innerHTML = '<div class="notif-empty">Comunidad no encontrada</div>'; return; }
-        var c = data.community;
+        let c = data.community;
         document.getElementById('comunidad-detail-title').textContent = c.name;
 
         // Banner
-        var bannerEl = document.getElementById('comunidad-detail-banner');
+        let bannerEl = document.getElementById('comunidad-detail-banner');
         if (c.banner_url && c.banner_url.startsWith('data:')) {
           bannerEl.style.background = 'url(' + c.banner_url + ') center/cover no-repeat';
         } else {
@@ -1653,10 +1698,10 @@
         }
 
         // Avatar
-        var avatarEl = document.getElementById('comunidad-detail-avatar');
-        var avatarSrc = (c.avatar_url && (c.avatar_url.startsWith('data:') || c.avatar_url.startsWith('http'))) ? c.avatar_url : (c.manga_cover || '');
+        let avatarEl = document.getElementById('comunidad-detail-avatar');
+        let avatarSrc = (c.avatar_url && (c.avatar_url.startsWith('data:') || c.avatar_url.startsWith('http'))) ? c.avatar_url : (c.manga_cover || '');
         if (avatarSrc) {
-          avatarEl.innerHTML = '<img src="' + avatarSrc + '" style="width:100%;height:100%;object-fit:cover;">';
+          avatarEl.innerHTML = '<img src="' + avatarSrc + '" class="obj-cover">';
         } else {
           avatarEl.textContent = (c.name || '?').charAt(0).toUpperCase();
         }
@@ -1669,7 +1714,7 @@
         initCommHoverEdit(comId);
 
         // Join/Postear button en header
-        var joinBtn = document.getElementById('comunidad-detail-join-btn');
+        let joinBtn = document.getElementById('comunidad-detail-join-btn');
         if (joinBtn) {
           if (c.my_role) {
             joinBtn.innerHTML = '<button onclick="toggleCommMembership(\'' + comId + '\')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">✓ Unido</button>';
@@ -1679,7 +1724,7 @@
         }
 
         // In-feed composer (solo si es miembro)
-        var composerContainer = document.getElementById('comunidad-infeed-composer');
+        let composerContainer = document.getElementById('comunidad-infeed-composer');
         if (composerContainer) {
           if (c.my_role) {
             composerContainer.innerHTML =
@@ -1688,10 +1733,10 @@
                 '<div style="flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:14px;color:var(--text-muted);">Publicar algo en ' + c.name + '...</div>' +
               '</div>';
             try {
-              var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
-              var a = document.getElementById('comm-composer-avatar');
+              let u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+              let a = document.getElementById('comm-composer-avatar');
               if (u.avatar && (u.avatar.indexOf('/') === 0 || u.avatar.indexOf('http') === 0 || u.avatar.indexOf('data:') === 0)) {
-                a.innerHTML = '<img src="' + u.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+                a.innerHTML = '<img src="' + u.avatar + '" class="obj-cover">';
               } else {
                 a.textContent = (u.username || '?').charAt(0).toUpperCase();
               }
@@ -1702,12 +1747,12 @@
         }
 
         // Posts
-        var pc = document.getElementById('comunidad-detail-posts');
+        let pc = document.getElementById('comunidad-detail-posts');
         if (postsData.success && postsData.posts && postsData.posts.length) {
           _commPostsCache = postsData.posts;
           pc.innerHTML = renderFeedPosts(postsData.posts);
         } else {
-          pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin publicaciones a&uacute;n. S&eacute; el primero en publicar.</div>';
+          pc.innerHTML = '<div class="notif-empty" class="p-60">Sin publicaciones a&uacute;n. S&eacute; el primero en publicar.</div>';
         }
         setTimeout(trackFeedViews, 150);
       })
@@ -1717,7 +1762,7 @@
     }
 
     function toggleCommMembership(comId) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + comId + '/join', {
         method: 'POST',
@@ -1730,18 +1775,18 @@
       .catch(function(){});
     }
 
-    var _mgmt = { commId: null, myRole: null };
-    var _membersCache = [];
+    let _mgmt = { commId: null, myRole: null };
+    let _membersCache = [];
 
     function abrirPanelMiembros(comId) {
       document.getElementById('members-panel').style.display = 'flex';
       document.getElementById('members-panel-list').innerHTML = '<div class="notif-loading">Cargando...</div>';
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       // Obtener el rol del usuario en esta comunidad
-      var myRole = null;
-      var rolePromise = token ? fetch('/api/communities/' + comId, { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r){return r.json()}).then(function(d){ if (d.success) myRole = d.community.my_role; }).catch(function(){}) : Promise.resolve();
+      let myRole = null;
+      let rolePromise = token ? fetch('/api/communities/' + comId, { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r){return r.json()}).then(function(d){ if (d.success) myRole = d.community.my_role; }).catch(function(){}) : Promise.resolve();
       rolePromise.then(function(){
-        var isManager = myRole === 'creator' || myRole === 'moderator';
+        let isManager = myRole === 'creator' || myRole === 'moderator';
         _mgmt.commId = comId;
         _mgmt.myRole = myRole;
         if (isManager) {
@@ -1765,30 +1810,30 @@
     }
 
     function renderMembersList(filter) {
-      var comId = _mgmt.commId;
-      var myRole = _mgmt.myRole;
-      var isManager = myRole === 'creator' || myRole === 'moderator';
-      var myId = (function(){try{return JSON.parse(localStorage.getItem('kami_user')||'null').id}catch(e){return null}})();
-      var globalAdmin = (function(){try{var u=JSON.parse(localStorage.getItem('kami_user')||'null');return u&&u.role==='admin';}catch(e){return false}})();
-      var q = filter.toLowerCase().trim();
-      var filtered = q ? _membersCache.filter(function(m){ return (m.username||'').toLowerCase().indexOf(q) >= 0; }) : _membersCache;
+      let comId = _mgmt.commId;
+      let myRole = _mgmt.myRole;
+      let isManager = myRole === 'creator' || myRole === 'moderator';
+      let myId = (function(){try{return JSON.parse(localStorage.getItem('kami_user')||'null').id}catch(e){return null}})();
+      let globalAdmin = (function(){try{let u=JSON.parse(localStorage.getItem('kami_user')||'null');return u&&u.role==='admin';}catch(e){return false}})();
+      let q = filter.toLowerCase().trim();
+      let filtered = q ? _membersCache.filter(function(m){ return (m.username||'').toLowerCase().indexOf(q) >= 0; }) : _membersCache;
       document.getElementById('members-panel-list').innerHTML = filtered.map(function(m){
-        var isSelf = m.user_id && m.user_id === myId;
-        var roleEmoji = m.role === 'creator' ? '👑' : m.role === 'moderator' ? '🛡️' : '';
-        var roleLabel = m.role === 'creator' ? 'Creador' : m.role === 'moderator' ? 'Moderador' : 'Miembro';
-        var av = '';
+        let isSelf = m.user_id && m.user_id === myId;
+        let roleEmoji = m.role === 'creator' ? '👑' : m.role === 'moderator' ? '🛡️' : '';
+        let roleLabel = m.role === 'creator' ? 'Creador' : m.role === 'moderator' ? 'Moderador' : 'Miembro';
+        let av = '';
         if (m.avatar && typeof m.avatar === 'string' && (m.avatar.indexOf('/') === 0 || m.avatar.indexOf('http') === 0 || m.avatar.indexOf('base64') >= 0)) {
-          av = '<img src="' + m.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+          av = '<img src="' + m.avatar + '" class="obj-cover">';
         } else {
           av = '<span style="font-size:14px;font-weight:700;color:#fff;">' + (m.username||'?').charAt(0).toUpperCase() + '</span>';
         }
-        var nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
-        var canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
-        var canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
-        var canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
-        var canKick = (isManager || globalAdmin) && !isSelf && (m.role !== 'creator' || globalAdmin);
-        var canBan = canKick;
-        var actionsHtml = '';
+        let nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
+        let canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
+        let canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
+        let canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
+        let canKick = (isManager || globalAdmin) && !isSelf && (m.role !== 'creator' || globalAdmin);
+        let canBan = canKick;
+        let actionsHtml = '';
         if (canAscend) actionsHtml += '<button class="rm-btn ascend" onclick="ascendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a moderador">⬆</button>';
         if (canCreator) actionsHtml += '<button class="rm-btn creator" onclick="promoteCreator(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a creator">👑</button>';
         if (canDescend) actionsHtml += '<button class="rm-btn descend" onclick="descendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Descender">⬇</button>';
@@ -1797,7 +1842,7 @@
         return '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);">' +
           '<div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;cursor:pointer;" onclick="' + nav + '">' + av + '</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="display:flex;align-items:center;gap:4px;">' +
+            '<div class="flex-center-g4">' +
               '<span onclick="' + nav + '" style="font-size:14px;font-weight:700;color:var(--text-primary);cursor:pointer;">' + roleEmoji + ' ' + m.username + '</span>' +
             '</div>' +
             '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + roleLabel + '</div>' +
@@ -1815,19 +1860,19 @@
     // Helpers de gestión que refrescan el panel actual
     function _loadMembers() { abrirPanelMiembros(_mgmt.commId); }
     function _loadBanned() {
-      var comId = _mgmt.commId;
-      var token = localStorage.getItem('kami_token');
+      let comId = _mgmt.commId;
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       document.getElementById('members-panel-title').innerHTML = '🚫 Baneados <span style="margin-left:8px;font-size:12px;font-weight:400;cursor:pointer;color:var(--accent);" onclick="_loadMembers()">👥 Miembros</span>';
       fetch('/api/communities/' + comId + '/bans', { headers: { 'Authorization':'Bearer ' + token } })
         .then(function(r){return r.json()}).then(function(d){
           if (!d.success) { document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Error</div>'; return; }
-          var list = document.getElementById('members-panel-list');
+          let list = document.getElementById('members-panel-list');
           if (!d.bans.length) { list.innerHTML = '<div class="notif-empty">No hay usuarios baneados</div>'; return; }
           list.innerHTML = d.bans.map(function(b){
-            var av = '';
+            let av = '';
             if (b.avatar && typeof b.avatar === 'string' && (b.avatar.indexOf('/') === 0 || b.avatar.indexOf('http') === 0 || b.avatar.indexOf('base64') >= 0)) {
-              av = '<img src="' + b.avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+              av = '<img src="' + b.avatar + '" class="obj-cover">';
             } else {
               av = '<span style="font-size:14px;font-weight:700;color:#fff;">' + (b.username||'?').charAt(0).toUpperCase() + '</span>';
             }
@@ -1845,29 +1890,18 @@
     }
 
     function promoteCreator(commId, userId) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + commId + '/set-role', {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
         body: JSON.stringify({ target_user_id: userId, new_role: 'creator' })
       }).then(function(r){return r.json()}).then(function(d){
-        if (d.success) { _loadMembers(); } else { alert(d.error); }
-      }).catch(function(){});
-    }
-
-    function ascendMember(commId, userId) {
-      var token = localStorage.getItem('kami_token');
-      if (!token) return;
-      fetch('/api/communities/' + commId + '/set-role', {
-        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-        body: JSON.stringify({ target_user_id: userId, new_role: 'moderator' })
-      }).then(function(r){return r.json()}).then(function(d){
-        if (d.success) { _loadMembers(); } else { alert(d.error); }
+if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       }).catch(function(){});
     }
 
     function descendMember(commId, userId) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + commId + '/set-role', {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
@@ -1879,7 +1913,7 @@
 
     function removeMember(commId, userId, username) {
       if (!confirm('¿Eliminar a @' + username + ' de la comunidad?')) return;
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + commId + '/members/' + userId, {
         method: 'DELETE', headers: { 'Authorization':'Bearer ' + token }
@@ -1889,10 +1923,10 @@
     }
 
     function banMember(commId, userId, username) {
-      var reason = prompt('Motivo del ban a @' + username + ':');
+      let reason = prompt('Motivo del ban a @' + username + ':');
       if (reason === null) return;
       if (!confirm('¿Banear a @' + username + ' de la comunidad?\nMotivo: ' + (reason || '(sin motivo)'))) return;
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + commId + '/ban', {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
@@ -1904,20 +1938,20 @@
 
     function unbanMember(commId, userId, username) {
       if (!confirm('¿Desbanear a @' + username + '?')) return;
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + commId + '/unban', {
         method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
         body: JSON.stringify({ target_user_id: userId })
       }).then(function(r){return r.json()}).then(function(d){
-        if (d.success) { _loadBanned(); } else { alert(d.error); }
+        if (d.success) { _loadBanned(); } else { showToast('error', d.error); }
       }).catch(function(){});
     }
 
     function doCommUpload(file, type, comId) {
-      var fd = new FormData();
+      let fd = new FormData();
       fd.append(type, file);
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/communities/' + comId + '/' + type, {
         method: 'POST',
@@ -1930,22 +1964,22 @@
           if (type === 'banner') {
             document.getElementById('comunidad-detail-banner').style.background = 'url(' + d.banner_url + ') center/cover no-repeat';
           } else if (type === 'avatar') {
-            document.getElementById('comunidad-detail-avatar').innerHTML = '<img src="' + d.avatar_url + '" style="width:100%;height:100%;object-fit:cover;">';
+            document.getElementById('comunidad-detail-avatar').innerHTML = '<img src="' + d.avatar_url + '" class="obj-cover">';
           }
           if (typeof showToast === 'function') showToast('success', type === 'banner' ? 'Banner actualizado' : 'Avatar actualizado');
         } else {
-          console.error('[upload] Error:', d.status, d.error);
+          DEBUG && console.error('[upload] Error:', d.status, d.error);
           if (typeof showToast === 'function') showToast('error', 'Error: ' + (d.error || 'desconocido'));
         }
       })
       .catch(function(e) {
-        console.error('[upload] Error de red:', e);
+        DEBUG && console.error('[upload] Error de red:', e);
         if (typeof showToast === 'function') showToast('error', 'Error de red');
       });
     }
 
     function triggerCommUpload(type, comId) {
-      var input = document.createElement('input');
+      let input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
       input.style.display = 'none';
@@ -1962,12 +1996,12 @@
     function initCommHoverEdit(comId) {
       try {
         if (!localStorage.getItem('kami_token')) return;
-        var bannerOverlay = document.getElementById('comm-banner-overlay');
-        var avatarOverlay = document.getElementById('comm-avatar-overlay');
+        let bannerOverlay = document.getElementById('comm-banner-overlay');
+        let avatarOverlay = document.getElementById('comm-avatar-overlay');
         if (bannerOverlay) bannerOverlay.onclick = function() { triggerCommUpload('banner', comId); };
         if (avatarOverlay) avatarOverlay.onclick = function() { triggerCommUpload('avatar', comId); };
 
-        var bannerEl = document.getElementById('comunidad-detail-banner');
+        let bannerEl = document.getElementById('comunidad-detail-banner');
         if (bannerEl) {
           bannerEl.addEventListener('dragover', function(e) { e.preventDefault(); bannerEl.style.opacity = '0.7'; });
           bannerEl.addEventListener('dragleave', function() { bannerEl.style.opacity = ''; });
@@ -1978,7 +2012,7 @@
           });
         }
 
-        var avatarWrapper = document.querySelector('#comunidad-detail-avatar');
+        let avatarWrapper = document.querySelector('#comunidad-detail-avatar');
         if (avatarWrapper) {
           avatarWrapper = avatarWrapper.parentNode;
           avatarWrapper.addEventListener('dragover', function(e) { e.preventDefault(); avatarWrapper.style.opacity = '0.7'; });
@@ -1993,85 +2027,69 @@
     }
 
     function renderPostDetail(post, replies, parentPost) {
-      var html = '';
+      let html = '';
 
-      // 0. Si el post clickeado es un comentario, mostrar el post padre arriba
       if (parentPost) {
         html += '<div class="parent-thread-context">';
-        // Asegurar que renderFeedPosts tenga el handle correcto
-        if (!parentPost.handle) parentPost.handle = '@' + (parentPost.user || 'anon').toLowerCase();
+        if (!parentPost.handle) parentPost.handle = `@${(parentPost.user || 'anon').toLowerCase()}`;
         html += renderFeedPosts([parentPost]);
         html += '</div>';
       }
 
-      // 1. Post principal expandido (1-columna estilo X.com)
-      var aStyle, aContent;
+      let aStyle, aContent;
       if (post.avatar && typeof post.avatar === 'string' && (post.avatar.indexOf('/') === 0 || post.avatar.indexOf('http') === 0)) {
         aStyle = 'background:rgba(232,52,74,0.08);padding:0;';
-        aContent = '<img src="' + post.avatar + '" alt="">';
+        aContent = `<img src="${post.avatar}" alt="">`;
       } else if (post.avatar && post.avatar.indexOf('linear-gradient') >= 0) {
         aStyle = post.avatar;
-        aContent = '<span>' + post.user.charAt(0) + '</span>';
+        aContent = `<span>${post.user.charAt(0)}</span>`;
       } else if (post.avatar && post.avatar.indexOf('base64') >= 0) {
         aStyle = 'padding:0;';
-        aContent = '<img src="' + post.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
+        aContent = `<img src="${post.avatar}" alt="" class="obj-cover-round">`;
       } else {
-        aStyle = 'background:' + (post.avatar || 'var(--accent)') + ';';
+        aStyle = `background:${post.avatar || 'var(--accent)'};`;
         aContent = post.user.charAt(0);
       }
-      var roleBadge = post.author_role === 'admin' ? '<span class="role-badge-admin">&#9889;ADMIN</span>' :
+      let roleBadge = post.author_role === 'admin' ? '<span class="role-badge-admin">&#9889;ADMIN</span>' :
                       post.author_role === 'golden' ? '<span class="role-badge-golden">&#128081;GOLDEN</span>' :
                       post.author_role === 'silver' ? '<span class="role-badge-silver">&#11088;SILVER</span>' : '';
-      var formatTime = new Date(post.created_at).toLocaleDateString('es-ES', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short', year:'numeric' });
+      let formatTime = new Date(post.created_at).toLocaleDateString('es-ES', { hour:'2-digit', minute:'2-digit', day:'numeric', month:'short', year:'numeric' });
 
-      // Counters: inline inside action buttons (X.com style)
-      var sReply = post.reply_count || replies.length || 0;
-      var sRepost = post.repost_count || 0;
-      var sLike = post.like_count || 0;
-      var rTxt = sReply > 0 ? sReply.toLocaleString() : '';
-      var rpTxt = sRepost > 0 ? sRepost.toLocaleString() : '';
-      var lTxt = sLike > 0 ? sLike.toLocaleString() : '';
+      let sReply = post.reply_count || replies.length || 0;
+      let sRepost = post.repost_count || 0;
+      let sLike = post.like_count || 0;
 
-      // Action icons: active classes desde flags de interacción
-      var likeIcon = post.user_has_liked ? 'ti ti-heart-filled' : 'ti ti-heart';
-      var likeCls = post.user_has_liked ? ' liked' : '';
-      var repostCls = post.user_has_reposted ? ' reposted' : '';
-      var bmCls = post.user_has_bookmarked ? ' bookmarked' : '';
+      let likeIcon = post.user_has_liked ? 'ti ti-heart-filled' : 'ti ti-heart';
+      let likeCls = post.user_has_liked ? ' liked' : '';
+      let repostCls = post.user_has_reposted ? ' reposted' : '';
+      let bmCls = post.user_has_bookmarked ? ' bookmarked' : '';
 
-      html += '<div class="post-detail-main">' +
-        // Author row: avatar left + name/badge/handle in column
-        '<div class="post-detail-author-row">' +
-          '<a href="/profile/' + post.user + '" class="post-detail-avatar" style="' + aStyle + '">' + aContent + '</a>' +
-          '<div style="display:flex;flex-direction:column;">' +
-            '<div style="display:flex;align-items:center;gap:4px;">' +
-              '<a href="/profile/' + post.user + '" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">' + post.user + '</a>' +
-              roleBadge +
-            '</div>' +
-            '<div style="font-size:13px;color:var(--text-muted);">' + (post.handle || '@anon') + '</div>' +
-          '</div>' +
-        '</div>' +
-        // Text: full width below
-        '<div class="post-detail-text">' + (post.text || '').replace(/\n/g, '<br>') + '</div>' +
-        // Media: full width, with border
-        (post.media_url ? '<div class="post-detail-media"><img src="' + post.media_url + '" alt="media" loading="lazy"></div>' : '') +
-        // Manga link
-        (post.manga ? '<div class="post-detail-manga" onclick="openCommunity(\'com-' + post.manga.id + '\')"><i class="ti ti-book"></i> ' + post.manga.title + (post.chapter ? ' · Cap. ' + post.chapter : '') + '</div>' : '') +
-        // Meta: date + views
-        '<div class="post-detail-meta">' + formatTime + (post.views_count !== undefined ? ' · <span style="color:var(--text-primary);font-weight:600;">' + post.views_count + '</span> vistas' : '') + '</div>' +
-        // Actions: icon + counter inline, space-between
-        '<div class="post-detail-actions">' +
-          '<div class="post-detail-action" onclick="openReply(' + post.id + ')"><i class="ti ti-message"></i><span class="action-cnt" id="detail-reply-cnt">' + rTxt + '</span></div>' +
-          '<div class="post-detail-action' + repostCls + '" onclick="openRepostMenu(this,' + post.id + ')"><i class="ti ti-repeat"></i><span class="action-cnt" id="detail-repost-cnt">' + rpTxt + '</span></div>' +
-          '<div class="post-detail-action' + likeCls + '" onclick="likePost(this);feedInteract(' + post.id + ',\'like\')"><i class="ti ' + likeIcon + '"></i><span class="action-cnt like-count" id="detail-like-cnt">' + lTxt + '</span></div>' +
-          '<div class="post-detail-action' + bmCls + '" onclick="feedInteract(' + post.id + ',\'bookmark\')"><i class="ti ti-bookmark"></i></div>' +
-          '<div class="post-detail-action" onclick="navigator.share?navigator.share({title:\'Post de ' + post.user.replace(/'/g,"\\'") + '\',text:\'' + (post.text||'').substring(0,50).replace(/'/g,"\\'") + '...\',url:window.location.href}):navigator.clipboard.writeText(window.location.href)"><i class="ti ti-share"></i></div>' +
-        '</div>' +
-      '</div>';
+      html += `<div class="post-detail-main">
+        <div class="post-detail-author-row">
+          <a href="/profile/${post.user}" class="post-detail-avatar" style="${aStyle}">${aContent}</a>
+          <div class="flex-col">
+            <div class="flex-center-g4">
+              <a href="/profile/${post.user}" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">${post.user}</a>
+              ${roleBadge}
+            </div>
+            <div style="font-size:13px;color:var(--text-muted);">${post.handle || '@anon'}</div>
+          </div>
+        </div>
+        <div class="post-detail-text">${(post.text || '').replace(/\n/g, '<br>')}</div>
+        ${post.media_url ? `<div class="post-detail-media"><img src="${post.media_url}" alt="media" loading="lazy"></div>` : ''}
+        ${post.manga ? `<div class="post-detail-manga" onclick="openCommunity('com-${post.manga.id}')"><i class="ti ti-book"></i> ${post.manga.title}${post.chapter ? ` · Cap. ${post.chapter}` : ''}</div>` : ''}
+        <div class="post-detail-meta">${formatTime}${post.views_count !== undefined ? ` · <span class="fw-600" style="color:var(--text-primary);">${post.views_count}</span> vistas` : ''}</div>
+        <div class="post-detail-actions">
+          <div class="post-detail-action" onclick="openReply(${post.id})"><i class="ti ti-message"></i><span class="action-cnt" id="detail-reply-cnt">${sReply > 0 ? sReply.toLocaleString() : ''}</span></div>
+          <div class="post-detail-action${repostCls}" onclick="openRepostMenu(this,${post.id})"><i class="ti ti-repeat"></i><span class="action-cnt" id="detail-repost-cnt">${sRepost > 0 ? sRepost.toLocaleString() : ''}</span></div>
+          <div class="post-detail-action${likeCls}" onclick="likePost(this);feedInteract(${post.id},'like')"><i class="ti ${likeIcon}"></i><span class="action-cnt like-count" id="detail-like-cnt">${sLike > 0 ? sLike.toLocaleString() : ''}</span></div>
+          <div class="post-detail-action${bmCls}" onclick="feedInteract(${post.id},'bookmark')"><i class="ti ti-bookmark"></i></div>
+          <div class="post-detail-action" onclick="navigator.share?navigator.share({title:'Post de ${post.user.replace(/'/g,"\\'")}',text:'${(post.text||'').substring(0,50).replace(/'/g,"\\'")}...',url:window.location.href}):navigator.clipboard.writeText(window.location.href)"><i class="ti ti-share"></i></div>
+        </div>
+      </div>`;
 
-      // 2. Mini reply composer inline
       html += renderMiniReplyComposer(post.id);
 
-      // 3. Thread line + replies
       html += '<div class="post-thread-replies" id="post-thread-replies">';
       if (replies.length > 0) {
         replies.forEach(function(r) { r.replyToUser = post.user; });
@@ -2083,57 +2101,55 @@
 
       document.getElementById('post-detail-content').innerHTML = html;
 
-      // 3b. Join WebSocket room for live replies
       if (typeof socket !== 'undefined' && socket) socket.emit('join-post', post.id);
 
-      // 3c. Re-observar vistas para el nuevo post principal en detalle
       setTimeout(trackFeedViews, 100);
     }
 
     function renderMiniReplyComposer(postId) {
-      return '<div class="mini-reply-composer" id="mini-reply-' + postId + '">' +
-        '<textarea id="mini-textarea-' + postId + '" class="mini-reply-textarea" placeholder="Escribe tu respuesta..." oninput="miniReplyCheck(' + postId + ');autoResizeTextarea(this)" rows="1"></textarea>' +
-        '<button id="mini-submit-' + postId + '" class="mini-reply-submit" onclick="submitMiniReply(' + postId + ')" disabled>Responder</button>' +
-      '</div>';
+      return `<div class="mini-reply-composer" id="mini-reply-${postId}">
+        <textarea id="mini-textarea-${postId}" class="mini-reply-textarea" placeholder="Escribe tu respuesta..." oninput="miniReplyCheck(${postId});autoResizeTextarea(this)" rows="1"></textarea>
+        <button id="mini-submit-${postId}" class="mini-reply-submit" onclick="submitMiniReply(${postId})" disabled>Responder</button>
+      </div>`;
     }
 
     function miniReplyCheck(postId) {
-      var ta = document.getElementById('mini-textarea-' + postId);
-      var btn = document.getElementById('mini-submit-' + postId);
+      let ta = document.getElementById('mini-textarea-' + postId);
+      let btn = document.getElementById('mini-submit-' + postId);
       if (!ta || !btn) return;
       btn.disabled = !ta.value.trim();
     }
 
     /* ── Composer Universal (Fase 1+2: cerebro único de publicación) ── */
     function publicarPostUniversal(idInstancia, texto, extraPayload, callbackExito) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
-      var estado = composerState[idInstancia] || {};
+      let estado = composerState[idInstancia] || {};
       // Lectura tolerante con fallback a variables globales del modal
-      var mangaId = null;
+      let mangaId = null;
       try { mangaId = estado.linkedManga ? estado.linkedManga.id : (typeof linkedManga !== 'undefined' && linkedManga ? linkedManga.id : null); } catch(e) {}
-      var gifUrl = null;
+      let gifUrl = null;
       try { gifUrl = estado.selectedGifUrl || (typeof selectedGifUrl !== 'undefined' ? selectedGifUrl : null); } catch(e) {}
-      var postType = 'post';
+      let postType = 'post';
       try { postType = Array.from(document.querySelectorAll('.comp-pill.active')).map(function(p) { return p.dataset.type; }).join(',') || 'post'; } catch(e) {}
-      var communityId = null;
+      let communityId = null;
       try { communityId = document.getElementById('comp-community') ? document.getElementById('comp-community').value || null : null; } catch(e) {}
-      var spoiler = false;
-      try { var cs = document.getElementById('comp-spoiler') || document.getElementById('in-feed-is-spoiler'); spoiler = cs ? cs.checked : false; } catch(e) {}
-      var isNews = false;
-      try { var cn = document.getElementById('comp-is-news') || document.getElementById('in-feed-is-news'); isNews = cn ? cn.checked : false; } catch(e) {}
-      var isGlobal = false;
-      try { var cg = document.getElementById('comp-is-global') || document.getElementById('in-feed-is-global'); isGlobal = cg ? cg.checked : false; } catch(e) {}
-      var quotedId = null;
+      let spoiler = false;
+      try { let cs = document.getElementById('comp-spoiler') || document.getElementById('in-feed-is-spoiler'); spoiler = cs ? cs.checked : false; } catch(e) {}
+      let isNews = false;
+      try { let cn = document.getElementById('comp-is-news') || document.getElementById('in-feed-is-news'); isNews = cn ? cn.checked : false; } catch(e) {}
+      let isGlobal = false;
+      try { let cg = document.getElementById('comp-is-global') || document.getElementById('in-feed-is-global'); isGlobal = cg ? cg.checked : false; } catch(e) {}
+      let quotedId = null;
       try { quotedId = typeof quotePostId !== 'undefined' ? quotePostId : null; } catch(e) {}
 
-      var payload = {
+      let payload = {
         content: texto, is_news: isNews, is_global_announcement: isGlobal,
         is_spoiler: spoiler, media_url: gifUrl, manga_id: mangaId,
         post_type: postType, community_id: communityId, title: '',
         quoted_post_id: quotedId,
       };
-      for (var k in extraPayload) { if (extraPayload.hasOwnProperty(k)) payload[k] = extraPayload[k]; }
+      for (const k in extraPayload) { if (extraPayload.hasOwnProperty(k)) payload[k] = extraPayload[k]; }
 
       fetch('/api/feed/post', {
         method: 'POST',
@@ -2153,9 +2169,9 @@
         }
       })
       .catch(function(err) {
-        console.warn('[composer] Error:', err.message);
+        DEBUG && console.warn('[composer] Error:', err.message);
         try {
-          var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+          let saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
           saved.push({ content: texto, manga_id: payload.manga_id, failed_at: Date.now() });
           localStorage.setItem('kami_borradores', JSON.stringify(saved));
         } catch(e) {}
@@ -2164,15 +2180,15 @@
     }
 
     function submitMiniReply(postId) {
-      var ta = document.getElementById('mini-textarea-' + postId);
+      let ta = document.getElementById('mini-textarea-' + postId);
       if (!ta || !ta.value.trim()) return;
-      var text = ta.value.trim();
+      let text = ta.value.trim();
       ta.value = '';
       document.getElementById('mini-submit-' + postId).disabled = true;
       document.getElementById('mini-submit-' + postId).textContent = 'Responder';
 
       // Detectar si es una comunidad (com-KMI-xxxxxx) o un reply normal
-      var isCommunity = typeof postId === 'string' && postId.indexOf('com-') === 0;
+      let isCommunity = typeof postId === 'string' && postId.indexOf('com-') === 0;
 
       if (isCommunity) {
         composerState.modal.selectedGifUrl = null;
@@ -2188,8 +2204,8 @@
     }
 
     function fetchRepliesAndRefresh(postId) {
-      var token = localStorage.getItem('kami_token');
-      var opts = {};
+      let token = localStorage.getItem('kami_token');
+      let opts = {};
       if (token) opts.headers = { 'Authorization': 'Bearer ' + token };
 
       Promise.all([
@@ -2197,19 +2213,19 @@
         fetch('/api/feed/replies/' + postId).then(function(r) { return r.json(); })
       ])
       .then(function(results) {
-        var postData = results[0];
-        var repliesData = results[1];
+        let postData = results[0];
+        let repliesData = results[1];
         if (!postData.success) return;
-        var post = postData.post;
-        var replies = repliesData.success ? (repliesData.replies || []) : [];
-        var threadContainer = document.getElementById('post-thread-replies');
+        let post = postData.post;
+        let replies = repliesData.success ? (repliesData.replies || []) : [];
+        let threadContainer = document.getElementById('post-thread-replies');
         if (threadContainer) {
           replies.forEach(function(r) { r.replyToUser = post.user; });
           threadContainer.innerHTML = replies.length > 0 ? renderFeedPosts(replies, true) : '<div class="post-thread-empty">No hay respuestas aún.</div>';
         }
         // Update counters inside action buttons
-        var rC = replies.length, rpC = post.reposts || 0, lC = post.likes || 0;
-        var el;
+        let rC = replies.length, rpC = post.reposts || 0, lC = post.likes || 0;
+        let el;
         el = document.getElementById('detail-reply-cnt'); if (el) el.textContent = rC > 0 ? rC.toLocaleString() : '';
         el = document.getElementById('detail-repost-cnt'); if (el) el.textContent = rpC > 0 ? rpC.toLocaleString() : '';
         el = document.getElementById('detail-like-cnt'); if (el) el.textContent = lC > 0 ? lC.toLocaleString() : '';
@@ -2219,51 +2235,54 @@
     }
 
     function renderFeed() {
-      var container = document.getElementById('com-feed');
+      let container = document.getElementById('com-feed');
       if (!container) return;
       container.innerHTML = skeletonPosts(4);
       try {
-        var cache = localStorage.getItem('kami_feed_cache_' + currentFeed);
+        let cache = localStorage.getItem('kami_feed_cache_' + currentFeed);
         if (cache) { container.innerHTML = renderFeedPosts(JSON.parse(cache)); }
       } catch(e) {}
       feedApiOffset = 0;
       isFeedLoading = true;
-      console.log('[feed] Solicitando posts...');
+      DEBUG && console.log('[feed] Solicitando posts...');
       fetchFeedPosts(true);
     }
 
     function showFeedError(msg) {
       isFeedLoading = false;
-      var el = document.getElementById('com-feed');
+      let el = document.getElementById('com-feed');
       if (el) el.innerHTML = '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.15);font-size:14px;"><i class="ti ti-alert-triangle" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>' + msg + '<br><button onclick="renderFeed()" style="margin-top:12px;padding:8px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;font-size:13px;">Reintentar</button></div>';
     }
 
     function fetchFeedPosts(initial) {
       if (currentFeed === 'communities') return;
-      var token = localStorage.getItem('kami_token');
-      var endpoint = '/api/feed/posts';
+      let token = localStorage.getItem('kami_token');
+      let endpoint = '/api/feed/posts';
       if (currentFeed === 'foryou') endpoint = '/api/feed/for-you';
       else if (currentFeed === 'latest') endpoint = '/api/feed/latest';
-      var url = endpoint + '?limit=25&offset=' + feedApiOffset + '&t=' + Date.now();
-      var timedOut = false;
-      var timeout = setTimeout(function() {
+      let url = endpoint + '?limit=25&offset=' + feedApiOffset + '&t=' + Date.now();
+      if (currentFilter && currentFilter !== 'Todos') {
+        url += '&tag=' + encodeURIComponent(currentFilter.toLowerCase());
+      }
+      let timedOut = false;
+      let timeout = setTimeout(function() {
         timedOut = true;
         isFeedLoading = false;
         document.getElementById('com-feed').innerHTML = '<div style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.15);font-size:14px;"><i class="ti ti-clock" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.3;"></i>El feed tardó demasiado (10s)<br><button onclick="renderFeed()" style="margin-top:12px;padding:8px 20px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit;font-size:13px;">Reintentar</button></div>';
       }, 10000);
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       if (token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
       xhr.onload = function() {
         if (xhr.status !== 200) { showFeedError('HTTP ' + xhr.status); return; }
         clearTimeout(timeout);
-        var data;
+        let data;
         try { data = JSON.parse(xhr.responseText); } catch(e) { showFeedError('JSON inválido'); return; }
         if (!data || !data.posts) { showFeedError('Sin datos'); return; }
         feedHasMore = data.posts.length >= 25;
         feedApiOffset += data.posts.length;
         try { localStorage.setItem('kami_feed_cache_' + currentFeed, JSON.stringify(data.posts)); } catch(e) {}
-        var container = document.getElementById('com-feed');
+        let container = document.getElementById('com-feed');
         if (initial) { container.innerHTML = renderFeedPosts(data.posts); }
         else { container.insertAdjacentHTML('beforeend', renderFeedPosts(data.posts)); }
         isFeedLoading = false;
@@ -2275,7 +2294,7 @@
     }
 
     function saveSession() {
-      var main = document.querySelector('.com-main');
+      let main = document.querySelector('.com-main');
       sessionStorage.setItem('kami_session_' + currentFeed, JSON.stringify({
         ultimo_post_visto_id: centeredPostId,
         desplazamiento_pixel: main.scrollTop,
@@ -2284,13 +2303,13 @@
     }
 
     function restoreSession() {
-      var saved = sessionStorage.getItem('kami_session_' + currentFeed);
+      let saved = sessionStorage.getItem('kami_session_' + currentFeed);
       if (!saved) return false;
       try {
-        var state = JSON.parse(saved);
-        var targetId = state.ultimo_post_visto_id;
+        let state = JSON.parse(saved);
+        let targetId = state.ultimo_post_visto_id;
         if (targetId) {
-          var target = document.querySelector('[data-post-id="' + targetId + '"]');
+          let target = document.querySelector('[data-post-id="' + targetId + '"]');
           if (target) { target.scrollIntoView({ block: 'center' }); return true; }
         }
         if (state.desplazamiento_pixel) {
@@ -2301,9 +2320,13 @@
       return false;
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // ♾️ MÓDULO 6: INTERACCIONES Y SCROLL — Like, repost, infinite scroll, menús
+    // ═════════════════════════════════════════════════════════════════════════
+
     // ── Infinite scroll (API) + session save ──
     document.querySelector('.com-main').addEventListener('scroll', function() {
-      var el = this;
+      let el = this;
       if (el.scrollTop + el.clientHeight >= el.scrollHeight - 600) {
         if (!isFeedLoading && feedHasMore) {
           isFeedLoading = true;
@@ -2315,7 +2338,7 @@
 
     function switchFeed(feed) {
       // Guardado inmediato del feed actual antes de cambiar
-      var main = document.querySelector('.com-main');
+      let main = document.querySelector('.com-main');
       sessionStorage.setItem('kami_session_' + currentFeed, JSON.stringify({
         ultimo_post_visto_id: centeredPostId,
         desplazamiento_pixel: main.scrollTop,
@@ -2325,9 +2348,9 @@
       currentFeed = feed;
 
       // Mostrar/ocultar feed general y vista de comunidades
-      var comFeed = document.getElementById('com-feed');
-      var comView = document.getElementById('comunidades-feed-view');
-      var feedFilter = document.querySelector('.feed-filter');
+      let comFeed = document.getElementById('com-feed');
+      let comView = document.getElementById('comunidades-feed-view');
+      let feedFilter = document.querySelector('.feed-filter');
 
       if (feed === 'communities') {
         if (comFeed) comFeed.style.display = 'none';
@@ -2351,44 +2374,44 @@
 
     /* ── Mis comunidades (sidebar-data + feed filtrado) ── */
     function renderMiniCardKMI(c) {
-      var initial = (c.name || '?').charAt(0).toUpperCase();
-      var avatarSrc = c.avatar_url || c.manga_cover;
-      var avatarHtml = avatarSrc
+      let initial = (c.name || '?').charAt(0).toUpperCase();
+      let avatarSrc = c.avatar_url || c.manga_cover;
+      let avatarHtml = avatarSrc
         ? '<img src="' + avatarSrc + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">'
         : '<span style="font-size:16px;font-weight:700;">' + initial + '</span>';
       return '<div onclick="window.location.hash=\'comunidad/' + c.id + '\'" style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-secondary);cursor:pointer;box-sizing:border-box;">' +
         '<div style="width:40px;height:40px;min-width:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;">' + avatarHtml + '</div>' +
         '<div style="flex:1;min-width:0;">' +
         '<div style="font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + c.name + '</div>' +
-        '<div style="font-size:12px;color:var(--text-muted);">' + (c.member_count || 0) + ' miembros</div>' +
+        '<div class="text-muted-sm">' + (c.member_count || 0) + ' miembros</div>' +
         '</div>' +
         '</div>';
     }
 
     function cargarPestañaMisComunidades() {
-      var token = localStorage.getItem('kami_token');
-      if (!token) return console.warn('[comunidades] Token inexistente.');
-      var opts = { headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } };
-      var pc = document.getElementById('comunidades-posts-feed');
+      let token = localStorage.getItem('kami_token');
+      if (!token) { DEBUG && console.warn('[comunidades] Token inexistente.'); return; }
+      let opts = { headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } };
+      let pc = document.getElementById('comunidades-posts-feed');
       if (pc) pc.innerHTML = '<div class="notif-loading">Cargando...</div>';
 
       // 1. Sidebar data (unidas + sugeridas)
       fetch('/api/communities/sidebar-data', opts).then(function(r){return r.json()}).then(function(d){
-        console.log('[comunidades] Datos recibidos:', d);
+        DEBUG && console.log('[comunidades] Datos recibidos:', d);
         if (!d.success) return;
-        var uc = document.getElementById('lista-comunidades-unidas');
+        let uc = document.getElementById('lista-comunidades-unidas');
         if (uc) {
-          var ul = d.joined || [];
+          let ul = d.joined || [];
           uc.innerHTML = ul.length ? ul.slice(0, 6).map(renderMiniCardKMI).join('') : '<div style="font-size:13px;color:var(--text-muted);padding:10px;">No te has unido a ninguna comunidad a&uacute;n.</div>';
           document.getElementById('btn-ver-mas-unidas').style.display = ul.length > 6 ? 'block' : 'none';
         }
-        var sc = document.getElementById('lista-comunidades-sugeridas');
+        let sc = document.getElementById('lista-comunidades-sugeridas');
         if (sc) {
-          var sl = d.suggested || [];
+          let sl = d.suggested || [];
           sc.innerHTML = sl.length ? sl.slice(0, 6).map(renderMiniCardKMI).join('') : '<div style="font-size:13px;color:var(--text-muted);padding:10px;">Agrega mangas a tu biblioteca para ver sugerencias.</div>';
           document.getElementById('btn-ver-mas-sugeridas').style.display = sl.length > 6 ? 'block' : 'none';
         }
-      }).catch(function(e){ console.error('[comunidades] Error en sidebar-data:', e); });
+      }).catch(function(e){ DEBUG && console.error('[comunidades] Error en sidebar-data:', e); });
 
       // 2. Feed filtrado de comunidades
       fetch('/api/feed/communities', opts).then(function(r){return r.json()}).then(function(d){
@@ -2402,6 +2425,7 @@
       }).catch(function(){ if (pc) pc.innerHTML = '<div class="notif-empty">Error de conexi&oacute;n</div>'; });
     }
 
+    const FILTER_TAG_MAP = { 'FanArt':'fanart', 'Reseña':'review', 'Teoría':'theory', 'Coleccionismo':'collection', 'Memes':'memes' };
     function toggleFilter(el) {
       el.classList.toggle('active');
       if (el.textContent.trim() === 'Todos') {
@@ -2409,51 +2433,58 @@
         currentFilter = 'Todos';
       } else {
         document.querySelector('.feed-filter-btn:first-child').classList.remove('active');
-        currentFilter = el.textContent.trim();
+        currentFilter = FILTER_TAG_MAP[el.textContent.trim()] || el.textContent.trim().toLowerCase();
       }
       renderFeed();
     }
 
     function likePost(el) {
       el.classList.toggle('liked');
-      var span = el.querySelector('.like-count');
+      let span = el.querySelector('.like-count');
       if (span) {
-        var n = parseInt(span.textContent) || 0;
+        let n = parseInt(span.textContent) || 0;
         span.textContent = el.classList.contains('liked') ? n + 1 : Math.max(0, n - 1);
       }
     }
 
-    function repostPost(el) {
-      el.classList.toggle('reposted');
-      var span = el.querySelector('.repost-count');
-      if (span) {
-        var n = parseInt(span.textContent) || 0;
-        span.textContent = el.classList.contains('reposted') ? n + 1 : Math.max(0, n - 1);
-      }
+    async function repostPost(postId) {
+      let token = localStorage.getItem('kami_token');
+      if (!token) { console.warn('[repost] No token'); return; }
+      console.log('[repost] Enviando repost para postId:', postId);
+      try {
+        let res = await fetch('/api/feed/repost', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+          body: JSON.stringify({ post_id: postId })
+        });
+        let data = await res.json();
+        console.log('[repost] Respuesta del servidor:', data);
+        if (res.ok && typeof renderFeed === 'function') renderFeed();
+      } catch (e) { console.error('[repost] Error en fetch:', e); }
     }
 
     function openReply(postId) {
       replyToPostId = postId;
       openComposer();
-      var ta = document.getElementById('comp-textarea');
+      let ta = document.getElementById('comp-textarea');
       ta.placeholder = 'Escribe tu respuesta...';
       ta.focus();
       if (socket) socket.emit('join-post', postId);
     }
 
-    var _repostMenuPostId = null;
+    let _repostMenuPostId = null;
 
     function openRepostMenu(btn, postId) {
-      var existing = document.getElementById('repost-menu');
+      let existing = document.getElementById('repost-menu');
       if (existing) existing.remove();
       _repostMenuPostId = postId;
-      var rect = btn.getBoundingClientRect();
-      var isReposted = btn.classList.contains('reposted');
-      var menu = document.createElement('div');
+      let rect = btn.getBoundingClientRect();
+      let isReposted = btn.classList.contains('reposted');
+      let menu = document.createElement('div');
       menu.id = 'repost-menu';
       menu.className = 'repost-menu';
       menu.innerHTML =
-        '<div class="repost-menu-item" onclick="toggleRepost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isReposted ? 'Deshacer repost' : 'Repost simple') + '</div>' +
+        '<div class="repost-menu-item" onclick="repostPost(' + postId + ');closeRepostMenu()"><i class="ti ti-repeat"></i> ' + (isReposted ? 'Deshacer repost' : 'Repost simple') + '</div>' +
         '<div class="repost-menu-item" onclick="openQuote(' + postId + ');closeRepostMenu()"><i class="ti ti-quote"></i> Citar post</div>';
       menu.style.position = 'fixed';
       menu.style.top = (rect.bottom + 4) + 'px';
@@ -2463,47 +2494,28 @@
     }
 
     function closeRepostMenu() {
-      var m = document.getElementById('repost-menu');
+      let m = document.getElementById('repost-menu');
       if (m) m.remove();
     }
 
     function toggleRepost(postId) {
-      var token = localStorage.getItem('kami_token');
-      if (!token) return;
-      var btn = document.querySelector('.feed-post[data-post-id="'+postId+'"] .feed-post-action .repost-count');
-      var parent = btn ? btn.closest('.feed-post-action') : null;
-      var isReposted = parent && parent.classList.contains('reposted');
-      var method = isReposted ? 'DELETE' : 'POST';
-      var bodyData = { post_id: postId };
-
-      fetch('/api/feed/repost', {
-        method: method,
-        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-        body: JSON.stringify(bodyData)
-      }).then(function(r){return r.json()}).then(function(d){
-        if (d.success && parent) {
-          var span = parent.querySelector('.repost-count');
-          var n = parseInt(span.textContent) || 0;
-          if (method === 'POST') {
-            span.textContent = n + 1;
-            parent.classList.add('reposted');
-          } else {
-            span.textContent = Math.max(0, n - 1);
-            parent.classList.remove('reposted');
-          }
-        }
-      }).catch(function(){});
+      // Mantiene compatibilidad con llamadas legacy, delega en repostPost
+      repostPost(postId);
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🎯 MÓDULO 7: MENÚS Y COMPOSER — Dots menu, sidebar, in-feed composer
+    // ═════════════════════════════════════════════════════════════════════════
 
     // ── Dots menu (tres puntos) ──
     function openDotsMenu(btn, postId, postUser) {
-      var existing = document.getElementById('dots-menu');
+      let existing = document.getElementById('dots-menu');
       if (existing) existing.remove();
-      var rect = btn.getBoundingClientRect();
-      var currentUser = null;
+      let rect = btn.getBoundingClientRect();
+      let currentUser = null;
       try { currentUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
-      var isOwner = currentUser && postUser && currentUser.username === postUser;
-      var menu = document.createElement('div');
+      let isOwner = currentUser && postUser && currentUser.username === postUser;
+      let menu = document.createElement('div');
       menu.id = 'dots-menu';
       menu.className = 'repost-menu';
       menu.innerHTML =
@@ -2517,12 +2529,12 @@
     }
 
     function closeDotsMenu() {
-      var m = document.getElementById('dots-menu');
+      let m = document.getElementById('dots-menu');
       if (m) m.remove();
     }
 
     function pinPostToProfile(postId) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       fetch('/api/feed/pin-post', {
         method: 'POST',
@@ -2535,7 +2547,7 @@
 
     // ── Sidebar follow toggle ──
     function toggleSidebarFollow(userId, btn) {
-      var token = localStorage.getItem('kami_token');
+      let token = localStorage.getItem('kami_token');
       if (!token) return;
       btn.disabled = true;
       fetch('/api/social/follow', {
@@ -2552,11 +2564,11 @@
     }
 
     // ── In-Feed Composer (expandible, solo Inicio) ──
-    var _currentInFeedRole = 'user';
+    let _currentInFeedRole = 'user';
 
     function initInFeedComposer() {
       try {
-        var u = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        let u = JSON.parse(localStorage.getItem('kami_user') || 'null');
         if (u && u.avatar) document.getElementById('composer-current-avatar').src = u.avatar;
         _currentInFeedRole = u ? u.role : 'user';
         desactivarInFeedComposer();
@@ -2564,7 +2576,7 @@
     }
 
     function activarInFeedComposer() {
-      var z = document.getElementById('in-feed-expandable-zone');
+      let z = document.getElementById('in-feed-expandable-zone');
       if (z) z.style.display = 'flex';
       if (['admin','company','creator'].includes(_currentInFeedRole))
         document.getElementById('in-feed-creator-options').style.display = 'flex';
@@ -2573,23 +2585,23 @@
     }
 
     function desactivarInFeedComposer() {
-      var z = document.getElementById('in-feed-expandable-zone');
+      let z = document.getElementById('in-feed-expandable-zone');
       if (z) z.style.display = 'none';
-      var ta = document.getElementById('in-feed-textarea');
+      let ta = document.getElementById('in-feed-textarea');
       if (ta && ta.value.trim() === '') ta.style.height = '30px';
     }
 
     // Click fuera contrae la caja
     document.addEventListener('click', function(e) {
-      var c = document.getElementById('in-feed-container');
-      var ta = document.getElementById('in-feed-textarea');
+      let c = document.getElementById('in-feed-container');
+      let ta = document.getElementById('in-feed-textarea');
       if (c && !c.contains(e.target) && ta && ta.value.trim() === '') desactivarInFeedComposer();
     });
 
     function autoResizeTextarea(el) {
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
-      var btn = document.getElementById('in-feed-submit-btn');
+      let btn = document.getElementById('in-feed-submit-btn');
       if (el.value.trim().length > 0) {
         btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
       } else {
@@ -2599,15 +2611,15 @@
 
     function publishFromInFeed(e) {
       if (e) e.stopPropagation();
-      var ta = document.getElementById('in-feed-textarea');
-      var text = ta.value.trim();
+      let ta = document.getElementById('in-feed-textarea');
+      let text = ta.value.trim();
       if (!text) return;
       publicarPostUniversal('inicio', text, {}, function(d) {
         ta.value = '';
         desactivarInFeedComposer();
         if (document.getElementById('in-feed-is-news')) document.getElementById('in-feed-is-news').checked = false;
         if (document.getElementById('in-feed-is-global')) document.getElementById('in-feed-is-global').checked = false;
-        var u = JSON.parse(localStorage.getItem('kami_user') || '{}');
+        let u = JSON.parse(localStorage.getItem('kami_user') || '{}');
         document.getElementById('com-feed')
           .insertAdjacentHTML('afterbegin', renderFeedPosts([{
             id: d.post.id, user: d.post.user || u.username || 'Tú',
@@ -2629,7 +2641,7 @@
       replyToPostId = null;
       quotePostId = postId;
       openComposer();
-      var ta = document.getElementById('comp-textarea');
+      let ta = document.getElementById('comp-textarea');
       ta.placeholder = 'Añade un comentario (opcional)...';
       ta.focus();
 
@@ -2638,14 +2650,14 @@
         .then(function(r){return r.json()})
         .then(function(d){
           if (d.success) {
-            var quoteHtml = document.getElementById('comp-quote-preview');
+            let quoteHtml = document.getElementById('comp-quote-preview');
             if (!quoteHtml) {
               quoteHtml = document.createElement('div');
               quoteHtml.id = 'comp-quote-preview';
               quoteHtml.className = 'comp-quote-preview';
               document.getElementById('comp-textarea-wrap').after(quoteHtml);
             }
-            var p = d.post;
+            let p = d.post;
             quoteHtml.innerHTML =
               '<div class="comp-quote-header">Post original</div>' +
               '<div class="comp-quote-body">' +
@@ -2663,19 +2675,19 @@
     }
 
     function showAlgorithm(postId) {
-      var postEl = document.querySelector('.feed-post[data-post-id="' + postId + '"]');
+      let postEl = document.querySelector('.feed-post[data-post-id="' + postId + '"]');
       if (!postEl) return;
-      var btn = postEl.querySelector('.feed-post-action.tuerca');
+      let btn = postEl.querySelector('.feed-post-action.tuerca');
       if (!btn) return;
-      var score = parseInt(btn.getAttribute('data-score')) || 0;
-      var raw = btn.getAttribute('data-breakdown');
-      var breakdown;
+      let score = parseInt(btn.getAttribute('data-score')) || 0;
+      let raw = btn.getAttribute('data-breakdown');
+      let breakdown;
       try { breakdown = JSON.parse(raw); } catch(e) { breakdown = {}; }
       document.getElementById('algo-total').textContent = score;
-      var body = document.getElementById('algo-body');
-      var items = body.querySelectorAll('.algo-bar');
+      let body = document.getElementById('algo-body');
+      let items = body.querySelectorAll('.algo-bar');
       items.forEach(function(i) { i.remove(); });
-      var bars = [
+      let bars = [
         { label: 'Base', key: 'base', color: 'neutral' },
         { label: 'Af. lectura', key: 'readingAffinity', color: 'positive' },
         { label: 'Comunidad', key: 'communityFactor', color: 'positive' },
@@ -2689,15 +2701,15 @@
         { label: 'Fatiga ×', key: 'fatigueMul', color: 'neutral' },
         { label: 'Pje antes fatiga', key: 'antesDeFatiga', color: 'neutral' },
       ];
-      var maxVal = Math.max(Math.abs(breakdown.base || 100), 100);
+      let maxVal = Math.max(Math.abs(breakdown.base || 100), 100);
       bars.forEach(function(bar) {
-        var val = breakdown[bar.key];
+        let val = breakdown[bar.key];
         if (val === undefined || val === null) return;
-        var absVal = Math.abs(val);
-        var pct = Math.min(100, (absVal / maxVal) * 100);
-        var signClass = val >= 0 ? (bar.color === 'negative' ? 'neg' : 'pos') : 'neg';
-        var fillClass = val >= 0 ? bar.color : 'negative';
-        var div = document.createElement('div');
+        let absVal = Math.abs(val);
+        let pct = Math.min(100, (absVal / maxVal) * 100);
+        let signClass = val >= 0 ? (bar.color === 'negative' ? 'neg' : 'pos') : 'neg';
+        let fillClass = val >= 0 ? bar.color : 'negative';
+        let div = document.createElement('div');
         div.className = 'algo-bar';
         div.innerHTML =
           '<span class="algo-bar-label">' + bar.label + '</span>' +
@@ -2714,8 +2726,16 @@
       document.getElementById('algo-modal').classList.remove('open');
     }
 
-    function addToList(title) {
-      alert('"' + title + '" añadido a tu lista de Pendientes');
+    function addToList(mangaTitle) {
+      if (!mangaTitle) return;
+      let toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:#4c9df5; color:white; padding:12px 20px; border-radius:10px; font-size:13px; z-index:99999; box-shadow:0 4px 16px rgba(0,0,0,0.15); font-weight:500; transition: all 0.4s ease;';
+      toast.innerHTML = `📖 <strong>${mangaTitle}</strong> añadido a tus Pendientes`;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
     }
 
     // ── Init feed on page load ──
@@ -2723,7 +2743,7 @@
     // observePosts() se llama desde fetchFeedPosts cuando llegan datos reales
     restoreSession();
 
-    var mockUsers = [
+    let mockUsers = [
       { name:'KAMI Manga', handle:'@kamimanga', color:'linear-gradient(135deg,#e8344a,#f5c842)' },
       { name:'Shonen Weekly', handle:'@shonenweek', color:'#4c9df5' },
       { name:'Manga Plus', handle:'@mangaplus', color:'#2dca7a' },
@@ -2735,7 +2755,7 @@
       try { return JSON.parse(localStorage.getItem('kami_search_recent') || '[]'); } catch { return []; }
     }
     function saveRecent(q) {
-      var recents = getRecent().filter(function(r) { return r !== q; });
+      let recents = getRecent().filter(function(r) { return r !== q; });
       recents.unshift(q);
       if (recents.length > 10) recents = recents.slice(0, 10);
       localStorage.setItem('kami_search_recent', JSON.stringify(recents));
@@ -2745,8 +2765,8 @@
       renderRecent();
     }
     function renderRecent() {
-      var list = document.getElementById('cr-sp-recent-list');
-      var recents = getRecent();
+      let list = document.getElementById('cr-sp-recent-list');
+      let recents = getRecent();
       list.innerHTML = recents.length ? recents.map(function(r) {
         return '<div class="cr-sp-item" onclick="doSearch(\'' + r.replace(/'/g, "\\'") + '\')"><i class="ti ti-clock"></i><span>' + r + '</span></div>';
       }).join('') : '<div class="cr-sp-item" style="cursor:default;"><span style="color:rgba(255,255,255,0.15);">Sin búsquedas recientes</span></div>';
@@ -2765,17 +2785,17 @@
     }
 
     function searchSuggest(val) {
-      var suggestEl = document.getElementById('cr-sp-suggest');
-      var recentEl = document.getElementById('cr-sp-recent');
-      var suggestList = document.getElementById('cr-sp-suggest-list');
-      var emptyEl = document.getElementById('cr-sp-empty');
+      let suggestEl = document.getElementById('cr-sp-suggest');
+      let recentEl = document.getElementById('cr-sp-recent');
+      let suggestList = document.getElementById('cr-sp-suggest-list');
+      let emptyEl = document.getElementById('cr-sp-empty');
       if (!val.trim()) {
         suggestEl.style.display = 'none';
         recentEl.style.display = '';
         emptyEl.style.display = '';
         // Si estamos en comunidad y limpiamos, restaurar posts
         if (_currentCommunityId && _commPostsCache.length) {
-          var pc = document.getElementById('comunidad-detail-posts');
+          let pc = document.getElementById('comunidad-detail-posts');
           if (pc) pc.innerHTML = renderFeedPosts(_commPostsCache);
         }
         return;
@@ -2785,30 +2805,30 @@
         suggestEl.style.display = 'none';
         recentEl.style.display = 'none';
         emptyEl.style.display = 'none';
-        var q = val.toLowerCase();
-        var filtered = _commPostsCache.filter(function(p) {
-          var txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
+        let q = val.toLowerCase();
+        let filtered = _commPostsCache.filter(function(p) {
+          let txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
           return txt.toLowerCase().indexOf(q) >= 0;
         });
-        var pc = document.getElementById('comunidad-detail-posts');
+        let pc = document.getElementById('comunidad-detail-posts');
         if (pc) {
           if (filtered.length) {
             pc.innerHTML = renderFeedPosts(filtered);
           } else {
-            pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin resultados para «' + val + '»</div>';
+            pc.innerHTML = '<div class="notif-empty" class="p-60">Sin resultados para «' + val + '»</div>';
           }
         }
         return;
       }
       recentEl.style.display = 'none';
       emptyEl.style.display = 'none';
-      var filtered = mockUsers.filter(function(u) {
+      let filtered = mockUsers.filter(function(u) {
         return u.name.toLowerCase().indexOf(val.toLowerCase()) >= 0 || u.handle.toLowerCase().indexOf(val.toLowerCase()) >= 0;
       });
       if (filtered.length) {
         suggestEl.style.display = '';
         suggestList.innerHTML = filtered.map(function(u) {
-          var initial = u.name.charAt(0).toUpperCase();
+          let initial = u.name.charAt(0).toUpperCase();
           return '<div class="cr-sp-item" onclick="doSearch(\'' + u.handle.replace('@', '') + '\')"><div class="cr-sp-avatar" style="background:' + u.color + '">' + initial + '</div><span>' + u.name + ' <span style="color:rgba(255,255,255,0.25);font-size:12px;">' + u.handle + '</span></span></div>';
         }).join('');
       } else {
@@ -2819,21 +2839,21 @@
 
     function searchKeydown(e) {
       if (e.key === 'Enter') {
-        var val = e.target.value.trim();
+        let val = e.target.value.trim();
         if (val) {
           if (_currentCommunityId) {
             // En comunidad: buscar posts con el texto
-            var q = val.toLowerCase();
-            var filtered = _commPostsCache.filter(function(p) {
-              var txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
+            let q = val.toLowerCase();
+            let filtered = _commPostsCache.filter(function(p) {
+              let txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
               return txt.toLowerCase().indexOf(q) >= 0;
             });
-            var pc = document.getElementById('comunidad-detail-posts');
+            let pc = document.getElementById('comunidad-detail-posts');
             if (pc) {
               if (filtered.length) {
                 pc.innerHTML = renderFeedPosts(filtered);
               } else {
-                pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin resultados para «' + val + '»</div>';
+                pc.innerHTML = '<div class="notif-empty" class="p-60">Sin resultados para «' + val + '»</div>';
               }
             }
             saveRecent(val);
@@ -2850,24 +2870,28 @@
       saveRecent(q);
       closeSearch();
       goToSection('explorar');
-      var input = document.getElementById('explore-search-input');
+      let input = document.getElementById('explore-search-input');
       if (input) { input.value = q; exploreSearch(q); }
     }
 
     document.addEventListener('click', function(e) {
-      var panel = document.getElementById('cr-search-panel');
-      var search = document.getElementById('cr-search');
+      let panel = document.getElementById('cr-search-panel');
+      let search = document.getElementById('cr-search');
       if (panel && search && !search.contains(e.target)) closeSearch();
     });
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // ✍️ MÓDULO 8: COMPOSER PRINCIPAL — Modal de posteo, manga vinculado, spoiler
+    // ═════════════════════════════════════════════════════════════════════════
+
     // ── Post Composer (Manga Edition) ──
-    var linkedManga = null;
+    let linkedManga = null;
 
     function loadAvatar() {
-      var el = document.getElementById('comp-avatar');
+      let el = document.getElementById('comp-avatar');
       try {
-        var user = JSON.parse(localStorage.getItem('kami_user') || 'null');
-        var token = localStorage.getItem('kami_token');
+        let user = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        let token = localStorage.getItem('kami_token');
         if (!user || !token) { el.textContent = '?'; return; }
         if (user.avatar && (user.avatar.indexOf('/') === 0 || user.avatar.indexOf('http') === 0)) {
           el.innerHTML = '<img src="' + user.avatar + '" alt="">';
@@ -2878,11 +2902,11 @@
     }
 
     function loadInFeedAvatar() {
-      var el = document.getElementById('composer-current-avatar');
+      let el = document.getElementById('composer-current-avatar');
       if (!el) return;
       try {
-        var user = JSON.parse(localStorage.getItem('kami_user') || 'null');
-        var token = localStorage.getItem('kami_token');
+        let user = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        let token = localStorage.getItem('kami_token');
         if (!user || !token) { el.style.display = 'none'; return; }
         if (user.avatar && (user.avatar.indexOf('/') === 0 || user.avatar.indexOf('http') === 0 || user.avatar.indexOf('data:') === 0)) {
           el.src = user.avatar;
@@ -2897,20 +2921,20 @@
       document.getElementById('composer-overlay').classList.add('open');
       document.getElementById('composer').classList.add('open');
       loadAvatar();
-      var ta = document.getElementById('comp-textarea');
+      let ta = document.getElementById('comp-textarea');
       ta.value = '';
       ta.focus();
       compUpdate(ta);
       try {
-        var draft = localStorage.getItem('kami_composer_draft');
+        let draft = localStorage.getItem('kami_composer_draft');
         if (draft) { ta.value = draft; compUpdate(ta); }
       } catch(e) {}
       // Mostrar opciones de creador según rol
       document.getElementById('comp-is-news').checked = false;
       document.getElementById('comp-is-global').checked = false;
       try {
-        var u = JSON.parse(localStorage.getItem('kami_user') || 'null');
-        var role = u ? u.role : 'user';
+        let u = JSON.parse(localStorage.getItem('kami_user') || 'null');
+        let role = u ? u.role : 'user';
         document.getElementById('comp-creator-options').style.display = (['admin','company','creator'].indexOf(role) >= 0) ? 'flex' : 'none';
         document.getElementById('comp-global-opt').style.display = (role === 'admin') ? 'flex' : 'none';
       } catch(e) {}
@@ -2918,12 +2942,12 @@
       _composerMangaLocked = false;
       // Si se pasa communityId, seleccionarlo en el dropdown
       if (communityId) {
-        var sel = document.getElementById('comp-community');
+        let sel = document.getElementById('comp-community');
         if (sel) {
-          var exists = false;
-          for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === communityId) { exists = true; break; } }
+          let exists = false;
+          for (let i = 0; i < sel.options.length; i++) { if (sel.options[i].value === communityId) { exists = true; break; } }
           if (!exists) {
-            var opt = document.createElement('option');
+            let opt = document.createElement('option');
             opt.value = communityId; opt.textContent = communityId;
             sel.appendChild(opt);
           }
@@ -2941,27 +2965,27 @@
       document.getElementById('composer-overlay').classList.remove('open');
       document.getElementById('composer').classList.remove('open');
       document.getElementById('comp-manga-search').style.display = 'none';
-      var qp = document.getElementById('comp-quote-preview');
+      let qp = document.getElementById('comp-quote-preview');
       if (qp) { qp.style.display = 'none'; qp.innerHTML = ''; }
       replyToPostId = null;
       quotePostId = null;
       _composerMangaLocked = false;
-      var tag = document.getElementById('comp-manga-tag');
+      let tag = document.getElementById('comp-manga-tag');
       if (tag) tag.style.borderColor = '';
     }
 
     function compUpdate(el) {
-      var len = el.value.length;
-      var max = 280;
-      var counter = document.getElementById('comp-counter');
-      var submit = document.getElementById('comp-submit');
+      let len = el.value.length;
+      let max = 280;
+      let counter = document.getElementById('comp-counter');
+      let submit = document.getElementById('comp-submit');
       counter.textContent = len;
       counter.className = 'comp-counter';
       if (len > max) { counter.classList.add('over'); } else if (len > max * 0.85) { counter.classList.add('warning'); }
       submit.disabled = len === 0;
       // Preview con auto-link
-      var preview = document.getElementById('comp-preview');
-      var val = el.value;
+      let preview = document.getElementById('comp-preview');
+      let val = el.value;
       if (val) {
         preview.style.display = 'block';
         preview.innerHTML = val
@@ -2978,28 +3002,28 @@
     // ── Manga vinculado ──
     function openMangaSearch() {
       if (_composerMangaLocked) return;
-      var el = document.getElementById('comp-manga-search');
+      let el = document.getElementById('comp-manga-search');
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
       if (el.style.display === 'block') document.getElementById('comp-manga-input').focus();
     }
 
     function searchManga(q) {
-      var results = document.getElementById('comp-manga-results');
+      let results = document.getElementById('comp-manga-results');
       if (!q.trim()) { results.innerHTML = ''; return; }
       results.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.15);font-size:12px;">Buscando...</div>';
       fetch('/api/manga/search?q=' + encodeURIComponent(q))
         .then(function(r){ return r.json(); })
         .then(function(data){
-          var items = data && data.results ? data.results : (Array.isArray(data) ? data : []);
+          let items = data && data.results ? data.results : (Array.isArray(data) ? data : []);
           if (!items.length) {
             results.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.15);font-size:12px;">Sin resultados</div>';
             return;
           }
           results.innerHTML = items.map(function(m){
-            var initial = m.title ? m.title.charAt(0) : '?';
-            var coverStyle = m.cover ? 'background:transparent;' : 'background:#e8344a;';
-            var coverHtml = m.cover && m.cover.indexOf('/') >= 0
-              ? '<img src="' + m.cover + '" style="width:100%;height:100%;object-fit:cover;">'
+            let initial = m.title ? m.title.charAt(0) : '?';
+            let coverStyle = m.cover ? 'background:transparent;' : 'background:#e8344a;';
+            let coverHtml = m.cover && m.cover.indexOf('/') >= 0
+              ? '<img src="' + m.cover + '" class="obj-cover">'
               : '<span style="font-size:9px;color:#fff;">' + initial + '</span>';
             return '<div class="comp-manga-result" onclick="linkManga(\'' + m.id + '\',\'' + m.title.replace(/'/g,"\\'") + '\',\'' + (m.cover || '') + '\')">' +
               '<div style="width:20px;height:28px;border-radius:4px;' + coverStyle + 'display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">' + coverHtml + '</div>' +
@@ -3015,7 +3039,7 @@
       linkedManga = { id: id, title: title, cover: cover };
       document.getElementById('comp-link-btn').style.display = 'none';
       document.getElementById('comp-manga-search').style.display = 'none';
-      var tag = document.getElementById('comp-manga-tag');
+      let tag = document.getElementById('comp-manga-tag');
       tag.style.display = 'flex';
       tag.style.borderColor = _composerMangaLocked ? 'var(--accent)' : 'rgba(76,157,245,0.12)';
       tag.innerHTML =
@@ -3033,12 +3057,12 @@
 
     function openChapterSelector() {
       if (!linkedManga) return;
-      var chEl = document.getElementById('comp-manga-chapter');
+      let chEl = document.getElementById('comp-manga-chapter');
       if (!chEl) return;
-      var current = chEl.textContent.replace(/[^0-9]/g, '') || '';
-      var cap = prompt('Capítulo:', current);
+      let current = chEl.textContent.replace(/[^0-9]/g, '') || '';
+      let cap = prompt('Capítulo:', current);
       if (cap !== null && cap.trim()) {
-        var num = parseInt(cap);
+        let num = parseInt(cap);
         if (!isNaN(num) && num > 0) {
           chEl.textContent = '· Cap. ' + num;
         }
@@ -3057,9 +3081,9 @@
 
     function loadDraft() {
       try {
-        var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+        let saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
         if (saved.length > 0) {
-          var last = saved[saved.length - 1];
+          let last = saved[saved.length - 1];
           document.getElementById('comp-textarea').value = last.content;
           compUpdate(document.getElementById('comp-textarea'));
           if (last.manga_id) { linkedManga = { id: last.manga_id, title: last.manga_title || '' }; }
@@ -3072,11 +3096,11 @@
     }
 
     function closeComposer() {
-      var ta = document.getElementById('comp-textarea');
+      let ta = document.getElementById('comp-textarea');
       if (ta.value.trim()) {
         if (!confirm('¿Guardar borrador?')) { closeComposerForce(); return; }
         try {
-          var saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
+          let saved = JSON.parse(localStorage.getItem('kami_borradores') || '[]');
           saved.push({ content: ta.value.trim(), manga_id: linkedManga ? linkedManga.id : null, manga_title: linkedManga ? linkedManga.title : null, saved_at: Date.now() });
           localStorage.setItem('kami_borradores', JSON.stringify(saved));
         } catch(e) {}
@@ -3085,11 +3109,11 @@
     }
 
     function submitPost() {
-      var ta = document.getElementById('comp-textarea');
-      var text = ta.value.trim();
+      let ta = document.getElementById('comp-textarea');
+      let text = ta.value.trim();
       if (!text) return;
-      var parentId = replyToPostId || null;
-      var extra = { parent_id: parentId, quoted_post_id: quotePostId || null };
+      let parentId = replyToPostId || null;
+      let extra = { parent_id: parentId, quoted_post_id: quotePostId || null };
       replyToPostId = null;
       quotePostId = null;
       closeComposerForce();
@@ -3107,10 +3131,10 @@
     }
 
     function showToast(type, message) {
-      var container = document.getElementById('toast-container');
+      let container = document.getElementById('toast-container');
       if (!container) return;
-      var icons = { success:'ti ti-check', error:'ti ti-alert-triangle', warning:'ti ti-alert-circle' };
-      var toast = document.createElement('div');
+      let icons = { success:'ti ti-check', error:'ti ti-alert-triangle', warning:'ti ti-alert-circle' };
+      let toast = document.createElement('div');
       toast.className = 'toast ' + type;
       toast.innerHTML = '<i class="' + (icons[type] || 'ti ti-info-circle') + '" style="font-size:18px;flex-shrink:0;"></i>' +
         '<span style="flex:1;">' + message + '</span>' +
@@ -3126,22 +3150,26 @@
       if (e.key === 'Escape' && document.getElementById('composer').classList.contains('open')) closeComposer();
     });
 
+    // ═════════════════════════════════════════════════════════════════════════
+    // 👁️ MÓDULO 9: VIEW TRACKING — IntersectionObserver + batch POST
+    // ═════════════════════════════════════════════════════════════════════════
+
     // ── View tracking (Opción D: IntersectionObserver + batch) ──
-    var _viewedSession = {};
-    var _viewQueue = [];
-    var _viewTimer = null;
-    var _viewObserver = null;
+    let _viewedSession = {};
+    let _viewQueue = [];
+    let _viewTimer = null;
+    let _viewObserver = null;
 
     function trackFeedViews() {
       if (_viewObserver) _viewObserver.disconnect();
-      var elements = document.querySelectorAll('.feed-post[data-post-id]:not(.feed-post-reply)');
-      console.log('[vistas] Elementos detectados en el DOM:', elements.length);
+      let elements = document.querySelectorAll('.feed-post[data-post-id]:not(.feed-post-reply)');
+      DEBUG && console.log('[vistas] Elementos detectados en el DOM:', elements.length);
       if (elements.length === 0) return;
       _viewObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
-            var id = entry.target.getAttribute('data-post-id');
-            console.log('[vistas] Post cruzó la pantalla, ID:', id, 'ya visto?:', !!_viewedSession[id]);
+            let id = entry.target.getAttribute('data-post-id');
+            DEBUG && console.log('[vistas] Post cruzó la pantalla, ID:', id, 'ya visto?:', !!_viewedSession[id]);
             if (id && !_viewedSession[id]) {
               _viewedSession[id] = true;
               _viewQueue.push(parseInt(id));
@@ -3157,10 +3185,10 @@
       if (_viewTimer) clearTimeout(_viewTimer);
       _viewTimer = setTimeout(function() {
         if (!_viewQueue.length) return;
-        var batch = _viewQueue.slice();
+        let batch = _viewQueue.slice();
         _viewQueue = [];
-        var token = localStorage.getItem('kami_token');
-        console.log('[vistas] Disparando lote al backend:', batch, 'Con token:', !!token);
+        let token = localStorage.getItem('kami_token');
+        DEBUG && console.log('[vistas] Disparando lote al backend:', batch, 'Con token:', !!token);
         if (!token) return;
         fetch('/api/feed/track-views', {
           method: 'POST',
@@ -3168,17 +3196,21 @@
           body: JSON.stringify({ post_ids: batch })
         })
         .then(function(r) { return r.json(); })
-        .then(function(d) { console.log('[vistas] Respuesta del servidor:', d); })
-        .catch(function(e) { console.error('[vistas] Fallo crítico:', e); });
+        .then(function(d) { DEBUG && console.log('[vistas] Respuesta del servidor:', d); })
+        .catch(function(e) { DEBUG && console.error('[vistas] Fallo crítico:', e); });
       }, 3000);
     }
 
     // Hookear renderFeed para reiniciar observador tras cada render
-    var _origRenderFeed = renderFeed;
+    let _origRenderFeed = renderFeed;
     renderFeed = function() {
       _origRenderFeed();
       setTimeout(trackFeedViews, 200);
     };
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // 🚀 MÓDULO 10: INICIO — Carga inicial del feed, notificaciones y hash
+    // ═════════════════════════════════════════════════════════════════════════
 
     // ── Init: cargar feed + notificaciones + avatar + inicializar hash ──
     loadInFeedAvatar();

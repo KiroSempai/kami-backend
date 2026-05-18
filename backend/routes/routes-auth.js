@@ -1,18 +1,8 @@
-/**
- * KAMI — routes-auth.js
- * Usa PostgreSQL real (via db.js / pool)
- *
- * Endpoints:
- *   POST   /api/auth/register
- *   POST   /api/auth/login
- *   POST   /api/auth/logout
- *   POST   /api/auth/verify
- *   GET    /api/auth/me
- *   POST   /api/auth/refresh
- *   GET    /api/auth/check-username/:username
- *   GET    /api/auth/check-email/:email
- */
-
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔐 KAMI — routes-auth.js
+// Autenticación: registro, login, logout, verificación, refresh, OAuth Google.
+// Rate limiting por IP en login/register.
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const { v4: uuidv4 } = require('uuid');
 const express = require('express');

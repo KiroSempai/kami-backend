@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🤝 KAMI — routes-friends.js
+// Gestión de amistades: solicitudes, aceptar, rechazar, listar.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

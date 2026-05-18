@@ -1,3 +1,9 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📚 KAMI — routes-manga.js
+// CRUD de mangas (KMI), capítulos, géneros, búsqueda, trending.
+// Incluye carga de imágenes (covers, banners) y auto-creación de comunidad.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

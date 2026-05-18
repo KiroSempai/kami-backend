@@ -1,3 +1,8 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🛡️ KAMI — routes-moderation.js
+// Moderación de contenido: reportes, acciones sobre usuarios y posts.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

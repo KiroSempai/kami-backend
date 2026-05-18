@@ -509,6 +509,18 @@ const pool = new Pool({
       }
     }
 
+    // ════════════════════════════════════════════════════════════════════
+    // Repost Clone System (X.com style)
+    // ════════════════════════════════════════════════════════════════════
+    await pool.query("ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS reposted_from_id INT REFERENCES feed_posts(id) ON DELETE CASCADE");
+    console.log('OK: reposted_from_id column added');
+    await pool.query("ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS reposter_user_id VARCHAR(60) REFERENCES users(id) ON DELETE CASCADE");
+    console.log('OK: reposter_user_id column added');
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_feed_posts_reposter ON feed_posts(reposter_user_id)");
+    console.log('OK: idx_feed_posts_reposter index created');
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_feed_posts_reposted_from ON feed_posts(reposted_from_id)");
+    console.log('OK: idx_feed_posts_reposted_from index created');
+
     console.log('\n✅ Migración completada exitosamente');
   } catch (e) {
     console.error('ERROR:', e.message);

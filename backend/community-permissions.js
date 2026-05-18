@@ -1,3 +1,11 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🛡️ KAMI — community-permissions.js
+// Helpers de verificación de permisos dentro de comunidades.
+// checkCommunityAdmin: verifica si el usuario es creator/moderator en la comunidad
+//   o admin global. checkCommunityPermission: verifica un permiso específico
+//   leyendo desde community_role_permissions.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const { pool } = require('./db');
 
 async function checkCommunityAdmin(userId, comId) {

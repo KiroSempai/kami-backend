@@ -1,3 +1,9 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// 👥 KAMI — routes-social.js
+// Gestión social: perfiles públicos, follow/unfollow, sugerencias,
+// biblioteca y estadísticas de usuario.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');

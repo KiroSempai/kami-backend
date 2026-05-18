@@ -89,9 +89,8 @@
     .comp-link-manga { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:999px; border:1px solid rgba(76,157,245,0.25); background:rgba(76,157,245,0.08); color:#4c9df5; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
     .comp-link-manga:hover { background:rgba(76,157,245,0.15); border-color:rgba(76,157,245,0.4); }
     .comp-link-manga i { font-size:14px; }
-    .comp-manga-tag { display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:12px; color:#4c9df5; cursor:pointer; transition:.1s; box-sizing:border-box; overflow:hidden; width:100%; flex-shrink:0; }
-    .comp-manga-tag:hover { background:rgba(76,157,245,0.1); }
-    .comp-manga-tag img { width:24px; height:32px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+    .comp-manga-tag { display:flex; align-items:center; gap:8px; width:100%; box-sizing:border-box; padding:8px 12px; height:48px; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:12px; color:#4c9df5; cursor:default; transition:.1s; overflow:hidden; flex-shrink:0; }
+    .comp-manga-tag img { width:24px; height:36px; border-radius:4px; object-fit:cover; flex-shrink:0; }
     .comp-manga-name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
     .comp-manga-search { position:relative; z-index:10; margin-bottom:4px; }
     .comp-manga-search input { width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#e0e0e0; font-family:inherit; font-size:13px; outline:none; box-sizing:border-box; }
@@ -449,8 +448,8 @@
       <div class="comp-body">
         <div class="comp-avatar" id="comp-avatar">?</div>
         <div class="comp-main">
-          <!-- Top row: comunidad + vínculo manga -->
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <!-- Fila 1: comunidad + botón vincular -->
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;">
             <select class="comp-audience" id="comp-community">
               <option value="">Mi perfil</option>
               <option value="seinen">Comunidad Seinen</option>
@@ -461,12 +460,11 @@
             <button class="comp-link-manga" onclick="openMangaSearch()" id="comp-link-btn"><i class="ti ti-book"></i> Vincular manga</button>
           </div>
 
-          <!-- Manga vinculado tag -->
-          <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;" onclick="unlinkManga()">
+          <!-- Fila 2: tag del manga (contenedor independiente) -->
+          <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;">
             <img id="comp-manga-cover" src="" alt="">
             <span class="comp-manga-name" id="comp-manga-name">Manga</span>
-            <span id="comp-manga-chapter" style="font-size:11px;color:rgba(255,255,255,0.3);margin-left:4px;cursor:pointer;" onclick="event.stopPropagation();openChapterSelector()"></span>
-            <span style="margin-left:auto;color:rgba(255,255,255,0.2);font-size:14px;cursor:pointer;">✕</span>
+            <span style="margin-left:auto;flex-shrink:0;cursor:pointer;">✕</span>
           </div>
 
           <!-- Manga search dropdown -->
@@ -2682,15 +2680,8 @@
       }
       // Auto-vincular manga si viene de comunidad
       if (autoMangaId && autoMangaTitle) {
+        _composerMangaLocked = true; // antes de linkManga para que oculte ✕ al renderizar
         linkManga(autoMangaId, autoMangaTitle, autoMangaCover || '');
-        _composerMangaLocked = true;
-        var tag = document.getElementById('comp-manga-tag');
-        if (tag) tag.style.borderColor = 'var(--accent)';
-        var closeBtn = document.querySelector('#comp-manga-tag > span:last-child');
-        if (closeBtn) closeBtn.style.display = 'none';
-      } else {
-        var closeBtn = document.querySelector('#comp-manga-tag > span:last-child');
-        if (closeBtn) closeBtn.style.display = '';
       }
     }
 
@@ -2705,8 +2696,6 @@
       _composerMangaLocked = false;
       var tag = document.getElementById('comp-manga-tag');
       if (tag) tag.style.borderColor = '';
-      var closeBtn = document.querySelector('#comp-manga-tag > span:last-child');
-      if (closeBtn) closeBtn.style.display = '';
     }
 
     function compUpdate(el) {
@@ -2771,25 +2760,16 @@
     }
 
     function linkManga(id, title, cover) {
-      if (_composerMangaLocked) return;
       linkedManga = { id: id, title: title, cover: cover };
       document.getElementById('comp-link-btn').style.display = 'none';
       document.getElementById('comp-manga-search').style.display = 'none';
       var tag = document.getElementById('comp-manga-tag');
       tag.style.display = 'flex';
-      tag.style.alignItems = 'center';
-      tag.style.justifyContent = 'space-between';
-      tag.style.width = '100%';
-      tag.style.boxSizing = 'border-box';
-      tag.style.padding = '8px 12px';
-      tag.style.height = '48px';
-      tag.style.overflow = 'hidden';
+      tag.style.borderColor = _composerMangaLocked ? 'var(--accent)' : 'rgba(76,157,245,0.12)';
       tag.innerHTML =
-        '<div style="display:flex;align-items:center;min-width:0;flex-grow:1;height:100%;">' +
-          (cover ? '<img src="' + cover.replace(/'/g,"\\'") + '" alt="" style="width:24px;height:36px;object-fit:cover;border-radius:4px;margin-right:12px;flex-shrink:0;">' : '') +
-          '<span style="color:#3b82f6;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">' + title + '</span>' +
-        '</div>' +
-        '<span onclick="unlinkManga()" style="cursor:pointer;padding:4px;color:#6b7280;flex-shrink:0;margin-left:8px;' + (_composerMangaLocked ? 'display:none;' : '') + '">✕</span>';
+        (cover ? '<img src="' + cover.replace(/'/g,"\\'") + '" alt="" style="width:24px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0;">' : '') +
+        '<span class="comp-manga-name">' + title + '</span>' +
+        '<span style="margin-left:auto;flex-shrink:0;cursor:pointer;' + (_composerMangaLocked ? 'display:none;' : '') + '" onclick="unlinkManga()">✕</span>';
     }
 
     function unlinkManga() {

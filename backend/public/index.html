@@ -1157,9 +1157,17 @@
     // ── Community detail (posts + chat con WebSocket) ──
     var _currentCommunityId = null;
     var _chatObserver = null;
+    var _commPostsCache = [];
+
+    function updateSearchPlaceholder() {
+      var input = document.getElementById('cr-search-input');
+      if (!input) return;
+      input.placeholder = _currentCommunityId ? 'Buscar en esta comunidad...' : 'Buscar en Comunidad';
+    }
 
     function openCommunity(id) {
       _currentCommunityId = id;
+      updateSearchPlaceholder();
       document.getElementById('communities-list-view').style.display = 'none';
       document.getElementById('community-detail-view').style.display = '';
       var token = localStorage.getItem('kami_token');
@@ -1182,6 +1190,7 @@
 
     function backToCommunitiesList() {
       _currentCommunityId = null;
+      updateSearchPlaceholder();
       document.getElementById('community-detail-view').style.display = 'none';
       document.getElementById('communities-list-view').style.display = '';
       if (socket && _chatObserver) { socket.emit('leave-post', 'comm-chat:' + _chatObserver); _chatObserver = null; }
@@ -1609,6 +1618,8 @@
 
     /* ── Comunidad in-feed view (como canales de noticias) ── */
     function cerrarVistaComunidad() {
+      _currentCommunityId = null;
+      updateSearchPlaceholder();
       document.getElementById('explorar-comunidad-detail-view').style.display = 'none';
       document.getElementById('explorer-main-view').style.display = '';
       window.history.back();
@@ -1616,6 +1627,8 @@
 
     function cargarDatosDeComunidad(comId) {
       _currentCommunityId = comId;
+      updateSearchPlaceholder();
+      _commPostsCache = [];
       var token = localStorage.getItem('kami_token');
       var opts = { headers: {} };
       if (token) opts.headers['Authorization'] = 'Bearer ' + token;
@@ -1691,6 +1704,7 @@
         // Posts
         var pc = document.getElementById('comunidad-detail-posts');
         if (postsData.success && postsData.posts && postsData.posts.length) {
+          _commPostsCache = postsData.posts;
           pc.innerHTML = renderFeedPosts(postsData.posts);
         } else {
           pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin publicaciones a&uacute;n. S&eacute; el primero en publicar.</div>';
@@ -2759,6 +2773,31 @@
         suggestEl.style.display = 'none';
         recentEl.style.display = '';
         emptyEl.style.display = '';
+        // Si estamos en comunidad y limpiamos, restaurar posts
+        if (_currentCommunityId && _commPostsCache.length) {
+          var pc = document.getElementById('comunidad-detail-posts');
+          if (pc) pc.innerHTML = renderFeedPosts(_commPostsCache);
+        }
+        return;
+      }
+      if (_currentCommunityId) {
+        // Modo comunidad: buscar en posts cacheados
+        suggestEl.style.display = 'none';
+        recentEl.style.display = 'none';
+        emptyEl.style.display = 'none';
+        var q = val.toLowerCase();
+        var filtered = _commPostsCache.filter(function(p) {
+          var txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
+          return txt.toLowerCase().indexOf(q) >= 0;
+        });
+        var pc = document.getElementById('comunidad-detail-posts');
+        if (pc) {
+          if (filtered.length) {
+            pc.innerHTML = renderFeedPosts(filtered);
+          } else {
+            pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin resultados para «' + val + '»</div>';
+          }
+        }
         return;
       }
       recentEl.style.display = 'none';
@@ -2781,7 +2820,28 @@
     function searchKeydown(e) {
       if (e.key === 'Enter') {
         var val = e.target.value.trim();
-        if (val) doSearch(val);
+        if (val) {
+          if (_currentCommunityId) {
+            // En comunidad: buscar posts con el texto
+            var q = val.toLowerCase();
+            var filtered = _commPostsCache.filter(function(p) {
+              var txt = (p.text || '') + ' ' + (p.user || '') + ' ' + (p.title || '');
+              return txt.toLowerCase().indexOf(q) >= 0;
+            });
+            var pc = document.getElementById('comunidad-detail-posts');
+            if (pc) {
+              if (filtered.length) {
+                pc.innerHTML = renderFeedPosts(filtered);
+              } else {
+                pc.innerHTML = '<div class="notif-empty" style="padding:60px;">Sin resultados para «' + val + '»</div>';
+              }
+            }
+            saveRecent(val);
+            closeSearch();
+          } else {
+            doSearch(val);
+          }
+        }
       }
       if (e.key === 'Escape') closeSearch();
     }

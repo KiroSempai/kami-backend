@@ -749,6 +749,7 @@
           setTimeout(function() {
             if (!_chapterTracked) {
               _chapterTracked = true;
+              console.log('[track] Capítulo ' + chapterNum + ' marcado como leído (10s)');
               fetch('/api/stats/track', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
@@ -761,6 +762,7 @@
             if (_chapterTracked) return;
             _chapterTracked = true;
             var elapsed = Math.max(1, Math.round((Date.now() - _chapterStartTime) / 60000));
+            console.log('[track] Capítulo ' + chapterNum + ' marcado al salir (' + elapsed + ' min)');
             fetch('/api/stats/track', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },

@@ -2302,7 +2302,7 @@
           var isCompleted = m.totalChapters > 0 && m.progress >= m.totalChapters;
           var btnText = isCompleted ? 'Completado' : (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + nextChapter);
           if (!isCompleted && (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned')) {
-            overlay += '<div onclick="event.stopPropagation();window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\'" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+            overlay += '<div onclick="window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\';return false;" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           } else {
             overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           }

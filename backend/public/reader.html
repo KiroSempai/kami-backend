@@ -742,34 +742,18 @@
         renderAllPages();
         updateProgress();
 
-        // Track chapter read: si lleva 10s, marca como leído; al salir, envía tiempo real
+        // Marcar capítulo como leído tras 10 segundos en el reader
         if (TOKEN) {
-          var _chapterTracked = false;
-          // A los 10 segundos: marca el capítulo como leído (mínimo 1 minuto)
           setTimeout(function() {
-            if (!_chapterTracked) {
-              _chapterTracked = true;
-              console.log('[track] Capítulo ' + chapterNum + ' marcado como leído (10s)');
-              fetch('/api/stats/track', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-                body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 1 })
-              }).catch(function(){});
-            }
-          }, 10000);
-          // Al salir: si aún no se marcó, enviar con tiempo real
-          window.addEventListener('beforeunload', function enviarTrack() {
-            if (_chapterTracked) return;
-            _chapterTracked = true;
-            var elapsed = Math.max(1, Math.round((Date.now() - _chapterStartTime) / 60000));
-            console.log('[track] Capítulo ' + chapterNum + ' marcado al salir (' + elapsed + ' min)');
+            console.log('[track] Marcando capítulo ' + chapterNum + ' como leído (10s)');
             fetch('/api/stats/track', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-              keepalive: true,
-              body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: elapsed })
-            }).catch(function(){});
-          });
+              body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 1 })
+            }).then(function(r) { return r.json(); })
+              .then(function(d) { console.log('[track] Respuesta:', d); })
+              .catch(function(e) { console.error('[track] Error:', e); });
+          }, 10000);
         }
 
       } catch(e) {

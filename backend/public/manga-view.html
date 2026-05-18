@@ -1031,6 +1031,16 @@
           }
         });
 
+        // Al volver del reader (pageshow), re-fetch progreso para atenuar capítulos
+        window.addEventListener('pageshow', function() {
+          var t = localStorage.getItem('kami_token');
+          if (t) {
+            fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + t } })
+              .then(function(r){ return r.json(); })
+              .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
+              .catch(function(){});
+          }
+        });
         loadManga();
         document.title = 'ScriptOK-' + mangaId;
     </script>

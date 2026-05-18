@@ -185,6 +185,13 @@ function classifyText(text) {
   return Object.keys(scores).reduce((best, g) => scores[g] > (scores[best] || 0) ? g : best, 'general');
 }
 
+async function optionalAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) { req.user = null; return next(); }
+  try { req.user = await verifyToken(token); next(); }
+  catch(e) { req.user = null; next(); }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // GET /api/feed/for-you  — Feed algoritmo "Manga Mixer" completo
 // ═══════════════════════════════════════════════════════════════
@@ -193,13 +200,14 @@ function classifyText(text) {
 const forYouCache = new Map();
 const CACHE_TTL_MS = 60000;
 
-router.get('/for-you', auth, async (req, res) => {
+router.get('/for-you', optionalAuth, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user?.userId || null;
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
-    const sessionId = req.query.session || (userId + '_' + Math.floor(Date.now() / 60000));
-    const cacheKey = userId + '_' + sessionId;
+    const guestKey = 'guest_' + Math.floor(Date.now() / 60000);
+    const sessionId = req.query.session || (userId ? userId + '_' + Math.floor(Date.now() / 60000) : guestKey);
+    const cacheKey = (userId || 'guest') + '_' + sessionId;
 
     // Check cache de scoring
     const cached = forYouCache.get(cacheKey);
@@ -234,6 +242,36 @@ router.get('/for-you', auth, async (req, res) => {
       }));
       const enriched = await enrichPosts(formatted, userId);
       return res.json({ feed_type: 'Para Ti', posts: enriched, offset, limit, session: sessionId, cached: true });
+    }
+
+    if (!userId) {
+      // Guest: feed cronológico simple sin personalización
+      const fallback = await pool.query(`
+        SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+               (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
+               (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
+               (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
+               (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
+        FROM feed_posts fp
+        LEFT JOIN users u ON u.id = fp.user_id
+        LEFT JOIN mangas m ON m.id = fp.manga_id
+        WHERE fp.parent_id IS NULL
+        ORDER BY fp.created_at DESC LIMIT $1 OFFSET $2
+      `, [limit, offset]);
+      const formatted = fallback.rows.map(post => ({
+        id: post.id, user: post.username || 'Anónimo', handle: '@' + (post.username || 'anon').toLowerCase(),
+        avatar: post.avatar || null, text: post.content || '', title: post.title || '',
+        type: post.post_type || 'post',
+        manga: post.manga_title ? { id: post.manga_id, title: post.manga_title, cover: post.manga_cover || null } : undefined,
+        chapter: post.chapter_number, spoiler: post.is_spoiler || false,
+        media_url: post.media_url || null, parent_id: post.parent_id || null,
+        score: 0, scoreBreakdown: null,
+        likes: parseInt(post.real_likes) || 0, replies: parseInt(post.real_replies) || 0,
+        reposts: parseInt(post.real_reposts) || 0, views_count: parseInt(post.views_count) || 0,
+        author_role: post.author_role || 'user', created_at: post.created_at,
+      }));
+      const enriched = await enrichPosts(formatted, null);
+      return res.json({ feed_type: 'Para Ti', posts: enriched, offset, limit, session: sessionId, guest: true });
     }
 
     const progress = await getUserProgress(userId);
@@ -437,7 +475,7 @@ router.get('/for-you', auth, async (req, res) => {
       created_at: post.created_at,
     }));
 
-    const enriched = await enrichPosts(formatted, req.user.userId);
+    const enriched = await enrichPosts(formatted, req.user?.userId);
     res.json({ feed_type: 'Para Ti', posts: enriched, offset, limit, session: sessionId });
 
   } catch (err) {
@@ -449,7 +487,7 @@ router.get('/for-you', auth, async (req, res) => {
 // ════════════════════════════════════════════════
 // GET /api/feed/latest  — Feed cronológico
 // ════════════════════════════════════════════════
-router.get('/latest', auth, async (req, res) => {
+router.get('/latest', optionalAuth, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
@@ -488,7 +526,7 @@ router.get('/latest', auth, async (req, res) => {
       created_at: post.created_at,
     }));
 
-    posts = await enrichPosts(posts, req.user.userId);
+    posts = await enrichPosts(posts, req.user?.userId || null);
     res.json({ feed_type: 'Últimos', posts, offset, limit });
 
   } catch (err) {

@@ -741,12 +741,12 @@
         renderAllPages();
         updateProgress();
 
-        // Track chapter read + auto-register lectura (fire & forget)
+        // Track chapter read (fire & forget) — alimenta stats, heatmap y biblioteca
         if (TOKEN) {
-          fetch('/api/manga/' + mangaId + '/chapter-read', {
+          fetch('/api/stats/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-            body: JSON.stringify({ chapterNumber: chapterNum })
+            body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 5 })
           }).catch(function(){});
         }
 

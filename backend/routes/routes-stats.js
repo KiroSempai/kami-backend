@@ -272,4 +272,58 @@ function calculateChaptersPerDay(total, userId) {
   return total > 0 ? Math.round((total / 30) * 10) / 10 : 0;
 }
 
+// 🚪 [POST] /api/stats/track
+// 👤 Permiso: auth
+// 📥 Body: { manga_id, chapter_number, minutes?: number (default 5) }
+// 📝 Registra lectura en cascada: user_tracking + user_manga_library + user_daily_activity
+router.post('/track', auth, async (req, res) => {
+  const userId = req.user.userId;
+  const { manga_id, chapter_number, minutes = 5 } = req.body;
+
+  if (!manga_id || !chapter_number) {
+    return res.status(400).json({ error: 'Faltan manga_id o chapter_number' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Insert en user_tracking
+    await client.query(
+      `INSERT INTO user_tracking (user_id, manga_id, action_type, metadata, created_at)
+       VALUES ($1, $2, 'chapter_read', $3, NOW())`,
+      [userId, manga_id, JSON.stringify({ minutes, chapter: chapter_number })]
+    );
+
+    // 2. Actualizar progreso en biblioteca (solo si el nuevo capítulo es mayor)
+    await client.query(
+      `UPDATE user_manga_library
+       SET progress = $1, updated_at = NOW()
+       WHERE user_id = $2 AND manga_id = $3 AND progress < $1`,
+      [chapter_number, userId, manga_id]
+    );
+
+    // 3. UPSERT en user_daily_activity para heatmap
+    await client.query(
+      `INSERT INTO user_daily_activity (user_id, activity_date, minutes_read, chapters_count)
+       VALUES ($1, CURRENT_DATE, $2, 1)
+       ON CONFLICT (user_id, activity_date)
+       DO UPDATE SET
+         minutes_read = user_daily_activity.minutes_read + $2,
+         chapters_count = user_daily_activity.chapters_count + 1`,
+      [userId, minutes]
+    );
+
+    await client.query('COMMIT');
+    res.json({ success: true, message: `Capítulo ${chapter_number} trackeado.` });
+
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[track] Error:', err.message);
+    res.status(500).json({ error: 'Error al trackear lectura' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

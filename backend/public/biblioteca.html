@@ -540,6 +540,17 @@
         } else {
             initPage();
         }
+
+        // Track login visitor
+        (function() {
+          var t = localStorage.getItem('kami_token');
+          if (!t) return;
+          fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + t },
+            body: JSON.stringify({ action_type: 'daily_login' })
+          }).catch(function(){});
+        })();
     </script>
 
   <script src="/js/notifications.js"></script>

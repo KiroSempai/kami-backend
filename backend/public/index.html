@@ -3214,8 +3214,20 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
     // 🚀 MÓDULO 10: INICIO — Carga inicial del feed, notificaciones y hash
     // ═════════════════════════════════════════════════════════════════════════
 
+    // ── Helper: trackAction global para login ──
+    window.trackAction = function(action_type, manga_id, metadata) {
+      var t = localStorage.getItem('kami_token');
+      if (!t) return;
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + t },
+        body: JSON.stringify({ action_type, manga_id: manga_id || null, metadata: metadata || {} })
+      }).catch(function(){});
+    };
+
     // ── Init: cargar feed + notificaciones + avatar + inicializar hash ──
     loadInFeedAvatar();
+    if (localStorage.getItem('kami_token')) { window.trackAction('daily_login'); }
     renderFeed();
     checkNotifs();
     setInterval(checkNotifs, 30000);

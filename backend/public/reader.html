@@ -742,6 +742,15 @@
         renderAllPages();
         updateProgress();
 
+        // Track daily login (solo una vez por día gracias al ON CONFLICT)
+        if (TOKEN) {
+          fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + TOKEN },
+            body: JSON.stringify({ action_type: 'daily_login' })
+          }).catch(function(){});
+        }
+
         // Marcar capítulo como leído tras 10 segundos en el reader
         if (TOKEN) {
           setTimeout(function() {

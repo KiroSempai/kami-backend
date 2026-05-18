@@ -2777,28 +2777,19 @@
       document.getElementById('comp-manga-search').style.display = 'none';
       var tag = document.getElementById('comp-manga-tag');
       tag.style.display = 'flex';
-      document.getElementById('comp-manga-name').textContent = title;
-      // Fijar cover del manga
-      var coverImg = document.getElementById('comp-manga-cover');
-      if (cover) {
-        coverImg.src = cover;
-        coverImg.style.display = '';
-      } else {
-        coverImg.src = '';
-        coverImg.style.display = 'none';
-      }
-      // Auto-rellenar capítulo desde la biblioteca
-      var token = localStorage.getItem('kami_token');
-      if (token) {
-        fetch('/api/library/check/' + id, { headers: { 'Authorization': 'Bearer ' + token } })
-          .then(function(r){ return r.json(); })
-          .then(function(d){
-            if (d.inLibrary && d.progress) {
-              document.getElementById('comp-manga-chapter').textContent = '· Cap. ' + d.progress;
-            }
-          })
-          .catch(function(){});
-      }
+      tag.style.alignItems = 'center';
+      tag.style.justifyContent = 'space-between';
+      tag.style.width = '100%';
+      tag.style.boxSizing = 'border-box';
+      tag.style.padding = '8px 12px';
+      tag.style.height = '48px';
+      tag.style.overflow = 'hidden';
+      tag.innerHTML =
+        '<div style="display:flex;align-items:center;min-width:0;flex-grow:1;height:100%;">' +
+          (cover ? '<img src="' + cover.replace(/'/g,"\\'") + '" alt="" style="width:24px;height:36px;object-fit:cover;border-radius:4px;margin-right:12px;flex-shrink:0;">' : '') +
+          '<span style="color:#3b82f6;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">' + title + '</span>' +
+        '</div>' +
+        '<span onclick="unlinkManga()" style="cursor:pointer;padding:4px;color:#6b7280;flex-shrink:0;margin-left:8px;' + (_composerMangaLocked ? 'display:none;' : '') + '">✕</span>';
     }
 
     function unlinkManga() {
@@ -2810,12 +2801,14 @@
 
     function openChapterSelector() {
       if (!linkedManga) return;
-      var current = document.getElementById('comp-manga-chapter').textContent.replace(/[^0-9]/g, '') || '';
+      var chEl = document.getElementById('comp-manga-chapter');
+      if (!chEl) return;
+      var current = chEl.textContent.replace(/[^0-9]/g, '') || '';
       var cap = prompt('Capítulo:', current);
       if (cap !== null && cap.trim()) {
         var num = parseInt(cap);
         if (!isNaN(num) && num > 0) {
-          document.getElementById('comp-manga-chapter').textContent = '· Cap. ' + num;
+          chEl.textContent = '· Cap. ' + num;
         }
       }
     }

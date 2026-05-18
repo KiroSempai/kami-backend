@@ -1304,24 +1304,6 @@
       }).then(function(r){return r.json()}).catch(function(){});
     }
 
-    // Escuchar mensajes de chat en vivo
-    if (socket) {
-      socket.on('chat-message', function(data) {
-        let container = document.getElementById('comm-chat-messages');
-        if (!container) return;
-        let empty = container.querySelector('.notif-empty');
-        if (empty) container.innerHTML = '';
-        container.insertAdjacentHTML('beforeend',
-          '<div style="display:flex;gap:8px;padding:8px 16px;">' +
-          '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
-          (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" class="obj-cover">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
-          '<div><div style="font-size:12px;font-weight:600;">' + data.username + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">Ahora</span></div>' +
-          '<div style="font-size:13px;margin-top:2px;">' + data.message + '</div></div></div>'
-        );
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-
     // ═════════════════════════════════════════════════════════════════════════
     // 🧭 MÓDULO 5: ENRUTADOR Y COMUNIDADES — Hash routing, detalle, miembros
     // ═════════════════════════════════════════════════════════════════════════
@@ -1385,7 +1367,7 @@
     let detailViewPostId = null;
 
     // ── Socket.io conexión para tiempo real ──
-    let socket = null;
+    var socket = null;
     try {
       if (typeof io !== 'undefined') {
         socket = io();
@@ -1394,6 +1376,19 @@
           if (data.parent_id && data.parent_id === detailViewPostId) {
             fetchRepliesAndRefresh(data.parent_id);
           }
+        });
+        // Escuchar mensajes de chat en vivo
+        socket.on('chat-message', function(data) {
+          let container = document.getElementById('comm-chat-messages');
+          if (!container) return;
+          let empty = container.querySelector('.notif-empty');
+          if (empty) container.innerHTML = '';
+          container.insertAdjacentHTML('beforeend',
+            '<div style="display:flex;gap:8px;padding:8px 16px;">' +
+            '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
+            (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" class="obj-cover">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
+            '<div><div style="font-size:12px;font-weight:600;">' + data.username + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">Ahora</span></div>' +
+            '<div style="font-size:13px;margin-top:2px;">' + data.message + '</div></div></div>');
         });
       }
     } catch(e) {}

@@ -402,25 +402,37 @@ router.get('/history/:userId', async (req, res) => {
   }
 });
 
-// 🚪 [GET] /api/stats/xp/:userId — XP y nivel del usuario
+// 🚪 [GET] /api/stats/xp/:userId — XP y nivel del usuario (rebalanced)
 // 👤 Permiso: público
-// 📤 Respuesta: { xp, level, xpForNext, progress }
+// 📝 Daily login (+15), capítulos (+10), posts (+15), comentarios (+5),
+//     likes recibidos (+2), racha (+3/día), obras en biblioteca (+1)
 router.get('/xp/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    const [chapters, posts, likes, library] = await Promise.all([
-      pool.query("SELECT COALESCE(SUM(progress),0) AS total_chapters FROM user_manga_library WHERE user_id = $1", [userId]),
-      pool.query("SELECT COUNT(*) AS count FROM feed_posts WHERE user_id = $1 AND parent_id IS NULL", [userId]),
-      pool.query("SELECT COUNT(*) AS count FROM feed_interactions WHERE interaction_type = 'like' AND post_id IN (SELECT id FROM feed_posts WHERE user_id = $1)", [userId]),
-      pool.query("SELECT COUNT(*) AS count FROM user_manga_library WHERE user_id = $1", [userId]),
+    const [chapters, posts, commentsForo, commentsManga, likes, library, uniqueLogins] = await Promise.all([
+      pool.query("SELECT COALESCE(SUM(progress),0) AS total FROM user_manga_library WHERE user_id=$1", [userId]),
+      pool.query("SELECT COUNT(*) AS total FROM feed_posts WHERE user_id=$1 AND parent_id IS NULL", [userId]),
+      pool.query("SELECT COUNT(*) AS total FROM feed_posts WHERE user_id=$1 AND parent_id IS NOT NULL", [userId]),
+      pool.query("SELECT COUNT(*) AS total FROM chapter_comments WHERE user_id=$1", [userId]),
+      pool.query("SELECT COUNT(*) AS total FROM feed_interactions WHERE interaction_type='like' AND post_id IN (SELECT id FROM feed_posts WHERE user_id=$1)", [userId]),
+      pool.query("SELECT COUNT(*) AS total FROM user_manga_library WHERE user_id=$1", [userId]),
+      pool.query("SELECT COUNT(DISTINCT activity_date) AS total FROM user_daily_activity WHERE user_id=$1", [userId]),
     ]);
 
-    const totalChapters = parseInt(chapters.rows[0].total_chapters) || 0;
-    const totalPosts = parseInt(posts.rows[0].count) || 0;
-    const totalLikes = parseInt(likes.rows[0].count) || 0;
-    const totalLibrary = parseInt(library.rows[0].count) || 0;
+    const streakData = await calculateStreak(userId);
 
-    const xp = (totalChapters * 10) + (totalPosts * 5) + (totalLikes * 2) + (totalLibrary * 1);
+    const totalChapters = parseInt(chapters.rows[0].total) || 0;
+    const totalPosts = parseInt(posts.rows[0].total) || 0;
+    const totalComments = (parseInt(commentsForo.rows[0].total) || 0) + (parseInt(commentsManga.rows[0].total) || 0);
+    const totalLikes = parseInt(likes.rows[0].total) || 0;
+    const totalLibrary = parseInt(library.rows[0].total) || 0;
+    const totalLogins = parseInt(uniqueLogins.rows[0].total) || 0;
+    const currentStreak = streakData.current;
+
+    const xp = (totalLogins * 15) + (totalChapters * 10) + (totalPosts * 15)
+             + (totalComments * 5) + (totalLikes * 2) + (currentStreak * 3)
+             + (totalLibrary * 1);
+
     const level = Math.floor(Math.sqrt(xp / 100)) + 1;
     const xpForCurrent = Math.pow(level - 1, 2) * 100;
     const xpForNext = Math.pow(level, 2) * 100;

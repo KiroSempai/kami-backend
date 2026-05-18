@@ -751,6 +751,19 @@
           }).catch(function(){});
         }
 
+        // ── XP Floating Animation (Game Feel) — fallback si entran directo al perfil ──
+        window.mostrarAnimacionXPGanada = function(puntos, textoMotivo, origen) {
+          var p = document.createElement('div');
+          p.style.cssText = 'position:fixed;display:flex;flex-direction:column;align-items:center;z-index:999999;pointer-events:none;opacity:1;transform:scale(0.6) translateY(0);transition:transform 0.8s cubic-bezier(0.18,0.89,0.32,1.2),opacity 0.6s ease-out;';
+          p.innerHTML = '<span style="font-size:16px;font-weight:900;color:#10b981;text-shadow:0 2px 6px rgba(0,0,0,0.6);">+' + puntos + ' XP</span><span style="font-size:10px;color:#e5e7eb;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.5);">' + textoMotivo + '</span>';
+          if (origen && origen.clientX) { p.style.left = (origen.clientX - 20) + 'px'; p.style.top = (origen.clientY - 25) + 'px'; }
+          else if (origen && origen.getBoundingClientRect) { var r = origen.getBoundingClientRect(); p.style.left = (r.left + r.width/2 - 20) + 'px'; p.style.top = (r.top - 20) + 'px'; }
+          else { p.style.bottom = '100px'; p.style.right = '50px'; }
+          document.body.appendChild(p);
+          requestAnimationFrame(function() { p.style.transform = 'scale(1.1) translateY(-50px)'; setTimeout(function() { p.style.opacity = '0'; }, 400); setTimeout(function() { p.remove(); }, 800); });
+          if (typeof loadXp === 'function') setTimeout(loadXp, 150);
+        };
+
         // ── Interaction functions (copiado de index.html) ──
         function likePost(el) {
             el.classList.toggle('liked');

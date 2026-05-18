@@ -760,7 +760,7 @@
               headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
               body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 1 })
             }).then(function(r) { return r.json(); })
-              .then(function(d) { console.log('[track] Respuesta:', d); })
+              .then(function(d) { console.log('[track] Respuesta:', d); if (typeof window.mostrarAnimacionXPGanada === 'function' && d.success) window.mostrarAnimacionXPGanada(10, '¡Capítulo Leído! 📖'); })
               .catch(function(e) { console.error('[track] Error:', e); });
           }, 10000);
         }

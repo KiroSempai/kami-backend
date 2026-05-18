@@ -272,8 +272,7 @@ router.post('/:id/banner', auth, commUpload.single('banner'), async (req, res) =
     if (!req.file) return res.status(400).json({ error: 'No se envió ninguna imagen' });
     var isAdmin = await checkCommunityAdmin(req.user.userId, req.params.id);
     if (!isAdmin) return res.status(403).json({ error: 'No tienes permisos' });
-    var ext = req.file.mimetype.split('/')[1] || 'jpeg';
-    var b64 = req.file.buffer.toString('base64');
+    var b64 = fs.readFileSync(req.file.path).toString('base64');
     var dataUrl = 'data:' + req.file.mimetype + ';base64,' + b64;
     await pool.query('UPDATE communities SET banner_url = $1, updated_at = NOW() WHERE id = $2', [dataUrl, req.params.id]);
     try { fs.unlinkSync(req.file.path); } catch(e) {}
@@ -290,8 +289,7 @@ router.post('/:id/avatar', auth, commUpload.single('avatar'), async (req, res) =
     if (!req.file) return res.status(400).json({ error: 'No se envió ninguna imagen' });
     var isAdmin = await checkCommunityAdmin(req.user.userId, req.params.id);
     if (!isAdmin) return res.status(403).json({ error: 'No tienes permisos' });
-    var ext = req.file.mimetype.split('/')[1] || 'jpeg';
-    var b64 = req.file.buffer.toString('base64');
+    var b64 = fs.readFileSync(req.file.path).toString('base64');
     var dataUrl = 'data:' + req.file.mimetype + ';base64,' + b64;
     await pool.query('UPDATE communities SET avatar_url = $1, updated_at = NOW() WHERE id = $2', [dataUrl, req.params.id]);
     try { fs.unlinkSync(req.file.path); } catch(e) {}

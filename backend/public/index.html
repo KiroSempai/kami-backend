@@ -1311,6 +1311,7 @@
     var replyToPostId = null;
     var quotePostId = null;
     var _currentCommunityId = null;
+    var _composerMangaLocked = false;
     var detailViewPostId = null;
 
     // ── Socket.io conexión para tiempo real ──
@@ -1629,7 +1630,7 @@
         if (composerContainer) {
           if (c.my_role) {
             composerContainer.innerHTML =
-              '<div onclick="openComposer(\'' + comId + '\')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--border);cursor:pointer;">' +
+              '<div onclick="openComposer(\'' + comId + '\',\'' + (c.manga_id || '') + '\',\'' + (c.manga_title || '').replace(/'/g,'\\\'') + '\')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--border);cursor:pointer;">' +
                 '<div style="width:40px;height:40px;min-width:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;overflow:hidden;" id="comm-composer-avatar"></div>' +
                 '<div style="flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:14px;color:var(--text-muted);">Publicar algo en ' + c.name + '...</div>' +
               '</div>';
@@ -2641,7 +2642,7 @@
       } catch(e) { el.style.display = 'none'; }
     }
 
-    function openComposer(communityId) {
+    function openComposer(communityId, autoMangaId, autoMangaTitle) {
       document.getElementById('composer-overlay').classList.add('open');
       document.getElementById('composer').classList.add('open');
       loadAvatar();
@@ -2662,6 +2663,8 @@
         document.getElementById('comp-creator-options').style.display = (['admin','company','creator'].indexOf(role) >= 0) ? 'flex' : 'none';
         document.getElementById('comp-global-opt').style.display = (role === 'admin') ? 'flex' : 'none';
       } catch(e) {}
+      // Reset manga lock
+      _composerMangaLocked = false;
       // Si se pasa communityId, seleccionarlo en el dropdown
       if (communityId) {
         var sel = document.getElementById('comp-community');
@@ -2676,6 +2679,13 @@
           sel.value = communityId;
         }
       }
+      // Auto-vincular manga si viene de comunidad
+      if (autoMangaId && autoMangaTitle) {
+        linkManga(autoMangaId, autoMangaTitle, '');
+        _composerMangaLocked = true;
+        var tag = document.getElementById('comp-manga-tag');
+        if (tag) tag.style.borderColor = 'var(--accent)';
+      }
     }
 
     function closeComposerForce() {
@@ -2686,6 +2696,9 @@
       if (qp) { qp.style.display = 'none'; qp.innerHTML = ''; }
       replyToPostId = null;
       quotePostId = null;
+      _composerMangaLocked = false;
+      var tag = document.getElementById('comp-manga-tag');
+      if (tag) tag.style.borderColor = '';
     }
 
     function compUpdate(el) {
@@ -2715,6 +2728,7 @@
 
     // ── Manga vinculado ──
     function openMangaSearch() {
+      if (_composerMangaLocked) return;
       var el = document.getElementById('comp-manga-search');
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
       if (el.style.display === 'block') document.getElementById('comp-manga-input').focus();
@@ -2749,6 +2763,7 @@
     }
 
     function linkManga(id, title, cover) {
+      if (_composerMangaLocked) return;
       linkedManga = { id: id, title: title, cover: cover };
       document.getElementById('comp-link-btn').style.display = 'none';
       document.getElementById('comp-manga-search').style.display = 'none';
@@ -2770,6 +2785,7 @@
     }
 
     function unlinkManga() {
+      if (_composerMangaLocked) return;
       linkedManga = null;
       document.getElementById('comp-link-btn').style.display = '';
       document.getElementById('comp-manga-tag').style.display = 'none';

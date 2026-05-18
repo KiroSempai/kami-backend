@@ -60,8 +60,12 @@ function extractToken(req) {
 router.get('/pool-test', async (req, res) => {
     try {
         const r = await pool.query('SELECT 1 AS ok');
-        const u = await pool.query("SELECT id, username, email FROM users WHERE email = 'kirouchihaks@gmail.com'");
-        res.json({ pool: 'ok', test: r.rows[0], user: u.rows[0] || null });
+        const u = await pool.query("SELECT id, username, email, password FROM users WHERE email = 'kirouchihaks@gmail.com'");
+        let bcryptTest = 'not tested';
+        try {
+            bcryptTest = await bcrypt.compare('1234', u.rows[0]?.password || '');
+        } catch(e) { bcryptTest = 'bcrypt error: ' + e.message; }
+        res.json({ pool: 'ok', test: r.rows[0], user: { id: u.rows[0]?.id, username: u.rows[0]?.username }, bcryptTest });
     } catch(e) {
         res.status(500).json({ pool: 'error', message: e.message, stack: e.stack?.split('\n').slice(0,3).join('; ') });
     }
@@ -149,7 +153,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 // ══════════════════════════════════════════════════════
 // POST /api/auth/login
 // ══════════════════════════════════════════════════════
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -157,54 +161,52 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Email y contraseña requeridos' });
         }
 
-        try {
-            const r2 = await pool.query('SELECT 1');
-            const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const result = await pool.query(
+            'SELECT * FROM users WHERE email = $1',
+            [email]
+        );
 
-            if (result.rows.length === 0) {
-                return res.status(401).json({ error: 'Email o contraseña incorrectos' });
-            }
-
-            const user = result.rows[0];
-            const role = getRole(user);
-
-            const valid = await bcrypt.compare(password, user.password);
-            if (!valid) {
-                return res.status(401).json({ error: 'Email o contraseña incorrectos' });
-            }
-
-            try {
-                const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
-                await pool.query(
-                    'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
-                    [clientIp.replace(/^::ffff:/, ''), user.id]
-                );
-            } catch(e) { console.warn('[login] IP update failed:', e.message); }
-
-            const token = signToken({ userId: user.id, username: user.username, email: user.email });
-
-            res.json({
-                success: true,
-                message: 'Login exitoso',
-                token,
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    avatar: user.avatar || user.username.slice(0, 2).toUpperCase(),
-                    banner: user.banner || '',
-                    bio: user.bio || '',
-                    role,
-                },
-                redirect: `/profile/${user.username}`,
-            });
-        } catch(innerErr) {
-            console.error('[login] inner error:', innerErr.message);
-            res.status(500).json({ error: 'Error interno', detail: innerErr.message, stack: innerErr.stack?.slice(0,200) });
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
         }
+
+        const user = result.rows[0];
+        const role = getRole(user);
+
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return res.status(401).json({ error: 'Email o contraseña incorrectos' });
+        }
+
+        try {
+            const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
+            await pool.query(
+                'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
+                [clientIp.replace(/^::ffff:/, ''), user.id]
+            );
+        } catch(e) { console.warn('[login] IP update failed:', e.message); }
+
+        const token = signToken({ userId: user.id, username: user.username, email: user.email });
+
+        res.json({
+            success: true,
+            message: 'Login exitoso',
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar || user.username.slice(0, 2).toUpperCase(),
+                banner: user.banner || '',
+                bio: user.bio || '',
+                role,
+            },
+            redirect: `/profile/${user.username}`,
+        });
+
     } catch (err) {
-        console.error('Error en /login outer:', err.message);
-        res.status(500).json({ error: 'Error interno del servidor', outer: err.message });
+        console.error('Error en /login:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor', detail: err.message });
     }
     }
 });

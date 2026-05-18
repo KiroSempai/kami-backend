@@ -347,18 +347,26 @@ router.get('/:id/members', async (req, res) => {
   }
 });
 
-// POST /api/communities/:id/set-role — Gestionar roles locales (solo creator)
+// POST /api/communities/:id/set-role — Gestionar roles locales
 router.post('/:id/set-role', auth, async (req, res) => {
   try {
     const { target_user_id, new_role } = req.body;
     const callerId = req.user.userId;
 
-    if (!['moderator', 'member'].includes(new_role)) {
-      return res.status(400).json({ error: 'Rol no válido. Permitidos: moderator, member' });
+    if (!['moderator', 'member', 'creator'].includes(new_role)) {
+      return res.status(400).json({ error: 'Rol no válido. Permitidos: creator, moderator, member' });
     }
 
+    const callerGlobal = await pool.query("SELECT role FROM user_with_role WHERE id = $1", [callerId]);
+    const isGlobalAdmin = callerGlobal.rows[0]?.role === 'admin';
     const canManage = await checkCommunityPermission(callerId, req.params.id, 'can_manage_roles');
-    if (!canManage) {
+
+    // Solo admin global puede asignar 'creator'
+    if (new_role === 'creator' && !isGlobalAdmin) {
+      return res.status(403).json({ error: 'Solo un administrador global puede asignar el rol creator' });
+    }
+
+    if (!canManage && !isGlobalAdmin) {
       return res.status(403).json({ error: 'No tienes permisos para gestionar roles en esta comunidad' });
     }
 
@@ -375,8 +383,8 @@ router.post('/:id/set-role', auth, async (req, res) => {
       return res.status(404).json({ error: 'El usuario objetivo no es miembro de esta comunidad' });
     }
 
-    // No permitir degradar a otro creator (solo admin global puede hacerlo)
-    if (targetMember.rows[0].role === 'creator') {
+    // Solo admin global puede modificar el rol de un creator
+    if (targetMember.rows[0].role === 'creator' && !isGlobalAdmin) {
       return res.status(403).json({ error: 'No puedes modificar el rol de un creator' });
     }
 

@@ -1383,7 +1383,7 @@
 
     function renderFeedPosts(posts, isReply) {
       var _isAdmin = false;
-      try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); _isAdmin = _u && _u.role === 'admin'; } catch(e) {}
+      try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); var _t = localStorage.getItem('kami_token'); _isAdmin = _u && _u.role === 'admin' && _t; } catch(e) {}
       var isReplyMode = isReply === true;
       return posts.map(function(p) {
         var avatarStyle, avatarContent;

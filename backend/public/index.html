@@ -214,6 +214,20 @@
     .badge-role.moderator { color:#4c9df5; border:1px solid rgba(76,157,245,0.4); background:rgba(76,157,245,0.08); }
     .role-select { padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--text-primary); font-size:12px; font-family:inherit; cursor:pointer; outline:none; }
     .role-select:hover { border-color:var(--accent); }
+    .rm-card { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; transition:.1s; }
+    .rm-card:hover { background:rgba(255,255,255,0.02); }
+    .rm-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:600; }
+    .rm-info { flex:1; min-width:0; line-height:1.3; }
+    .rm-name { font-size:13px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rm-role { font-size:11px; color:var(--text-muted); }
+    .rm-actions { display:flex; gap:4px; flex-shrink:0; }
+    .rm-btn { padding:3px 7px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:11px; cursor:pointer; font-family:inherit; transition:.1s; white-space:nowrap; }
+    .rm-btn:hover { border-color:var(--accent); color:var(--text-primary); }
+    .rm-btn.ascend:hover { border-color:#4c9df5; color:#4c9df5; }
+    .rm-btn.descend:hover { border-color:#f59e0b; color:#f59e0b; }
+    .rm-btn.kick:hover { border-color:#e8344a; color:#e8344a; }
+    .rm-btn.ban:hover { border-color:#ff0000; color:#ff0000; }
+    .rm-btn.unban:hover { border-color:var(--green); color:var(--green); }
     .feed-post-reading { font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(76,157,245,0.1); color:#4c9df5; font-weight:600; }
     .feed-post-text { font-size:13px; color:#e0e0e0; line-height:1.5; margin-top:4px; word-wrap:break-word; }
     .feed-post-text .spoiler-blur { filter:blur(6px); cursor:pointer; transition:.2s; user-select:none; display:inline; }
@@ -1175,50 +1189,130 @@
         }).catch(function(){});
     }
 
+    var _roleManagerCommunityId = null;
+    var _roleManagerMyRole = null;
+
     function openRoleManager(communityId, myRole) {
+      _roleManagerCommunityId = communityId;
+      _roleManagerMyRole = myRole;
       var token = localStorage.getItem('kami_token');
       if (!token || (myRole !== 'creator' && myRole !== 'moderator')) return;
+      loadMembersTab();
+    }
+
+    function loadMembersTab() {
+      var communityId = _roleManagerCommunityId;
+      var myRole = _roleManagerMyRole;
+      document.getElementById('members-panel-title').innerHTML = '👥 Miembros <span id="rm-tab-switch" style="margin-left:8px;font-size:12px;font-weight:400;cursor:pointer;color:var(--accent);" onclick="loadBannedList()">🚫 Baneados</span>';
       fetch('/api/communities/' + communityId + '/members')
         .then(function(r){return r.json()}).then(function(d){
           if (!d.success) return;
-          document.getElementById('members-panel-title').textContent = '👥 Miembros';
           var list = document.getElementById('members-panel-list');
           list.innerHTML = d.members.map(function(m){
             var myId = (function(){try{return JSON.parse(localStorage.getItem('kami_user')||'null').id}catch(e){return null}})();
             var isSelf = m.user_id && m.user_id === myId;
-            var canManage = myRole === 'creator' && m.role !== 'creator' && !isSelf;
             var roleLabel = m.role === 'creator' ? '👑 Creador' : m.role === 'moderator' ? '🛡️ Mod' : '👥 Miembro';
-            var selectHtml = canManage ? '<select class="role-select" data-user="' + m.user_id + '" data-comm="' + communityId + '" onchange="setUserRole(this)">' +
-              '<option value="moderator"' + (m.role==='moderator'?' selected':'') + '>🛡️ Mod</option>' +
-              '<option value="member"' + (m.role==='member'?' selected':'') + '>👥 Miembro</option>' +
-              '</select>' : '<span style="font-size:12px;color:var(--text-muted);">' + roleLabel + '</span>';
-            return '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;">' +
-              '<div style="width:32px;height:32px;border-radius:50%;background:' + (m.avatar && m.avatar.indexOf('/')>=0 ? 'transparent;overflow:hidden;' : (m.avatar||'#e8344a')) + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;">' +
+            var canAscend = myRole === 'creator' && m.role === 'member' && !isSelf;
+            var canDescend = myRole === 'creator' && m.role === 'moderator' && !isSelf;
+            var canKick = (myRole === 'creator' || myRole === 'moderator') && m.role !== 'creator' && !isSelf;
+            var canBan = canKick;
+            var actionsHtml = '';
+            if (canAscend) actionsHtml += '<button class="rm-btn ascend" onclick="ascendMember(\'' + communityId + '\',\'' + m.user_id + '\')" title="Ascender a moderador">⬆ Asc</button>';
+            if (canDescend) actionsHtml += '<button class="rm-btn descend" onclick="descendMember(\'' + communityId + '\',\'' + m.user_id + '\')" title="Descender a miembro">⬇ Desc</button>';
+            if (canKick) actionsHtml += '<button class="rm-btn kick" onclick="removeMember(\'' + communityId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Eliminar de la comunidad">❌ Elim</button>';
+            if (canBan) actionsHtml += '<button class="rm-btn ban" onclick="banMember(\'' + communityId + '\',\'' + m.user_id + '\',\'' + (m.username||'') + '\')" title="Banear de la comunidad">🚫 Ban</button>';
+            return '<div class="rm-card">' +
+              '<div class="rm-avatar" style="background:' + (m.avatar && m.avatar.indexOf('/')>=0 ? 'transparent;overflow:hidden;' : (m.avatar||'#e8344a')) + ';">' +
               (m.avatar && m.avatar.indexOf('/')>=0 ? '<img src="' + m.avatar + '" style="width:100%;height:100%;object-fit:cover;">' : (m.username||'?').charAt(0)) +
               '</div>' +
-              '<div style="flex:1;min-width:0;line-height:1.3;">' +
-              '<div style="font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (m.username||'Anónimo') + '</div>' +
-              '<div style="font-size:11px;color:var(--text-muted);">' + roleLabel + '</div>' +
-              '</div>' + selectHtml +
+              '<div class="rm-info"><div class="rm-name">' + (m.username||'Anónimo') + '</div><div class="rm-role">' + roleLabel + '</div></div>' +
+              (actionsHtml ? '<div class="rm-actions">' + actionsHtml + '</div>' : '') +
               '</div>';
           }).join('');
           document.getElementById('members-panel').style.display = 'flex';
         }).catch(function(){});
     }
 
-    function setUserRole(sel) {
-      var userId = sel.dataset.user;
-      var communityId = sel.dataset.comm;
-      var newRole = sel.value;
+    function ascendMember(commId, userId) {
       var token = localStorage.getItem('kami_token');
       if (!token) return;
-      fetch('/api/communities/' + communityId + '/set-role', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
-        body: JSON.stringify({ target_user_id: userId, new_role: newRole })
+      fetch('/api/communities/' + commId + '/set-role', {
+        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ target_user_id: userId, new_role: 'moderator' })
       }).then(function(r){return r.json()}).then(function(d){
-        if (d.success) { openRoleManager(communityId, 'creator'); }
-        else { alert(d.error); }
+        if (d.success) { loadMembersTab(); } else { alert(d.error); }
+      }).catch(function(){});
+    }
+
+    function descendMember(commId, userId) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + commId + '/set-role', {
+        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ target_user_id: userId, new_role: 'member' })
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) { loadMembersTab(); } else { alert(d.error); }
+      }).catch(function(){});
+    }
+
+    function removeMember(commId, userId, username) {
+      if (!confirm('¿Eliminar a @' + username + ' de la comunidad?')) return;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + commId + '/members/' + userId, {
+        method: 'DELETE', headers: { 'Authorization':'Bearer ' + token }
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) { loadMembersTab(); } else { alert(d.error); }
+      }).catch(function(){});
+    }
+
+    function banMember(commId, userId, username) {
+      var reason = prompt('Motivo del ban a @' + username + ':');
+      if (reason === null) return;
+      if (!confirm('¿Banear a @' + username + ' de la comunidad?\nMotivo: ' + (reason || '(sin motivo)'))) return;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + commId + '/ban', {
+        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ target_user_id: userId, reason: reason || '' })
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) { loadMembersTab(); } else { alert(d.error); }
+      }).catch(function(){});
+    }
+
+    function loadBannedList() {
+      var communityId = _roleManagerCommunityId;
+      var myRole = _roleManagerMyRole;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      document.getElementById('members-panel-title').innerHTML = '🚫 Baneados <span style="margin-left:8px;font-size:12px;font-weight:400;cursor:pointer;color:var(--accent);" onclick="loadMembersTab()">👥 Miembros</span>';
+      fetch('/api/communities/' + communityId + '/bans', { headers: { 'Authorization':'Bearer ' + token } })
+        .then(function(r){return r.json()}).then(function(d){
+          if (!d.success) { document.getElementById('members-panel-list').innerHTML = '<div class="notif-empty">Error</div>'; return; }
+          var list = document.getElementById('members-panel-list');
+          if (!d.bans.length) { list.innerHTML = '<div class="notif-empty">No hay usuarios baneados</div>'; return; }
+          list.innerHTML = d.bans.map(function(b){
+            return '<div class="rm-card">' +
+              '<div class="rm-avatar" style="background:' + (b.avatar && b.avatar.indexOf('/')>=0 ? 'transparent;overflow:hidden;' : (b.avatar||'#e8344a')) + ';">' +
+              (b.avatar && b.avatar.indexOf('/')>=0 ? '<img src="' + b.avatar + '" style="width:100%;height:100%;object-fit:cover;">' : (b.username||'?').charAt(0)) +
+              '</div>' +
+              '<div class="rm-info"><div class="rm-name">' + (b.username||'Anónimo') + '</div><div class="rm-role" style="color:var(--red);">🚫 Baneado · ' + timeAgo(b.banned_at) + '</div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">' + (b.reason || 'Sin motivo') + '</div></div>' +
+              '<div class="rm-actions"><button class="rm-btn unban" onclick="unbanMember(\'' + communityId + '\',\'' + b.user_id + '\',\'' + (b.username||'') + '\')" title="Desbanear">✅ Desban</button></div>' +
+              '</div>';
+          }).join('');
+          document.getElementById('members-panel').style.display = 'flex';
+        }).catch(function(){});
+    }
+
+    function unbanMember(commId, userId, username) {
+      if (!confirm('¿Desbanear a @' + username + '?')) return;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/communities/' + commId + '/unban', {
+        method: 'POST', headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ target_user_id: userId })
+      }).then(function(r){return r.json()}).then(function(d){
+        if (d.success) { loadBannedList(); } else { alert(d.error); }
       }).catch(function(){});
     }
 

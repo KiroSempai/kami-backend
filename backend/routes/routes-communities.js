@@ -232,6 +232,13 @@ router.post('/:id/join', auth, async (req, res) => {
   try {
     var userId = req.user.userId;
     var comId = req.params.id;
+
+    // Ban check antes de cualquier operación
+    var banCheck = await pool.query("SELECT reason FROM community_bans WHERE community_id = $1 AND user_id = $2", [comId, userId]);
+    if (banCheck.rows.length > 0) {
+      return res.status(403).json({ error: 'Has sido vetado de esta comunidad. Motivo: ' + (banCheck.rows[0].reason || 'No especificado') });
+    }
+
     // Verificar si ya es miembro
     var member = await pool.query("SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2", [comId, userId]);
     if (member.rows.length) {
@@ -239,8 +246,10 @@ router.post('/:id/join', auth, async (req, res) => {
       await pool.query("DELETE FROM community_members WHERE community_id = $1 AND user_id = $2", [comId, userId]);
       res.json({ success: true, joined: false });
     } else {
-      // JOIN
-      await pool.query("INSERT INTO community_members (community_id, user_id, role) VALUES ($1, $2, 'member') ON CONFLICT DO NOTHING", [comId, userId]);
+      // JOIN — determinar rol según rango global
+      var roleCheck = await pool.query("SELECT role FROM user_with_role WHERE id = $1", [userId]);
+      var insertRole = (roleCheck.rows[0]?.role === 'admin') ? 'creator' : 'member';
+      await pool.query("INSERT INTO community_members (community_id, user_id, role) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING", [comId, userId, insertRole]);
       // Auto-insert manga en biblioteca como 'pendiente' (sin pisar estados existentes)
       var comData = await pool.query("SELECT manga_id FROM communities WHERE id = $1", [comId]);
       if (comData.rows[0]?.manga_id) {
@@ -249,7 +258,7 @@ router.post('/:id/join', auth, async (req, res) => {
           [userId, comData.rows[0].manga_id]
         );
       }
-      res.json({ success: true, joined: true });
+      res.json({ success: true, joined: true, role: insertRole });
     }
   } catch (err) {
     console.error('[communities] Error al unirse/salir:', err.message);
@@ -396,27 +405,107 @@ router.post('/:id/set-role', auth, async (req, res) => {
   }
 });
 
-// DELETE /api/communities/:id/posts/:postId — Moderación de posts (solo creator/moderator)
-router.delete('/:id/posts/:postId', auth, async (req, res) => {
+// DELETE /api/communities/:id/members/:userId — Eliminar miembro de la comunidad
+router.delete('/:id/members/:userId', auth, async (req, res) => {
   try {
-    const canModerate = await checkCommunityPermission(req.user.userId, req.params.id, 'can_moderate_posts');
-    if (!canModerate) {
-      return res.status(403).json({ error: 'No tienes permiso para borrar posts en esta comunidad' });
+    const { id: comId, userId: targetId } = req.params;
+    const callerId = req.user.userId;
+
+    if (targetId === callerId) return res.status(400).json({ error: 'No puedes eliminarte a ti mismo' });
+
+    const canManage = await checkCommunityPermission(callerId, comId, 'can_manage_roles');
+    if (!canManage) return res.status(403).json({ error: 'No tienes permiso para eliminar miembros' });
+
+    const target = await pool.query('SELECT role FROM community_members WHERE community_id = $1 AND user_id = $2', [comId, targetId]);
+    if (target.rows.length === 0) return res.status(404).json({ error: 'El usuario no es miembro' });
+    if (target.rows[0].role === 'creator') return res.status(403).json({ error: 'No puedes eliminar a un creator' });
+
+    await pool.query('DELETE FROM community_members WHERE community_id = $1 AND user_id = $2', [comId, targetId]);
+    res.json({ success: true, message: 'Miembro eliminado de la comunidad' });
+  } catch (err) {
+    console.error('[communities] Error al eliminar miembro:', err.message);
+    res.status(500).json({ error: 'Error al eliminar miembro' });
+  }
+});
+
+// POST /api/communities/:id/ban — Banear miembro de la comunidad
+router.post('/:id/ban', auth, async (req, res) => {
+  try {
+    const { id: comId } = req.params;
+    const { target_user_id, reason } = req.body;
+    const callerId = req.user.userId;
+
+    if (!target_user_id) return res.status(400).json({ error: 'target_user_id requerido' });
+    if (target_user_id === callerId) return res.status(400).json({ error: 'No puedes banearte a ti mismo' });
+
+    const canBan = await checkCommunityPermission(callerId, comId, 'can_ban_members');
+    if (!canBan) return res.status(403).json({ error: 'No tienes permiso para banear en esta comunidad' });
+
+    const target = await pool.query('SELECT role FROM community_members WHERE community_id = $1 AND user_id = $2', [comId, target_user_id]);
+    if (target.rows.length > 0) {
+      if (target.rows[0].role === 'creator') return res.status(403).json({ error: 'No puedes banear a un creator' });
+      // Moderador no puede banear a otro moderador
+      const callerRole = await pool.query('SELECT role FROM community_members WHERE community_id = $1 AND user_id = $2', [comId, callerId]);
+      if (callerRole.rows[0]?.role !== 'creator' && target.rows[0].role === 'moderator') {
+        return res.status(403).json({ error: 'Un moderador no puede banear a otro moderador' });
+      }
+      await pool.query('DELETE FROM community_members WHERE community_id = $1 AND user_id = $2', [comId, target_user_id]);
     }
 
-    const del = await pool.query(
-      'DELETE FROM feed_posts WHERE id = $1 AND community_id = $2 RETURNING id',
-      [req.params.postId, req.params.id]
+    await pool.query(
+      'INSERT INTO community_bans (community_id, user_id, banned_by, reason) VALUES ($1, $2, $3, $4) ON CONFLICT (community_id, user_id) DO UPDATE SET reason = $4, banned_at = NOW()',
+      [comId, target_user_id, callerId, reason || '']
     );
 
-    if (del.rows.length === 0) {
-      return res.status(404).json({ error: 'El post no existe o no pertenece a esta comunidad' });
-    }
-
-    res.json({ success: true, message: 'Post eliminado por moderador de la comunidad' });
+    res.json({ success: true, message: 'Usuario baneado de la comunidad' });
   } catch (err) {
-    console.error('[communities] Error al borrar post:', err.message);
-    res.status(500).json({ error: 'Error al moderar el post' });
+    console.error('[communities] Error al banear:', err.message);
+    res.status(500).json({ error: 'Error al banear usuario' });
+  }
+});
+
+// POST /api/communities/:id/unban — Desbanear usuario
+router.post('/:id/unban', auth, async (req, res) => {
+  try {
+    const { id: comId } = req.params;
+    const { target_user_id } = req.body;
+    const callerId = req.user.userId;
+
+    if (!target_user_id) return res.status(400).json({ error: 'target_user_id requerido' });
+    if (target_user_id === callerId) return res.status(400).json({ error: 'No puedes desbanearte a ti mismo' });
+
+    const canBan = await checkCommunityPermission(callerId, comId, 'can_ban_members');
+    if (!canBan) return res.status(403).json({ error: 'No tienes permiso para desbanear' });
+
+    const result = await pool.query('DELETE FROM community_bans WHERE community_id = $1 AND user_id = $2 RETURNING id', [comId, target_user_id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'El usuario no está baneado' });
+
+    res.json({ success: true, message: 'Usuario desbaneado' });
+  } catch (err) {
+    console.error('[communities] Error al desbanear:', err.message);
+    res.status(500).json({ error: 'Error al desbanear' });
+  }
+});
+
+// GET /api/communities/:id/bans — Listar baneados (solo moderación)
+router.get('/:id/bans', auth, async (req, res) => {
+  try {
+    const callerId = req.user.userId;
+    const canBan = await checkCommunityPermission(callerId, req.params.id, 'can_ban_members');
+    if (!canBan) return res.status(403).json({ error: 'No tienes permiso' });
+
+    const r = await pool.query(
+      `SELECT cb.user_id, cb.reason, cb.banned_at, cb.banned_by, u.username, u.avatar
+       FROM community_bans cb
+       LEFT JOIN users u ON u.id = cb.user_id
+       WHERE cb.community_id = $1
+       ORDER BY cb.banned_at DESC`,
+      [req.params.id]
+    );
+    res.json({ success: true, bans: r.rows });
+  } catch (err) {
+    console.error('[communities] Error al obtener baneados:', err.message);
+    res.status(500).json({ error: 'Error al obtener baneados' });
   }
 });
 

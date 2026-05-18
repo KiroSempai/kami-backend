@@ -313,6 +313,12 @@ router.delete('/:mangaId', async (req, res) => {
       return res.status(404).json({ error: 'Manga no encontrado en tu biblioteca' });
     }
 
+    // Resetear tracking de capítulos de este manga
+    await pool.query(
+      "DELETE FROM user_tracking WHERE user_id = $1 AND manga_id = $2 AND action_type = 'chapter_read'",
+      [req.user.userId, mangaId]
+    ).catch(() => {});
+
     await pool.query(
       `INSERT INTO user_tracking (user_id, action_type, manga_id, metadata)
        VALUES ($1, 'library_remove', $2, '{}')`,

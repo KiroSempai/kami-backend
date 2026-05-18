@@ -2298,9 +2298,11 @@
           overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
           overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>Cap. ' + (m.progress || 0) + '/' + (m.totalChapters || '?') + '</span><span>' + pct + '%</span></div>';
           overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
-          var btnText = (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + (m.progress + 1));
-          if (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned') {
-            overlay += '<div onclick="event.stopPropagation();window.location.href=\'/reader/' + m.mangaId + '/' + (m.progress + 1) + '\'" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+          var nextChapter = Math.min(m.progress + 1, (m.totalChapters && m.totalChapters > 0 ? m.totalChapters : Infinity));
+          var isCompleted = m.totalChapters > 0 && m.progress >= m.totalChapters;
+          var btnText = isCompleted ? 'Completado' : (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + nextChapter);
+          if (!isCompleted && (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned')) {
+            overlay += '<div onclick="event.stopPropagation();window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\'" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           } else {
             overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           }

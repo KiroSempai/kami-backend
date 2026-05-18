@@ -631,6 +631,7 @@
     var TOKEN = localStorage.getItem('kami_token');
     var mangaId = null, chapterNum = null, totalPages = 0, currentPage = 0;
     var MANIFEST = null;
+    var _chapterStartTime = Date.now(); // Para medir tiempo real de lectura
 
     var pathParts = window.location.pathname.split('/');
     mangaId = pathParts[2];
@@ -741,13 +742,17 @@
         renderAllPages();
         updateProgress();
 
-        // Track chapter read (fire & forget) — alimenta stats, heatmap y biblioteca
+        // Track chapter read con tiempo real (envía al salir del reader)
         if (TOKEN) {
-          fetch('/api/stats/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-            body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 5 })
-          }).catch(function(){});
+          window.addEventListener('beforeunload', function enviarTrack() {
+            var elapsed = Math.max(1, Math.round((Date.now() - _chapterStartTime) / 60000));
+            fetch('/api/stats/track', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+              keepalive: true,
+              body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: elapsed })
+            }).catch(function(){});
+          });
         }
 
       } catch(e) {

@@ -2300,7 +2300,7 @@
           overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
           var btnText = (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + (m.progress + 1));
           if (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned') {
-            overlay += '<div onclick="event.stopPropagation();marcarLecturaManual(\'' + m.mangaId + '\',\'' + (m.title || '').replace(/'/g,"\\'") + '\',' + (m.progress + 1) + ')" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+            overlay += '<div onclick="event.stopPropagation();window.location.href=\'/reader/' + m.mangaId + '/' + (m.progress + 1) + '\'" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           } else {
             overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           }

@@ -301,8 +301,39 @@ router.get('/:id/posts', async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 25, 50);
     const offset = parseInt(req.query.offset) || 0;
-    const r = await pool.query(`SELECT fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler, fp.community_id, fp.manga_id, fp.media_url, fp.created_at, fp.parent_id, fp.like_count, fp.repost_count, fp.reply_count, fp.quoted_post_id, u.username, u.avatar, m.title AS manga_title FROM feed_posts fp LEFT JOIN users u ON u.id = fp.user_id LEFT JOIN mangas m ON m.id = fp.manga_id WHERE fp.community_id = $1 AND fp.parent_id IS NULL ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3`, [req.params.id, limit, offset]);
-    res.json({ success: true, posts: r.rows, offset, limit });
+    const r = await pool.query(`
+      SELECT fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler,
+             fp.community_id, fp.manga_id, fp.media_url, fp.created_at, fp.parent_id,
+             fp.quoted_post_id,
+             (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
+             (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
+             (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
+             u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+             (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
+      FROM feed_posts fp
+      LEFT JOIN users u ON u.id = fp.user_id
+      LEFT JOIN mangas m ON m.id = fp.manga_id
+      WHERE fp.community_id = $1 AND fp.parent_id IS NULL
+      ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3
+    `, [req.params.id, limit, offset]);
+
+    let posts = r.rows.map(p => ({
+      id: p.id, user: p.username || 'Anónimo',
+      handle: '@' + (p.username || 'anon').toLowerCase(),
+      avatar: p.avatar || null, text: p.content || '',
+      title: p.title || '', type: p.post_type || 'post',
+      manga: p.manga_title ? { id: p.manga_id, title: p.manga_title, cover: p.manga_cover || null } : undefined,
+      chapter: p.chapter_number, spoiler: p.is_spoiler || false,
+      media_url: p.media_url || null, parent_id: p.parent_id || null,
+      quoted_post_id: p.quoted_post_id || null,
+      likes: parseInt(p.real_likes) || 0, replies: parseInt(p.real_replies) || 0,
+      reposts: parseInt(p.real_reposts) || 0,
+      views_count: parseInt(p.views_count) || 0,
+      author_role: p.author_role || 'user', created_at: p.created_at,
+      user_has_liked: false, user_has_reposted: false, user_has_bookmarked: false,
+    }));
+
+    res.json({ success: true, posts, offset, limit });
   } catch (err) {
     console.error('[communities] Error al obtener posts:', err.message);
     res.status(500).json({ error: 'Error al obtener posts' });

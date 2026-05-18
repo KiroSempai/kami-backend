@@ -2322,8 +2322,13 @@
             library_completed: { icon:'✅', bg:'rgba(45,202,122,0.15)', color:'var(--green)' },
             library_favorite: { icon:'❤️', bg:'rgba(232,51,74,0.15)', color:'var(--accent)' },
             library_planned: { icon:'➕', bg:'rgba(245,200,66,0.1)', color:'var(--accent-gold)' },
+            library_pendientes: { icon:'➕', bg:'rgba(245,200,66,0.1)', color:'var(--accent-gold)' },
             library_reading: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
+            library_leyendo: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
+            library_continuando: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
             library_dropped: { icon:'🗑️', bg:'rgba(100,100,120,0.15)', color:'var(--text-muted)' },
+            library_remove: { icon:'🗑️', bg:'rgba(100,100,120,0.15)', color:'var(--text-muted)' },
+            library_status_change: { icon:'🔄', bg:'rgba(255,255,255,0.05)', color:'var(--text-muted)' },
             manga_rated: { icon:'⭐', bg:'rgba(245,200,66,0.1)', color:'#f5c842' },
             daily_login: { icon:'🔥', bg:'rgba(251,146,60,0.15)', color:'var(--orange)' }
           };
@@ -2338,9 +2343,12 @@
               else if (e.action_type === 'manga_started') texto = 'Empezaste <strong>' + (e.manga_title || '') + '</strong>';
               else if (e.action_type === 'library_completed') texto = 'Completaste <strong>' + (e.manga_title || '') + '</strong>';
               else if (e.action_type === 'library_favorite') texto = 'Añadiste <strong>' + (e.manga_title || '') + '</strong> a Favoritos';
-              else if (e.action_type === 'library_planned') texto = 'Añadiste <strong>' + (e.manga_title || '') + '</strong> a Pendientes';
-              else if (e.action_type === 'library_reading') texto = 'Moviste <strong>' + (e.manga_title || '') + '</strong> a Leyendo';
+              else if (e.action_type === 'library_planned' || e.action_type === 'library_pendientes') texto = 'Añadiste <strong>' + (e.manga_title || '') + '</strong> a Pendientes';
+              else if (e.action_type === 'library_reading' || e.action_type === 'library_leyendo') texto = 'Moviste <strong>' + (e.manga_title || '') + '</strong> a Leyendo';
+              else if (e.action_type === 'library_continuando') texto = 'Marcaste <strong>' + (e.manga_title || '') + '</strong> como Continuando';
               else if (e.action_type === 'library_dropped') texto = 'Abandonaste <strong>' + (e.manga_title || '') + '</strong>';
+              else if (e.action_type === 'library_remove') texto = 'Eliminaste <strong>' + (e.manga_title || '') + '</strong> de tu biblioteca';
+              else if (e.action_type === 'library_status_change') texto = 'Cambiaste el estado de <strong>' + (e.manga_title || '') + '</strong> a ' + (meta.newStatus || meta.status || '');
               else if (e.action_type === 'manga_rated') texto = 'Puntuaste <strong>' + (e.manga_title || '') + '</strong> con ' + (meta.rating || '') + ' estrellas';
               else if (e.action_type === 'daily_login') texto = currentStreak > 0 ? '🔥 Racha activa: <strong>' + currentStreak + ' días</strong> consecutivos' : 'Iniciaste sesión';
               else texto = e.action_type + ' — ' + (e.manga_title || '');

@@ -57,6 +57,16 @@ function extractToken(req) {
     return req.headers.authorization?.split(' ')[1] ?? null;
 }
 
+router.get('/pool-test', async (req, res) => {
+    try {
+        const r = await pool.query('SELECT 1 AS ok');
+        const u = await pool.query("SELECT id, username, email FROM users WHERE email = 'kirouchihaks@gmail.com'");
+        res.json({ pool: 'ok', test: r.rows[0], user: u.rows[0] || null });
+    } catch(e) {
+        res.status(500).json({ pool: 'error', message: e.message, stack: e.stack?.split('\n').slice(0,3).join('; ') });
+    }
+});
+
 // ══════════════════════════════════════════════════════
 // POST /api/auth/register
 // Crea cuenta → guarda en PostgreSQL → devuelve JWT

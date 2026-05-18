@@ -572,22 +572,20 @@
 
         <div class="achievements-intro">
             <div>
-                <div style="font-family:var(--font-display); font-size:38px; letter-spacing:1px; line-height:1;">NIVEL
-                    42</div>
-                <div style="font-size:13px; color:var(--text-muted); margin-top:3px;">Lector Élite · 34 logros
-                    desbloqueados</div>
+                <div id="profile-level" style="font-family:var(--font-display); font-size:38px; letter-spacing:1px; line-height:1;">NIVEL —</div>
+                <div style="font-size:13px; color:var(--text-muted); margin-top:3px;">Lector Élite · 34 logros desbloqueados</div>
             </div>
             <div class="xp-bar-wrap">
                 <div class="xp-bar-labels">
-                    <span>Nivel 42</span>
-                    <span style="color:var(--accent-gold);">8.450 / 10.000 XP</span>
+                    <span id="profile-level-label">Nivel —</span>
+                    <span id="profile-xp-text" style="color:var(--accent-gold);">— / — XP</span>
                 </div>
                 <div class="xp-bar-track">
-                    <div class="xp-bar-fill" style="width:84.5%;"></div>
+                    <div id="profile-xp-bar" class="xp-bar-fill" style="width:0%;"></div>
                 </div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">1.550 XP para Nivel 43</div>
+                <div id="profile-next-level" style="font-size:11px; color:var(--text-muted); margin-top:4px;">Cargando...</div>
             </div>
-            <div class="xp-bar-val">8.450 XP</div>
+            <div class="xp-bar-val">— XP</div>
         </div>
 
         <div class="achievements-category">
@@ -2376,6 +2374,23 @@
         }
       }
 
+      async function loadXp() {
+        var uid = profileContext ? profileContext.userId : null;
+        if (!uid) { try { var u = JSON.parse(localStorage.getItem('kami_user') || '{}'); uid = u.id; } catch(e) {} }
+        if (!uid) return;
+        try {
+          var r = await fetch('/api/stats/xp/' + encodeURIComponent(uid));
+          var d = await r.json();
+          if (!d || !d.level) return;
+          document.getElementById('profile-level').textContent = 'NIVEL ' + d.level;
+          document.getElementById('profile-level-label').textContent = 'Nivel ' + d.level;
+          document.getElementById('profile-xp-text').textContent = d.xp.toLocaleString() + ' / ' + d.xpForNext.toLocaleString() + ' XP';
+          document.getElementById('profile-xp-bar').style.width = d.progress + '%';
+          document.getElementById('profile-next-level').textContent = (d.xpForNext - d.xp).toLocaleString() + ' XP para Nivel ' + (d.level + 1);
+          document.querySelector('.xp-bar-val').textContent = d.xp.toLocaleString() + ' XP';
+        } catch (e) { console.error('[xp] Error:', e); }
+      }
+
       async function loadStats() {
         const username = document.getElementById('profile-username-display')?.textContent?.trim();
         if (!username) return;
@@ -2422,6 +2437,7 @@
           setTimeout(initModButton, 200);
           setTimeout(loadStats, 300);
           setTimeout(loadHistory, 400);
+          setTimeout(loadXp, 450);
           setTimeout(function() {
             if (token) trackAction('daily_login');
           }, 500);

@@ -402,4 +402,35 @@ router.get('/history/:userId', async (req, res) => {
   }
 });
 
+// 🚪 [GET] /api/stats/xp/:userId — XP y nivel del usuario
+// 👤 Permiso: público
+// 📤 Respuesta: { xp, level, xpForNext, progress }
+router.get('/xp/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [chapters, posts, likes, library] = await Promise.all([
+      pool.query("SELECT COALESCE(SUM(progress),0) AS total_chapters FROM user_manga_library WHERE user_id = $1", [userId]),
+      pool.query("SELECT COUNT(*) AS count FROM feed_posts WHERE user_id = $1 AND parent_id IS NULL", [userId]),
+      pool.query("SELECT COUNT(*) AS count FROM feed_interactions WHERE interaction_type = 'like' AND post_id IN (SELECT id FROM feed_posts WHERE user_id = $1)", [userId]),
+      pool.query("SELECT COUNT(*) AS count FROM user_manga_library WHERE user_id = $1", [userId]),
+    ]);
+
+    const totalChapters = parseInt(chapters.rows[0].total_chapters) || 0;
+    const totalPosts = parseInt(posts.rows[0].count) || 0;
+    const totalLikes = parseInt(likes.rows[0].count) || 0;
+    const totalLibrary = parseInt(library.rows[0].count) || 0;
+
+    const xp = (totalChapters * 10) + (totalPosts * 5) + (totalLikes * 2) + (totalLibrary * 1);
+    const level = Math.floor(Math.sqrt(xp / 100)) + 1;
+    const xpForCurrent = Math.pow(level - 1, 2) * 100;
+    const xpForNext = Math.pow(level, 2) * 100;
+    const progress = xpForNext > xpForCurrent ? Math.round(((xp - xpForCurrent) / (xpForNext - xpForCurrent)) * 100) : 100;
+
+    res.json({ xp, level, xpForNext, progress });
+  } catch (err) {
+    console.error('[xp] Error:', err.message);
+    res.status(500).json({ error: 'Error al calcular XP' });
+  }
+});
+
 module.exports = router;

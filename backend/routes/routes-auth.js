@@ -208,7 +208,6 @@ router.post('/login', loginLimiter, async (req, res) => {
         console.error('Error en /login:', err.message);
         res.status(500).json({ error: 'Error interno del servidor', detail: err.message });
     }
-    }
 });
 
 // ══════════════════════════════════════════════════════

@@ -521,6 +521,22 @@ const pool = new Pool({
     await pool.query("CREATE INDEX IF NOT EXISTS idx_feed_posts_reposted_from ON feed_posts(reposted_from_id)");
     console.log('OK: idx_feed_posts_reposted_from index created');
 
+    // ════════════════════════════════════════════════════════════════════
+    // Manga views table
+    // ════════════════════════════════════════════════════════════════════
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS manga_views (
+          id SERIAL PRIMARY KEY,
+          manga_id VARCHAR(20) NOT NULL REFERENCES mangas(id) ON DELETE CASCADE,
+          user_id VARCHAR(60) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(manga_id, user_id)
+      )
+    `);
+    console.log('OK: manga_views table created');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_manga_views_manga ON manga_views(manga_id)');
+    console.log('OK: idx_manga_views_manga index created');
+
     console.log('\n✅ Migración completada exitosamente');
   } catch (e) {
     console.error('ERROR:', e.message);

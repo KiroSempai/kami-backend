@@ -272,6 +272,27 @@ function calculateChaptersPerDay(total, userId) {
   return total > 0 ? Math.round((total / 30) * 10) / 10 : 0;
 }
 
+// 🚪 [POST] /api/track (root — acciones genéricas)
+// 👤 Permiso: auth
+// 📥 Body: { action_type, manga_id?, chapter_id?, metadata? }
+// 📝 Registra acciones genéricas (login, vista, rating, library) en user_tracking
+router.post('/', auth, async (req, res) => {
+  const userId = req.user.userId;
+  const { action_type, manga_id, chapter_id, metadata } = req.body;
+  if (!action_type) return res.status(400).json({ error: 'action_type requerido' });
+  try {
+    await pool.query(
+      `INSERT INTO user_tracking (user_id, manga_id, action_type, metadata, created_at)
+       VALUES ($1, $2, $3, $4, NOW())`,
+      [userId, manga_id || null, action_type, JSON.stringify(metadata || {})]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[track] Error en acción genérica:', err.message);
+    res.status(500).json({ error: 'Error al registrar acción' });
+  }
+});
+
 // 🚪 [POST] /api/stats/track
 // 👤 Permiso: auth
 // 📥 Body: { manga_id, chapter_number, minutes?: number (default 5) }

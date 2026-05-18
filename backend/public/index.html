@@ -1754,8 +1754,8 @@
               // Botones de gestión (solo si tiene permisos y aplica)
               var canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
               var canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
-              var canDescend = (myRole === 'creator' || globalAdmin) && m.role === 'moderator' && !isSelf;
-              var canKick = (isManager || globalAdmin) && m.role !== 'creator' && !isSelf;
+              var canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
+              var canKick = (isManager || globalAdmin) && !isSelf && (m.role !== 'creator' || globalAdmin);
               var canBan = canKick;
               var actionsHtml = '';
               if (canAscend) actionsHtml += '<button class="rm-btn ascend" onclick="ascendMember(\'' + comId + '\',\'' + m.user_id + '\')" title="Ascender a moderador">⬆</button>';

@@ -419,7 +419,7 @@ router.get('/:mangaId/progress', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.json({ progress: 0, status: null });
-    const decoded = require('../config').verifyToken(token);
+    const decoded = await verifyToken(token);
     const r = await pool.query(
       'SELECT progress, status FROM user_manga_library WHERE user_id = $1 AND manga_id = $2',
       [decoded.userId, req.params.mangaId]

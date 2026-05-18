@@ -153,7 +153,7 @@ router.post('/register', registerLimiter, async (req, res) => {
 // ══════════════════════════════════════════════════════
 // POST /api/auth/login
 // ══════════════════════════════════════════════════════
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -205,8 +205,8 @@ router.post('/login', loginLimiter, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Error en /login:', err.message);
-        res.status(500).json({ error: 'Error interno del servidor', detail: err.message });
+        console.error('Error en /login:', err.message, err.stack);
+        res.status(500).json({ error: 'Error interno del servidor', detail: err.message, stack: err.stack?.split('\n').slice(0,3).join('|') });
     }
 });
 

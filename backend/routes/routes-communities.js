@@ -263,9 +263,12 @@ router.post('/:id/banner', auth, commUpload.single('banner'), async (req, res) =
     if (!req.file) return res.status(400).json({ error: 'No se envió ninguna imagen' });
     var isAdmin = await checkCommunityAdmin(req.user.userId, req.params.id);
     if (!isAdmin) return res.status(403).json({ error: 'No tienes permisos' });
-    var url = '/assets/communities/' + req.file.filename;
-    await pool.query('UPDATE communities SET banner_url = $1, updated_at = NOW() WHERE id = $2', [url, req.params.id]);
-    res.json({ success: true, banner_url: url });
+    var ext = req.file.mimetype.split('/')[1] || 'jpeg';
+    var b64 = req.file.buffer.toString('base64');
+    var dataUrl = 'data:' + req.file.mimetype + ';base64,' + b64;
+    await pool.query('UPDATE communities SET banner_url = $1, updated_at = NOW() WHERE id = $2', [dataUrl, req.params.id]);
+    try { fs.unlinkSync(req.file.path); } catch(e) {}
+    res.json({ success: true, banner_url: dataUrl });
   } catch (err) {
     console.error('[banner] Error:', err.message);
     res.status(500).json({ error: 'Error al subir banner: ' + err.message });
@@ -278,9 +281,12 @@ router.post('/:id/avatar', auth, commUpload.single('avatar'), async (req, res) =
     if (!req.file) return res.status(400).json({ error: 'No se envió ninguna imagen' });
     var isAdmin = await checkCommunityAdmin(req.user.userId, req.params.id);
     if (!isAdmin) return res.status(403).json({ error: 'No tienes permisos' });
-    var url = '/assets/communities/' + req.file.filename;
-    await pool.query('UPDATE communities SET avatar_url = $1, updated_at = NOW() WHERE id = $2', [url, req.params.id]);
-    res.json({ success: true, avatar_url: url });
+    var ext = req.file.mimetype.split('/')[1] || 'jpeg';
+    var b64 = req.file.buffer.toString('base64');
+    var dataUrl = 'data:' + req.file.mimetype + ';base64,' + b64;
+    await pool.query('UPDATE communities SET avatar_url = $1, updated_at = NOW() WHERE id = $2', [dataUrl, req.params.id]);
+    try { fs.unlinkSync(req.file.path); } catch(e) {}
+    res.json({ success: true, avatar_url: dataUrl });
   } catch (err) {
     console.error('[communities] Error avatar:', err.message);
     res.status(500).json({ error: 'Error al subir avatar' });

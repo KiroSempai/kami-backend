@@ -1675,11 +1675,15 @@
 
         // Banner
         var bannerEl = document.getElementById('comunidad-detail-banner');
-        bannerEl.style.background = c.banner_url ? 'url(' + c.banner_url + ') center/cover no-repeat' : 'linear-gradient(135deg,var(--accent),#1d9bf0)';
+        if (c.banner_url && c.banner_url.startsWith('data:')) {
+          bannerEl.style.background = 'url(' + c.banner_url + ') center/cover no-repeat';
+        } else {
+          bannerEl.style.background = 'linear-gradient(135deg,var(--accent),#1d9bf0)';
+        }
 
         // Avatar
         var avatarEl = document.getElementById('comunidad-detail-avatar');
-        var avatarSrc = c.avatar_url || c.manga_cover;
+        var avatarSrc = (c.avatar_url && (c.avatar_url.startsWith('data:') || c.avatar_url.startsWith('http'))) ? c.avatar_url : (c.manga_cover || '');
         if (avatarSrc) {
           avatarEl.innerHTML = '<img src="' + avatarSrc + '" style="width:100%;height:100%;object-fit:cover;">';
         } else {

@@ -1337,8 +1337,9 @@ router.post('/post', auth, async (req, res) => {
     }
 
     // ── Prefijo automático + vinculación forzada según contexto ──
-    let prefixes = [];
     let finalMangaId = manga_id || null;
+    let commPrefix = null;
+    let mangaPrefix = null;
     const prefixPromises = [];
     if (community_id) {
       prefixPromises.push(
@@ -1346,13 +1347,13 @@ router.post('/post', auth, async (req, res) => {
           .then(async (r) => {
             if (r.rows.length > 0) {
               const communityName = r.rows[0].name;
-              prefixes.push(`📢 [${communityName}]`);
+              commPrefix = `📢 [${communityName}]`;
               if (!finalMangaId) {
                 try {
                   const mr = await pool.query('SELECT id, title FROM mangas WHERE title = $1 LIMIT 1', [communityName]);
                   if (mr.rows.length > 0) {
                     finalMangaId = mr.rows[0].id;
-                    prefixes.push(`📖 [${mr.rows[0].title}]`);
+                    mangaPrefix = `📖 [${mr.rows[0].title}]`;
                   }
                 } catch(e) {}
               }
@@ -1364,12 +1365,13 @@ router.post('/post', auth, async (req, res) => {
     if (manga_id) {
       prefixPromises.push(
         pool.query('SELECT title FROM mangas WHERE id = $1', [manga_id])
-          .then(r => { if (r.rows.length > 0) prefixes.push(`📖 [${r.rows[0].title}]`); })
+          .then(r => { if (r.rows.length > 0) mangaPrefix = `📖 [${r.rows[0].title}]`; })
           .catch(() => {})
       );
     }
     await Promise.all(prefixPromises);
-    const finalContent = (prefixes.length ? prefixes.join(' ') + '\n' : '') + content.trim();
+    const prefixStr = [mangaPrefix, commPrefix].filter(Boolean).join(' ');
+    const finalContent = (prefixStr ? prefixStr + '\n' : '') + content.trim();
 
     const result = await pool.query(`
       INSERT INTO feed_posts (user_id, content, manga_id, chapter_number, post_type, is_spoiler, community_id, media_url, title, parent_id, quoted_post_id, is_news, is_global_announcement)

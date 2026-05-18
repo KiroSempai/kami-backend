@@ -24,16 +24,7 @@ var commUpload = multer({
   }
 });
 
-async function checkCommunityAdmin(userId, comId) {
-  var userR = await pool.query("SELECT is_admin FROM users WHERE id = $1", [userId]);
-  if (userR.rows[0]?.is_admin === true) return true;
-  var roleR = await pool.query("SELECT role FROM user_with_role WHERE id = $1", [userId]);
-  if (['admin','creator','company'].indexOf(roleR.rows[0]?.role) >= 0) return true;
-  var memR = await pool.query("SELECT 1 FROM community_members WHERE user_id = $1 AND community_id = $2", [userId, comId]);
-  if (memR.rows.length) return true;
-  var crR = await pool.query("SELECT 1 FROM communities WHERE id = $1 AND created_by = $2", [comId, userId]);
-  return crR.rows.length > 0;
-}
+const { checkCommunityAdmin, checkCommunityPermission } = require('../community-permissions');
 
 async function auth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
@@ -309,10 +300,12 @@ router.get('/:id/posts', async (req, res) => {
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
              u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
-             (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
+             (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
+             cm.role AS local_role
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
+      LEFT JOIN community_members cm ON cm.user_id = fp.user_id AND cm.community_id = $1
       WHERE fp.community_id = $1 AND fp.parent_id IS NULL
       ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3
     `, [req.params.id, limit, offset]);
@@ -326,6 +319,7 @@ router.get('/:id/posts', async (req, res) => {
       chapter: p.chapter_number, spoiler: p.is_spoiler || false,
       media_url: p.media_url || null, parent_id: p.parent_id || null,
       quoted_post_id: p.quoted_post_id || null,
+      local_role: p.local_role || null,
       likes: parseInt(p.real_likes) || 0, replies: parseInt(p.real_replies) || 0,
       reposts: parseInt(p.real_reposts) || 0,
       views_count: parseInt(p.views_count) || 0,
@@ -348,6 +342,75 @@ router.get('/:id/members', async (req, res) => {
   } catch (err) {
     console.error('[communities] Error al obtener miembros:', err.message);
     res.status(500).json({ error: 'Error al obtener miembros' });
+  }
+});
+
+// POST /api/communities/:id/set-role — Gestionar roles locales (solo creator)
+router.post('/:id/set-role', auth, async (req, res) => {
+  try {
+    const { target_user_id, new_role } = req.body;
+    const callerId = req.user.userId;
+
+    if (!['moderator', 'member'].includes(new_role)) {
+      return res.status(400).json({ error: 'Rol no válido. Permitidos: moderator, member' });
+    }
+
+    const canManage = await checkCommunityPermission(callerId, req.params.id, 'can_manage_roles');
+    if (!canManage) {
+      return res.status(403).json({ error: 'No tienes permisos para gestionar roles en esta comunidad' });
+    }
+
+    if (target_user_id === callerId) {
+      return res.status(400).json({ error: 'No puedes alterar tu propio rol' });
+    }
+
+    // Verificar que el target sea miembro
+    const targetMember = await pool.query(
+      'SELECT role FROM community_members WHERE community_id = $1 AND user_id = $2',
+      [req.params.id, target_user_id]
+    );
+    if (targetMember.rows.length === 0) {
+      return res.status(404).json({ error: 'El usuario objetivo no es miembro de esta comunidad' });
+    }
+
+    // No permitir degradar a otro creator (solo admin global puede hacerlo)
+    if (targetMember.rows[0].role === 'creator') {
+      return res.status(403).json({ error: 'No puedes modificar el rol de un creator' });
+    }
+
+    await pool.query(
+      'UPDATE community_members SET role = $1 WHERE community_id = $2 AND user_id = $3',
+      [new_role, req.params.id, target_user_id]
+    );
+
+    res.json({ success: true, message: 'Rol actualizado a ' + new_role });
+  } catch (err) {
+    console.error('[communities] Error en set-role:', err.message);
+    res.status(500).json({ error: 'Error al actualizar rol' });
+  }
+});
+
+// DELETE /api/communities/:id/posts/:postId — Moderación de posts (solo creator/moderator)
+router.delete('/:id/posts/:postId', auth, async (req, res) => {
+  try {
+    const canModerate = await checkCommunityPermission(req.user.userId, req.params.id, 'can_moderate_posts');
+    if (!canModerate) {
+      return res.status(403).json({ error: 'No tienes permiso para borrar posts en esta comunidad' });
+    }
+
+    const del = await pool.query(
+      'DELETE FROM feed_posts WHERE id = $1 AND community_id = $2 RETURNING id',
+      [req.params.postId, req.params.id]
+    );
+
+    if (del.rows.length === 0) {
+      return res.status(404).json({ error: 'El post no existe o no pertenece a esta comunidad' });
+    }
+
+    res.json({ success: true, message: 'Post eliminado por moderador de la comunidad' });
+  } catch (err) {
+    console.error('[communities] Error al borrar post:', err.message);
+    res.status(500).json({ error: 'Error al moderar el post' });
   }
 });
 

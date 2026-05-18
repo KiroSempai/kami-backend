@@ -1300,11 +1300,30 @@ router.post('/post', auth, async (req, res) => {
       }
     }
 
+    // ── Prefijo automático según contexto (comunidad / manga) ──
+    let finalContent = content.trim();
+    const prefixPromises = [];
+    if (community_id) {
+      prefixPromises.push(
+        pool.query('SELECT name FROM communities WHERE id = $1', [community_id])
+          .then(r => { if (r.rows.length > 0) finalContent = `📢 [${r.rows[0].name}] ${finalContent}`; })
+          .catch(() => {})
+      );
+    }
+    if (manga_id) {
+      prefixPromises.push(
+        pool.query('SELECT title FROM mangas WHERE id = $1', [manga_id])
+          .then(r => { if (r.rows.length > 0) finalContent = `📖 [${r.rows[0].title}] ${finalContent}`; })
+          .catch(() => {})
+      );
+    }
+    await Promise.all(prefixPromises);
+
     const result = await pool.query(`
       INSERT INTO feed_posts (user_id, content, manga_id, chapter_number, post_type, is_spoiler, community_id, media_url, title, parent_id, quoted_post_id, is_news, is_global_announcement)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING id, created_at
-    `, [req.user.userId, content.trim(), manga_id || null, chapter_number || null, post_type || 'post', spoiler, community_id || null, media_url || null, title || '', parent_id || null, quoted_post_id || null, finalIsNews, finalIsGlobal]);
+    `, [req.user.userId, finalContent, manga_id || null, chapter_number || null, post_type || 'post', spoiler, community_id || null, media_url || null, title || '', parent_id || null, quoted_post_id || null, finalIsNews, finalIsGlobal]);
 
     const post = result.rows[0];
 

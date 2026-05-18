@@ -846,17 +846,12 @@
         </div>
       </div>
       <div class="sidebar-card">
-        <h3>Estatus de Lector</h3>
-        <div id="sidebar-status-content" style="display:flex;flex-direction:column;gap:12px;margin-top:4px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;">
-            <span style="color:var(--text-muted);">Nivel de Cuenta</span>
-            <span id="sidebar-level" style="font-weight:700;color:var(--accent);">—</span>
-          </div>
-          <div style="width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;">
-            <div id="sidebar-xp-bar" style="width:0%;height:100%;background:var(--accent);border-radius:10px;"></div>
-          </div>
-          <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-top:2px;">
-            🏅 Logros desbloqueados: <strong id="sidebar-logros-count" style="color:var(--text);">—</strong>
+        <h3>Actividad Reciente</h3>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:4px;">
+          <span style="font-size:26px;line-height:1;">🔥</span>
+          <div style="display:flex;flex-direction:column;">
+            <span style="font-size:13px;font-weight:700;color:#fff;">Racha de Lectura</span>
+            <span style="font-size:11px;color:#6b7280;" id="sidebar-racha-texto">¡Mantén el fuego activo leyendo a diario!</span>
           </div>
         </div>
       </div>
@@ -1197,31 +1192,32 @@
 
         /* ─── Sidebar: comunidades activas ─── */
         async function cargarComunidadesSidebar(userId) {
-            var listEl = document.getElementById('sidebar-comunidades-list');
-            if (!listEl || !userId) return;
+            const contenedor = document.getElementById('sidebar-comunidades-list');
+            if (!contenedor || !userId) return;
             try {
-                var res = await fetch('/api/communities/sidebar-data/' + encodeURIComponent(userId));
-                var comunidades = await res.json();
+                const res = await fetch('/api/communities/sidebar-data/' + encodeURIComponent(userId));
+                const comunidades = await res.json();
                 if (!res.ok || !comunidades.length) {
-                    listEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted);margin:0;">Sin comunidades aún</p>';
+                    contenedor.innerHTML = '<p style="font-size:12px;color:#4b5563;margin:0;padding:4px 6px;">No se ha unido a ninguna comunidad.</p>';
                     return;
                 }
-                listEl.innerHTML = '';
+                contenedor.innerHTML = '';
                 comunidades.forEach(function(com) {
-                    var badgeHtml = '';
-                    if (com.local_role === 'creator') badgeHtml = '<span style="color:#ffd700;font-size:10px;font-weight:700;margin-left:4px;">👑 Creador</span>';
-                    else if (com.local_role === 'moderator') badgeHtml = '<span style="color:#3b82f6;font-size:10px;font-weight:700;margin-left:4px;">🛡️ Mod</span>';
-                    var fila = document.createElement('div');
-                    fila.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
-                    fila.innerHTML =
-                        '<div style="display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer;" onclick="if(typeof openCommunity===\'function\')openCommunity(\'' + com.id + '\')">' +
-                          '<div style="width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px;flex-shrink:0;">' + com.name.charAt(0).toUpperCase() + '</div>' +
+                    let badgeHTML = '';
+                    if (com.local_role === 'creator') badgeHTML = '<span style="color:#ffd700;font-size:10px;font-weight:700;margin-left:4px;">👑 Creador</span>';
+                    if (com.local_role === 'moderator') badgeHTML = '<span style="color:#4c9df5;font-size:10px;font-weight:700;margin-left:4px;">🛡️ Mod</span>';
+                    const row = document.createElement('div');
+                    row.className = 'sidebar-comunidad-row';
+                    row.onclick = function() { if (typeof openCommunity === 'function') openCommunity(com.id); };
+                    row.innerHTML =
+                        '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+                          '<div style="width:26px;height:26px;background:rgba(76,157,245,0.08);border:1px solid rgba(76,157,245,0.15);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#4c9df5;font-weight:700;font-size:11px;flex-shrink:0;">' + com.name.charAt(0).toUpperCase() + '</div>' +
                           '<div style="display:flex;flex-direction:column;min-width:0;">' +
-                            '<span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">' + com.name + '</span>' +
-                            '<span style="font-size:10px;color:var(--text-muted);">Rango: ' + com.local_role + badgeHtml + '</span>' +
+                            '<span style="font-size:13px;font-weight:600;color:#d1d5db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + com.name + '</span>' +
+                            '<span style="font-size:10px;color:#4b5563;">Rango: ' + com.local_role + badgeHTML + '</span>' +
                           '</div>' +
                         '</div>';
-                    listEl.appendChild(fila);
+                    contenedor.appendChild(row);
                 });
             } catch (e) { console.error('[sidebar] Error:', e); }
         }

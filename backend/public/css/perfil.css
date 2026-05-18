@@ -1620,17 +1620,31 @@
             .profile-content-layout { grid-template-columns: 1fr; }
         }
         .sidebar-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 18px 20px;
+            background: #111113;
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px;
+            padding: 16px 18px;
             margin-bottom: 16px;
+            box-sizing: border-box;
         }
         .sidebar-card h3 {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
+            font-size: 10px;
+            font-weight: 800;
+            color: #4b5563;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            margin-bottom: 14px;
+            margin: 0 0 12px 0;
+        }
+        .sidebar-comunidad-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            border-radius: 6px;
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
+        .sidebar-comunidad-row:hover {
+            background: rgba(255,255,255,0.02);
         }

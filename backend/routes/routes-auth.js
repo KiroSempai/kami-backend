@@ -202,8 +202,8 @@ router.post('/login', loginLimiter, async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Error en /login:', err);
-        res.status(500).json({ error: 'Error interno al iniciar sesión' });
+        console.error('Error en /login:', err.message, err.stack?.split('\n')[1]);
+        res.status(500).json({ error: 'Error interno al iniciar sesión', detail: err.message });
     }
 });
 

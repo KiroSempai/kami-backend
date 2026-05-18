@@ -165,11 +165,13 @@ router.post('/login', loginLimiter, async (req, res) => {
         }
 
         // Actualizar última sesión + IP
-        const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
-        await pool.query(
-            'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
-            [clientIp.replace(/^::ffff:/, ''), user.id]
-        );
+        try {
+          const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || '';
+          await pool.query(
+              'UPDATE users SET updated_at = CURRENT_TIMESTAMP, last_ip = $1 WHERE id = $2',
+              [clientIp.replace(/^::ffff:/, ''), user.id]
+          );
+        } catch(e) { console.warn('[login] IP update failed:', e.message); }
 
         const token = signToken({ userId: user.id, username: user.username, email: user.email });
 

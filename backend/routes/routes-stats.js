@@ -222,44 +222,46 @@ router.get('/:username', async (req, res) => {
 });
 
 async function calculateStreak(userId) {
-  // Get distinct reading days in descending order
-  const days = await pool.query(
-    `SELECT activity_date FROM user_daily_activity
+  const result = await pool.query(
+    `SELECT DISTINCT activity_date FROM user_daily_activity
      WHERE user_id = $1 ORDER BY activity_date DESC`,
     [userId]
   );
+  const days = result.rows.map(r => {
+    const d = new Date(r.activity_date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
 
-  if (days.rows.length === 0) return { current: 0, max: 0 };
+  if (days.length === 0) return { current: 0, max: 0 };
 
-  let current = 0;
-  let max = 0;
-  let streak = 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  for (let i = 0; i < days.rows.length; i++) {
-    const d = new Date(days.rows[i].activity_date);
-    if (i === 0) {
-      // Check if streak includes today or yesterday
-      const diff = Math.floor((today - d) / 86400000);
-      if (diff > 1) break;
-      streak = 1;
-      if (diff === 0) current = 1;
-    } else {
-      const prev = new Date(days.rows[i - 1].activity_date);
-      const diff = Math.floor((prev - d) / 86400000);
-      if (diff === 1) {
-        streak++;
-        if (i === days.rows.length - 1) { current = streak; }
-      } else {
-        if (current === 0 && i > 1) current = streak;
-        max = Math.max(max, streak);
-        streak = 1;
-      }
+  // Racha actual: cuenta desde hoy hacia atrás
+  let current = 0;
+  const diffFirst = Math.round((today - days[0]) / 86400000);
+  if (diffFirst <= 1) { // hoy o ayer
+    current = 1;
+    for (let i = 1; i < days.length; i++) {
+      const diff = Math.round((days[i - 1] - days[i]) / 86400000);
+      if (diff === 1) current++;
+      else break;
     }
   }
-  max = Math.max(max, streak);
-  if (current === 0) current = streak;
+
+  // Racha máxima: la secuencia más larga en todo el historial
+  let max = current;
+  let temp = 1;
+  for (let i = 1; i < days.length; i++) {
+    const diff = Math.round((days[i - 1] - days[i]) / 86400000);
+    if (diff === 1) {
+      temp++;
+      if (temp > max) max = temp;
+    } else {
+      temp = 1;
+    }
+  }
 
   return { current, max };
 }
@@ -276,6 +278,7 @@ function calculateChaptersPerDay(total, userId) {
 // 👤 Permiso: auth
 // 📥 Body: { action_type, manga_id?, chapter_id?, metadata? }
 // 📝 Registra acciones genéricas (login, vista, rating, library) en user_tracking
+//      Si es daily_login, también actualiza user_daily_activity para la racha
 router.post('/', auth, async (req, res) => {
   const userId = req.user.userId;
   const { action_type, manga_id, chapter_id, metadata } = req.body;
@@ -286,6 +289,15 @@ router.post('/', auth, async (req, res) => {
        VALUES ($1, $2, $3, $4, NOW())`,
       [userId, manga_id || null, action_type, JSON.stringify(metadata || {})]
     );
+    // Si es un login diario, sumar a la racha en user_daily_activity
+    if (action_type === 'daily_login') {
+      await pool.query(
+        `INSERT INTO user_daily_activity (user_id, activity_date, minutes_read, chapters_read)
+         VALUES ($1, CURRENT_DATE, 0, 0)
+         ON CONFLICT (user_id, activity_date) DO NOTHING`,
+        [userId]
+      );
+    }
     res.json({ success: true });
   } catch (err) {
     console.error('[track] Error en acción genérica:', err.message);

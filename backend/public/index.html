@@ -89,8 +89,8 @@
     .comp-link-manga { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:999px; border:1px solid rgba(76,157,245,0.25); background:rgba(76,157,245,0.08); color:#4c9df5; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
     .comp-link-manga:hover { background:rgba(76,157,245,0.15); border-color:rgba(76,157,245,0.4); }
     .comp-link-manga i { font-size:14px; }
-    .comp-manga-tag { display:flex; align-items:center; gap:8px; width:100%; box-sizing:border-box; padding:8px 12px; height:48px; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:12px; color:#4c9df5; cursor:default; transition:.1s; overflow:hidden; flex-shrink:0; }
-    .comp-manga-tag img { width:24px; height:36px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+    .comp-manga-tag { display:flex; align-items:center; gap:6px; width:auto; max-width:50%; box-sizing:border-box; padding:4px 10px; height:36px; margin-left:auto; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:11px; color:#4c9df5; cursor:default; transition:.1s; overflow:hidden; flex-shrink:0; }
+    .comp-manga-tag img { width:18px; height:26px; border-radius:3px; object-fit:cover; flex-shrink:0; }
     .comp-manga-name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
     .comp-manga-search { position:relative; z-index:10; margin-bottom:4px; }
     .comp-manga-search input { width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#e0e0e0; font-family:inherit; font-size:13px; outline:none; box-sizing:border-box; }
@@ -448,8 +448,8 @@
       <div class="comp-body">
         <div class="comp-avatar" id="comp-avatar">?</div>
         <div class="comp-main">
-          <!-- Fila 1: comunidad + botón vincular -->
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;">
+          <!-- Fila única: comunidad + tag manga (extremo derecho) -->
+          <div style="display:flex;align-items:center;gap:8px;">
             <select class="comp-audience" id="comp-community">
               <option value="">Mi perfil</option>
               <option value="seinen">Comunidad Seinen</option>
@@ -458,13 +458,12 @@
               <option value="lectores">Lectores Avanzados</option>
             </select>
             <button class="comp-link-manga" onclick="openMangaSearch()" id="comp-link-btn"><i class="ti ti-book"></i> Vincular manga</button>
-          </div>
-
-          <!-- Fila 2: tag del manga (contenedor independiente) -->
-          <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;">
-            <img id="comp-manga-cover" src="" alt="">
-            <span class="comp-manga-name" id="comp-manga-name">Manga</span>
-            <span style="margin-left:auto;flex-shrink:0;cursor:pointer;">✕</span>
+            <!-- Tag manga (extremo derecho, mitad de ancho) -->
+            <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;">
+              <img id="comp-manga-cover" src="" alt="">
+              <span class="comp-manga-name" id="comp-manga-name">Manga</span>
+              <span style="margin-left:auto;flex-shrink:0;cursor:pointer;">✕</span>
+            </div>
           </div>
 
           <!-- Manga search dropdown -->
@@ -2767,7 +2766,7 @@
       tag.style.display = 'flex';
       tag.style.borderColor = _composerMangaLocked ? 'var(--accent)' : 'rgba(76,157,245,0.12)';
       tag.innerHTML =
-        (cover ? '<img src="' + cover.replace(/'/g,"\\'") + '" alt="" style="width:24px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0;">' : '') +
+        (cover ? '<img src="' + cover.replace(/'/g,"\\'") + '" alt="" style="width:18px;height:26px;object-fit:cover;border-radius:3px;flex-shrink:0;">' : '') +
         '<span class="comp-manga-name">' + title + '</span>' +
         '<span style="margin-left:auto;flex-shrink:0;cursor:pointer;' + (_composerMangaLocked ? 'display:none;' : '') + '" onclick="unlinkManga()">✕</span>';
     }

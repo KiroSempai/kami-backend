@@ -924,6 +924,19 @@
                 });
                 let data = await res.json();
                 console.log('[repost] Respuesta del servidor:', data);
+                if (data.success) {
+                    let btn = document.querySelector(`.feed-post[data-post-id="${postId}"] .feed-post-action .repost-count`);
+                    let parent = btn ? btn.closest('.feed-post-action') : null;
+                    if (parent) {
+                        let span = parent.querySelector('.repost-count');
+                        let n = parseInt(span.textContent) || 0;
+                        if (data.action === 'reposted') {
+                            span.textContent = n + 1; parent.classList.add('reposted');
+                        } else {
+                            span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted');
+                        }
+                    }
+                }
                 if (res.ok && typeof renderFeed === 'function') renderFeed();
             } catch (e) { console.error('[repost] Error en fetch:', e); }
         }
@@ -1124,6 +1137,19 @@
           if (p.media_url) {
             html += '  <div class="post-detail-media" style="padding:0 16px 12px 16px;box-sizing:border-box;">';
             html += '    <img src="' + p.media_url + '" style="width:100%!important;height:auto!important;max-height:520px!important;border-radius:12px;border:1px solid var(--border);display:block;">';
+            html += '  </div>';
+          }
+          if (p.manga) {
+            var _mangaInit = p.manga.title.charAt(0).toUpperCase();
+            var _mangaAvatar = p.manga.cover
+              ? '<img src="' + p.manga.cover + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">'
+              : '<span style="font-size:16px;font-weight:700;">' + _mangaInit + '</span>';
+            html += '  <div onclick="window.location.hash=\'comunidad/com-' + p.manga.id + '\'" style="display:flex;align-items:center;gap:12px;padding:14px 16px;margin:0 16px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,0.02);cursor:pointer;box-sizing:border-box;">';
+            html += '    <div style="width:40px;height:40px;min-width:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;">' + _mangaAvatar + '</div>';
+            html += '    <div style="flex:1;min-width:0;">';
+            html += '      <div style="font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + p.manga.title + '</div>';
+            html += '      <div class="text-muted-sm">' + (p.chapter ? 'Cap. ' + p.chapter : 'KMI') + '</div>';
+            html += '    </div>';
             html += '  </div>';
           }
           html += '  <div class="post-detail-meta" style="font-size:13px;color:var(--text-muted);padding:0 16px 12px 16px;width:100%;box-sizing:border-box;">';

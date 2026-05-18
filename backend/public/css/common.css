@@ -550,6 +550,18 @@ body::before {
   display: block;
 }
 
+/* ── Repost indicator banner ── */
+.repost-indicator-banner { display:flex; align-items:center; gap:4px; padding:4px 16px 0; font-size:11px; font-weight:700; color:var(--text-muted); }
+
+/* ── Feed post manga card (vinculación obra) ── */
+.feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
+.feed-post-manga:hover { background:rgba(255,255,255,0.05); }
+.feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+.feed-post-manga-info { flex:1; min-width:0; }
+.feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
+.feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
+.feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+
 /* ── Hover edit para comunidad (banner + avatar) ── */
 .comm-hover-edit:hover .comm-hover-overlay {
   display: flex !important;

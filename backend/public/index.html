@@ -234,13 +234,7 @@
     .feed-post-text .spoiler-blur { filter:blur(6px); cursor:pointer; transition:.2s; user-select:none; display:inline; }
     .feed-post-text .spoiler-blur:hover { filter:blur(3px); }
     .feed-post-text .spoiler-blur.revealed { filter:none; }
-    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
-    .feed-post-manga:hover { background:rgba(255,255,255,0.05); }
-    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
-    .feed-post-manga-info { flex:1; min-width:0; }
-    .feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
-    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
-    .feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+
     .feed-post-actions { display:flex; align-items:center; gap:24px; margin-top:10px; }
     .feed-post-action { display:flex; align-items:center; gap:4px; background:none; border:none; color:rgba(255,255,255,0.25); font-size:11px; cursor:pointer; font-family:inherit; padding:4px; border-radius:4px; transition:.1s; }
     .feed-post-action:hover { color:#e8344a; }
@@ -2454,6 +2448,19 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
         });
         let data = await res.json();
         console.log('[repost] Respuesta del servidor:', data);
+        if (data.success) {
+          let btn = document.querySelector(`.feed-post[data-post-id="${postId}"] .feed-post-action .repost-count`);
+          let parent = btn ? btn.closest('.feed-post-action') : null;
+          if (parent) {
+            let span = parent.querySelector('.repost-count');
+            let n = parseInt(span.textContent) || 0;
+            if (data.action === 'reposted') {
+              span.textContent = n + 1; parent.classList.add('reposted');
+            } else {
+              span.textContent = Math.max(0, n - 1); parent.classList.remove('reposted');
+            }
+          }
+        }
         if (res.ok && typeof renderFeed === 'function') renderFeed();
       } catch (e) { console.error('[repost] Error en fetch:', e); }
     }

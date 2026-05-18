@@ -3,7 +3,6 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const sharp = require('sharp');
 const { pool } = require('../db');
 const { verifyToken } = require('../config');
 const { getUserQuality } = require('../image-settings');
@@ -76,7 +75,7 @@ router.get('/:mangaId/:chapterNum/:page', async (req, res) => {
           <text x="290" y="35" font-family="Arial,sans-serif" font-size="14" fill="rgba(255,255,255,0.15)" text-anchor="end">${username} · KAMI</text>
         </svg>`
       );
-      imgBuffer = await sharp(imgBuffer).composite([{ input: svg, gravity: 'southeast' }]).toBuffer();
+      imgBuffer = await require('sharp')(imgBuffer).composite([{ input: svg, gravity: 'southeast' }]).toBuffer();
     }
 
     // Encriptar con AES-256-CBC

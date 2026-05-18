@@ -1,4 +1,3 @@
-const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
@@ -27,7 +26,7 @@ async function processImage(inputPath, mangaId, chapterNum, pageNum) {
   const outDir = getOutputDir(mangaId, chapterNum);
   fs.mkdirSync(outDir, { recursive: true });
 
-  const metadata = await sharp(inputPath).metadata();
+  const metadata = await require("sharp")(inputPath).metadata();
   const origW = metadata.width || 800;
   const origH = metadata.height || 1200;
   const masterW = Math.round(origW * 2);
@@ -35,7 +34,7 @@ async function processImage(inputPath, mangaId, chapterNum, pageNum) {
 
   const masterBuf = await upscaleImage(inputPath, masterW, masterH);
   const masterPath = path.join(outDir, pageFilename(pageNum, 'master'));
-  await sharp(masterBuf).toFormat('webp', { quality: 92 }).toFile(masterPath);
+  await require("sharp")(masterBuf).toFormat('webp', { quality: 92 }).toFile(masterPath);
 
   return {
     original: { width: origW, height: origH },
@@ -60,7 +59,7 @@ function getImagePath(mangaId, chapterNum, pageNum, quality) {
   if (!fs.existsSync(targetPath)) {
     if (!fs.existsSync(masterPath)) return fallbackOriginal(mangaId, chapterNum, pageNum);
     // Generar on-the-fly (no await — primera vez lento, siguientes instantáneo)
-    sharp(masterPath)
+    require("sharp")(masterPath)
       .resize(q.width, null, { fit: 'inside', withoutEnlargement: true })
       .toFormat('webp', { quality: 85 })
       .toFile(targetPath)
@@ -109,8 +108,8 @@ async function upscaleImage(inputPath, targetW, targetH) {
     const result = await u.upscale(buffer, { output: 'buffer' });
     return result;
   } catch {
-    return await sharp(inputPath)
-      .resize(targetW, targetH, { kernel: sharp.kernel.lanczos3, fit: 'fill' })
+    return await require("sharp")(inputPath)
+      .resize(targetW, targetH, { kernel: require("sharp").kernel.lanczos3, fit: 'fill' })
       .toBuffer();
   }
 }

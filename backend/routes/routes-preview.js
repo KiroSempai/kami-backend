@@ -3,7 +3,6 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const sharp = require('sharp');
 const { processImage, QUALITIES } = require('../image-processor');
 
 const PREVIEW_DIR = path.join(__dirname, '..', 'public', 'temp', 'preview');
@@ -29,7 +28,7 @@ router.post('/process', upload.single('image'), async (req, res) => {
     const tempId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     const inputPath = req.file.path;
 
-    const metadata = await sharp(inputPath).metadata();
+    const metadata = await require('sharp')(inputPath).metadata();
     const result = await processImage(inputPath, '_preview', tempId, 1);
 
     // Master path
@@ -54,7 +53,7 @@ router.post('/process', upload.single('image'), async (req, res) => {
           versions.master = { url: `/temp/preview/${tempId}_master.webp`, size: stat.size };
         }
       } else if (fs.existsSync(masterSrc)) {
-        await sharp(masterSrc)
+        await require('sharp')(masterSrc)
           .resize(s.width, null, { fit: 'inside', withoutEnlargement: true })
           .toFormat('webp', { quality: s.quality })
           .toFile(outPath);

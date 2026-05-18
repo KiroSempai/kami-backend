@@ -328,12 +328,16 @@ router.post('/track', auth, async (req, res) => {
       [userId, manga_id, JSON.stringify({ minutes, chapter: chapter_number })]
     );
 
-    // 2. Actualizar progreso en biblioteca (solo si el nuevo capítulo es mayor)
+    // 2. Actualizar progreso en biblioteca (UPSERT: crea fila si no existe)
     await client.query(
-      `UPDATE user_manga_library
-       SET progress = $1, updated_at = NOW()
-       WHERE user_id = $2 AND manga_id = $3 AND progress < $1`,
-      [chapter_number, userId, manga_id]
+      `INSERT INTO user_manga_library (user_id, manga_id, status, progress, added_at, updated_at)
+       VALUES ($1, $2, 'reading', $3, NOW(), NOW())
+       ON CONFLICT (user_id, manga_id)
+       DO UPDATE SET progress = GREATEST(user_manga_library.progress, $3),
+                     status = CASE WHEN user_manga_library.status = 'completed' THEN user_manga_library.status ELSE 'reading' END,
+                     updated_at = NOW()
+       WHERE user_manga_library.progress < $3 OR user_manga_library.progress IS NULL`,
+      [userId, manga_id, chapter_number]
     );
 
     // 3. UPSERT en user_daily_activity para heatmap

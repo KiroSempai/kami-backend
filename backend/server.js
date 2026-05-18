@@ -167,6 +167,15 @@ const PORT = process.env.PORT || 4000;
 app.get('/healthz', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+app.get('/db-test', async (req, res) => {
+    try {
+        const { pool } = require('./db');
+        const r = await pool.query('SELECT 1 AS ok');
+        res.json({ db: 'ok', result: r.rows[0] });
+    } catch(e) {
+        res.status(500).json({ db: 'error', message: e.message });
+    }
+});
 
 // ── Middleware ──────────────────────────────────────
 app.use(cors());

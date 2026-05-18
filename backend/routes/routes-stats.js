@@ -347,4 +347,25 @@ router.post('/track', auth, async (req, res) => {
   }
 });
 
+// 🚪 [POST] /api/stats/reset — Reinicia tracking de capítulos del usuario actual
+// 👤 Permiso: auth
+// 📝 Elimina todos los chapter_read del usuario y resetea el progreso en biblioteca
+router.post('/reset', auth, async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    await pool.query(
+      "DELETE FROM user_tracking WHERE user_id = $1 AND action_type = 'chapter_read'",
+      [userId]
+    );
+    await pool.query(
+      "DELETE FROM user_daily_activity WHERE user_id = $1",
+      [userId]
+    );
+    res.json({ success: true, message: 'Tracking de capítulos reiniciado' });
+  } catch (err) {
+    console.error('[reset] Error:', err.message);
+    res.status(500).json({ error: 'Error al reiniciar tracking' });
+  }
+});
+
 module.exports = router;

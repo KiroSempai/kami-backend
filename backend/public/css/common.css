@@ -617,7 +617,8 @@ body::before {
 
 /* ── Modo Mensajes: sidebar se contrae naturalmente a solo iconos ── */
 body.mensajes-page-active .com-sidebar {
-  flex: 0 0 auto;
+  width: auto;
+  flex: none;
   min-width: 0;
   align-items: center;
 }

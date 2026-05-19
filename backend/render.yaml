@@ -23,3 +23,5 @@ services:
         value: 511044284706-a6f4ulqh24pf1o16v69k4iutj1o1o21b.apps.googleusercontent.com
       - key: GOOGLE_CLIENT_SECRET
         value: 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
+      - key: GIPHY_API_KEY
+        value: nxYKvgaFkoDDFcTcwLDpBCjz52NPxeKM

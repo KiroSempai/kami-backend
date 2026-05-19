@@ -2454,10 +2454,23 @@
               if (tag2) tag2.remove();
             }
             if (a.target > 1) {
-              var progBar = card.querySelector('.achievement-progress-bar');
-              var progLabel = card.querySelector('.ach-progress-label');
-              if (progBar) progBar.style.width = a.progress + '%';
-              if (progLabel) progLabel.textContent = a.cur + '/' + a.target;
+              var wrapper = card.querySelector('.achievement-progress');
+              if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.className = 'achievement-progress';
+                wrapper.innerHTML = '<div class="achievement-progress-bar" style="width:' + a.progress + '%"></div>';
+                card.appendChild(wrapper);
+                var lbl = document.createElement('span');
+                lbl.className = 'ach-progress-label';
+                lbl.style.cssText = 'font-size:9px;color:var(--text-muted);margin-top:4px;display:block;text-align:center;';
+                lbl.textContent = a.cur + '/' + a.target;
+                card.appendChild(lbl);
+              } else {
+                var fill = wrapper.querySelector('.achievement-progress-bar');
+                var lbl2 = card.querySelector('.ach-progress-label');
+                if (fill) fill.style.width = a.progress + '%';
+                if (lbl2) lbl2.textContent = a.cur + '/' + a.target;
+              }
             }
           });
           document.querySelector('#content-logros .achievements-intro div:nth-child(2)').textContent = 'Lector Élite · ' + d.totalUnlocked + ' logros desbloqueados';

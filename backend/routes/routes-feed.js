@@ -1655,21 +1655,20 @@ router.get('/communities', auth, async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
 
     const result = await pool.query(`
-      SELECT DISTINCT ON (fp.id) fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler,
+      SELECT fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler,
              fp.community_id, fp.manga_id, fp.media_url, fp.created_at, fp.views_count,
              fp.parent_id, fp.quoted_post_id,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
-             u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
-             (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
+              u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
       FROM feed_posts fp
-      JOIN communities c ON (fp.manga_id IS NOT NULL AND c.manga_id = fp.manga_id)
-      JOIN community_members cm ON cm.community_id = c.id
+      JOIN community_members cm ON cm.community_id = fp.community_id
       LEFT JOIN users u ON u.id = fp.user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE cm.user_id = $1 AND fp.parent_id IS NULL
-      ORDER BY fp.id, fp.created_at DESC
+      WHERE cm.user_id = $1 AND fp.parent_id IS NULL AND fp.community_id IS NOT NULL
+      ORDER BY fp.created_at DESC
       LIMIT $2 OFFSET $3
     `, [userId, limit, offset]);
 

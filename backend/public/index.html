@@ -3155,22 +3155,22 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       closeComposerForce();
     }
 
-    // ── Image upload ──
+    // ── Image/GIF upload ──
     function subirImagenPost(input) {
       var file = input.files[0];
       if (!file) return;
       var fd = new FormData();
       fd.append('image', file);
-      fetch('/api/preview/process', {
+      fetch('/api/upload/image', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kami_token') },
         body: fd
       }).then(function(r){ return r.json(); }).then(function(d){
         if (d.success) {
-          var url = d.previewUrl || d.url;
-          document.getElementById('comp-gif-img').src = url;
+          document.getElementById('comp-gif-img').src = d.url;
           document.getElementById('comp-gif-preview').style.display = 'block';
-          selectedGifUrl = url;
+          document.getElementById('comp-gif-badge').style.display = file.type === 'image/gif' ? 'block' : 'none';
+          selectedGifUrl = d.url;
         }
       }).catch(function(){});
       input.value = '';

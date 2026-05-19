@@ -1196,15 +1196,18 @@ router.post('/repost', auth, async (req, res) => {
       return res.json({ success: true, action: 'unreposted' });
     }
 
-    // Insertar en feed_interactions (sin depender de UNIQUE constraint)
-    await pool.query(
-      `INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
-       SELECT $1, $2, 'repost', '{}'
-       WHERE NOT EXISTS (
-         SELECT 1 FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'
-       )`,
+    // Insertar en feed_interactions (con check previo separado para evitar conflictos de tipos)
+    const yaReposteado = await pool.query(
+      "SELECT 1 FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'",
       [callerId, post_id]
     );
+    if (!yaReposteado.rows.length) {
+      await pool.query(
+        `INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
+         VALUES ($1, $2, 'repost', '{}')`,
+        [callerId, post_id]
+      );
+    }
 
     if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'added', actor_id: callerId });
     res.json({ success: true, action: 'reposted' });

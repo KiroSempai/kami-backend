@@ -106,9 +106,10 @@ router.post('/image', upload.single('image'), async (req, res) => {
 
     const filename = `${tempId}${isGif ? '.gif' : '.jpg'}`;
 
+    const blob = new Blob([buffer], { type: contentType });
     const { error: upErr } = await supabase.storage
       .from('post-images')
-      .upload(filename, buffer, { contentType, upsert: false });
+      .upload(filename, blob, { upsert: false });
 
     if (upErr) return res.status(500).json({ error: `Supabase: ${upErr.message}` });
 

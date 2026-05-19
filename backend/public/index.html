@@ -2167,6 +2167,7 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       .then(function(data) {
         if (data.success) {
           composerState[idInstancia] = { linkedManga: null, selectedGifUrl: null };
+          document.querySelectorAll('.comp-pill').forEach(function(p) { p.classList.remove('active'); });
           if (typeof callbackExito === 'function') callbackExito(data);
         } else {
           throw new Error(data.error || 'Error desconocido');
@@ -2350,6 +2351,8 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       }));
 
       currentFeed = feed;
+      currentFilter = 'Todos';
+      document.querySelectorAll('.feed-filter-btn').forEach(function(b) { b.classList.toggle('active', b === document.querySelector('.feed-filter-btn:first-child')); });
 
       // Mostrar/ocultar feed general y vista de comunidades
       let comFeed = document.getElementById('com-feed');
@@ -2457,12 +2460,10 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
 
     const FILTER_TAG_MAP = { 'FanArt':'fanart', 'Reseña':'review', 'Teoría':'theory', 'Coleccionismo':'collection', 'Memes':'memes' };
     function toggleFilter(el) {
-      el.classList.toggle('active');
+      document.querySelectorAll('.feed-filter-btn').forEach(function(b) { b.classList.toggle('active', b === el); });
       if (el.textContent.trim() === 'Todos') {
-        document.querySelectorAll('.feed-filter-btn').forEach(function(b) { b.classList.toggle('active', b === el); });
         currentFilter = 'Todos';
       } else {
-        document.querySelector('.feed-filter-btn:first-child').classList.remove('active');
         currentFilter = FILTER_TAG_MAP[el.textContent.trim()] || el.textContent.trim().toLowerCase();
       }
       renderFeed();
@@ -3123,7 +3124,9 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
 
     // ── Content pills ──
     function togglePill(el) {
-      el.classList.toggle('active');
+      var isActive = el.classList.contains('active');
+      document.querySelectorAll('.comp-pill').forEach(function(p) { p.classList.remove('active'); });
+      if (!isActive) el.classList.add('active');
     }
 
     function loadDraft() {

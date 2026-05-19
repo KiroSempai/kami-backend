@@ -403,7 +403,7 @@
     .comm-tab.active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
     .comm-feed { min-height:200px; }
     .explore-tab.active, .explore-home-tab.active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }
-    #comm-chat-messages { flex:1; overflow-y:auto; min-height:300px; max-height:calc(80vh - 200px); }
+
 
     /* ─── Utility classes (reemplazan style="" inline en JS) ─── */
     .obj-cover { width:100%; height:100%; object-fit:cover; }
@@ -766,11 +766,11 @@
             <div class="comm-feed" id="comm-feed"></div>
           </div>
           <div id="comm-chat-view" style="display:none;">
-            <div class="comm-chat" id="comm-chat">
-              <div class="comm-chat-messages" id="comm-chat-messages"></div>
-              <div class="comm-chat-input" style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
-                <input type="text" id="comm-chat-msg" placeholder="Mensaje..." style="flex:1;padding:10px 14px;border-radius:20px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:13px;font-family:inherit;outline:none;">
-                <button onclick="sendCommChat()" style="padding:10px 16px;border-radius:20px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-family:inherit;">Enviar</button>
+            <div class="chat-container">
+              <div class="chat-messages" id="comm-chat-messages"></div>
+              <div class="chat-input-wrap">
+                <input type="text" id="comm-chat-msg" class="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendCommChat()">
+                <button class="chat-send-btn" onclick="sendCommChat()">Enviar</button>
               </div>
             </div>
           </div>
@@ -1275,23 +1275,46 @@
       if (socket && _chatObserver) { socket.emit('leave-post', 'comm-chat:' + _chatObserver); _chatObserver = null; }
     }
 
+    function renderChatAvatar(src, name) {
+      if (src && src.indexOf('/') >= 0) return '<img src="' + src + '" alt="">';
+      return (name || '?').charAt(0).toUpperCase();
+    }
+
+    function renderChatMessageHtml(m, isOwn) {
+      var ownCls = isOwn ? ' chat-msg-own' : '';
+      return '<div class="chat-msg' + ownCls + '">' +
+        '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
+        '<div class="chat-bubble">' +
+        (isOwn ? '' : '<div class="chat-bubble-name">' + (m.username || 'Anónimo') + '</div>') +
+        '<div class="chat-bubble-text">' + m.message + '</div>' +
+        '<div class="chat-bubble-time">' + timeAgo(m.created_at) + '</div>' +
+        '</div></div>';
+    }
+
     function loadCommChat() {
-      let messages = document.getElementById('comm-chat-messages');
+      var messages = document.getElementById('comm-chat-messages');
       messages.innerHTML = '<div class="notif-loading">Cargando chat...</div>';
       fetch('/api/communities/' + _currentCommunityId + '/chat').then(function(r){return r.json()}).then(function(d){
         if (!d.success) { messages.innerHTML = '<div class="notif-empty">Error</div>'; return; }
-        if (!d.messages.length) { messages.innerHTML = '<div class="notif-empty" style="padding:40px 20px;">Sin mensajes aún. ¡Sé el primero en escribir!</div>'; } else {
-          messages.innerHTML = d.messages.map(function(m){
-            return '<div style="display:flex;gap:8px;padding:8px 16px;">' +
-              '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
-              (m.avatar && m.avatar.indexOf('/')>=0 ? '<img src="'+m.avatar+'" class="obj-cover">' : (m.username?m.username.charAt(0):'?')) + '</div>' +
-              '<div><div style="font-size:12px;font-weight:600;">' + (m.username||'Anónimo') + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">' + timeAgo(m.created_at) + '</span></div>' +
-              '<div style="font-size:13px;margin-top:2px;">' + m.message + '</div></div></div>';
-          }).join('');
-        }
+        if (!d.messages.length) { messages.innerHTML = '<div class="notif-empty" style="padding:40px 20px;">Sin mensajes a&uacute;n. &iexcl;S&eacute; el primero en escribir!</div>'; return; }
+        var myUserId = null;
+        try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+        var html = '';
+        var lastDate = '';
+        var lastUserId = null;
+        d.messages.forEach(function(m){
+          var d = (m.created_at || '').slice(0,10);
+          if (d && d !== lastDate) {
+            html += '<div class="chat-date-sep">' + formatDateLabel(m.created_at) + '</div>';
+            lastDate = d;
+            lastUserId = null;
+          }
+          html += renderChatMessageHtml(m, m.sender_id === myUserId);
+        });
+        messages.innerHTML = html;
         // Unirse al room de WebSocket para chat en vivo
         if (socket) {
-          let room = 'comm-chat:' + _currentCommunityId;
+          var room = 'comm-chat:' + _currentCommunityId;
           socket.emit('join-post', room);
           if (_chatObserver && _chatObserver !== _currentCommunityId) socket.emit('leave-post', 'comm-chat:' + _chatObserver);
           _chatObserver = _currentCommunityId;
@@ -1300,18 +1323,34 @@
       }).catch(function(){ messages.innerHTML = '<div class="notif-empty">Error</div>'; });
     }
 
+    function formatDateLabel(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      var now = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      var target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      var diffDays = Math.round((today - target) / 86400000);
+      if (diffDays === 0) return 'Hoy';
+      if (diffDays === 1) return 'Ayer';
+      return d.toLocaleDateString('es-ES', { day:'numeric', month:'short' });
+    }
+
     function sendCommChat() {
-      let input = document.getElementById('comm-chat-msg');
-      let msg = input.value.trim();
+      var input = document.getElementById('comm-chat-msg');
+      var msg = input.value.trim();
       if (!msg || !_currentCommunityId) return;
       input.value = '';
-      let token = localStorage.getItem('kami_token');
+      var token = localStorage.getItem('kami_token');
       if (!token) return;
+      var btn = document.querySelector('.chat-send-btn');
+      if (btn) btn.disabled = true;
       fetch('/api/communities/' + _currentCommunityId + '/chat', {
         method: 'POST',
         headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
         body: JSON.stringify({ message: msg })
-      }).then(function(r){return r.json()}).catch(function(){});
+      }).then(function(r){return r.json()}).catch(function(){}).finally(function(){
+        if (btn) btn.disabled = false;
+      });
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -1389,16 +1428,15 @@
         });
         // Escuchar mensajes de chat en vivo
         socket.on('chat-message', function(data) {
-          let container = document.getElementById('comm-chat-messages');
+          var container = document.getElementById('comm-chat-messages');
           if (!container) return;
-          let empty = container.querySelector('.notif-empty');
+          var empty = container.querySelector('.notif-empty');
           if (empty) container.innerHTML = '';
-          container.insertAdjacentHTML('beforeend',
-            '<div style="display:flex;gap:8px;padding:8px 16px;">' +
-            '<div style="width:28px;height:28px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;overflow:hidden;">' +
-            (data.avatar && data.avatar.indexOf('/')>=0 ? '<img src="'+data.avatar+'" class="obj-cover">' : (data.username?data.username.charAt(0):'?')) + '</div>' +
-            '<div><div style="font-size:12px;font-weight:600;">' + data.username + ' <span style="font-weight:400;color:var(--text-muted);font-size:10px;">Ahora</span></div>' +
-            '<div style="font-size:13px;margin-top:2px;">' + data.message + '</div></div></div>');
+          var myUserId = null;
+          try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+          data.created_at = data.created_at || new Date().toISOString();
+          container.insertAdjacentHTML('beforeend', renderChatMessageHtml(data, data.user === myUserId));
+          container.scrollTop = container.scrollHeight;
         });
       }
     } catch(e) {}

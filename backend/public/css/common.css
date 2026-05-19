@@ -559,7 +559,7 @@ body::before {
 }
 
 /* ── Repost indicator banner ── */
-.repost-indicator-banner { display:flex; align-items:center; gap:4px; padding:4px 16px 0; font-size:11px; font-weight:700; color:var(--text-muted); }
+.repost-indicator-banner { display:flex; align-items:center; gap:4px; padding:4px 16px 0; font-size:11px; font-weight:700; color:var(--text-muted); width:100%; box-sizing:border-box; }
 
 /* ── Feed post manga card (vinculación obra) ── */
 .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }

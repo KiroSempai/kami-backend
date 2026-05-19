@@ -336,6 +336,7 @@ app.use('/api/stats',        statsRoutes);
 app.use('/api/analytics',    analyticsRoutes);
 app.use('/api/image',        imageRoutes);
 app.use('/api/preview',      previewRoutes);
+app.use('/api/upload',      previewRoutes);
 app.use('/api/annotations',  annotationRoutes);
 app.use('/api/friends',      friendRoutes);
 app.use('/api/comments',     commentRoutes);

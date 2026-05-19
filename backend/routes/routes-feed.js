@@ -873,6 +873,7 @@ router.get('/profile-activity', async (req, res) => {
         FROM feed_interactions fi
         JOIN feed_posts fp ON fp.id = fi.post_id
         LEFT JOIN users u ON u.id = fp.user_id
+        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
         WHERE fi.user_id = $1 AND fi.interaction_type = 'like' AND fp.parent_id IS NULL ` + order;
       params = [user_id, lim, off];

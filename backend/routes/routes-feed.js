@@ -217,7 +217,7 @@ router.get('/for-you', optionalAuth, async (req, res) => {
     const tag = req.query.tag || null;
     const guestKey = 'guest_' + Math.floor(Date.now() / 60000);
     const sessionId = req.query.session || (userId ? userId + '_' + Math.floor(Date.now() / 60000) : guestKey);
-    const cacheKey = (userId || 'guest') + '_' + sessionId;
+    const cacheKey = (userId || 'guest') + '_' + sessionId + '_t' + (tag || '');
 
     // Check cache de scoring
     const cached = forYouCache.get(cacheKey);

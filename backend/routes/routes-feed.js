@@ -1176,6 +1176,7 @@ router.post('/repost', auth, async (req, res) => {
     console.log('[repost BACKEND] Clon existente?', existente.rows.length > 0);
     if (existente.rows.length > 0) {
       await pool.query('DELETE FROM feed_posts WHERE id = $1', [existente.rows[0].id]);
+      await pool.query("DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'", [callerId, post_id]);
       console.log('[repost BACKEND] Clon eliminado (unrepost)');
       if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: callerId });
       return res.json({ success: true, action: 'unreposted' });
@@ -1195,6 +1196,13 @@ router.post('/repost', auth, async (req, res) => {
         (user_id, content, manga_id, community_id, media_url, reposted_from_id, reposter_user_id, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
       [o.user_id, o.content, o.manga_id, o.community_id, o.media_url, realFromId, callerId]
+    );
+    // Insertar en feed_interactions para que enrichPosts lo detecte
+    await pool.query(
+      `INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
+       VALUES ($1, $2, 'repost', '{}')
+       ON CONFLICT (user_id, post_id, interaction_type) DO NOTHING`,
+      [callerId, post_id]
     );
     console.log('[repost BACKEND] Clon creado exitosamente para post', post_id, 'por usuario', callerId);
 
@@ -1223,8 +1231,9 @@ router.delete('/repost', auth, async (req, res) => {
       [req.user.userId, post_id]
     );
     const deleted = r.rowCount > 0;
-    if (deleted && global.io) {
-      global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: req.user.userId });
+    if (deleted) {
+      await pool.query("DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'", [req.user.userId, post_id]);
+      if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: req.user.userId });
     }
     res.json({ success: true, action: deleted ? 'unreposted' : 'none' });
   } catch (err) {

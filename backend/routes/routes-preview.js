@@ -14,8 +14,8 @@ const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY)
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
   : null;
 
-let Jimp = null;
-try { Jimp = require('jimp'); } catch (e) {}
+let JimpClass = null;
+try { const { Jimp } = require('jimp'); JimpClass = Jimp; } catch (e) {}
 
 const PREVIEW_DIR = path.join(__dirname, '..', 'public', 'temp', 'preview');
 fs.mkdirSync(PREVIEW_DIR, { recursive: true });
@@ -85,15 +85,15 @@ router.post('/image', upload.single('image'), async (req, res) => {
       // GIF: subir sin compresión para mantener animación
       buffer = fs.readFileSync(req.file.path);
       contentType = 'image/gif';
-    } else if (Jimp) {
+    } else if (JimpClass) {
       // Imagen: comprimir con Jimp
-      const image = await Jimp.read(req.file.path);
+      const image = await JimpClass.read(req.file.path);
       const MAX = 1080;
       if (image.bitmap.width > MAX || image.bitmap.height > MAX) {
         if (image.bitmap.width > image.bitmap.height) image.resize(MAX, -1);
         else image.resize(-1, MAX);
       }
-      buffer = await image.quality(80).getBufferAsync(Jimp.MIME_JPEG);
+      buffer = await image.quality(80).getBufferAsync(JimpClass.MIME_JPEG);
       contentType = 'image/jpeg';
     } else {
       // Sin Jimp: subir tal cual

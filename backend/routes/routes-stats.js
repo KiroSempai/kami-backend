@@ -449,4 +449,68 @@ router.get('/xp/:userId', async (req, res) => {
   }
 });
 
+// 🚪 [GET] /api/stats/achievements/:userId — Estado de los 14 logros
+// 👤 Permiso: público
+// 📤 Respuesta: { achievements[], totalUnlocked, totalAchievements }
+router.get('/achievements/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [titulos, maraton, lecturas, ratings, follows, comentarios, generos, tiposEdad, mangaEdad] = await Promise.all([
+      pool.query("SELECT COUNT(DISTINCT manga_id) AS c FROM user_tracking WHERE user_id=$1 AND action_type IN ('chapter_read','manga_started')", [userId]),
+      pool.query("SELECT COALESCE(MAX(chapters_read),0) AS c FROM user_daily_activity WHERE user_id=$1", [userId]),
+      pool.query("SELECT COUNT(DISTINCT manga_id) AS c FROM user_tracking WHERE user_id=$1 AND action_type='chapter_read'", [userId]),
+      pool.query("SELECT COUNT(*) AS c FROM user_ratings WHERE user_id=$1 AND rating>=9", [userId]),
+      pool.query("SELECT COUNT(*) AS c FROM user_follows WHERE following_id=$1", [userId]),
+      pool.query("SELECT (SELECT COUNT(*) FROM chapter_comments WHERE user_id=$1)+(SELECT COUNT(*) FROM feed_posts WHERE user_id=$1 AND parent_id IS NOT NULL) AS c", [userId]),
+      pool.query("SELECT COUNT(DISTINCT g.name) AS c FROM user_tracking ut JOIN manga_genres mg ON mg.manga_id=ut.manga_id JOIN genres g ON g.id=mg.genre_id WHERE ut.user_id=$1 AND ut.action_type='chapter_read'", [userId]),
+      pool.query("SELECT COUNT(DISTINCT m.type) AS c FROM user_tracking ut JOIN mangas m ON m.id=ut.manga_id WHERE ut.user_id=$1 AND m.type IN ('manga','manhwa','manhua')", [userId]),
+      pool.query("SELECT EXTRACT(YEAR FROM age(NOW(),created_at))::INTEGER AS c FROM users WHERE id=$1", [userId]),
+    ]);
+
+    const streak = await calculateStreak(userId);
+    const bibliCount = parseInt(titulos.rows[0].c) || 0;
+    const maraCount = parseInt(maraton.rows[0].c) || 0;
+    const lectCount = parseInt(lecturas.rows[0].c) || 0;
+    const rateCount = parseInt(ratings.rows[0].c) || 0;
+    const followCount = parseInt(follows.rows[0].c) || 0;
+    const commentCount = parseInt(comentarios.rows[0].c) || 0;
+    const genreCount = parseInt(generos.rows[0].c) || 0;
+    const typeCount = parseInt(tiposEdad.rows[0].c) || 0;
+    const accountAge = parseInt(mangaEdad.rows[0].c) || 0;
+
+    const defs = [
+      { id:1, name:'Bibliófilo', emoji:'📚', desc:'Lee 100 títulos diferentes', cat:'reading', cur:bibliCount, target:100 },
+      { id:2, name:'Maratonista', emoji:'⚡', desc:'10 capítulos en un solo día', cat:'reading', cur:maraCount, target:10 },
+      { id:3, name:'En racha', emoji:'🔥', desc:'30 días consecutivos', cat:'reading', cur:streak.max, target:30 },
+      { id:4, name:'Fanático', emoji:'⛩', desc:'Puntúa 50 títulos con ≥9', cat:'reading', cur:rateCount, target:50 },
+      { id:5, name:'Leyenda', emoji:'👑', desc:'Lee 500 títulos', cat:'reading', cur:lectCount, target:500 },
+      { id:6, name:'Centenario', emoji:'💯', desc:'Racha de 100 días', cat:'reading', cur:streak.max, target:100 },
+      { id:7, name:'Sociable', emoji:'👥', desc:'10 seguidores', cat:'social', cur:followCount, target:10 },
+      { id:8, name:'Curador', emoji:'🎵', desc:'Crea 5 listas públicas', cat:'social', cur:0, target:5 },
+      { id:9, name:'Comentarista', emoji:'💬', desc:'100 comentarios publicados', cat:'social', cur:commentCount, target:100 },
+      { id:10, name:'Influencer', emoji:'⭐', desc:'500 seguidores', cat:'social', cur:followCount, target:500 },
+      { id:11, name:'Seinen Master', emoji:'🎖️', desc:'Lee 50 títulos Seinen', cat:'special', cur:0, target:50 },
+      { id:12, name:'Aventurero', emoji:'⚔', desc:'10 géneros diferentes', cat:'special', cur:genreCount, target:10 },
+      { id:13, name:'Global Reader', emoji:'🌏', desc:'Lee manga, manhwa y manhua', cat:'special', cur:typeCount, target:3 },
+      { id:14, name:'Veterano', emoji:'🗓', desc:'Miembro activo 5 años', cat:'special', cur:accountAge, target:5 },
+    ];
+
+    // Seinen Master necesita query específica con filtro de género ARRAY
+    const seinen = await pool.query("SELECT COUNT(DISTINCT ut.manga_id) AS c FROM user_tracking ut JOIN mangas m ON m.id=ut.manga_id WHERE ut.user_id=$1 AND m.genres @> ARRAY['Seinen']", [userId]);
+    defs[10].cur = parseInt(seinen.rows[0].c) || 0;
+
+    const achievements = defs.map(d => ({
+      ...d,
+      progress: Math.min(100, Math.round((d.cur / d.target) * 100)),
+      unlocked: d.cur >= d.target,
+    }));
+
+    const totalUnlocked = achievements.filter(a => a.unlocked).length;
+    res.json({ achievements, totalUnlocked, totalAchievements: achievements.length });
+  } catch (err) {
+    console.error('[achievements] Error:', err.message);
+    res.status(500).json({ error: 'Error al cargar logros' });
+  }
+});
+
 module.exports = router;

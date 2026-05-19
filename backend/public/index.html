@@ -1488,10 +1488,8 @@
         let onClickAttr = ` onclick="abrirHiloPost(${p.id}, event)"`;
         let postClass = (isReplyMode || p.parent_id) ? ' feed-post-reply' : '';
         let repostBanner = '';
-        if (p.reposter_username) {
-          let currentUser = (_localUserData && _localUserData.username) ? _localUserData.username : null;
-          let bannerText = (p.reposter_username === currentUser) ? 'Tú reposteaste' : `@${p.reposter_username} Reposteó`;
-          repostBanner = `<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ${bannerText}</div>`;
+        if (p.user_has_reposted) {
+          repostBanner = `<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Tú reposteaste</div>`;
         }
         return (
           `<div class="feed-post${spoilerClass}${postClass}" id="post-id-${p.id}" data-post-id="${p.id}"${onClickAttr}>

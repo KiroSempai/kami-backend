@@ -950,10 +950,11 @@
                     spoilerOverlay = '<div class="spoiler-overlay" onclick="this.parentElement.classList.remove(\'feed-post-spoiler\');this.style.display=\'none\';if(window.feedSpoilerRevealed)feedSpoilerRevealed(' + p.id + ')"><i class="ti ti-eye-off"></i> Posible spoiler · Haz clic para revelar</div>';
                 }
                 var _repostBanner = '';
-                if (p.reposter_username) {
-                    var _currentUser = (_localUser && _localUser.username) ? _localUser.username : null;
-                    var _bannerText = (p.reposter_username === _currentUser) ? 'Tú reposteaste' : '@' + p.reposter_username + ' Reposteó';
-                    _repostBanner = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ' + _bannerText + '</div>';
+                if (p.es_repost_del_perfil) {
+                    var _curUser2 = (_localUser && _localUser.username) ? _localUser.username : null;
+                    var _profileUser = document.getElementById('profile-username-display')?.textContent?.trim();
+                    var _bannerText2 = (_profileUser === _curUser2) ? 'Tú reposteaste' : '@' + _profileUser + ' Reposteó';
+                    _repostBanner = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ' + _bannerText2 + '</div>';
                 }
                 return '' +
                     '<div class="feed-post' + spoilerClass + '" data-post-id="' + p.id + '">' +
@@ -1015,10 +1016,11 @@
 
           // ── Repost banner ──
           var _bannerHTML = '';
-          if (p.reposter_username) {
-            var _curUser = null; try { var _uu = JSON.parse(localStorage.getItem('kami_user') || 'null'); _curUser = _uu ? _uu.username : null; } catch(e) {}
-            var _bTxt = (p.reposter_username === _curUser) ? 'Tú reposteaste' : '@' + p.reposter_username + ' Reposteó';
-            _bannerHTML = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ' + _bTxt + '</div>';
+          if (p.es_repost_del_perfil) {
+            var _cu3 = null; try { var _uu2 = JSON.parse(localStorage.getItem('kami_user') || 'null'); _cu3 = _uu2 ? _uu2.username : null; } catch(e) {}
+            var _pu = document.getElementById('profile-username-display')?.textContent?.trim();
+            var _bt3 = (_pu === _cu3) ? 'Tú reposteaste' : '@' + _pu + ' Reposteó';
+            _bannerHTML = '<div class="repost-indicator-banner" style="color:var(--text-muted);font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> ' + _bt3 + '</div>';
           }
 
           var html = '';

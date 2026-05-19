@@ -226,14 +226,13 @@ router.get('/for-you', optionalAuth, async (req, res) => {
       if (idsPagina.length === 0) return res.json({ feed_type: 'Para Ti', posts: [], offset, limit, session: sessionId });
 
       const cr = await pool.query(`
-        SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
+        SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
                (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
                (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
         FROM feed_posts fp
         LEFT JOIN users u ON u.id = fp.user_id
-        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
         WHERE fp.id = ANY($1)
       `, [idsPagina]);
@@ -257,16 +256,15 @@ router.get('/for-you', optionalAuth, async (req, res) => {
     if (!userId) {
       // Guest: feed cronológico simple sin personalización
       let guestQuery = `
-        SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
+        SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
                (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
                (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
                (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
         FROM feed_posts fp
         LEFT JOIN users u ON u.id = fp.user_id
-        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
-        WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+        WHERE fp.parent_id IS NULL
       `;
       let guestParams = [];
       let gpIdx = 1;
@@ -300,16 +298,15 @@ router.get('/for-you', optionalAuth, async (req, res) => {
 
     // Fase 1: Sourcing — extraer candidatos
     let query = `
-      SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
+      SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
-      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+      WHERE fp.parent_id IS NULL
     `;
     const params = [];
     let paramIdx = 1;
@@ -522,16 +519,15 @@ router.get('/latest', optionalAuth, async (req, res) => {
     const tag = req.query.tag || null;
 
     let queryStr = `
-      SELECT fp.*, u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
+      SELECT fp.*, u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
-      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+      WHERE fp.parent_id IS NULL
     `;
     let queryParams = [];
     let paramIdx = 1;
@@ -831,13 +827,12 @@ router.get('/profile-activity', async (req, res) => {
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
-             u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
+             u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT u2.username FROM feed_posts fp2 JOIN users u2 ON u2.id = fp2.user_id WHERE fp2.id = fp.parent_id) AS reply_to_user
     `;
     const joins = `FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
-      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id`;
     const order = `ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3`;
 
@@ -873,19 +868,36 @@ router.get('/profile-activity', async (req, res) => {
         FROM feed_interactions fi
         JOIN feed_posts fp ON fp.id = fi.post_id
         LEFT JOIN users u ON u.id = fp.user_id
-        LEFT JOIN users ur ON ur.id = fp.reposter_user_id
         LEFT JOIN mangas m ON m.id = fp.manga_id
         WHERE fi.user_id = $1 AND fi.interaction_type = 'like' AND fp.parent_id IS NULL ` + order;
       params = [user_id, lim, off];
     } else {
-      // default: posts propios + repostes del usuario
-      query = selectBase + joins + ` WHERE ((fp.user_id = $1 AND fp.parent_id IS NULL AND fp.community_id IS NULL) OR (fp.reposter_user_id = $1)) ` + order;
+      // default: posts propios + repostes vía feed_interactions (X.com style)
+      query = `
+        SELECT fp.id, fp.content, fp.title, fp.post_type, fp.chapter_number, fp.is_spoiler,
+               fp.community_id, fp.manga_id, fp.media_url, fp.created_at, fp.views_count,
+               fp.parent_id, fp.quoted_post_id,
+               (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
+               (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
+               (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
+               u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+               (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
+               EXISTS (SELECT 1 FROM feed_interactions fi2 WHERE fi2.user_id = $1 AND fi2.post_id = fp.id AND fi2.interaction_type = 'repost') AS es_repost_del_perfil
+        FROM feed_posts fp
+        LEFT JOIN users u ON u.id = fp.user_id
+        LEFT JOIN mangas m ON m.id = fp.manga_id
+        WHERE fp.parent_id IS NULL AND (
+          (fp.user_id = $1 AND fp.community_id IS NULL)
+          OR EXISTS (SELECT 1 FROM feed_interactions fi3 WHERE fi3.user_id = $1 AND fi3.post_id = fp.id AND fi3.interaction_type = 'repost')
+        )
+        ORDER BY fp.created_at DESC LIMIT $2 OFFSET $3
+      `;
       params = [user_id, lim, off];
     }
 
     const result = await pool.query(query, params);
     console.log('[profile-activity] Query ejecutada. Tipo:', type, 'Filas:', result.rows.length);
-    result.rows.forEach(r => console.log('  → id:', r.id, 'user_id:', r.user_id, 'reposter_user_id:', r.reposter_user_id, 'reposter_username:', r.reposter_username));
+    result.rows.forEach(r => console.log('  → id:', r.id, 'user_id:', r.user_id, 'es_repost_del_perfil:', r.es_repost_del_perfil));
 
     let posts = result.rows.map(p => ({
       id: p.id, user: p.username || 'Anónimo',
@@ -897,7 +909,7 @@ router.get('/profile-activity', async (req, res) => {
       media_url: p.media_url || null, parent_id: p.parent_id || null,
       quoted_post_id: p.quoted_post_id || null,
       replyToUser: p.reply_to_user || null,
-      reposter_username: p.reposter_username || null,
+      es_repost_del_perfil: p.es_repost_del_perfil || false,
       parent_post: p.parent_username ? {
         id: p.parent_id, content: p.parent_text, text: p.parent_text,
         created_at: p.parent_created_at, media_url: p.parent_media_url || null,
@@ -996,20 +1008,21 @@ router.get('/user-posts/:userId', async (req, res) => {
       }
     }
 
-    // Traer posts del usuario + repostes que hizo (excluyendo el fijado)
+    // Traer posts del usuario + repostes vía feed_interactions (X.com style)
     const postsR = await pool.query(`
       SELECT fp.*, u.username, u.avatar, m.title AS manga_title,
-             ur.username AS reposter_username,
              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
-             (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies
+             (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
+             EXISTS (SELECT 1 FROM feed_interactions fi2 WHERE fi2.user_id = $1 AND fi2.post_id = fp.id AND fi2.interaction_type = 'repost') AS es_repost_del_perfil
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
-      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE (fp.user_id = $1 OR fp.reposter_user_id = $1) AND fp.parent_id IS NULL
-        AND ($2::INTEGER IS NULL OR fp.id <> $2)
+      WHERE fp.parent_id IS NULL AND (
+        fp.user_id = $1
+        OR EXISTS (SELECT 1 FROM feed_interactions fi3 WHERE fi3.user_id = $1 AND fi3.post_id = fp.id AND fi3.interaction_type = 'repost')
+      ) AND ($2::INTEGER IS NULL OR fp.id <> $2)
       ORDER BY fp.created_at DESC LIMIT 25
     `, [userId, pinnedId]);
 
@@ -1023,7 +1036,7 @@ router.get('/user-posts/:userId', async (req, res) => {
       likes: parseInt(p.real_likes) || 0, replies: parseInt(p.real_replies) || 0,
       reposts: parseInt(p.real_reposts) || 0, views_count: parseInt(p.views_count) || 0,
       author_role: p.author_role || 'user', created_at: p.created_at,
-      reposter_username: p.reposter_username || null,
+      es_repost_del_perfil: p.es_repost_del_perfil || false,
     }));
 
     res.json({ success: true, pinned_post: pinnedPost, posts });
@@ -1155,85 +1168,62 @@ router.post('/notifications/read', auth, async (req, res) => {
   }
 });
 
-// 🚪 [POST] /api/feed/repost
+// 🚪 [POST] /api/feed/repost — X.com style (solo feed_interactions, sin clones)
 // 👤 Permiso: auth
-// 📥 Body: { post_id, community_id? }
+// 📥 Body: { post_id }
 // 📤 Respuesta: { success, action }
-// 📝 Crea un repost. Inserta en reposts_manga y feed_interactions.
-//      Emite WebSocket a 'post:<id>'.
 router.post('/repost', auth, async (req, res) => {
   const { post_id } = req.body;
   const callerId = req.user.userId;
-  console.log('[repost BACKEND] Usuario', callerId, 'solicita repostear post', post_id);
   if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
 
   try {
-    // Verificar si ya existe un clon de este repost (toggle)
+    // Toggle: si ya existe el repost, eliminarlo (unrepost)
     const existente = await pool.query(
-      'SELECT id FROM feed_posts WHERE reposter_user_id = $1 AND reposted_from_id = $2',
+      "SELECT 1 FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'",
       [callerId, post_id]
     );
-    console.log('[repost BACKEND] Clon existente?', existente.rows.length > 0);
     if (existente.rows.length > 0) {
-      await pool.query('DELETE FROM feed_posts WHERE id = $1', [existente.rows[0].id]);
-      await pool.query("DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'", [callerId, post_id]);
-      console.log('[repost BACKEND] Clon eliminado (unrepost)');
+      await pool.query(
+        "DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'",
+        [callerId, post_id]
+      );
       if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: callerId });
       return res.json({ success: true, action: 'unreposted' });
     }
 
-    // Traer el post original con todas sus columnas
-    const orig = await pool.query('SELECT * FROM feed_posts WHERE id = $1', [post_id]);
-    if (!orig.rows.length) return res.status(404).json({ error: 'El post original no existe.' });
-
-    const o = orig.rows[0];
-    console.log('[repost BACKEND] Post original encontrado. user_id:', o.user_id, 'content:', (o.content || '').substring(0, 30));
-    const realFromId = o.reposted_from_id || o.id;
-
-    // Insertar el clon visual usando media_url
-    await pool.query(
-      `INSERT INTO feed_posts
-        (user_id, content, manga_id, community_id, media_url, reposted_from_id, reposter_user_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-      [o.user_id, o.content, o.manga_id, o.community_id, o.media_url, realFromId, callerId]
-    );
-    // Insertar en feed_interactions para que enrichPosts lo detecte
+    // Insertar en feed_interactions (sin clon en feed_posts)
     await pool.query(
       `INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
        VALUES ($1, $2, 'repost', '{}')
        ON CONFLICT (user_id, post_id, interaction_type) DO NOTHING`,
       [callerId, post_id]
     );
-    console.log('[repost BACKEND] Clon creado exitosamente para post', post_id, 'por usuario', callerId);
 
     if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'added', actor_id: callerId });
-
     res.json({ success: true, action: 'reposted' });
   } catch (err) {
-    console.error('[repost BACKEND] Error en POST /repost (clon):', err.message);
-    console.error('[repost BACKEND] Stack:', err.stack);
+    console.error('[repost] Error:', err.message);
     res.status(500).json({ error: 'Error al procesar el repost.' });
   }
 });
 
-// 🚪 [DELETE] /api/feed/repost
+// 🚪 [DELETE] /api/feed/repost — X.com style
 // 👤 Permiso: auth
 // 📥 Body: { post_id }
 // 📤 Respuesta: { success, action }
-// 📝 Elimina un repost y decrementa el contador.
 router.delete('/repost', auth, async (req, res) => {
   const { post_id } = req.body;
   if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
 
   try {
     const r = await pool.query(
-      'DELETE FROM feed_posts WHERE reposter_user_id = $1 AND reposted_from_id = $2 RETURNING id',
+      "DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'",
       [req.user.userId, post_id]
     );
     const deleted = r.rowCount > 0;
-    if (deleted) {
-      await pool.query("DELETE FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'", [req.user.userId, post_id]);
-      if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: req.user.userId });
+    if (deleted && global.io) {
+      global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'removed', actor_id: req.user.userId });
     }
     res.json({ success: true, action: deleted ? 'unreposted' : 'none' });
   } catch (err) {
@@ -1592,13 +1582,12 @@ router.get('/posts', async (req, res) => {
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'like') AS real_likes,
              (SELECT COUNT(*) FROM feed_interactions fi WHERE fi.post_id = fp.id AND fi.interaction_type = 'repost') AS real_reposts,
              (SELECT COUNT(*) FROM feed_posts fp3 WHERE fp3.parent_id = fp.id) AS real_replies,
-             u.username, u.avatar, ur.username AS reposter_username, m.title AS manga_title, m.cover AS manga_cover,
-             (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
+              u.username, u.avatar, m.title AS manga_title, m.cover AS manga_cover,
+              (SELECT role FROM user_with_role WHERE id = fp.user_id) AS author_role
       FROM feed_posts fp
       LEFT JOIN users u ON u.id = fp.user_id
-      LEFT JOIN users ur ON ur.id = fp.reposter_user_id
       LEFT JOIN mangas m ON m.id = fp.manga_id
-      WHERE fp.parent_id IS NULL AND fp.reposted_from_id IS NULL
+      WHERE fp.parent_id IS NULL
     `;
     let queryParams = [];
     let paramIdx = 1;
@@ -1634,7 +1623,6 @@ router.get('/posts', async (req, res) => {
       views_count: parseInt(p.views_count) || 0,
       author_role: p.author_role || 'user',
       created_at: p.created_at,
-      reposter_username: p.reposter_username || null,
     }));
 
     posts = await enrichPosts(posts, userId);

@@ -106,14 +106,22 @@ router.post('/image', upload.single('image'), async (req, res) => {
 
     const filename = `${tempId}${isGif ? '.gif' : '.jpg'}`;
 
-    const blob = new Blob([buffer], { type: contentType });
-    const { error: upErr } = await supabase.storage
-      .from('post-images')
-      .upload(filename, blob, { upsert: false });
+    // Subir directamente via REST API para evitar Zod validation del SDK
+    const upRes = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/post-images/${filename}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': contentType,
+      },
+      body: buffer,
+    });
 
-    if (upErr) return res.status(500).json({ error: `Supabase: ${upErr.message}` });
+    if (!upRes.ok) {
+      const upErr = await upRes.text();
+      return res.status(500).json({ error: `Supabase: ${upErr}` });
+    }
 
-    const { data: { publicUrl } } = supabase.storage.from('post-images').getPublicUrl(filename);
+    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/post-images/${filename}`;
 
     res.json({ success: true, url: publicUrl, previewUrl: publicUrl });
   } catch (err) {

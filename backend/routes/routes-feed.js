@@ -1196,19 +1196,21 @@ router.post('/repost', auth, async (req, res) => {
       return res.json({ success: true, action: 'unreposted' });
     }
 
-    // Insertar en feed_interactions (sin clon en feed_posts)
+    // Insertar en feed_interactions (sin depender de UNIQUE constraint)
     await pool.query(
       `INSERT INTO feed_interactions (user_id, post_id, interaction_type, metadata)
-       VALUES ($1, $2, 'repost', '{}')
-       ON CONFLICT (user_id, post_id, interaction_type) DO NOTHING`,
+       SELECT $1, $2, 'repost', '{}'
+       WHERE NOT EXISTS (
+         SELECT 1 FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'
+       )`,
       [callerId, post_id]
     );
 
     if (global.io) global.io.to('post:' + post_id).emit('interaction-update', { post_id, interaction_type:'repost', action:'added', actor_id: callerId });
     res.json({ success: true, action: 'reposted' });
   } catch (err) {
-    console.error('[repost] Error:', err.message);
-    res.status(500).json({ error: 'Error al procesar el repost.' });
+    console.error('[repost] Error:', err.message, 'Stack:', err.stack?.substring(0, 500));
+    res.status(500).json({ error: 'Error al procesar el repost.', detail: err.message });
   }
 });
 

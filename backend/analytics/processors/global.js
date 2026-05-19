@@ -41,6 +41,7 @@ async function processGlobal() {
     ]);
 
     // Cache vivo
+    if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
     fs.writeFileSync(path.join(CACHE_DIR, 'live.json'), JSON.stringify({
       totalUsers: parseInt(totalUsers.rows[0].c) || 0,
       activeUsers: parseInt(activeUsers.rows[0].c) || 0,

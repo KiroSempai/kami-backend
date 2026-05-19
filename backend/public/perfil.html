@@ -1000,9 +1000,9 @@
           } else {
             avatarContent = '<div style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--border);color:var(--text-primary);font-weight:700;font-size:16px;">' + p.user.charAt(0).toUpperCase() + '</div>';
           }
-          var rText = p.replies > 0 ? p.replies : '';
-          var rpText = p.reposts > 0 ? p.reposts : '';
-          var lText = p.likes > 0 ? p.likes : '';
+          var rText = p.replies || 0;
+          var rpText = p.reposts || 0;
+          var lText = p.likes || 0;
           var lClass = p.user_has_liked ? 'liked' : '';
           var lIcon = p.user_has_liked ? 'ti ti-heart-filled' : 'ti ti-heart';
           var rpClass = p.user_has_reposted ? 'reposted' : '';
@@ -1047,6 +1047,7 @@
           }
           html += '  <div class="post-detail-meta" style="font-size:13px;color:var(--text-muted);padding:0 16px 12px 16px;width:100%;box-sizing:border-box;">';
           html +=      timeText + ' · <span style="color:var(--text-primary);font-weight:600;">' + (p.views_count || 0) + '</span> vistas';
+          html += ' · 💬 ' + rText + ' · 🔁 ' + rpText + ' · ❤️ ' + lText;
           html += '  </div>';
           html += '  <div class="post-detail-actions" style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);width:100%;box-sizing:border-box;">';
           html += '    <div class="post-detail-action" onclick="event.stopPropagation();openReply(' + p.id + ')"><i class="ti ti-message"></i><span class="action-cnt">' + rText + '</span></div>';

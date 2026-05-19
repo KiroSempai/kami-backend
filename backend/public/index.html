@@ -1010,7 +1010,20 @@
       let html = '';
       if (tab === 'posts') {
         if (d.posts && d.posts.length) {
-          d.posts.forEach(function(p){ html += '<div class="notif-item" onclick="goToSection(\'inicio\')" style="gap:10px;padding:10px 12px;"><div style="width:32px;height:32px;border-radius:50%;background:#e8344a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">' + (p.username?p.username.charAt(0):'?') + '</div><div class="notif-body"><div class="notif-text" style="font-size:13px;">' + (p.content||'').substring(0,150) + '</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + timeAgo(p.created_at) + '</div></div></div>'; });
+          var mappedPosts = d.posts.map(function(p) {
+            return {
+              id: p.id, user: p.username || 'Anónimo',
+              handle: '@' + (p.username || 'anon').toLowerCase(),
+              avatar: p.avatar || null, text: p.content || '',
+              title: '', type: 'post',
+              manga: p.manga_title ? { id: p.manga_id, title: p.manga_title } : undefined,
+              created_at: p.created_at,
+              likes: 0, replies: 0, reposts: 0, views_count: 0,
+              author_role: 'user',
+              user_has_liked: false, user_has_reposted: false, user_has_bookmarked: false,
+            };
+          });
+          html = renderFeedPosts(mappedPosts);
         } else html = '<div class="notif-empty">Sin posts</div>';
       } else if (tab === 'mangas') {
         if (d.mangas && d.mangas.length) {

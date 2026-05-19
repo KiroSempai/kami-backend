@@ -460,9 +460,9 @@ router.get('/achievements/:userId', async (req, res) => {
       pool.query("SELECT COALESCE(MAX(chapters_read),0) AS c FROM user_daily_activity WHERE user_id=$1", [userId]),
       pool.query("SELECT COUNT(DISTINCT manga_id) AS c FROM user_tracking WHERE user_id=$1 AND action_type='chapter_read'", [userId]),
       pool.query("SELECT COUNT(*) AS c FROM user_ratings WHERE user_id=$1 AND rating>=9", [userId]),
-      pool.query("SELECT COUNT(*) AS c FROM user_follows WHERE following_id=$1", [userId]),
+      pool.query("SELECT COUNT(*) AS c FROM user_friends WHERE friend_id=$1 AND status='accepted'", [userId]),
       pool.query("SELECT (SELECT COUNT(*) FROM chapter_comments WHERE user_id=$1)+(SELECT COUNT(*) FROM feed_posts WHERE user_id=$1 AND parent_id IS NOT NULL) AS c", [userId]),
-      pool.query("SELECT COUNT(DISTINCT g.name) AS c FROM user_tracking ut JOIN manga_genres mg ON mg.manga_id=ut.manga_id JOIN genres g ON g.id=mg.genre_id WHERE ut.user_id=$1 AND ut.action_type='chapter_read'", [userId]),
+      pool.query("SELECT COUNT(DISTINCT g) AS c FROM user_tracking ut JOIN mangas m ON m.id=ut.manga_id, unnest(m.genres) AS g WHERE ut.user_id=$1 AND ut.action_type='chapter_read'", [userId]),
       pool.query("SELECT COUNT(DISTINCT m.type) AS c FROM user_tracking ut JOIN mangas m ON m.id=ut.manga_id WHERE ut.user_id=$1 AND m.type IN ('manga','manhwa','manhua')", [userId]),
       pool.query("SELECT EXTRACT(YEAR FROM age(NOW(),created_at))::INTEGER AS c FROM users WHERE id=$1", [userId]),
     ]);

@@ -1602,6 +1602,7 @@
         if (detailViewPostId && typeof socket !== 'undefined' && socket) socket.emit('leave-post', detailViewPostId);
         detailViewPostId = null;
         renderizarSeccionFisica(hash);
+        if (hash === 'marcadores') { cargarMarcadores(); }
         setTimeout(trackFeedViews, 300);
         // Restaurar posición con telón de opacidad (sin frame fantasma)
         if (hash === 'inicio') {

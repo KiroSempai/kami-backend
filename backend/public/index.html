@@ -544,7 +544,7 @@
       <div class="comp-footer">
         <div class="comp-tools">
           <button class="comp-tool" onclick="document.getElementById('comp-media-input').click()" title="Media"><i class="ti ti-photo"></i></button>
-          <input type="file" id="comp-media-input" accept="image/*,video/*" multiple style="display:none">
+          <input type="file" id="comp-media-input" accept="image/*,video/*" multiple style="display:none" onchange="subirImagenPost(this)">
           <button class="comp-tool" onclick="openGifPicker()" title="GIF"><i class="ti ti-gif"></i></button>
           <button class="comp-tool" onclick="openChapterSelector()" title="Capítulo"><i class="ti ti-bookmark"></i></button>
           <button class="comp-tool" title="Panel"><i class="ti ti-layout-grid"></i></button>
@@ -3153,6 +3153,61 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
         } catch(e) {}
       }
       closeComposerForce();
+    }
+
+    // ── Image upload ──
+    function subirImagenPost(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var fd = new FormData();
+      fd.append('image', file);
+      fetch('/api/preview/process', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kami_token') },
+        body: fd
+      }).then(function(r){ return r.json(); }).then(function(d){
+        if (d.success) {
+          var url = d.previewUrl || d.url;
+          document.getElementById('comp-media-preview').innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:200px;border-radius:8px;">';
+          document.getElementById('comp-media-preview').style.display = 'block';
+          selectedGifUrl = url;
+        }
+      }).catch(function(){});
+      input.value = '';
+    }
+
+    // ── GIF picker ──
+    function openGifPicker() {
+      document.getElementById('gif-picker').style.display = 'flex';
+      var inp = document.getElementById('gif-search-input');
+      if (inp) { inp.value = ''; inp.focus(); }
+      cargarGifs('');
+    }
+    function closeGifPicker() {
+      document.getElementById('gif-picker').style.display = 'none';
+    }
+    function cargarGifs(query) {
+      var c = document.getElementById('gif-results');
+      if (!c) return;
+      c.innerHTML = '<div class="gif-loading">Cargando...</div>';
+      fetch('/api/feed/gif-search?q=' + encodeURIComponent(query) + '&limit=30')
+        .then(function(r){ return r.json(); }).then(function(d){
+          if (!d.results || !d.results.length) { c.innerHTML = '<div class="gif-error">Sin resultados</div>'; return; }
+          var h = '<div class="gif-grid">';
+          d.results.forEach(function(g){ h += '<img src="' + g.preview + '" onclick="seleccionarGif(\'' + g.url + '\')" style="width:calc(50% - 8px);margin:4px;border-radius:6px;cursor:pointer;object-fit:cover;height:120px;">'; });
+          h += '</div>';
+          c.innerHTML = h;
+        }).catch(function(){ c.innerHTML = '<div class="gif-error">Error</div>'; });
+    }
+    function seleccionarGif(url) {
+      selectedGifUrl = url;
+      document.getElementById('comp-media-preview').innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:200px;border-radius:8px;">';
+      document.getElementById('comp-media-preview').style.display = 'block';
+      closeGifPicker();
+    }
+    function debounceGifSearch(val) {
+      clearTimeout(window._gifTimer);
+      window._gifTimer = setTimeout(function(){ cargarGifs(val); }, 300);
     }
 
     function submitPost() {

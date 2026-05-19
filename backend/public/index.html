@@ -3168,12 +3168,18 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       }).then(function(r){ return r.json(); }).then(function(d){
         if (d.success) {
           var url = d.previewUrl || d.url;
-          document.getElementById('comp-media-preview').innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:200px;border-radius:8px;">';
-          document.getElementById('comp-media-preview').style.display = 'block';
+          document.getElementById('comp-gif-img').src = url;
+          document.getElementById('comp-gif-preview').style.display = 'block';
           selectedGifUrl = url;
         }
       }).catch(function(){});
       input.value = '';
+    }
+
+    function removeGif() {
+      selectedGifUrl = null;
+      document.getElementById('comp-gif-preview').style.display = 'none';
+      document.getElementById('comp-gif-img').src = '';
     }
 
     // ── GIF picker ──
@@ -3201,8 +3207,8 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
     }
     function seleccionarGif(url) {
       selectedGifUrl = url;
-      document.getElementById('comp-media-preview').innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:200px;border-radius:8px;">';
-      document.getElementById('comp-media-preview').style.display = 'block';
+      document.getElementById('comp-gif-img').src = url;
+      document.getElementById('comp-gif-preview').style.display = 'block';
       closeGifPicker();
     }
     function debounceGifSearch(val) {

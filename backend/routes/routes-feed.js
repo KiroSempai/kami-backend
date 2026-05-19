@@ -1815,7 +1815,7 @@ router.get('/gif-search', async (req, res) => {
             width: g.images?.fixed_height?.width || 0,
             height: g.images?.fixed_height?.height || 0,
           }));
-          return res.json({ success: true, results, next: data.pagination?.total_count || 0 });
+          if (results.length > 0) return res.json({ success: true, results, next: data.pagination?.total_count || 0 });
         }
       } catch (e) {
         console.warn('[feed] Giphy API error:', e.message);

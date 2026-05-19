@@ -596,9 +596,9 @@ body::before {
 .chat-send-btn:hover { opacity:.85; }
 .chat-send-btn:disabled { opacity:.4; cursor:default; }
 
-/* ── DM Layout ── */
-.dm-layout { display:flex; height:calc(100vh - 64px); }
-.dm-list { width:320px; border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; display:flex; flex-direction:column; }
+/* ── DM Layout (adaptable con fr) ── */
+.dm-layout { display:grid; grid-template-columns:minmax(260px,0.35fr) 1fr; height:100%; }
+.dm-list { border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
 .dm-list-header { padding:16px; font-size:18px; font-weight:700; border-bottom:1px solid var(--border); flex-shrink:0; }
 .dm-list-items { flex:1; overflow-y:auto; }
 .dm-item { display:flex; gap:10px; padding:12px 16px; cursor:pointer; transition:background .1s; border-bottom:1px solid rgba(255,255,255,0.03); }
@@ -610,7 +610,37 @@ body::before {
 .dm-item-name { font-size:14px; font-weight:600; display:flex; align-items:center; gap:6px; }
 .dm-item-preview { font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dm-item-time { font-size:10px; color:var(--text-muted); white-space:nowrap; }
-.dm-chat { flex:1; display:flex; flex-direction:column; min-width:0; }
+.dm-chat { display:flex; flex-direction:column; min-width:0; }
 .dm-chat-header { padding:12px 16px; font-weight:600; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.dm-empty { flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; }
+.dm-empty { display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; }
 .dm-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+
+/* ── Modo Mensajes: sidebar se contrae naturalmente a solo iconos ── */
+body.mensajes-page-active .com-sidebar {
+  flex: 0 0 auto;
+  min-width: 0;
+  align-items: center;
+}
+body.mensajes-page-active .com-sidebar .com-nav-item span,
+body.mensajes-page-active .com-logo-text {
+  display: none;
+}
+body.mensajes-page-active .com-post-btn {
+  width: auto;
+  aspect-ratio: 1 / 1;
+  padding: 12px;
+  font-size: 0;
+  line-height: 1;
+}
+body.mensajes-page-active .com-post-btn::after {
+  content: '+';
+  font-size: 1.5rem;
+}
+body.mensajes-page-active .com-nav-item {
+  justify-content: center;
+  padding: 12px;
+  width: auto;
+}
+body.mensajes-page-active .com-right {
+  display: none;
+}

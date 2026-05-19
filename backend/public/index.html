@@ -1790,8 +1790,11 @@
         markNotifsRead();
       }
       if (name === 'mensajes') {
+        document.body.classList.add('mensajes-page-active');
         cerrarDM();
         loadDMs();
+      } else {
+        document.body.classList.remove('mensajes-page-active');
       }
     }
 

@@ -1647,9 +1647,10 @@
             height: 3px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-            margin-top: 8px;
+            margin-top: auto;
             overflow: hidden;
         }
+        .achievement-card .ach-progress-label { margin-top: 4px; }
 
         .achievement-progress-bar {
             height: 100%;

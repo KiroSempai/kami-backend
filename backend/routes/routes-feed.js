@@ -1178,6 +1178,10 @@ router.post('/repost', auth, async (req, res) => {
   if (!post_id) return res.status(400).json({ error: 'post_id requerido' });
 
   try {
+    // Verificar que el post existe
+    const existePost = await pool.query('SELECT 1 FROM feed_posts WHERE id = $1', [post_id]);
+    if (!existePost.rows.length) return res.status(404).json({ error: 'El post no existe.' });
+
     // Toggle: si ya existe el repost, eliminarlo (unrepost)
     const existente = await pool.query(
       "SELECT 1 FROM feed_interactions WHERE user_id = $1 AND post_id = $2 AND interaction_type = 'repost'",

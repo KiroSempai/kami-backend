@@ -8,6 +8,10 @@
 
 require('dotenv').config();
 
+// Valores por defecto para Supabase Storage (Render no siempre sincroniza env vars)
+if (!process.env.SUPABASE_URL) process.env.SUPABASE_URL = 'https://bojubfastavgvqkogjnj.supabase.co';
+if (!process.env.SUPABASE_SERVICE_KEY) process.env.SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvanViZmFzdGF2Z3Zxa29nam5qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODg3MzQyMSwiZXhwIjoyMDk0NDQ5NDIxfQ.zk3HoIXv6fcA-ZdXIipbeBjWPicImHXqjlW1A5e5niQ';
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🛡️ Validación de variables de entorno críticas al arranque
 // ═══════════════════════════════════════════════════════════════════════════════

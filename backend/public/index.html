@@ -449,6 +449,7 @@
       <button class="com-nav-item" data-section="mensajes" onclick="goToSection('mensajes')">
         <i class="ti ti-message"></i>
         <span>Mensajes</span>
+        <span class="notif-badge" id="dm-badge" style="display:none">0</span>
       </button>
       <button class="com-nav-item" data-section="listas" onclick="goToSection('listas')">
         <i class="ti ti-list"></i>
@@ -732,7 +733,29 @@
         </div>
       </div>
       <div class="section-content" id="section-mensajes">
-        <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">✉️ Mensajes — Próximamente</div>
+        <div class="dm-layout">
+          <div class="dm-list">
+            <div class="dm-list-header">✉️ Mensajes</div>
+            <div class="dm-list-items" id="dm-conversations">
+              <div class="notif-empty" style="padding:40px;">Cargando...</div>
+            </div>
+          </div>
+          <div class="dm-chat" id="dm-chat-view" style="display:none;">
+            <div class="dm-chat-header" id="dm-chat-header">
+              <button onclick="cerrarDM()" style="background:none;border:none;color:var(--text-secondary);font-size:18px;cursor:pointer;padding:0 4px;"><i class="ti ti-arrow-left"></i></button>
+              <span id="dm-chat-username"></span>
+            </div>
+            <div class="chat-messages" id="dm-messages"></div>
+            <div class="chat-input-wrap">
+              <input type="text" id="dm-input" class="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendDM()">
+              <button class="chat-send-btn" onclick="sendDM()">Enviar</button>
+            </div>
+          </div>
+          <div class="dm-empty" id="dm-empty">
+            <i class="ti ti-message" style="font-size:32px;opacity:0.3;"></i>
+            <span>Selecciona una conversaci&oacute;n o ve a un perfil para iniciar un DM.</span>
+          </div>
+        </div>
       </div>
       <div class="section-content" id="section-listas">
         <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">📋 Listas — Próximamente</div>
@@ -1415,12 +1438,145 @@
     let _composerMangaLocked = false;
     let detailViewPostId = null;
 
+    // ── Mensajes Directos ──
+    let _currentDMConvId = null;
+    let _dmOtherUserId = null;
+
+    function loadDMs() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) { document.getElementById('dm-conversations').innerHTML = '<div class="notif-empty">Inicia sesi&oacute;n</div>'; return; }
+      document.getElementById('dm-conversations').innerHTML = '<div class="notif-loading">Cargando...</div>';
+      fetch('/api/dms', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (!d.success || !d.conversations.length) {
+            document.getElementById('dm-conversations').innerHTML = '<div class="notif-empty" style="padding:40px 20px;">Sin conversaciones. Ve a un perfil para iniciar un DM.</div>';
+            return;
+          }
+          document.getElementById('dm-conversations').innerHTML = d.conversations.map(function(c){
+            var initial = (c.other_username || '?').charAt(0).toUpperCase();
+            var avatarHtml = c.other_avatar && c.other_avatar.indexOf('/') >= 0
+              ? '<img src="' + c.other_avatar + '">'
+              : initial;
+            var active = c.id === _currentDMConvId ? ' active' : '';
+            var unreadDot = c.has_unread ? '<span class="dm-unread-dot"></span>' : '';
+            return '<div class="dm-item' + active + '" onclick="openDM(' + c.id + ')">' +
+              '<div class="dm-item-avatar">' + avatarHtml + '</div>' +
+              '<div class="dm-item-info">' +
+              '<div class="dm-item-name">' + (c.other_username || 'Anónimo') + unreadDot + '</div>' +
+              '<div class="dm-item-preview">' + (c.last_message || '') + '</div></div>' +
+              '<div class="dm-item-time">' + (c.last_message_at2 ? timeAgo(c.last_message_at2) : '') + '</div></div>';
+          }).join('');
+          checkUnreadDMs();
+        })
+        .catch(function(){ document.getElementById('dm-conversations').innerHTML = '<div class="notif-empty">Error al cargar</div>'; });
+    }
+
+    function openDM(convId) {
+      _currentDMConvId = convId;
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      document.getElementById('dm-empty').style.display = 'none';
+      document.getElementById('dm-chat-view').style.display = 'flex';
+
+      var msgContainer = document.getElementById('dm-messages');
+      msgContainer.innerHTML = '<div class="notif-loading">Cargando...</div>';
+
+      Promise.all([
+        fetch('/api/dms/' + convId, { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r){ return r.json(); }),
+        fetch('/api/dms/' + convId + '/read', { method:'POST', headers: { 'Authorization': 'Bearer ' + token } }).then(function(r){ return r.json(); }).catch(function(){}),
+      ]).then(function(results){
+        var data = results[0];
+        if (!data.success) { msgContainer.innerHTML = '<div class="notif-empty">Error</div>'; return; }
+        _dmOtherUserId = data.other ? data.other.id : null;
+        document.getElementById('dm-chat-username').textContent = data.other ? data.other.username : 'Conversación';
+
+        if (!data.messages.length) {
+          msgContainer.innerHTML = '<div class="notif-empty" style="padding:40px;">Sin mensajes. Escribe algo para iniciar la conversaci&oacute;n.</div>';
+        } else {
+          var myUserId = null;
+          try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+          msgContainer.innerHTML = data.messages.map(function(m){
+            return renderChatMessageHtml(m, m.sender_id === myUserId);
+          }).join('');
+        }
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+        // Refresh conversation list to update active state + unread
+        loadDMs();
+      }).catch(function(){ msgContainer.innerHTML = '<div class="notif-empty">Error</div>'; });
+    }
+
+    function sendDM() {
+      var input = document.getElementById('dm-input');
+      var msg = input.value.trim();
+      if (!msg || !_currentDMConvId) return;
+      input.value = '';
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      var btn = document.querySelector('#dm-chat-view .chat-send-btn');
+      if (btn) btn.disabled = true;
+      fetch('/api/dms/' + _currentDMConvId, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ message: msg })
+      }).then(function(r){return r.json()}).catch(function(){}).finally(function(){
+        if (btn) btn.disabled = false;
+      });
+    }
+
+    function startDMWithUser(recipientId, username) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/dms', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ recipient_id: recipientId })
+      }).then(function(r){ return r.json(); }).then(function(d){
+        if (d.success) {
+          goToSection('mensajes');
+          setTimeout(function(){ openDM(d.conversation_id); }, 200);
+        } else {
+          showToast('error', d.error || 'Error al iniciar DM');
+        }
+      }).catch(function(){ showToast('error', 'Error de conexión'); });
+    }
+
+    function cerrarDM() {
+      _currentDMConvId = null;
+      _dmOtherUserId = null;
+      document.getElementById('dm-chat-view').style.display = 'none';
+      document.getElementById('dm-empty').style.display = 'flex';
+    }
+
+    function checkUnreadDMs() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      fetch('/api/dms/unread/count', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (d.success) {
+            var badge = document.getElementById('dm-badge');
+            if (d.unread_count > 0) {
+              badge.textContent = d.unread_count > 9 ? '9+' : d.unread_count;
+              badge.style.display = 'flex';
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+        }).catch(function(){});
+    }
+
     // ── Socket.io conexión para tiempo real ──
     var socket = null;
     try {
       if (typeof io !== 'undefined') {
         socket = io();
-        socket.on('connect', function() { DEBUG && console.log('[socket] conectado'); });
+        socket.on('connect', function() {
+          DEBUG && console.log('[socket] conectado');
+          var _mu = null;
+          try { var _uu = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_uu) _mu = _uu.id; } catch(e) {}
+          if (_mu) socket.emit('join-dm', _mu);
+        });
         socket.on('new-reply', function(data) {
           if (data.parent_id && data.parent_id === detailViewPostId) {
             fetchRepliesAndRefresh(data.parent_id);
@@ -1437,6 +1593,26 @@
           data.created_at = data.created_at || new Date().toISOString();
           container.insertAdjacentHTML('beforeend', renderChatMessageHtml(data, data.user === myUserId));
           container.scrollTop = container.scrollHeight;
+        });
+        // DM en vivo: append mensaje si estamos viendo esa conversación
+        socket.on('new-dm', function(data) {
+          if (_currentDMConvId === data.conversation_id) {
+            var container = document.getElementById('dm-messages');
+            if (container) {
+              var empty = container.querySelector('.notif-empty');
+              if (empty) container.innerHTML = '';
+              var myUserId = null;
+              try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+              data.created_at = data.created_at || new Date().toISOString();
+              container.insertAdjacentHTML('beforeend', renderChatMessageHtml(data, data.sender_id === myUserId));
+              container.scrollTop = container.scrollHeight;
+              // Marcar como leído automáticamente
+              var token = localStorage.getItem('kami_token');
+              if (token) fetch('/api/dms/' + data.conversation_id + '/read', { method:'POST', headers:{'Authorization':'Bearer '+token} }).catch(function(){});
+            }
+          }
+          checkUnreadDMs();
+          loadDMs();
         });
       }
     } catch(e) {}
@@ -1612,6 +1788,10 @@
       if (name === 'notificaciones') {
         loadNotifications();
         markNotifsRead();
+      }
+      if (name === 'mensajes') {
+        cerrarDM();
+        loadDMs();
       }
     }
 
@@ -3448,9 +3628,20 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
     if (localStorage.getItem('kami_token')) { window.trackAction('daily_login'); }
     renderFeed();
     checkNotifs();
-    setInterval(checkNotifs, 30000);
+    checkUnreadDMs();
+    setInterval(function(){ checkNotifs(); checkUnreadDMs(); }, 30000);
     // El enrutador lee el hash actual y muestra post detail o sección
     procesarEnrutamientoGlobal();
+
+    // Si venimos desde un perfil con intención de DM
+    try {
+      var pending = JSON.parse(sessionStorage.getItem('kami_dm_recipient') || 'null');
+      if (pending && pending.id) {
+        sessionStorage.removeItem('kami_dm_recipient');
+        goToSection('mensajes');
+        setTimeout(function() { startDMWithUser(pending.id, pending.username); }, 300);
+      }
+    } catch(e) {}
   </script>
   <script src="/js/feed-tracker.js"></script>
   <!-- Algorithm breakdown modal -->

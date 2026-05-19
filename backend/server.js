@@ -174,7 +174,8 @@ const annotationRoutes   = require('./routes/routes-annotations');
 const friendRoutes       = require('./routes/routes-friends');
 const commentRoutes      = require('./routes/routes-comments');
 const storyPinRoutes     = require('./routes/routes-story-pins');
-const socialRoutes       = require('./routes/routes-social');
+const socialRoutes = require('./routes/routes-social');
+const dmRoutes = require('./routes/routes-dms');
 const feedRoutes         = require('./routes/routes-feed');
 const communityRoutes    = require('./routes/routes-communities');
 const adminRoutes        = require('./routes/routes-admin');
@@ -348,6 +349,7 @@ app.use('/api/story-pins',   storyPinRoutes);
 app.use('/api/social',       socialRoutes);
 app.use('/api/feed',         feedRoutes);
 app.use('/api/communities',  communityRoutes);
+app.use('/api/dms',          dmRoutes);
 app.use('/api/admin',        adminRoutes);
 
 // Rutas sueltas que no encajan en los groups anteriores
@@ -390,13 +392,19 @@ analyticsScheduler.start();
 const server = http.createServer(app);
 global.io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
 
-// Canales de WebSocket para actualizaciones en tiempo real de posts
+// Canales de WebSocket para tiempo real (posts, chat, DMs)
 global.io.on('connection', (socket) => {
   socket.on('join-post', (postId) => {
     socket.join(`post:${postId}`);
   });
   socket.on('leave-post', (postId) => {
     socket.leave(`post:${postId}`);
+  });
+  socket.on('join-dm', (userId) => {
+    if (userId) socket.join('dm:' + userId);
+  });
+  socket.on('leave-dm', (userId) => {
+    if (userId) socket.leave('dm:' + userId);
   });
 });
 

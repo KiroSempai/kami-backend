@@ -595,3 +595,22 @@ body::before {
 .chat-send-btn { padding:10px 18px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity .15s; white-space:nowrap; }
 .chat-send-btn:hover { opacity:.85; }
 .chat-send-btn:disabled { opacity:.4; cursor:default; }
+
+/* ── DM Layout ── */
+.dm-layout { display:flex; height:calc(100vh - 64px); }
+.dm-list { width:320px; border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; display:flex; flex-direction:column; }
+.dm-list-header { padding:16px; font-size:18px; font-weight:700; border-bottom:1px solid var(--border); flex-shrink:0; }
+.dm-list-items { flex:1; overflow-y:auto; }
+.dm-item { display:flex; gap:10px; padding:12px 16px; cursor:pointer; transition:background .1s; border-bottom:1px solid rgba(255,255,255,0.03); }
+.dm-item:hover { background:rgba(255,255,255,0.03); }
+.dm-item.active { background:rgba(255,255,255,0.06); }
+.dm-item-avatar { width:40px; height:40px; min-width:40px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:700; overflow:hidden; }
+.dm-item-avatar img { width:100%; height:100%; object-fit:cover; }
+.dm-item-info { flex:1; min-width:0; }
+.dm-item-name { font-size:14px; font-weight:600; display:flex; align-items:center; gap:6px; }
+.dm-item-preview { font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dm-item-time { font-size:10px; color:var(--text-muted); white-space:nowrap; }
+.dm-chat { flex:1; display:flex; flex-direction:column; min-width:0; }
+.dm-chat-header { padding:12px 16px; font-weight:600; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.dm-empty { flex:1; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; }
+.dm-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }

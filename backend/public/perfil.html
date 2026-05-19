@@ -2049,9 +2049,19 @@
         if (!actionsEl) return;
         var existing = document.getElementById('social-friend-btn');
         if (existing) existing.remove();
+        var existingDm = document.getElementById('social-dm-btn');
+        if (existingDm) existingDm.remove();
 
         var token = localStorage.getItem('kami_token');
         if (!token) return;
+
+        // Botón Mensaje Directo
+        var dmBtn = document.createElement('button');
+        dmBtn.id = 'social-dm-btn';
+        dmBtn.className = 'btn btn-ghost';
+        dmBtn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Mensaje';
+        dmBtn.onclick = function() { startDMWithUser(userId, username); };
+        actionsEl.appendChild(dmBtn);
 
         var btn = document.createElement('button');
         btn.id = 'social-friend-btn';
@@ -2128,6 +2138,11 @@
             }
           })
           .catch(function(e) { alert('Error: ' + e.message); });
+      }
+
+      function startDMWithUser(recipientId, username) {
+        sessionStorage.setItem('kami_dm_recipient', JSON.stringify({ id: recipientId, username: username }));
+        window.location.href = '/';
       }
 
       // Close on overlay click

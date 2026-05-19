@@ -2,8 +2,8 @@ services:
   - type: web
     name: kami-manga-api
     runtime: node
-    buildCommand: npm install
-    startCommand: node server.js
+    buildCommand: cd backend && rm -rf node_modules package-lock.json && npm install
+    startCommand: cd backend && node server.js
     envVars:
       - key: DB_USER
         value: postgres.bojubfastavgvqkogjnj

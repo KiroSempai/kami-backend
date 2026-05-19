@@ -1003,11 +1003,9 @@
           var bIcon = p.user_has_bookmarked ? 'ti ti-bookmark-filled' : 'ti ti-bookmark';
           var timeText = typeof timeAgo === 'function' ? timeAgo(p.created_at) : (p.created_at || '');
           var roleBadgeHtml = '';
-          if (typeof renderRoleBadge === 'function') {
-            roleBadgeHtml = renderRoleBadge(p.author_role);
-          } else if (p.author_role === 'admin') {
-            roleBadgeHtml = '<span style="font-size:10px;color:var(--accent);font-weight:600;margin-left:4px;">ADMIN</span>';
-          }
+          if (p.author_role === 'admin') { roleBadgeHtml = '<span class="role-badge-admin">⚡ADMIN</span>'; }
+          else if (p.author_role === 'golden') { roleBadgeHtml = '<span class="role-badge-golden">👑GOLDEN</span>'; }
+          else if (p.author_role === 'silver') { roleBadgeHtml = '<span class="role-badge-silver">⭐SILVER</span>'; }
 
           // ── Repost banner ──
           var _bannerHTML = '';

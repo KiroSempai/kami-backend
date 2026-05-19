@@ -8,7 +8,6 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const { processImage, QUALITIES } = require('../image-processor');
 
 const PREVIEW_DIR = path.join(__dirname, '..', 'public', 'temp', 'preview');
 fs.mkdirSync(PREVIEW_DIR, { recursive: true });
@@ -17,7 +16,7 @@ const upload = multer({
   dest: PREVIEW_DIR,
   limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = /\.(jpg|jpeg|png)$/i;
+    const allowed = /\.(jpg|jpeg|png|webp|gif)$/i;
     cb(null, allowed.test(path.extname(file.originalname)));
   },
 });
@@ -30,53 +29,17 @@ router.post('/process', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Selecciona una imagen' });
 
+    const ext = path.extname(req.file.originalname).toLowerCase();
     const tempId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const inputPath = req.file.path;
+    const filename = `${tempId}${ext}`;
+    const destPath = path.join(PREVIEW_DIR, filename);
 
-    const metadata = await require('sharp')(inputPath).metadata();
-    const result = await processImage(inputPath, '_preview', tempId, 1);
-
-    // Master path
-    const masterSrc = path.join(__dirname, '..', 'public', 'cache', 'enhanced', '_preview', `chapter-${tempId}`, 'page-001_master.webp');
-    const masterPreview = path.join(PREVIEW_DIR, `${tempId}_master.webp`);
-    if (fs.existsSync(masterSrc)) fs.copyFileSync(masterSrc, masterPreview);
-
-    // Generar versiones derivadas desde master para el preview
-    const versions = {};
-    const sizes = [
-      { key: 'master', width: null, quality: 92 },
-      { key: '1080', width: 1080, quality: 85 },
-      { key: '720', width: 720, quality: 85 },
-      { key: '480', width: 480, quality: 85 },
-    ];
-
-    for (const s of sizes) {
-      const outPath = path.join(PREVIEW_DIR, `${tempId}_${s.key}.webp`);
-      if (s.key === 'master') {
-        if (fs.existsSync(masterPreview)) {
-          const stat = fs.statSync(masterPreview);
-          versions.master = { url: `/temp/preview/${tempId}_master.webp`, size: stat.size };
-        }
-      } else if (fs.existsSync(masterSrc)) {
-        await require('sharp')(masterSrc)
-          .resize(s.width, null, { fit: 'inside', withoutEnlargement: true })
-          .toFormat('webp', { quality: s.quality })
-          .toFile(outPath);
-        const stat = fs.statSync(outPath);
-        versions[s.key] = { url: `/temp/preview/${tempId}_${s.key}.webp`, size: stat.size };
-      }
-    }
+    fs.renameSync(req.file.path, destPath);
 
     res.json({
       success: true,
-      original: {
-        width: metadata.width,
-        height: metadata.height,
-        format: metadata.format,
-        size: req.file.size,
-      },
-      result,
-      versions,
+      url: `/temp/preview/${filename}`,
+      previewUrl: `/temp/preview/${filename}`,
     });
   } catch (err) {
     console.error('[preview] Error:', err.message);

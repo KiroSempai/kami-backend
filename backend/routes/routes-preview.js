@@ -8,14 +8,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
-const { createClient } = require('@supabase/supabase-js');
 
-const supabase = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY)
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
-  : null;
-
-let JimpClass = null;
-try { const { Jimp } = require('jimp'); JimpClass = Jimp; } catch (e) {}
 
 const PREVIEW_DIR = path.join(__dirname, '..', 'public', 'temp', 'preview');
 fs.mkdirSync(PREVIEW_DIR, { recursive: true });
@@ -67,46 +60,26 @@ setInterval(() => {
   } catch {}
 }, 10 * 60 * 1000);
 
-// 🚪 [POST] /api/upload/image — Subir imagen/GIF a Supabase Storage (con compresión Jimp si es foto)
+// 🚪 [POST] /api/upload/image — Subir imagen/GIF a Supabase Storage (proxy puro, sin SDK)
 // 👤 Permiso: auth (token)
 // 📥 Body: multipart (field: 'image')
 // 📤 Respuesta: { success, url, previewUrl }
 router.post('/image', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
-    if (!supabase) return res.status(500).json({ error: 'Supabase no configurado' });
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)
+      return res.status(500).json({ error: 'Supabase no configurado' });
 
-    const ext = path.extname(req.file.originalname).toLowerCase();
-    const isGif = ext === '.gif';
+    const isGif = req.body.isGif === '1';
     const tempId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    let buffer, contentType;
+    const ext = isGif ? '.gif' : '.jpg';
+    const contentType = isGif ? 'image/gif' : 'image/jpeg';
+    const buffer = fs.readFileSync(req.file.path);
 
-    if (isGif) {
-      // GIF: subir sin compresión para mantener animación
-      buffer = fs.readFileSync(req.file.path);
-      contentType = 'image/gif';
-    } else if (JimpClass) {
-      // Imagen: comprimir con Jimp
-      const image = await JimpClass.read(req.file.path);
-      const MAX = 1080;
-      if (image.bitmap.width > MAX || image.bitmap.height > MAX) {
-        if (image.bitmap.width > image.bitmap.height) image.resize(MAX, -1);
-        else image.resize(-1, MAX);
-      }
-      buffer = await image.quality(80).getBufferAsync(JimpClass.MIME_JPEG);
-      contentType = 'image/jpeg';
-    } else {
-      // Sin Jimp: subir tal cual
-      buffer = fs.readFileSync(req.file.path);
-      contentType = req.file.mimetype || 'image/jpeg';
-    }
-
-    // Limpiar temp
     try { fs.unlinkSync(req.file.path); } catch (e) {}
 
-    const filename = `${tempId}${isGif ? '.gif' : '.jpg'}`;
+    const filename = tempId + ext;
 
-    // Subir directamente via REST API para evitar Zod validation del SDK
     const upRes = await fetch(`${process.env.SUPABASE_URL}/storage/v1/object/post-images/${filename}`, {
       method: 'POST',
       headers: {

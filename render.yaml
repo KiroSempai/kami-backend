@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: kami-manga-api
+    name: kami-manga
     runtime: node
     buildCommand: cd backend && rm -rf node_modules package-lock.json && npm install
     startCommand: cd backend && node server.js

@@ -738,7 +738,12 @@
         <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">📋 Listas — Próximamente</div>
       </div>
       <div class="section-content" id="section-marcadores">
-        <div style="padding:40px;text-align:center;color:var(--text-muted);font-size:14px;">🔖 Marcadores — Próximamente</div>
+        <div class="feed-filter" id="marcadores-filter">
+          <span style="font-size:14px;font-weight:700;color:var(--text-primary);padding:8px 16px;">🔖 Marcadores</span>
+        </div>
+        <div id="com-feed-marcadores" class="com-feed">
+          <div style="text-align:center;padding:60px;color:var(--text-muted);">Cargando marcadores...</div>
+        </div>
       </div>
       <div class="section-content" id="section-comunidades">
         <div id="communities-list-view">
@@ -888,16 +893,14 @@
 
     // ── Sidebar navigation ──
     function goToSection(section) {
-      // Guardar scroll antes de salir
       let curHash = window.location.hash || '#inicio';
       sessionStorage.setItem('kami_scroll_' + curHash, window.scrollY);
-      // Setear hash — el evento hashchange hará el resto
       if (window.location.hash.replace('#', '') !== section) {
         window.location.hash = section;
       } else {
-        // Misma sección: scroll al tope estilo X.com
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+      if (section === 'marcadores') setTimeout(cargarMarcadores, 100);
     }
 
     // ── Notifications ──
@@ -3262,6 +3265,28 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       requestAnimationFrame(function() { p.style.transform = 'scale(1.1) translateY(-50px)'; setTimeout(function() { p.style.opacity = '0'; }, 400); setTimeout(function() { p.remove(); }, 800); });
       if (typeof loadXp === 'function') setTimeout(loadXp, 150);
     };
+
+    // ── Marcadores ──
+    function cargarMarcadores() {
+      var c = document.getElementById('com-feed-marcadores');
+      if (!c) return;
+      var t = localStorage.getItem('kami_token');
+      if (!t) { c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Inicia sesi\u00f3n para ver tus marcadores</div>'; return; }
+      var uid = null;
+      try { var u = JSON.parse(localStorage.getItem('kami_user') || 'null'); uid = u ? u.id : null; } catch(e) {}
+      if (!uid) return;
+      c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Cargando...</div>';
+      fetch('/api/feed/bookmarks', {
+        headers: { 'Authorization': 'Bearer ' + t }
+      }).then(function(r){ return r.json(); }).then(function(d){
+        if (!d.success || !d.posts || !d.posts.length) {
+          c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);font-size:14px;">Sin marcadores a\u00fan<br><span style="font-size:12px;">Usa el icono \ud83d\udd16 en los posts para guardarlos aqu\u00ed</span></div>';
+          return;
+        }
+        c.innerHTML = renderFeedPosts(d.posts);
+        setTimeout(trackFeedViews, 200);
+      }).catch(function(){ c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-muted);">Error al cargar marcadores</div>'; });
+    }
 
     // ── Daily Login Bonus (una vez al día) ──
     (function() {

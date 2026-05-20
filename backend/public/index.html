@@ -1355,11 +1355,20 @@
       return (name || '?').charAt(0).toUpperCase();
     }
 
-    function renderChatMessageHtml(m, isOwn) {
+    function renderChatMessageHtml(m, isOwn, lastReadAt) {
       var ownCls = isOwn ? ' chat-msg-own' : '';
       var timeStr = '';
       try { var d = new Date(m.created_at); timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); } catch(e) { timeStr = ''; }
-      var statusHtml = isOwn ? '<div class="dm-message-status"><svg viewBox="0 0 12 9" width="14" height="10" fill="var(--accent)" style="vertical-align:middle;margin-right:2px;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z"/></svg>' + timeStr + '</div>' : '';
+      var statusHtml = '';
+      if (isOwn) {
+        if (lastReadAt) {
+          var isRead = new Date(m.created_at) <= new Date(lastReadAt);
+          var label = isRead ? 'Le\u00eddo' : 'Enviado';
+          statusHtml = '<div class="dm-message-status"><svg viewBox="0 0 12 9" width="14" height="10" fill="' + (isRead ? 'var(--accent)' : '#71767b') + '" style="vertical-align:middle;margin-right:2px;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z"/></svg>' + label + ' \u00b7 ' + timeStr + '</div>';
+        } else {
+          statusHtml = '<div class="dm-message-status"><svg viewBox="0 0 12 9" width="14" height="10" fill="#71767b" style="vertical-align:middle;margin-right:2px;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z"/></svg>' + timeStr + '</div>';
+        }
+      }
       return '<div class="chat-msg' + ownCls + '">' +
         '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
         '<div class="chat-bubble">' +
@@ -1589,6 +1598,8 @@
             '</div>';
         }
 
+        var lastReadAt = data.other ? data.other.last_read_at : null;
+
         if (!data.messages.length) {
           msgContainer.innerHTML = headerHtml + '<div class="notif-empty" style="padding:40px;">Sin mensajes. Escribe algo para iniciar la conversaci&oacute;n.</div>';
         } else {
@@ -1600,7 +1611,7 @@
               msgHtml += '<div class="chat-date-sep">' + formatDateLabel(m.created_at) + '</div>';
               lastDate = d;
             }
-            msgHtml += renderChatMessageHtml(m, m.sender_id === myUserId);
+            msgHtml += renderChatMessageHtml(m, m.sender_id === myUserId, lastReadAt);
           });
           msgContainer.innerHTML = headerHtml + msgHtml;
         }

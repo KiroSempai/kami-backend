@@ -135,10 +135,16 @@ router.get('/:id', auth, async (req, res) => {
       WHERE cp.conversation_id = $1 AND cp.user_id != $2 LIMIT 1
     `, [convId, userId]);
 
+    // Obtener last_read_at del otro participante (para mostrar "Leído"/"Enviado")
+    const otherRead = await pool.query(`
+      SELECT cp.last_read_at FROM dm_conversation_participants cp
+      WHERE cp.conversation_id = $1 AND cp.user_id != $2 LIMIT 1
+    `, [convId, userId]);
+
     res.json({
       success: true,
       messages: r.rows,
-      other: other.rows[0] || null,
+      other: { ...(other.rows[0] || {}), last_read_at: otherRead.rows[0]?.last_read_at || null },
     });
   } catch (err) {
     console.error('[dms] Error getting messages:', err.message);

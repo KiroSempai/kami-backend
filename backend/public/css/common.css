@@ -625,7 +625,7 @@ body::before {
 
 /* ── Modo Mensajes: sidebar se contrae, DM layout centrado con max-width ── */
 body.mensajes-page-active .dm-layout {
-  max-width: 990px; margin: 0 auto;
+  max-width: 990px; width: 100% !important; margin: 0 auto;
   border-left: 1px solid rgba(255,255,255,0.08);
   border-right: 1px solid rgba(255,255,255,0.08);
 }

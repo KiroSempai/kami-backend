@@ -311,7 +311,12 @@ app.get('/mangoteca',     (req, res) => res.redirect('/inicio-mangoteca'));
 app.get('/register',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'register.html')));
 app.get('/login',         (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/perfil',        noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil.html')));
-app.get('/profile/:username', noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil.html')));
+app.get('/profile/:username', noCache, (req, res) => {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
+  const file = isMobile ? 'perfil-mobile.html' : 'perfil.html';
+  res.sendFile(path.join(__dirname, 'public', file));
+});
 app.get('/perfil-editor/:username', (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil-editor.html')));
 app.get('/account',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
 app.get('/settings',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));

@@ -130,7 +130,7 @@ router.get('/:id', auth, async (req, res) => {
 
     // Obtener info del otro participante
     const other = await pool.query(`
-      SELECT u.id, u.username, u.avatar FROM users u
+      SELECT u.id, u.username, u.avatar, u.created_at FROM users u
       JOIN dm_conversation_participants cp ON cp.user_id = u.id
       WHERE cp.conversation_id = $1 AND cp.user_id != $2 LIMIT 1
     `, [convId, userId]);

@@ -1562,14 +1562,47 @@
         };
         document.getElementById('dm-chat-username').style.cursor = data.other ? 'pointer' : 'default';
 
+        var myUserId = null;
+        try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+
+        // Render profile header
+        var headerHtml = '';
+        if (data.other) {
+          var joinedDate = '';
+          if (data.other.created_at) {
+            var jd = new Date(data.other.created_at);
+            var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+            joinedDate = 'Joined ' + meses[jd.getMonth()] + ' ' + jd.getFullYear();
+          }
+          var avHtml = data.other.avatar && data.other.avatar.indexOf('/') >= 0
+            ? '<img src="' + data.other.avatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">'
+            : '<div style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;">' + (data.other.username ? data.other.username.charAt(0).toUpperCase() : '?') + '</div>';
+          headerHtml = '<div style="padding:16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;">' +
+            '<div style="display:flex;align-items:center;gap:12px;">' +
+            avHtml +
+            '<div>' +
+            '<div style="font-size:17px;font-weight:800;color:#e7e9ea;">' + data.other.username + '</div>' +
+            '<div style="font-size:13px;color:#71767b;">@' + data.other.username.toLowerCase() + '</div>' +
+            '</div></div>' +
+            (joinedDate ? '<div style="font-size:13px;color:#71767b;">' + joinedDate + '</div>' : '') +
+            '<a href="/profile/' + data.other.username + '" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600;">View Profile</a>' +
+            '</div>';
+        }
+
         if (!data.messages.length) {
-          msgContainer.innerHTML = '<div class="notif-empty" style="padding:40px;">Sin mensajes. Escribe algo para iniciar la conversaci&oacute;n.</div>';
+          msgContainer.innerHTML = headerHtml + '<div class="notif-empty" style="padding:40px;">Sin mensajes. Escribe algo para iniciar la conversaci&oacute;n.</div>';
         } else {
-          var myUserId = null;
-          try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
-          msgContainer.innerHTML = data.messages.map(function(m){
-            return renderChatMessageHtml(m, m.sender_id === myUserId);
-          }).join('');
+          var msgHtml = '';
+          var lastDate = '';
+          data.messages.forEach(function(m){
+            var d = (m.created_at || '').slice(0,10);
+            if (d && d !== lastDate) {
+              msgHtml += '<div class="chat-date-sep">' + formatDateLabel(m.created_at) + '</div>';
+              lastDate = d;
+            }
+            msgHtml += renderChatMessageHtml(m, m.sender_id === myUserId);
+          });
+          msgContainer.innerHTML = headerHtml + msgHtml;
         }
         msgContainer.scrollTop = msgContainer.scrollHeight;
         // Refresh conversation list to update active state + unread

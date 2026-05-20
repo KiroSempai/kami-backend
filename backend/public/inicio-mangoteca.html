@@ -19,11 +19,400 @@
     body { background:#0e0e1e; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; }
     .mangoteca-layout { display: flex; min-height: calc(100vh - 64px); }
     .mangoteca-content { flex: 1; min-width: 0; }
+  /* ── MOBILE LAYOUT (<600px) ── */
+  @media(max-width:600px) {
+    :root { --nav-top-h:56px; --nav-bot-h:64px; }
+    .mangoteca-layout { padding-top:var(--nav-top-h); padding-bottom:var(--nav-bot-h); display:block; }
+    .mangoteca-content { overflow-x:hidden; }
+    body { background:#07070e; padding:0; }
+    .hero { display:none; }
+    .section-header,
+    .features-strip,
+    .promo-banner,
+    footer { display:none; }
+    .mob-only { display:block !important; }
+    .desk-only { display:none !important; }
+
+    /* ── TOP NAV MOBILE ── */
+    .mob-top-nav {
+      position:fixed; top:0; left:0; right:0; z-index:200;
+      height:var(--nav-top-h); display:flex; align-items:center; justify-content:space-between;
+      padding:0 14px;
+      background:rgba(7,7,14,0.9); backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+    }
+    .mob-top-left { display:flex; align-items:center; gap:10px; }
+    .mob-top-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background:linear-gradient(135deg,#e8334a,#ff7c6e);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:#fff; cursor:pointer;
+    }
+    .mob-top-logo { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:#e7e9ea; }
+    .mob-top-logo span { color:#e8344a; }
+    .mob-top-right { display:flex; align-items:center; gap:4px; }
+    .mob-top-icon {
+      width:34px; height:34px; border-radius:50%;
+      background:rgba(255,255,255,0.05); border:1px solid var(--border);
+      color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:17px;
+    }
+
+    /* ── BOTTOM NAV MOBILE ── */
+    .mob-bottom-nav {
+      position:fixed; bottom:0; left:0; right:0; z-index:200;
+      height:var(--nav-bot-h);
+      background:rgba(7,7,14,0.95); backdrop-filter:blur(28px);
+      border-top:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-around;
+      padding:0 4px; padding-bottom:env(safe-area-inset-bottom,0);
+    }
+    .mob-bnav-item {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:3px; flex:1; height:100%; color:var(--text-muted); cursor:pointer;
+      position:relative; font-size:20px; padding-top:4px;
+    }
+    .mob-bnav-item.active { color:var(--accent); }
+    .mob-bnav-label { font-size:9px; font-weight:500; letter-spacing:0.3px; }
+
+    /* ── HERO SLIDER MOBILE ── */
+    .mob-hero {
+      position:relative; height:260px; overflow:hidden;
+      background:var(--bg-surface); border-radius:0 0 20px 20px; margin-bottom:2px;
+    }
+    .mob-hero-slide { position:absolute; inset:0; opacity:0; transition:opacity .6s ease; pointer-events:none; }
+    .mob-hero-slide.active { opacity:1; pointer-events:auto; }
+    .mob-hero-bg { position:absolute; inset:0; }
+    .mob-hero-gradient { position:absolute; inset:0; background:linear-gradient(to right,rgba(7,7,14,0.92) 0%,rgba(7,7,14,0.5) 55%,rgba(7,7,14,0.1) 100%); }
+    .mob-hero-grad-bottom { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to top,#07070e,transparent); }
+    .mob-hero-content { position:absolute; bottom:16px; left:16px; right:40%; z-index:10; }
+    .mob-hero-badge { display:inline-flex; align-items:center; gap:3px; background:var(--accent); color:#fff; font-size:8px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+    .mob-hero-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; line-height:.95; margin-bottom:4px; text-shadow:0 3px 12px rgba(0,0,0,0.6); }
+    .mob-hero-sub { font-size:9px; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+    .mob-hero-dots { position:absolute; bottom:12px; right:14px; display:flex; gap:4px; z-index:10; }
+    .mob-hero-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all .2s; }
+    .mob-hero-dot.active { background:var(--accent); width:16px; border-radius:3px; }
+
+    /* ── SECTION MOBILE ── */
+    .mob-section { padding:14px 0 0; }
+    .mob-sec-head { display:flex; align-items:center; justify-content:space-between; padding:0 14px; margin-bottom:10px; }
+    .mob-sec-title { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; }
+    .mob-sec-title i { font-size:15px; color:var(--accent); }
+    .mob-see-all { font-size:10px; font-weight:600; color:var(--accent); padding:3px 8px; border-radius:999px; background:rgba(232,51,74,0.1); border:none; cursor:pointer; }
+
+    /* ── HORIZONTAL SCROLL ── */
+    .mob-h-scroll { display:flex; gap:8px; overflow-x:auto; padding:0 14px 12px; scrollbar-width:none; }
+    .mob-h-scroll::-webkit-scrollbar { display:none; }
+
+    /* ── MANGA CARD MOBILE ── */
+    .mob-manga-card {
+      flex:0 0 100px; background:var(--bg-card); border-radius:14px; overflow:hidden;
+      border:1px solid var(--border); cursor:pointer; position:relative;
+    }
+    .mob-manga-card:active { transform:scale(.96); }
+    .mob-manga-thumb { aspect-ratio:2/3; position:relative; overflow:hidden; background:var(--bg-surface); border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:center; }
+    .mob-manga-thumb i { font-size:28px; color:rgba(255,255,255,0.06); }
+    .mob-thumb-gradient { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.85) 100%); }
+    .mob-manga-title { font-size:10px; font-weight:700; line-height:1.3; padding:6px 7px 5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+    /* ── GENRE PILLS ── */
+    .mob-genre-pills { display:flex; gap:6px; overflow-x:auto; padding:0 14px 10px; scrollbar-width:none; }
+    .mob-genre-pill {
+      flex-shrink:0; padding:5px 14px; border-radius:999px; font-size:11px; font-weight:600;
+      color:var(--text-secondary); background:var(--bg-card); border:1px solid var(--border);
+      cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;
+    }
+    .mob-genre-pill.active { background:rgba(232,51,74,0.15); border-color:var(--accent); color:var(--accent); }
+    .mob-genre-pill i { font-size:13px; }
+
+    /* ── CATALOG GRID ── */
+    .mob-catalog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 14px 20px; }
+    .mob-catalog-grid .mob-manga-card { flex:unset; }
+
+    /* ── PAGE CONTAINERS ── */
+    .mob-page { display:none; }
+    .mob-page.active { display:block; }
+
+    /* ── SEARCH PAGE ── */
+    .mob-search-page { padding:14px; }
+    .mob-search-bar-wrap { position:relative; margin-bottom:12px; }
+    .mob-search-bar {
+      width:100%; padding:11px 14px 11px 38px;
+      background:var(--bg-card); border:1px solid var(--border); border-radius:999px;
+      color:var(--text-primary); font-family:inherit; font-size:13px; outline:none;
+    }
+    .mob-search-bar:focus { border-color:var(--accent); }
+    .mob-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px; }
+    .mob-genre-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .mob-genre-card {
+      background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
+      padding:14px 12px; cursor:pointer; display:flex; align-items:center; gap:10px; position:relative; overflow:hidden;
+    }
+    .mob-genre-card:active { transform:scale(.97); }
+    .mob-genre-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .mob-genre-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+    .mob-genre-name { font-size:12px; font-weight:700; }
+    .mob-genre-count { font-size:9px; color:var(--text-muted); }
+
+    /* ── TOP RANKINGS ── */
+    .mob-top-page { padding:0 14px 20px; }
+    .mob-chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+    .mob-chart-head { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; }
+    .mob-chart-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.03); cursor:pointer; }
+    .mob-chart-row:last-child { border-bottom:none; }
+    .mob-chart-num { width:20px; text-align:center; font-family:'Bebas Neue',sans-serif; font-size:17px; color:var(--text-muted); flex-shrink:0; }
+    .mob-chart-num.t1 { color:var(--gold); }
+    .mob-chart-num.t2 { color:#c0c0c0; }
+    .mob-chart-num.t3 { color:#cd7f32; }
+    .mob-chart-cover { width:32px; height:44px; border-radius:10px; background:var(--bg-surface); flex-shrink:0; overflow:hidden; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; position:relative; }
+    .mob-chart-body { flex:1; min-width:0; }
+    .mob-chart-body .t { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .mob-chart-body .s { font-size:10px; color:var(--text-muted); }
+    .mob-chart-score { font-size:12px; font-weight:700; color:var(--gold); display:flex; align-items:center; gap:2px; }
+    .mob-chart-avail { font-size:8px; font-weight:700; padding:1px 6px; border-radius:999px; margin-top:2px; display:inline-block; }
+    .mob-ca-readable { background:rgba(45,202,122,0.12); color:var(--green); }
+    .mob-ca-tracking { background:rgba(76,157,245,0.12); color:var(--blue); }
+
+    /* ── MODAL ── */
+    .mob-modal-overlay {
+      position:fixed; inset:0; z-index:400;
+      background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+      display:flex; align-items:flex-end; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .25s ease;
+    }
+    .mob-modal-overlay.open { opacity:1; pointer-events:all; }
+    .mob-modal {
+      background:var(--bg-surface); border:1px solid var(--border-hover);
+      border-radius:20px 20px 0 0; width:100%; max-width:480px;
+      transform:translateY(50px); transition:transform .3s ease;
+      overflow:hidden; padding-bottom:env(safe-area-inset-bottom,0);
+    }
+    .mob-modal-overlay.open .mob-modal { transform:translateY(0); }
+    .mob-modal-handle { width:36px; height:4px; border-radius:999px; background:var(--border-hover); margin:10px auto 4px; }
+    .mob-modal-head { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .mob-modal-cover { width:40px; height:54px; border-radius:10px; background:var(--bg-card); flex-shrink:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); }
+    .mob-modal-title { font-size:14px; font-weight:700; }
+    .mob-modal-author { font-size:11px; color:var(--text-secondary); margin-top:1px; }
+    .mob-modal-close { margin-left:auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:var(--text-secondary); cursor:pointer; font-size:16px; }
+    .mob-modal-body { padding:14px 16px; }
+    .mob-modal-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+    .mob-modal-states { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:14px; }
+    .mob-state-btn {
+      display:flex; align-items:center; gap:6px; padding:9px 12px; border-radius:12px;
+      border:1px solid var(--border); background:var(--bg-card); cursor:pointer;
+      font-size:11px; font-weight:600; color:var(--text-secondary); transition:all .15s;
+    }
+    .mob-state-btn i { font-size:14px; }
+    .mob-state-btn.selected { border-color:var(--accent); color:var(--accent); background:rgba(232,51,74,0.1); }
+    .mob-score-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .mob-stars { display:flex; gap:4px; }
+    .mob-star { font-size:20px; color:var(--text-muted); cursor:pointer; }
+    .mob-star.lit { color:var(--gold); }
+    .mob-modal-foot { display:flex; gap:8px; padding:12px 16px 16px; border-top:1px solid var(--border); }
+    .mob-btn-primary {
+      display:inline-flex; align-items:center; gap:6px; flex:1; justify-content:center;
+      background:var(--accent); color:#fff; padding:11px 18px; border-radius:999px;
+      font-size:12px; font-weight:700; border:none; cursor:pointer;
+    }
+    .mob-btn-ghost {
+      display:inline-flex; align-items:center; gap:5px;
+      background:none; color:var(--text-secondary); padding:11px 14px; border-radius:999px;
+      font-size:12px; font-weight:600; border:1px solid var(--border); cursor:pointer;
+    }
+
+    /* ── FILTER BUTTONS ── */
+    .mob-filter-pills { display:flex; gap:6px; overflow-x:auto; padding:0 14px 8px; scrollbar-width:none; }
+    .mob-filter-pill {
+      flex-shrink:0; padding:5px 12px; border-radius:999px; font-size:10px; font-weight:600;
+      border:1px solid var(--border); color:var(--text-secondary); background:var(--bg-card);
+      cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;
+    }
+    .mob-filter-pill.active { border-color:var(--accent); color:var(--accent); background:rgba(232,51,74,0.1); }
+    .mob-filter-pill i { font-size:12px; }
+  }
   </style>
 </head>
-
 <body>
   <script src="/js/menu-global.js"></script>
+
+<!-- ═══ TOP NAV MOBILE ═══ -->
+<nav class="mob-top-nav mob-only" style="display:none;">
+  <div class="mob-top-left">
+    <div class="mob-top-avatar" id="mob-avatar-btn">K</div>
+  </div>
+  <div class="mob-top-logo">K<span>A</span>MI</div>
+  <div class="mob-top-right">
+    <button class="mob-top-icon" onclick="goToSection('notificaciones')"><i class="ti ti-bell"></i></button>
+  </div>
+</nav>
+
+<!-- ═══ HERO SLIDER MOBILE ═══ -->
+<div class="mob-hero mob-only" style="display:none;" id="mob-hero">
+  <div class="mob-hero-slide active" data-idx="0" id="mob-hero-slide-0">
+    <div class="mob-hero-bg" style="background:linear-gradient(135deg,#0a0005,#2d0a0a)"></div>
+    <div class="mob-hero-gradient"></div>
+    <div class="mob-hero-grad-bottom"></div>
+    <div class="mob-hero-content">
+      <div class="mob-hero-badge"><i class="ti ti-flame" style="font-size:8px"></i>DESTACADO</div>
+      <div class="mob-hero-title" id="mob-hero-title-0">BERSERK</div>
+      <div class="mob-hero-sub" id="mob-hero-sub-0"><span>Kentaro Miura</span></div>
+      <button class="btn-hero-primary" style="padding:7px 12px;font-size:10px"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+    </div>
+  </div>
+  <div class="mob-hero-slide" data-idx="1" id="mob-hero-slide-1">
+    <div class="mob-hero-bg" style="background:linear-gradient(135deg,#001020,#002a40)"></div>
+    <div class="mob-hero-gradient"></div>
+    <div class="mob-hero-grad-bottom"></div>
+    <div class="mob-hero-content">
+      <div class="mob-hero-badge" style="background:#4c9df5">TENDENCIA</div>
+      <div class="mob-hero-title" id="mob-hero-title-1">VINLAND SAGA</div>
+      <div class="mob-hero-sub" id="mob-hero-sub-1"><span>Makoto Yukimura</span></div>
+      <button class="btn-hero-primary" style="padding:7px 12px;font-size:10px"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+    </div>
+  </div>
+  <div class="mob-hero-slide" data-idx="2" id="mob-hero-slide-2">
+    <div class="mob-hero-bg" style="background:linear-gradient(135deg,#0d0020,#1a0040)"></div>
+    <div class="mob-hero-gradient"></div>
+    <div class="mob-hero-grad-bottom"></div>
+    <div class="mob-hero-content">
+      <div class="mob-hero-badge" style="background:#a855f7">COMPLETADO</div>
+      <div class="mob-hero-title" id="mob-hero-title-2">KIMETSU NO YAIBA</div>
+      <div class="mob-hero-sub" id="mob-hero-sub-2"><span>Koyoharu Gotouge</span></div>
+      <button class="btn-hero-primary" style="padding:7px 12px;font-size:10px;background:#a855f7"><i class="ti ti-bookmark-plus" style="font-size:11px"></i> Mi Lista</button>
+    </div>
+  </div>
+  <div class="mob-hero-slide" data-idx="3" id="mob-hero-slide-3">
+    <div class="mob-hero-bg" style="background:linear-gradient(135deg,#100800,#2a1200)"></div>
+    <div class="mob-hero-gradient"></div>
+    <div class="mob-hero-grad-bottom"></div>
+    <div class="mob-hero-content">
+      <div class="mob-hero-badge" style="background:#f59e0b">CLÁSICO</div>
+      <div class="mob-hero-title" id="mob-hero-title-3">ATTACK ON TITAN</div>
+      <div class="mob-hero-sub" id="mob-hero-sub-3"><span>Hajime Isayama</span></div>
+      <button class="btn-hero-primary" style="padding:7px 12px;font-size:10px"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+    </div>
+  </div>
+  <div class="mob-hero-dots" id="mob-hero-dots"></div>
+</div>
+
+<!-- ═══ BOTTOM NAV MOBILE ═══ -->
+<nav class="mob-bottom-nav mob-only" style="display:none;">
+  <div class="mob-bnav-item active" data-mobpage="home" onclick="mobSwitchPage('home',this)">
+    <i class="ti ti-home-2"></i><span class="mob-bnav-label">Inicio</span>
+  </div>
+  <div class="mob-bnav-item" data-mobpage="search" onclick="mobSwitchPage('search',this)">
+    <i class="ti ti-search"></i><span class="mob-bnav-label">Buscar</span>
+  </div>
+  <div class="mob-bnav-item" data-mobpage="catalog" onclick="mobSwitchPage('catalog',this)">
+    <i class="ti ti-books"></i><span class="mob-bnav-label">Catálogo</span>
+  </div>
+  <div class="mob-bnav-item" data-mobpage="top" onclick="mobSwitchPage('top',this)">
+    <i class="ti ti-trophy"></i><span class="mob-bnav-label">Top</span>
+  </div>
+</nav>
+
+<!-- ═══ PAGES MOBILE ═══ -->
+
+<!-- HOME PAGE MOBILE -->
+<div class="mob-page active" id="mob-home">
+  <div class="mob-section">
+    <div class="mob-sec-head">
+      <div class="mob-sec-title"><i class="ti ti-flame"></i>Tendencia</div>
+      <button class="mob-see-all">Ver todo</button>
+    </div>
+    <div class="mob-h-scroll" id="mob-trending-scroll"></div>
+  </div>
+  <div class="mob-section">
+    <div class="mob-sec-head">
+      <div class="mob-sec-title"><i class="ti ti-sparkles"></i>Novedades</div>
+      <button class="mob-see-all">Ver todo</button>
+    </div>
+    <div class="mob-h-scroll" id="mob-new-scroll"></div>
+  </div>
+  <div class="mob-section">
+    <div class="mob-sec-head">
+      <div class="mob-sec-title"><i class="ti ti-category"></i>Géneros</div>
+    </div>
+    <div class="mob-genre-pills" id="mob-genre-pills"></div>
+  </div>
+</div>
+
+<!-- SEARCH PAGE MOBILE -->
+<div class="mob-page" id="mob-search">
+  <div class="mob-search-page">
+    <p style="font-size:18px;font-weight:800;margin-bottom:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">Bus<span style="color:var(--accent)">car</span></p>
+    <div class="mob-search-bar-wrap">
+      <i class="ti ti-search mob-search-icon"></i>
+      <input type="text" class="mob-search-bar" placeholder="Título, autor, género..." id="mob-search-input">
+    </div>
+    <p style="font-size:10px;color:var(--text-muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Explorar por género</p>
+    <div class="mob-genre-grid" id="mob-genre-grid"></div>
+  </div>
+</div>
+
+<!-- CATALOG PAGE MOBILE -->
+<div class="mob-page" id="mob-catalog">
+  <div class="mob-section" style="padding-top:4px;">
+    <div class="mob-sec-head" style="padding:0 14px;">
+      <div class="mob-sec-title" style="font-size:16px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">Cat<span style="color:var(--accent)">álogo</span></div>
+    </div>
+    <div class="mob-filter-pills" id="mob-cat-pills">
+      <div class="mob-filter-pill active" data-filter="">Todo</div>
+      <div class="mob-filter-pill" data-filter="manga">Manga</div>
+      <div class="mob-filter-pill" data-filter="manhwa">Manhwa</div>
+      <div class="mob-filter-pill" data-filter="manhua">Manhua</div>
+      <div class="mob-filter-pill" data-filter="oneshot">One-shot</div>
+    </div>
+    <div class="mob-catalog-grid" id="mob-catalog-grid"></div>
+  </div>
+</div>
+
+<!-- TOP PAGE MOBILE -->
+<div class="mob-page" id="mob-top">
+  <div class="mob-section" style="padding-top:4px;">
+    <div class="mob-sec-head" style="padding:0 14px 4px;">
+      <div class="mob-sec-title" style="font-size:16px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">Top <span style="color:var(--accent)">Rankings</span></div>
+    </div>
+    <div class="mob-top-page">
+      <div class="mob-chart-panel">
+        <div class="mob-chart-head"><span><i class="ti ti-trophy" style="color:var(--gold);margin-right:5px"></i>Top Legibles</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="mob-top-readable"></div>
+      </div>
+      <div class="mob-chart-panel">
+        <div class="mob-chart-head"><span><i class="ti ti-chart-bar" style="color:var(--blue);margin-right:5px"></i>Top Seguimiento</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="mob-top-tracking"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL MOBILE ═══ -->
+<div class="mob-modal-overlay" id="mob-modal" onclick="if(event.target===this)mobCloseModal()">
+  <div class="mob-modal">
+    <div class="mob-modal-handle"></div>
+    <div class="mob-modal-head">
+      <div class="mob-modal-cover"><i class="ti ti-book-2"></i></div>
+      <div>
+        <div class="mob-modal-title" id="mob-modal-title">Título</div>
+        <div class="mob-modal-author" id="mob-modal-author">Autor</div>
+      </div>
+      <button class="mob-modal-close" onclick="mobCloseModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mob-modal-body">
+      <div class="mob-modal-label">Estado de lectura</div>
+      <div class="mob-modal-states" id="mob-modal-states"></div>
+      <div class="mob-modal-label">Puntuación</div>
+      <div class="mob-score-row">
+        <div class="mob-stars" id="mob-stars"></div>
+        <span id="mob-score-display" style="font-size:11px;color:var(--text-muted)">0/5</span>
+      </div>
+    </div>
+    <div class="mob-modal-foot">
+      <button class="mob-btn-primary" onclick="mobSaveList()"><i class="ti ti-check"></i>Guardar</button>
+      <button class="mob-btn-ghost" onclick="mobCloseModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <div class="mangoteca-layout">
 <div class="mangoteca-content">
@@ -424,6 +813,219 @@
     Promise.all([loadTrending(), loadLatest()]).finally(() => kamiOffline.showContent());
   </script>
   <script src="/js/notifications.js"></script>
+
+  <!-- ═══ MOBILE JS ═══ -->
+  <script>
+  (function() {
+    var isMobile = window.innerWidth <= 600;
+    if (!isMobile) return;
+
+    // ── Hero slider ──
+    window.mobHeroIds = [];
+    var mobHSlides = document.querySelectorAll('.mob-hero-slide');
+    var mobHTimer;
+    var mobHIdx = 0;
+
+    function mobBuildHero(data) {
+      var titles = data && data.trending ? data.trending.slice(0,4) : [];
+      var dotsEl = document.getElementById('mob-hero-dots');
+      dotsEl.innerHTML = '';
+      titles.forEach(function(m,i) {
+        window.mobHeroIds[i] = m.id;
+        var slide = document.getElementById('mob-hero-slide-' + i);
+        if (!slide) return;
+        var titleEl = document.getElementById('mob-hero-title-' + i);
+        var subEl = document.getElementById('mob-hero-sub-' + i);
+        var readBtn = slide.querySelector('.btn-hero-primary');
+        if (titleEl) titleEl.textContent = m.title || '';
+        if (subEl) subEl.innerHTML = '<span>' + (m.author || '') + '</span>';
+        if (readBtn) readBtn.onclick = function() { window.location.href = '/manga/' + m.id; };
+        var dot = document.createElement('div');
+        dot.className = 'mob-hero-dot' + (i === 0 ? ' active' : '');
+        dot.onclick = function() { mobGoSlide(i); };
+        dotsEl.appendChild(dot);
+      });
+      if (titles.length > 1) {
+        mobHTimer = setInterval(function() { mobGoSlide((mobHIdx + 1) % titles.length); }, 5000);
+      }
+    }
+
+    function mobGoSlide(n) {
+      document.querySelectorAll('.mob-hero-slide').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById('mob-hero-slide-' + n)?.classList.add('active');
+      document.querySelectorAll('.mob-hero-dot').forEach(function(d,i) { d.classList.toggle('active',i===n); });
+      mobHIdx = n;
+      clearInterval(mobHTimer);
+      var total = document.querySelectorAll('.mob-hero-slide').length;
+      if (total > 1) mobHTimer = setInterval(function() { mobGoSlide((mobHIdx + 1) % total); }, 5000);
+    }
+
+    // ── Load hero from API ──
+    fetch('/api/manga/trending?limit=4').then(function(r){return r.json()}).then(function(d){
+      if (d.trending) mobBuildHero({ trending: d.trending });
+    }).catch(function(){});
+
+    // ── Build manga card for mobile ──
+    function mobCard(m) {
+      var color = m.color || '#14141f';
+      return '<div class="mob-manga-card" onclick="location.href=\'/manga/' + m.id + '\'">' +
+        '<div class="mob-manga-thumb" style="background:' + color + '">' +
+        '<i class="ti ti-book-2"></i>' +
+        '<div class="mob-thumb-gradient"></div>' +
+        '</div>' +
+        '<div class="mob-manga-title">' + (m.title || '') + '</div></div>';
+    }
+
+    // ── Load trending ──
+    kamiOffline.safeFetch('/api/manga/trending?limit=12', {}, { cacheKey: 'mob_trending', maxAge: 3600000 }).then(function(result){
+      var data = result.ok ? (result.data.trending || []) : [];
+      var el = document.getElementById('mob-trending-scroll');
+      if (el) el.innerHTML = data.map(function(m){ return mobCard(m); }).join('');
+    });
+
+    // ── Load latest ──
+    kamiOffline.safeFetch('/api/manga/latest?limit=12', {}, { cacheKey: 'mob_latest', maxAge: 3600000 }).then(function(result){
+      var data = result.ok ? (result.data.latest || []) : [];
+      var el = document.getElementById('mob-new-scroll');
+      if (el) el.innerHTML = data.map(function(m){ return mobCard(m); }).join('');
+    });
+
+    // ── Load catalog ──
+    kamiOffline.safeFetch('/api/manga?limit=30&sort=popular', {}, { cacheKey: 'mob_catalog', maxAge: 3600000 }).then(function(result){
+      var data = result.ok ? (result.data.mangas || []) : [];
+      var el = document.getElementById('mob-catalog-grid');
+      if (el) el.innerHTML = data.map(function(m){ return mobCard(m); }).join('');
+      mobFilterCatalog('');
+    });
+
+    // ── Catalog filter pills ──
+    window.mobCatalogData = [];
+    function mobFilterCatalog(type) {
+      document.querySelectorAll('#mob-catalog-grid .mob-manga-card').forEach(function(card,i){
+        card.style.display = 'block';
+      });
+    }
+    document.querySelectorAll('#mob-cat-pills .mob-filter-pill').forEach(function(pill){
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('#mob-cat-pills .mob-filter-pill').forEach(function(p){ p.classList.remove('active'); });
+        pill.classList.add('active');
+        mobFilterCatalog(pill.dataset.filter);
+      });
+    });
+
+    // ── Genre pills ──
+    var GENRES = [
+      { name:'Acción', icon:'ti ti-sword', color:'#e8334a', slug:'accion' },
+      { name:'Romance', icon:'ti ti-heart', color:'#f472b6', slug:'romance' },
+      { name:'Fantasía', icon:'ti ti-wand', color:'#a855f7', slug:'fantasia' },
+      { name:'Drama', icon:'ti ti-masks-theater', color:'#f59e0b', slug:'drama' },
+      { name:'Horror', icon:'ti ti-ghost', color:'#c084fc', slug:'horror' },
+      { name:'Sci-Fi', icon:'ti ti-rocket', color:'#06b6d4', slug:'scifi' },
+      { name:'Slice of Life', icon:'ti ti-coffee', color:'#34d399', slug:'slice' },
+      { name:'Deportes', icon:'ti ti-ball-football', color:'#f97316', slug:'deportes' },
+    ];
+    var pillsEl = document.getElementById('mob-genre-pills');
+    if (pillsEl) pillsEl.innerHTML = GENRES.map(function(g){
+      return '<div class="mob-genre-pill" style="--g:'+g.color+'"><i class="'+g.icon+'" style="color:'+g.color+'"></i>'+g.name+'</div>';
+    }).join('');
+
+    // ── Genre grid (search page) ──
+    var genreGridEl = document.getElementById('mob-genre-grid');
+    if (genreGridEl) genreGridEl.innerHTML = GENRES.map(function(g){
+      return '<div class="mob-genre-card" style="--g:'+g.color+'">' +
+        '<div class="mob-genre-card::before" style="width:100%"></div>' +
+        '<div class="mob-genre-icon" style="background:'+g.color+'22;color:'+g.color+'"><i class="'+g.icon+'"></i></div>' +
+        '<div><div class="mob-genre-name">'+g.name+'</div><div class="mob-genre-count">Explorar</div></div></div>';
+    }).join('');
+
+    // ── Load top rankings ──
+    function mobLoadTop(endpoint, elId, type) {
+      kamiOffline.safeFetch(endpoint, {}, { cacheKey: 'mob_top_' + type, maxAge: 3600000 }).then(function(result){
+        var data = result.ok ? (result.data.mangas || []) : [];
+        var el = document.getElementById(elId);
+        if (!el) return;
+        el.innerHTML = data.slice(0,5).map(function(m,i){
+          var numCls = i===0?'t1':i===1?'t2':i===2?'t3':'';
+          var availCls = type==='readable'?'mob-ca-readable':'mob-ca-tracking';
+          var availTxt = type==='readable'?'Legible':'Seguimiento';
+          return '<div class="mob-chart-row" onclick="location.href=\'/manga/'+m.id+'\'">' +
+            '<div class="mob-chart-num '+numCls+'">'+(i+1)+'</div>' +
+            '<div class="mob-chart-cover" style="background:'+(m.color||'var(--bg-surface)')+'"><i class="ti ti-book-2" style="font-size:10px;color:rgba(255,255,255,0.1)"></i></div>' +
+            '<div class="mob-chart-body"><div class="t">'+(m.title||'')+'</div><div class="s">'+(m.author||'')+'</div></div>' +
+            '<div style="text-align:right"><div class="mob-chart-score"><i class="ti ti-star-filled" style="font-size:9px"></i>'+(m.rating||'?')+'</div>' +
+            '<div class="mob-chart-avail '+availCls+'">'+availTxt+'</div></div></div>';
+        }).join('');
+      });
+    }
+    mobLoadTop('/api/manga?sort=rating&limit=5&status=completed', 'mob-top-readable', 'readable');
+    mobLoadTop('/api/manga?sort=popular&limit=5&status=ongoing', 'mob-top-tracking', 'tracking');
+
+    // ── Page switching ──
+    window.mobSwitchPage = function(id, el) {
+      document.querySelectorAll('.mob-page').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('mob-' + id).classList.add('active');
+      document.querySelectorAll('.mob-bnav-item').forEach(function(b){ b.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      window.scrollTo(0,0);
+    };
+
+    // ── Modal ──
+    var MOB_STATES = [
+      { icon:'ti ti-book-open', label:'Leyendo', color:'var(--green)' },
+      { icon:'ti ti-bookmark', label:'Planeo leer', color:'var(--blue)' },
+      { icon:'ti ti-circle-check', label:'Completado', color:'var(--gold)' },
+      { icon:'ti ti-player-pause', label:'En pausa', color:'#ff9d4a' },
+      { icon:'ti ti-trash', label:'Abandonado', color:'#f76565' },
+    ];
+    window.mobOpenModal = function(title, author, id) {
+      document.getElementById('mob-modal-title').textContent = title;
+      document.getElementById('mob-modal-author').textContent = author;
+      window._mobModalMangaId = id;
+      var statesEl = document.getElementById('mob-modal-states');
+      statesEl.innerHTML = MOB_STATES.map(function(s){
+        return '<div class="mob-state-btn" onclick="mobSelectState(this)"><i class="'+s.icon+'" style="color:'+s.color+'"></i>'+s.label+'</div>';
+      }).join('');
+      var starsEl = document.getElementById('mob-stars');
+      starsEl.innerHTML = '';
+      for (var i=1;i<=5;i++) {
+        var star = document.createElement('i');
+        star.className = 'ti ti-star mob-star';
+        star.onclick = function(n){ return function(){ mobSetScore(n); }; }(i);
+        starsEl.appendChild(star);
+      }
+      window._mobScore = 0;
+      document.getElementById('mob-score-display').textContent = '0/5';
+      document.getElementById('mob-modal').classList.add('open');
+    };
+    window.mobCloseModal = function() { document.getElementById('mob-modal').classList.remove('open'); };
+    window.mobSelectState = function(el) {
+      document.querySelectorAll('.mob-state-btn').forEach(function(b){ b.classList.remove('selected'); });
+      el.classList.add('selected');
+    };
+    function mobSetScore(n) {
+      window._mobScore = n;
+      document.querySelectorAll('.mob-star').forEach(function(s,i){
+        if (i < n) { s.className = 'ti ti-star-filled mob-star lit'; }
+        else { s.className = 'ti ti-star mob-star'; }
+      });
+      document.getElementById('mob-score-display').textContent = n + '/5';
+    }
+    window.mobSaveList = function() {
+      var stateEl = document.querySelector('.mob-state-btn.selected');
+      if (!stateEl) { mobCloseModal(); return; }
+      var state = stateEl.textContent.trim().toLowerCase().replace(/\s+/g,'_');
+      var token = localStorage.getItem('kami_token');
+      if (!token || !window._mobModalMangaId) { mobCloseModal(); return; }
+      fetch('/api/library/' + window._mobModalMangaId, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+        body: JSON.stringify({ status: state, score: window._mobScore || 0 })
+      }).catch(function(){});
+      mobCloseModal();
+    };
+
+  })();
+  </script>
 </div>
 </div>
 </body>

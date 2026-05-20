@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KAMI — Manga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/css/common.css?v=9">
+<style>
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#07070e; --surface:#0f0f1a; --card:#13131f; --card2:#1a1a2a;
+  --accent:#e8334a; --accent-d:rgba(232,51,74,.18); --gold:#f5c842;
+  --green:#2dca7a; --green-d:rgba(45,202,122,.15); --blue:#4c9df5; --blue-d:rgba(76,157,245,.15);
+  --purple:#a78bfa; --tp:#f2f2fa; --ts:#8888a0; --tm:#4a4a62;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-xl:28px; --r-pill:999px;
+  --fb:'Bebas Neue',sans-serif; --fs:'Plus Jakarta Sans',sans-serif;
+  --topbar-h:56px;
+}
+body { background:var(--bg); color:var(--tp); font-family:var(--fs); font-size:14px; line-height:1.6; overflow-x:hidden; min-height:100dvh; }
+a { color:inherit; text-decoration:none; }
+img { display:block; max-width:100%; }
+::-webkit-scrollbar { display:none; }
+button { font-family:var(--fs); cursor:pointer; border:none; background:none; }
+.nf-nav { display:none !important; }
+
+/* ─── TOP BAR ─── */
+.topbar { position:sticky; top:0; z-index:100; height:var(--topbar-h); display:flex; align-items:center; justify-content:space-between; padding:0 16px; background:rgba(7,7,14,.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+.topbar-left { display:flex; align-items:center; gap:10px; }
+.back-btn { display:flex; align-items:center; gap:6px; color:var(--ts); font-size:13px; font-weight:600; padding:6px 10px; border-radius:var(--r-pill); background:rgba(255,255,255,.05); }
+.back-btn:active { background:rgba(255,255,255,.1); }
+.back-btn i { font-size:17px; }
+.topbar-logo { font-family:var(--fb); font-size:20px; letter-spacing:2px; }
+.topbar-logo span { color:var(--accent); }
+.topbar-right { display:flex; align-items:center; gap:8px; }
+.icon-btn { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--ts); background:rgba(255,255,255,.05); }
+.icon-btn:active { background:rgba(255,255,255,.1); }
+
+/* ─── HERO ─── */
+.hero-block { position:relative; background:var(--surface); overflow:hidden; }
+.hero-bg { position:absolute; inset:0; background:linear-gradient(135deg,#100020,#1a0030,#050010); }
+.hero-blur { position:absolute; inset:0; background-size:cover; background-position:center top; opacity:.18; filter:blur(16px) saturate(1.4); }
+.hero-noise { position:absolute; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); opacity:.5; pointer-events:none; }
+.hero-grad-bot { position:absolute; bottom:0; left:0; right:0; height:120px; background:linear-gradient(to top,var(--bg),transparent); pointer-events:none; }
+.hero-inner { position:relative; z-index:2; display:flex; align-items:flex-end; gap:16px; padding:28px 16px 0; }
+.cover-wrap { flex-shrink:0; width:110px; position:relative; }
+.cover-img { width:110px; height:158px; border-radius:var(--r-md); border:2px solid rgba(255,255,255,.1); overflow:hidden; background:var(--card); display:flex; align-items:center; justify-content:center; box-shadow:0 12px 40px rgba(0,0,0,.6); position:relative; }
+.cover-img img { width:100%; height:100%; object-fit:cover; }
+.cover-placeholder { display:flex; flex-direction:column; align-items:center; gap:8px; color:var(--tm); }
+.cover-placeholder i { font-size:36px; }
+.cover-placeholder span { font-family:var(--fb); font-size:28px; color:rgba(255,255,255,.12); }
+.cover-rating-overlay { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.75); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; gap:4px; padding:5px 4px; cursor:pointer; border-radius:0 0 calc(var(--r-md)-2px) calc(var(--r-md)-2px); }
+.hero-meta { flex:1; min-width:0; padding-bottom:6px; }
+.manga-title { font-family:var(--fb); font-size:26px; letter-spacing:.5px; line-height:1.05; margin-bottom:6px; }
+.badge-row { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+.badge { display:inline-flex; align-items:center; font-size:9px; font-weight:700; padding:2px 8px; border-radius:var(--r-pill); letter-spacing:.7px; text-transform:uppercase; border:1px solid transparent; }
+.badge-manga { background:rgba(76,157,245,.15); color:var(--blue); border-color:rgba(76,157,245,.25); }
+.badge-completed { background:rgba(45,202,122,.15); color:var(--green); border-color:rgba(45,202,122,.25); }
+.badge-ongoing { background:rgba(245,200,66,.12); color:var(--gold); border-color:rgba(245,200,66,.25); }
+.badge-id { background:rgba(255,255,255,.06); color:var(--tm); border-color:var(--border); }
+.manga-subtitle { font-size:12px; color:var(--ts); margin-bottom:6px; line-height:1.4; }
+.alt-titles { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.alt-chip { font-size:10px; color:var(--tm); padding:2px 8px; border-radius:var(--r-pill); background:rgba(255,255,255,.04); border:1px solid var(--border); }
+.rpm-row { display:flex; gap:12px; margin-top:2px; }
+.rpm-item { display:flex; flex-direction:column; }
+.rpm-label { font-size:9px; color:var(--tm); font-weight:600; text-transform:uppercase; letter-spacing:.6px; }
+.rpm-value { font-size:13px; font-weight:700; color:var(--gold); }
+
+/* ─── ACTIONS BAR ─── */
+.actions-bar { display:flex; gap:8px; align-items:center; padding:14px 16px 0; }
+.btn-read { flex:1; display:inline-flex; align-items:center; justify-content:center; gap:7px; background:var(--accent); color:#fff; padding:12px; border-radius:var(--r-pill); font-size:13px; font-weight:700; box-shadow:0 4px 20px rgba(232,51,74,.35); }
+.btn-read:active { opacity:.8; }
+.btn-add-library { display:inline-flex; align-items:center; justify-content:center; gap:6px; background:rgba(255,255,255,.07); color:var(--tp); padding:12px 18px; border-radius:var(--r-pill); font-size:13px; font-weight:700; border:1px solid var(--border2); }
+.btn-add-library.added { background:var(--green-d); border-color:rgba(45,202,122,.35); color:var(--green); }
+.btn-comments-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; color:var(--ts); background:rgba(255,255,255,.06); border:1px solid var(--border); flex-shrink:0; }
+
+/* ─── MAIN CONTENT ─── */
+.main-content { padding:0 0 100px; }
+.section { padding:20px 16px 0; }
+.section-title { font-size:13px; font-weight:700; color:var(--ts); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+.section-title::before { content:''; display:block; width:3px; height:14px; background:var(--accent); border-radius:2px; }
+
+/* ─── DESC ─── */
+.desc-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:14px 16px; }
+.desc-text { font-size:13px; color:rgba(242,242,250,.78); line-height:1.7; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.desc-text.expanded { -webkit-line-clamp:unset; }
+.desc-toggle { display:inline-flex; align-items:center; gap:4px; margin-top:8px; font-size:12px; font-weight:600; color:var(--accent); }
+
+/* ─── TAGS ─── */
+.tags-wrap { display:flex; flex-wrap:wrap; gap:6px; }
+.manga-tag { font-size:11px; font-weight:600; padding:4px 12px; border-radius:var(--r-pill); background:rgba(255,255,255,.05); color:var(--ts); border:1px solid var(--border); cursor:pointer; }
+
+/* ─── INFO CARD ─── */
+.info-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; }
+.info-row { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; border-bottom:1px solid var(--border); }
+.info-row:last-child { border-bottom:none; }
+.info-label { font-size:12px; color:var(--tm); font-weight:500; }
+.info-value { font-size:12px; font-weight:700; color:var(--tp); text-align:right; }
+
+/* ─── STATS MINI ─── */
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.stat-chip { background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); padding:12px 14px; display:flex; flex-direction:column; gap:3px; }
+.stat-chip-label { font-size:10px; color:var(--tm); font-weight:600; text-transform:uppercase; letter-spacing:.6px; }
+.stat-chip-value { font-size:18px; font-weight:700; color:var(--tp); }
+
+/* ─── STATUS BAR ─── */
+.status-scroll { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.state-chip { flex-shrink:0; display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:var(--r-pill); font-size:12px; font-weight:700; border:1.5px solid var(--border); background:var(--card); color:var(--ts); cursor:pointer; }
+.state-chip-dot { width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.5; }
+.state-chip.active .state-chip-dot { opacity:1; }
+.sc-reading { --chip-c:#2dca7a; } .sc-continuing { --chip-c:#4c9df5; } .sc-planned { --chip-c:#a78bfa; }
+.sc-completed { --chip-c:#f5c842; } .sc-dropped { --chip-c:#e8334a; } .sc-rereading { --chip-c:#fb923c; }
+.state-chip.active { background:color-mix(in srgb,var(--chip-c) 15%,transparent); border-color:color-mix(in srgb,var(--chip-c) 45%,transparent); color:var(--chip-c); }
+.sc-favorite { display:none; }
+.btn-remove-state { display:none; }
+
+/* ─── NOTES ─── */
+.notes-textarea { width:100%; background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); color:var(--tp); font-family:var(--fs); font-size:13px; padding:12px 14px; outline:none; resize:none; min-height:72px; }
+.notes-textarea:focus { border-color:var(--border2); }
+.notes-save-btn { display:inline-flex; align-items:center; gap:5px; margin-top:8px; padding:7px 16px; border-radius:var(--r-pill); font-size:12px; font-weight:700; background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--ts); }
+
+/* ─── CHAPTERS ─── */
+.chapter-list { display:flex; flex-direction:column; gap:6px; }
+.chapter-row { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-radius:var(--r-md); padding:10px 12px; cursor:pointer; position:relative; overflow:hidden; }
+.chapter-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent); border-radius:2px; opacity:0; }
+.chapter-row:active::before { opacity:1; }
+.chapter-row.read { opacity:.55; }
+.chapter-row.read::before { opacity:1; background:var(--green); }
+.chapter-thumb { width:44px; height:44px; border-radius:var(--r-sm); background:var(--surface); display:flex; align-items:center; justify-content:center; font-family:var(--fb); font-size:11px; color:var(--tm); border:1px solid var(--border); flex-shrink:0; letter-spacing:.5px; }
+.chapter-info { flex:1; min-width:0; }
+.chapter-num { font-size:12px; font-weight:700; color:var(--tp); }
+.chapter-date { font-size:10px; color:var(--tm); }
+.chapter-title { font-size:12px; color:var(--ts); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chapter-cmt-btn { display:flex; align-items:center; gap:3px; padding:6px 8px; border-radius:var(--r-pill); font-size:13px; color:var(--tm); background:rgba(255,255,255,.04); border:1px solid var(--border); flex-shrink:0; }
+
+/* ─── ACTIVITY ─── */
+.activity-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.activity-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:14px; display:flex; flex-direction:column; gap:6px; }
+.activity-card-icon { width:34px; height:34px; border-radius:var(--r-sm); background:var(--accent-d); border:1px solid rgba(232,51,74,.2); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--accent); }
+.activity-card-value { font-size:20px; font-weight:700; color:var(--tp); }
+.activity-card-label { font-size:10px; color:var(--tm); font-weight:500; }
+
+/* ─── RECOMMENDATIONS ─── */
+.rec-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+.rec-card { flex:0 0 90px; cursor:pointer; display:flex; flex-direction:column; gap:5px; }
+.rec-card-cover { width:90px; height:130px; border-radius:var(--r-md); background:var(--card); border:1px solid var(--border); overflow:hidden; display:flex; align-items:center; justify-content:center; font-family:var(--fb); font-size:28px; color:var(--tm); }
+.rec-card-cover img { width:100%; height:100%; object-fit:cover; }
+.rec-card-title { font-size:10px; font-weight:600; color:var(--ts); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rec-empty { font-size:12px; color:var(--tm); padding:16px 0; }
+
+/* ─── RATING POPUP ─── */
+.rating-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,.7); backdrop-filter:blur(8px); display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; }
+.rating-overlay.open { opacity:1; pointer-events:all; }
+.rating-popup { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-xl) var(--r-xl) 0 0; width:100%; padding:0 0 env(safe-area-inset-bottom,16px); transform:translateY(40px); transition:transform .3s; }
+.rating-overlay.open .rating-popup { transform:translateY(0); }
+.rating-popup-handle { width:40px; height:4px; border-radius:var(--r-pill); background:var(--border2); margin:12px auto 16px; }
+.rating-popup-title { text-align:center; font-size:14px; font-weight:700; margin-bottom:20px; }
+.rating-stars { display:flex; justify-content:center; gap:10px; margin-bottom:12px; }
+.rating-star { font-size:34px; color:var(--tm); cursor:pointer; }
+.rating-label { text-align:center; font-size:13px; color:var(--ts); min-height:20px; margin-bottom:14px; }
+.rating-btn-row { display:flex; gap:8px; padding:0 20px 16px; }
+.btn-rate-submit { flex:1; padding:12px; border-radius:var(--r-pill); font-size:13px; font-weight:700; background:var(--accent); color:#fff; }
+.btn-rate-submit:disabled { opacity:.4; }
+.btn-rate-remove { padding:12px 18px; border-radius:var(--r-pill); font-size:13px; font-weight:700; background:rgba(255,255,255,.06); border:1px solid var(--border); color:var(--ts); display:none; }
+
+/* ─── COMMENTS PANEL ─── */
+.cmts-overlay { position:fixed; inset:0; z-index:199; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); opacity:0; pointer-events:none; }
+.cmts-overlay.open { opacity:1; pointer-events:all; }
+.cmts-panel { position:fixed; bottom:0; left:0; right:0; z-index:200; background:var(--surface); border-radius:var(--r-xl) var(--r-xl) 0 0; border-top:1px solid var(--border2); transform:translateY(100%); transition:transform .35s; max-height:80dvh; display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom,0); }
+.cmts-panel.open { transform:translateY(0); }
+.cp-handle { width:40px; height:4px; border-radius:var(--r-pill); background:var(--border2); margin:12px auto 4px; flex-shrink:0; }
+.cp-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.cp-title { font-size:14px; font-weight:700; display:flex; align-items:center; gap:7px; }
+.cp-title i { color:var(--accent); }
+.cp-body { flex:1; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:10px; }
+.cp-footer { display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border); flex-shrink:0; }
+.cp-input { flex:1; background:var(--card); border:1px solid var(--border); border-radius:var(--r-xl); color:var(--tp); font-family:var(--fs); font-size:13px; padding:10px 14px; outline:none; resize:none; }
+.cp-input:focus { border-color:var(--border2); }
+.cp-send { padding:10px 16px; border-radius:var(--r-pill); background:var(--accent); color:#fff; font-size:13px; font-weight:700; flex-shrink:0; align-self:flex-end; }
+.cmt-item { display:flex; gap:10px; }
+.cmt-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; }
+.cmt-body { flex:1; min-width:0; }
+.cmt-meta { display:flex; align-items:center; gap:6px; margin-bottom:3px; }
+.cmt-user { font-size:12px; font-weight:700; }
+.cmt-date { font-size:10px; color:var(--tm); }
+.cmt-text { font-size:12px; color:rgba(242,242,250,.8); line-height:1.5; }
+.cmt-empty { font-size:12px; color:var(--tm); text-align:center; padding:20px 0; }
+
+/* ─── CHAPTER COMMENTS ─── */
+.chapter-cmts-panel { position:fixed; bottom:0; left:0; right:0; z-index:250; background:var(--surface); border-radius:var(--r-xl) var(--r-xl) 0 0; border-top:1px solid var(--border2); transform:translateY(100%); transition:transform .35s; max-height:80dvh; display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom,0); }
+.chapter-cmts-panel.open { transform:translateY(0); }
+.chapter-cmts-overlay { position:fixed; inset:0; z-index:249; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); opacity:0; pointer-events:none; }
+.chapter-cmts-overlay.open { opacity:1; pointer-events:all; }
+.cc-header { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.cc-title { font-size:14px; font-weight:700; display:flex; align-items:center; gap:7px; }
+.cc-body { flex:1; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:10px; }
+.cc-footer { display:flex; gap:8px; padding:10px 16px; border-top:1px solid var(--border); flex-shrink:0; }
+#cc-input { flex:1; background:var(--card); border:1px solid var(--border); border-radius:var(--r-xl); color:var(--tp); font-family:var(--fs); font-size:13px; padding:10px 14px; outline:none; resize:none; }
+
+/* ─── CONFIRM MODAL ─── */
+#confirm-modal { position:fixed; inset:0; z-index:400; background:rgba(0,0,0,.75); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; padding:20px; }
+.confirm-box { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-xl); padding:24px 20px; width:100%; max-width:320px; text-align:center; }
+.confirm-msg { font-size:14px; font-weight:600; margin-bottom:20px; }
+.confirm-btns { display:flex; gap:8px; }
+.confirm-yes { flex:1; padding:11px; border-radius:var(--r-pill); background:var(--accent); color:#fff; font-size:13px; font-weight:700; }
+.confirm-no { flex:1; padding:11px; border-radius:var(--r-pill); background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--ts); font-size:13px; font-weight:700; }
+
+/* ─── LOADING / ERROR ─── */
+#loading { padding:20px 16px; }
+.sk-row { height:14px; border-radius:8px; background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; margin-bottom:10px; }
+.sk-row.wide { width:80%; } .sk-row.medium { width:55%; } .sk-row.narrow { width:35%; }
+.sk-cover { width:110px; height:158px; border-radius:var(--r-md); background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; flex-shrink:0; }
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+.error-page { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60dvh; padding:32px; text-align:center; gap:12px; }
+.error-page h2 { font-size:20px; font-weight:700; }
+.error-page p { font-size:13px; color:var(--ts); }
+.btn-back-error { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border-radius:var(--r-pill); background:var(--accent); color:#fff; font-size:13px; font-weight:700; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+#manga-content { animation:fadeUp .4s both; }
+</style>
+</head>
+<body>
+
+<script src="/js/offline.js?v=2"></script>
+
+<!-- TOP BAR -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="#" class="back-btn" onclick="kmiVolver();return false;"><i class="ti ti-arrow-left"></i> Volver</a>
+  </div>
+  <div class="topbar-logo">K<span>A</span>MI</div>
+  <div class="topbar-right">
+    <button class="icon-btn" title="Compartir" onclick="if(navigator.share)navigator.share({url:location.href})"><i class="ti ti-share"></i></button>
+    <button class="icon-btn" title="Comentarios" onclick="toggleMangaComments()"><i class="ti ti-message-circle-2"></i></button>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div id="loading">
+  <div style="display:flex;gap:16px;margin-bottom:20px;"><div class="sk-cover"></div><div style="flex:1;padding-top:8px;"><div class="sk-row wide"></div><div class="sk-row medium"></div><div class="sk-row narrow"></div><div class="sk-row" style="width:60%;margin-top:16px;"></div></div></div>
+  <div class="sk-row"></div><div class="sk-row medium"></div><div class="sk-row wide"></div>
+</div>
+
+<!-- ERROR -->
+<div id="error-page" class="error-page" style="display:none;">
+  <i class="ti ti-book-off" style="font-size:52px;color:var(--tm);"></i>
+  <h2>Manga no encontrado</h2>
+  <p>El manga que buscas no existe o ha sido eliminado.</p>
+  <a href="/" class="btn-back-error"><i class="ti ti-arrow-left"></i> Volver</a>
+</div>
+
+<!-- CONTENT -->
+<div id="manga-content" style="display:none;">
+
+  <!-- HERO -->
+  <div class="hero-block">
+    <div class="hero-bg"></div>
+    <div class="hero-blur" id="hero-blur"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-grad-bot"></div>
+    <div class="hero-inner">
+      <div class="cover-wrap">
+        <div class="cover-img" id="manga-cover">
+          <div class="cover-placeholder"><i class="ti ti-book-2"></i><span id="cover-initial">?</span></div>
+        </div>
+        <div class="cover-rating-overlay" id="cover-rating" style="display:none;" onclick="openRatingPopup()">
+          <span id="cover-rating-stars"></span>
+          <span style="font-size:10px;font-weight:700;color:var(--gold);" id="cover-rating-text"></span>
+        </div>
+      </div>
+      <div class="hero-meta">
+        <div class="manga-title" id="manga-title">Cargando…</div>
+        <div class="badge-row">
+          <span class="badge badge-manga" id="manga-type-badge" style="display:none;"></span>
+          <span class="badge badge-completed" id="manga-status-badge" style="display:none;"></span>
+          <span class="badge badge-id" id="manga-id-badge" style="display:none;"></span>
+        </div>
+        <div class="manga-subtitle" id="manga-subtitle" style="display:none;"></div>
+        <div class="alt-titles" id="alt-titles"></div>
+        <div class="rpm-row" id="manga-stats" style="display:none;">
+          <div class="rpm-item"><div class="rpm-label">Ranked</div><div class="rpm-value" id="ranked-value">#—</div></div>
+          <div class="rpm-item"><div class="rpm-label">Popularity</div><div class="rpm-value" id="popularity-value">#—</div></div>
+          <div class="rpm-item"><div class="rpm-label">Members</div><div class="rpm-value" id="members-value">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-bar">
+    <button class="btn-read" id="btn-read-first"><i class="ti ti-player-play"></i> Leer ahora</button>
+    <button class="btn-add-library" id="btn-add-library" onclick="addToLibrary()"><i class="ti ti-plus"></i> Añadir</button>
+    <button class="btn-comments-icon" onclick="toggleMangaComments()"><i class="ti ti-message-circle-2"></i></button>
+  </div>
+
+  <div class="main-content">
+
+    <!-- DESCRIPCIÓN -->
+    <div class="section">
+      <div class="section-title">Sinopsis</div>
+      <div class="desc-card">
+        <div class="desc-text" id="manga-description">Sin descripción disponible.</div>
+        <button class="desc-toggle" id="desc-toggle" style="display:none;" onclick="toggleDesc()"><i class="ti ti-chevron-down" id="desc-icon"></i> <span id="desc-label">Leer más</span></button>
+      </div>
+    </div>
+
+    <!-- GÉNEROS -->
+    <div class="section">
+      <div class="section-title">Géneros</div>
+      <div class="tags-wrap" id="manga-tags"></div>
+    </div>
+
+    <!-- INFO -->
+    <div class="section">
+      <div class="section-title">Información</div>
+      <div class="info-card">
+        <div class="info-row"><span class="info-label">Autor</span><span class="info-value" id="info-author">—</span></div>
+        <div class="info-row"><span class="info-label">Arte</span><span class="info-value" id="info-artist">—</span></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="section">
+      <div class="stats-grid">
+        <div class="stat-chip"><div class="stat-chip-label">Lecturas</div><div class="stat-chip-value" id="stat-reads">—</div></div>
+        <div class="stat-chip"><div class="stat-chip-label">Cap. leídos</div><div class="stat-chip-value" id="stat-chapters">—</div></div>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:20px 16px 0;"></div>
+
+    <!-- BIBLIOTECA -->
+    <div class="section">
+      <div class="section-title">Mi Biblioteca</div>
+      <div class="status-scroll" id="status-bar">
+        <button class="state-chip sc-reading" data-state="leyendo" onclick="handleStatusClick(this,'leyendo')"><div class="state-chip-dot"></div>Leyendo</button>
+        <button class="state-chip sc-continuing" data-state="continuando" onclick="handleStatusClick(this,'continuando')"><div class="state-chip-dot"></div>Continuando</button>
+        <button class="state-chip sc-planned" data-state="pendientes" onclick="handleStatusClick(this,'pendientes')"><div class="state-chip-dot"></div>Pendientes</button>
+        <button class="state-chip sc-completed" data-state="terminados" onclick="handleStatusClick(this,'terminados')"><div class="state-chip-dot"></div>Terminados</button>
+        <button class="state-chip sc-dropped" data-state="abandonados" onclick="handleStatusClick(this,'abandonados')"><div class="state-chip-dot"></div>Abandonados</button>
+        <button class="state-chip sc-rereading" data-state="releyendo" onclick="handleStatusClick(this,'releyendo')"><div class="state-chip-dot"></div>Releyendo</button>
+      </div>
+    </div>
+
+    <!-- NOTAS -->
+    <div class="section">
+      <div class="section-title">Nota personal</div>
+      <textarea class="notes-textarea" id="notes-input" placeholder="Escribe una nota personal..." rows="3"></textarea>
+      <button class="notes-save-btn" onclick="saveNotes()"><i class="ti ti-device-floppy"></i> Guardar nota</button>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:20px 16px 0;"></div>
+
+    <!-- CAPÍTULOS -->
+    <div class="section">
+      <div class="section-title">Capítulos</div>
+      <div class="chapter-list" id="chapter-list"><div class="cmt-empty">Cargando...</div></div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin:20px 16px 0;"></div>
+
+    <!-- ACTIVIDAD -->
+    <div class="section">
+      <div class="section-title">Actividad</div>
+      <div class="activity-grid">
+        <div class="activity-card"><div class="activity-card-icon"><i class="ti ti-user-plus"></i></div><div class="activity-card-value" id="activity-new">0</div><div class="activity-card-label">Nuevos hoy</div></div>
+        <div class="activity-card"><div class="activity-card-icon" style="background:var(--blue-d);color:var(--blue);"><i class="ti ti-book-2"></i></div><div class="activity-card-value" id="activity-week">0</div><div class="activity-card-label">Empezaron esta semana</div></div>
+      </div>
+    </div>
+
+    <!-- RECOMENDACIONES -->
+    <div class="section">
+      <div class="section-title">Recomendaciones</div>
+      <div class="rec-scroll" id="rec-scroll"><div class="rec-empty">Cargando...</div></div>
+    </div>
+
+    <div style="height:32px;"></div>
+  </div>
+</div>
+
+<!-- RATING POPUP -->
+<div class="rating-overlay" id="rating-overlay" onclick="if(event.target===this)closeRatingPopup()">
+  <div class="rating-popup">
+    <div class="rating-popup-handle"></div>
+    <div class="rating-popup-title">Califica este manga</div>
+    <div class="rating-stars">
+      <span class="rating-star" data-v="1" onclick="selectStar(1)">★</span>
+      <span class="rating-star" data-v="2" onclick="selectStar(2)">★</span>
+      <span class="rating-star" data-v="3" onclick="selectStar(3)">★</span>
+      <span class="rating-star" data-v="4" onclick="selectStar(4)">★</span>
+      <span class="rating-star" data-v="5" onclick="selectStar(5)">★</span>
+    </div>
+    <div class="rating-label" id="rating-label"></div>
+    <div class="rating-btn-row">
+      <button class="btn-rate-submit" id="btn-rate-submit" disabled onclick="submitRating()">Enviar</button>
+      <button class="btn-rate-remove" id="btn-rate-remove" onclick="removeRating()">Quitar</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMMENTS PANEL -->
+<div class="cmts-overlay" id="cmts-overlay" onclick="closeMangaComments()"></div>
+<div class="cmts-panel" id="cmts-panel">
+  <div class="cp-handle"></div>
+  <div class="cp-header"><div class="cp-title"><i class="ti ti-message-circle-2"></i> Comentarios</div><button class="icon-btn" onclick="closeMangaComments()"><i class="ti ti-x"></i></button></div>
+  <div class="cp-body" id="mcp-body"><div class="cmt-empty">Cargando...</div></div>
+  <div class="cp-footer">
+    <textarea id="mcp-input" class="cp-input" placeholder="Escribe un comentario..." rows="1"></textarea>
+    <button class="cp-send" onclick="submitMangaComment()">Enviar</button>
+  </div>
+</div>
+
+<!-- CHAPTER COMMENTS PANEL -->
+<div class="chapter-cmts-overlay" id="chapter-cmts-overlay" onclick="closeChapterComments()"></div>
+<div class="chapter-cmts-panel" id="chapter-cmts-panel">
+  <div class="cp-handle"></div>
+  <div class="cc-header"><div class="cc-title"><i class="ti ti-message"></i> <span id="cc-title">Comentarios</span></div><button class="icon-btn" onclick="closeChapterComments()"><i class="ti ti-x"></i></button></div>
+  <div class="cc-body" id="cc-body"><div class="cmt-empty">Cargando...</div></div>
+  <div class="cc-footer"><textarea id="cc-input" class="cp-input" placeholder="Escribe un comentario..." rows="1"></textarea><button class="cp-send" style="background:var(--blue);" onclick="submitChapterComment()">Enviar</button></div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal"><div class="confirm-box"><div class="confirm-msg" id="confirm-msg"></div><div class="confirm-btns"><button class="confirm-yes" id="confirm-yes">Confirmar</button><button class="confirm-no" id="confirm-no">Cancelar</button></div></div></div>
+
+<script>
+const mangaId = decodeURIComponent(location.pathname.replace(/\/+$/,'').split('/').pop());
+var _mangaData = null, _libraryStatus = null, _currentChapters = [], _userProgress = 0, _currentRating = null, _selectedRating = 0, _descExpanded = false;
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function txt(id,v){ var e=document.getElementById(id); if(e) e.textContent=v||''; }
+function html(id,v){ var e=document.getElementById(id); if(e) e.innerHTML=v||''; }
+
+function kmiVolver(){
+  var ref=document.referrer||'';
+  if(!ref||ref.indexOf('/reader/')>=0||ref.indexOf('/manga/')>=0) window.location.href='/inicio-mangoteca';
+  else history.back();
+}
+
+// ── LOAD ──
+async function loadManga(){
+  if(!mangaId){ document.getElementById('loading').style.display='none'; document.getElementById('error-page').style.display='flex'; return; }
+  try{
+    var [mr,cr,sr] = await Promise.all([
+      kamiOffline.safeFetch('/api/manga/'+mangaId,{},{cacheKey:'manga_'+mangaId,maxAge:604800000}),
+      kamiOffline.safeFetch('/api/chapters/'+mangaId+'?limit=200',{},{cacheKey:'ch_'+mangaId,maxAge:604800000}),
+      kamiOffline.safeFetch('/api/manga/'+mangaId+'/stats',{},{cacheKey:'st_'+mangaId,maxAge:604800000})
+    ]);
+    if(!mr.ok||!mr.data.manga) throw new Error('No encontrado');
+    var manga=mr.data.manga, chapters=cr.ok?(cr.data.chapters||cr.data||[]):[], stats=sr.ok?sr.data:{};
+    renderManga(manga,chapters,stats);
+    _mangaData=manga; _currentChapters=chapters;
+    document.title=manga.title+' — KAMI';
+    loadLibrary(); loadUserNotes(); loadActivity(); loadRecs();
+  } catch(e){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-page').style.display='flex';
+  }
+}
+
+function renderManga(manga,chapters,stats){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('manga-content').style.display='block';
+  txt('manga-title',manga.title);
+  var ci=document.getElementById('cover-initial'); if(ci) ci.textContent=(manga.title||'?').charAt(0).toUpperCase();
+  var tb=document.getElementById('manga-type-badge');
+  if(tb){ tb.textContent=(manga.type||'Manga').toUpperCase(); tb.style.display='inline-flex'; }
+  var sb=document.getElementById('manga-status-badge');
+  if(sb&&manga.status){
+    var sl={ongoing:'En emision',completed:'Completado',hiatus:'En hiato',cancelled:'Cancelado'};
+    sb.textContent=sl[manga.status]||manga.status;
+    sb.className='badge '+(manga.status==='completed'?'badge-completed':'badge-ongoing');
+    sb.style.display='inline-flex';
+  }
+  var ib=document.getElementById('manga-id-badge');
+  if(ib){ ib.textContent=manga.id; ib.style.display='inline-flex'; }
+  var parts=[];
+  if(manga.author) parts.push('Por '+esc(manga.author));
+  if(manga.artist&&manga.artist!==manga.author) parts.push('Arte: '+esc(manga.artist));
+  if(parts.length){ html('manga-subtitle',parts.join(' · ')); document.getElementById('manga-subtitle').style.display='block'; }
+  var alts=(manga.alternativeTitles||[]).filter(Boolean);
+  html('alt-titles',alts.map(function(t){return '<span class="alt-chip">'+esc(t)+'</span>';}).join(''));
+  if(manga.ranked||manga.popularity||manga.members){
+    txt('ranked-value',manga.ranked?'#'+manga.ranked:'#—');
+    txt('popularity-value',manga.popularity?'#'+manga.popularity:'#—');
+    txt('members-value',manga.members?manga.members.toLocaleString():'—');
+    document.getElementById('manga-stats').style.display='flex';
+  }
+  var cv=document.getElementById('manga-cover');
+  if(cv&&manga.cover){
+    cv.innerHTML='<img src="'+manga.cover+'" alt="'+esc(manga.title)+'" loading="lazy" onerror="this.parentNode.innerHTML=`<div class=cover-placeholder><i class=\\\'ti ti-book-2\\\'></i><span>'+esc((manga.title||'?').charAt(0).toUpperCase())+'</span></div>`">';
+    var hb=document.getElementById('hero-blur'); if(hb) hb.style.backgroundImage='url('+manga.cover+')';
+  }
+  var desc=manga.description||'';
+  var de=document.getElementById('manga-description'); if(de) de.textContent=desc||'Sin descripcion disponible.';
+  if(desc.length>160) document.getElementById('desc-toggle').style.display='inline-flex';
+  html('manga-tags',(manga.genres||[]).map(function(g){return '<span class="manga-tag">'+esc(g)+'</span>';}).join(''));
+  txt('info-author',manga.author||'—');
+  txt('info-artist',manga.artist||'—');
+  txt('stat-reads',(stats.totalReads||manga.totalReads||0).toLocaleString());
+  var rb=document.getElementById('btn-read-first');
+  if(rb&&chapters&&chapters.length>0){
+    var lastCh=chapters[chapters.length-1];
+    rb.onclick=function(){ window.location.href='/reader/'+mangaId+'/'+lastCh.number; };
+  }
+}
+
+function loadChapters(){ renderChapterList(); }
+function loadActivity(){
+  fetch('/api/manga/'+mangaId+'/activity').then(function(r){return r.json()}).then(function(d){
+    txt('activity-new','+'+(d.newMembersToday||0));
+    txt('activity-week','+'+(d.startedReadingWeek||0));
+  }).catch(function(){});
+}
+function loadRecs(){
+  fetch('/api/manga/'+mangaId+'/recommendations?limit=8').then(function(r){return r.json()}).then(function(d){
+    var recs=d.recommendations||[];
+    var el=document.getElementById('rec-scroll');
+    if(!el) return;
+    if(recs.length){
+      el.innerHTML=recs.map(function(m){
+        var i=(m.title||'?').charAt(0).toUpperCase(), rt=m.rating?parseFloat(m.rating).toFixed(1):'';
+        return '<a href="/manga/'+m.id+'" class="rec-card"><div class="rec-card-cover">'+(m.cover?'<img src="'+m.cover+'" alt="">':'<span>'+i+'</span>')+'</div><div class="rec-card-title">'+esc(m.title)+'</div>'+(rt?'<div style="font-size:10px;font-weight:700;color:var(--gold);">'+rt+'</div>':'')+'</a>';
+      }).join('');
+    } else el.innerHTML='<div class="rec-empty">Sin recomendaciones</div>';
+  }).catch(function(){});
+}
+
+function toggleDesc(){
+  _descExpanded=!_descExpanded;
+  var e=document.getElementById('manga-description'),ic=document.getElementById('desc-icon'),lb=document.getElementById('desc-label');
+  if(e) e.classList.toggle('expanded',_descExpanded);
+  if(ic) ic.style.transform=_descExpanded?'rotate(180deg)':'';
+  if(lb) lb.textContent=_descExpanded?'Ver menos':'Leer mas';
+}
+
+// ── CHAPTERS ──
+var _chOrderDesc=true;
+function renderChapterList(){
+  var el=document.getElementById('chapter-list'); if(!el) return;
+  _currentChapters=(Array.isArray(_currentChapters)?_currentChapters:[]).slice();
+  if(!_chOrderDesc) _currentChapters.reverse();
+  el.innerHTML=_currentChapters.length?_currentChapters.map(function(ch){
+    var d=ch.createdAt?new Date(ch.createdAt).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):ch.releaseDate||'';
+    var ns=String(ch.number).padStart(3,'0'), rc=_userProgress>0&&ch.number<=_userProgress?' read':'';
+    return '<div class="chapter-row'+rc+'" onclick="window.location.href=\'/reader/'+mangaId+'/'+ch.number+'\'">'+
+      '<div class="chapter-thumb">#'+ns+'</div>'+
+      '<div class="chapter-info"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">'+
+      '<span class="chapter-num">#'+ns+'</span><span class="chapter-date">'+d+'</span></div>'+
+      '<div class="chapter-title">'+(ch.title?'Cap. '+ch.number+': '+esc(ch.title):'Capitulo '+ch.number)+'</div></div>'+
+      '<button class="chapter-cmt-btn" onclick="event.stopPropagation();openChapterComments('+ch.number+')"><i class="ti ti-message"></i>'+(ch.commentCount>0?'<span style="font-size:10px;font-weight:700;">'+ch.commentCount+'</span>':'')+'</button></div>';
+  }).join(''):'<div class="cmt-empty">Sin capitulos</div>';
+}
+
+// ── LIBRARY ──
+async function loadLibrary(){
+  var t=localStorage.getItem('kami_token'); if(!t) return;
+  try{
+    var r=await fetch('/api/library/check/'+mangaId,{headers:{'Authorization':'Bearer '+t}});
+    var d=await r.json(); if(r.ok) _libraryStatus=d; updateLibUI();
+  }catch(e){}
+}
+function updateLibUI(){
+  var d=_libraryStatus;
+  document.querySelectorAll('#status-bar .state-chip').forEach(function(b){
+    b.classList.remove('active');
+    if(!b.dataset.state) return;
+    var m={leyendo:'reading',continuando:'continuing',pendientes:'planned',terminados:'completed',abandonados:'dropped',releyendo:'rereading'};
+    if(d&&d.inLibrary&&d.status===m[b.dataset.state]) b.classList.add('active');
+  });
+  var ab=document.getElementById('btn-add-library');
+  if(ab){ if(d&&d.inLibrary){ ab.innerHTML='<i class="ti ti-check"></i> Añadido'; ab.className='btn-add-library added'; } else { ab.innerHTML='<i class="ti ti-plus"></i> Añadir'; ab.className='btn-add-library'; }}
+}
+async function handleStatusClick(btn,state){
+  var t=localStorage.getItem('kami_token'); if(!t){ if(confirm('Debes iniciar sesion')) window.location.href='/login?return='+encodeURIComponent(location.pathname); return; }
+  document.querySelectorAll('#status-bar .state-chip').forEach(function(b){ if(b.dataset.state) b.classList.toggle('active',b===btn); });
+  try{
+    var r=await fetch('/api/library/update',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({manga_id:mangaId,status:state})});
+    var d=await r.json();
+    if(!r.ok){ alert('Error'); return; }
+    _libraryStatus={inLibrary:true,status:d.manga?.status||state,is_favorite:_libraryStatus?.is_favorite||false}; updateLibUI();
+  }catch(e){}
+}
+async function addToLibrary(){
+  var t=localStorage.getItem('kami_token'); if(!t){ alert('Debes iniciar sesion'); return; }
+  try{
+    var r=await fetch('/api/library/update',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({manga_id:mangaId,status:'pendientes'})});
+    if(r.ok){ var ab=document.getElementById('btn-add-library'); if(ab){ ab.innerHTML='<i class="ti ti-check"></i> Añadido'; ab.className='btn-add-library added'; } loadLibrary(); }
+  }catch(e){}
+}
+
+// ── NOTES ──
+async function loadUserNotes(){
+  var t=localStorage.getItem('kami_token'); if(!t) return;
+  try{ var r=await fetch('/api/manga/'+mangaId+'/notes',{headers:{'Authorization':'Bearer '+t}});
+    if(r.ok){ var d=await r.json(); var ta=document.getElementById('notes-input'); if(ta) ta.value=d.notes||''; }
+  }catch(e){}
+}
+async function saveNotes(){
+  var t=localStorage.getItem('kami_token'); if(!t) return;
+  var ta=document.getElementById('notes-input'); if(!ta) return;
+  try{ await fetch('/api/manga/'+mangaId+'/notes',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({notes:ta.value})}); }catch(e){}
+}
+
+// ── COMMENTS ──
+function toggleMangaComments(){
+  var p=document.getElementById('cmts-panel'),o=document.getElementById('cmts-overlay');
+  if(!p||!o) return;
+  var open=p.classList.contains('open');
+  p.classList.toggle('open',!open); o.classList.toggle('open',!open);
+  if(!open) loadMangaComments();
+}
+function closeMangaComments(){
+  var p=document.getElementById('cmts-panel'),o=document.getElementById('cmts-overlay');
+  if(p) p.classList.remove('open'); if(o) o.classList.remove('open');
+}
+async function loadMangaComments(){
+  var b=document.getElementById('mcp-body'); if(!b) return;
+  b.innerHTML='<div class="cmt-empty">Cargando...</div>';
+  try{
+    var r=await fetch('/api/manga/'+mangaId+'/comments?limit=50');
+    if(r.ok){
+      var d=await r.json(),cmts=d.comments||[];
+      b.innerHTML=cmts.length?cmts.map(function(c){
+        var i=(c.username||'?').substring(0,2).toUpperCase(), cols=['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa'];
+        var col=cols[(c.id||0)%cols.length], t=c.created_at?new Date(c.created_at).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+        return '<div class="cmt-item"><div class="cmt-avatar" style="background:'+col+'">'+i+'</div><div class="cmt-body"><div class="cmt-meta"><span class="cmt-user">'+esc(c.username||'Anonimo')+'</span><span class="cmt-date">'+t+'</span></div><div class="cmt-text">'+esc(c.text||c.content||'')+'</div></div></div>';
+      }).join(''):'<div class="cmt-empty">Sin comentarios aun</div>';
+    }
+  }catch(e){}
+}
+async function submitMangaComment(){
+  var t=localStorage.getItem('kami_token'); if(!t){ alert('Debes iniciar sesion'); return; }
+  var inp=document.getElementById('mcp-input'),btn=document.querySelector('#cmts-panel .cp-send');
+  if(!inp||!inp.value.trim()) return;
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    var r=await fetch('/api/manga/'+mangaId+'/comments',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({content:inp.value.trim()})});
+    if(r.ok){ inp.value=''; loadMangaComments(); }
+  }catch(e){}
+  btn.disabled=false; btn.textContent='Enviar';
+}
+
+// ── CHAPTER COMMENTS ──
+var _ccChapter=null;
+async function openChapterComments(n){
+  var t=localStorage.getItem('kami_token'); if(!t){ alert('Debes iniciar sesion'); return; }
+  _ccChapter=n;
+  document.getElementById('cc-title').textContent='Capitulo '+n;
+  document.getElementById('chapter-cmts-overlay').classList.add('open');
+  document.getElementById('chapter-cmts-panel').classList.add('open');
+  loadChapterComments();
+}
+function closeChapterComments(){
+  document.getElementById('chapter-cmts-panel').classList.remove('open');
+  document.getElementById('chapter-cmts-overlay').classList.remove('open');
+  _ccChapter=null;
+}
+async function loadChapterComments(){
+  var b=document.getElementById('cc-body'); if(!b||!_ccChapter) return;
+  b.innerHTML='<div class="cmt-empty">Cargando...</div>';
+  try{
+    var t=localStorage.getItem('kami_token');
+    var r=await fetch('/api/comments/'+mangaId+'/'+_ccChapter,{headers:{'Authorization':'Bearer '+t}});
+    var d=await r.json(),cmts=d.comments||[];
+    b.innerHTML=cmts.length?cmts.map(function(c){
+      var i=(c.username||'?').substring(0,2).toUpperCase(),cols=['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa'],col=cols[(c.id||0)%cols.length];
+      var t2=c.created_at?new Date(c.created_at).toLocaleString('es-ES',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+      return '<div class="cmt-item"><div class="cmt-avatar" style="background:'+col+'">'+i+'</div><div class="cmt-body"><div class="cmt-meta"><span class="cmt-user">'+esc(c.username||'Anonimo')+'</span><span class="cmt-date">'+t2+'</span></div><div class="cmt-text">'+esc(c.text||c.content||'')+'</div></div></div>';
+    }).join(''):'<div class="cmt-empty">Sin comentarios</div>';
+  }catch(e){}
+}
+async function submitChapterComment(){
+  if(!_ccChapter) return;
+  var t=localStorage.getItem('kami_token'); if(!t){ alert('Debes iniciar sesion'); return; }
+  var inp=document.getElementById('cc-input'),btn=document.querySelector('#chapter-cmts-panel .cp-send');
+  if(!inp||!inp.value.trim()) return;
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    var r=await fetch('/api/comments/'+mangaId+'/'+_ccChapter,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({text:inp.value.trim()})});
+    if(r.ok){ inp.value=''; loadChapterComments(); }
+  }catch(e){}
+  btn.disabled=false; btn.textContent='Enviar';
+}
+
+// ── RATING ──
+function openRatingPopup(){ document.getElementById('rating-overlay').classList.add('open'); document.getElementById('btn-rate-submit').disabled=true; document.getElementById('btn-rate-remove').style.display=_currentRating?'inline-flex':'none'; }
+function closeRatingPopup(){ document.getElementById('rating-overlay').classList.remove('open'); }
+function selectStar(v){ _selectedRating=v; var l=['','1 - Pesimo','2 - Malo','3 - Normal','4 - Bueno','5 - Excelente']; document.getElementById('rating-label').textContent='★'.repeat(v)+'☆'.repeat(5-v)+'  '+l[v]; document.getElementById('btn-rate-submit').disabled=false; updateStars(); }
+function updateStars(){ document.querySelectorAll('.rating-star').forEach(function(s){ s.style.color=parseInt(s.dataset.v)<=_selectedRating?'var(--gold)':'var(--tm)'; }); }
+async function submitRating(){
+  if(!_selectedRating) return;
+  var t=localStorage.getItem('kami_token'); if(!t){ alert('Debes iniciar sesion'); return; }
+  var btn=document.getElementById('btn-rate-submit'); btn.textContent='Enviando...'; btn.disabled=true;
+  try{
+    var r=await fetch('/api/manga/'+mangaId+'/rate',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({rating:_selectedRating})});
+    var d=await r.json(); if(!r.ok) throw new Error(d.error||'Error');
+    _currentRating=_selectedRating*2; btn.textContent='Votado';
+    if(d.rating!=null){
+      var full=Math.round(d.rating/2); html('cover-rating-stars',''); 
+      for(var i=0;i<5;i++) document.getElementById('cover-rating-stars').innerHTML+='<span style="font-size:10px;color:'+(i<full?'var(--gold)':'var(--tm)')+'">★</span>';
+      document.getElementById('cover-rating-text').textContent=d.rating.toFixed(1);
+      document.getElementById('cover-rating').style.display='flex';
+    }
+    document.getElementById('btn-rate-remove').style.display='inline-flex';
+    setTimeout(closeRatingPopup,1500);
+  } catch(e){ btn.textContent='Enviar'; btn.disabled=false; }
+}
+async function removeRating(){
+  var t=localStorage.getItem('kami_token'); if(!t) return;
+  try{
+    var r=await fetch('/api/manga/'+mangaId+'/rate',{method:'DELETE',headers:{'Authorization':'Bearer '+t,'Content-Type':'application/json'}});
+    var d=await r.json(); if(!r.ok) return;
+    _currentRating=null; _selectedRating=0; updateStars();
+    document.getElementById('btn-rate-remove').style.display='none';
+    document.getElementById('cover-rating').style.display='none';
+    setTimeout(closeRatingPopup,1000);
+  }catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded',loadManga);
+</script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

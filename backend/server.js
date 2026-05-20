@@ -322,7 +322,12 @@ app.get('/add-manga',     (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/menu-edit',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu-edit.html')));
 app.get('/manga/:id/upload-chapter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'upload-chapter.html')));
 app.get('/manga/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manga-edit.html')));
-app.get('/manga/:id',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'manga-view.html')));
+app.get('/manga/:id', (req, res) => {
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
+  const file = isMobile ? 'manga-view-mobile.html' : 'manga-view.html';
+  res.sendFile(path.join(__dirname, 'public', file));
+});
 app.get('/premium',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium.html')));
 app.get('/premium/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium-success.html')));
 app.get('/messages',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'messages.html')));

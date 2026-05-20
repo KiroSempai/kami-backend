@@ -770,20 +770,35 @@
       <div class="section-content" id="section-mensajes">
         <div class="dm-layout">
           <div class="dm-list">
-            <div class="dm-list-header">✉️ Mensajes</div>
+            <div class="dm-list-header" style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h2 style="font-size:19px;font-weight:800;color:#e7e9ea;margin:0;">Mensajes</h2>
+                <div style="display:flex;gap:14px;color:#e7e9ea;font-size:16px;">
+                  <span style="cursor:pointer;opacity:0.6;" title="Configuraci&oacute;n"><i class="ti ti-settings"></i></span>
+                  <span style="cursor:pointer;color:#e8344a;" title="Nuevo Mensaje" onclick="goToSection('explorar')"><i class="ti ti-message-plus"></i></span>
+                </div>
+              </div>
+              <div style="position:relative;width:100%;">
+                <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#71767b;font-size:13px;"></i>
+                <input type="text" placeholder="Buscar mensajes directos" style="width:100%;background:#16181c;border:1px solid transparent;padding:8px 12px 8px 34px;border-radius:9999px;color:#e7e9ea;font-size:13.5px;box-sizing:border-box;outline:none;transition:border-color .2s,background .2s;" onfocus="this.style.borderColor='#e8344a';this.style.background='#000000';" onblur="this.style.borderColor='transparent';this.style.background='#16181c';">
+              </div>
+            </div>
             <div class="dm-list-items" id="dm-conversations">
               <div class="notif-empty" style="padding:40px;">Cargando...</div>
             </div>
           </div>
           <div class="dm-chat" id="dm-chat-view" style="display:none;">
-            <div class="dm-chat-header" id="dm-chat-header">
+            <div class="dm-chat-header" id="dm-chat-header" style="cursor:default;">
               <button onclick="cerrarDM()" style="background:none;border:none;color:var(--text-secondary);font-size:18px;cursor:pointer;padding:0 4px;"><i class="ti ti-arrow-left"></i></button>
-              <span id="dm-chat-username"></span>
+              <span id="dm-chat-username" style="cursor:pointer;"></span>
             </div>
             <div class="chat-messages" id="dm-messages"></div>
             <div class="chat-input-wrap">
+              <i class="ti ti-photo dm-media-icon-btn" title="Enviar imagen"></i>
+              <i class="ti ti-gif dm-media-icon-btn" title="Enviar GIF"></i>
+              <i class="ti ti-mood-smile dm-media-icon-btn" title="Emoji"></i>
               <input type="text" id="dm-input" class="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendDM()">
-              <button class="chat-send-btn" onclick="sendDM()">Enviar</button>
+              <button class="chat-send-btn" onclick="sendDM()"><i class="ti ti-send"></i></button>
             </div>
           </div>
           <div class="dm-empty" id="dm-empty">
@@ -1341,12 +1356,13 @@
 
     function renderChatMessageHtml(m, isOwn) {
       var ownCls = isOwn ? ' chat-msg-own' : '';
+      var statusHtml = isOwn ? '<div class="dm-message-status">Le&iacute;do · ' + timeAgo(m.created_at) + '</div>' : '';
       return '<div class="chat-msg' + ownCls + '">' +
         '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
         '<div class="chat-bubble">' +
         (isOwn ? '' : '<div class="chat-bubble-name">' + (m.username || 'Anónimo') + '</div>') +
         '<div class="chat-bubble-text">' + m.message + '</div>' +
-        '<div class="chat-bubble-time">' + timeAgo(m.created_at) + '</div>' +
+        (isOwn ? statusHtml : '<div class="chat-bubble-time">' + timeAgo(m.created_at) + '</div>') +
         '</div></div>';
     }
 
@@ -1495,13 +1511,22 @@
               ? '<img src="' + c.other_avatar + '">'
               : initial;
             var active = c.id === _currentDMConvId ? ' active' : '';
-            var unreadDot = c.has_unread ? '<span class="dm-unread-dot"></span>' : '';
+            var unreadHtml = c.has_unread ? '<span class="dm-unread-dot" style="width:8px;height:8px;background:#e8344a;border-radius:50%;flex-shrink:0;"></span>' : '';
+            var nameWeight = c.has_unread ? '800' : '600';
+            var textWeight = c.has_unread ? '700' : '400';
+            var textColor = c.has_unread ? '#e7e9ea' : '#71767b';
+            var handle = c.other_username ? '<span style="color:#71767b;font-weight:400;">@' + c.other_username.toLowerCase() + '</span>' : '';
             return '<div class="dm-item' + active + '" onclick="openDM(' + c.id + ')">' +
               '<div class="dm-item-avatar">' + avatarHtml + '</div>' +
-              '<div class="dm-item-info">' +
-              '<div class="dm-item-name">' + (c.other_username || 'Anónimo') + unreadDot + '</div>' +
-              '<div class="dm-item-preview">' + (c.last_message || '') + '</div></div>' +
-              '<div class="dm-item-time">' + (c.last_message_at2 ? timeAgo(c.last_message_at2) : '') + '</div></div>';
+              '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-weight:' + nameWeight + ';color:#e7e9ea;font-size:14px;">' + (c.other_username || 'Anónimo') + ' ' + handle + '</span>' +
+              '<span style="color:#71767b;font-size:12px;white-space:nowrap;margin-left:8px;">' + (c.last_message_at2 ? timeAgo(c.last_message_at2) : '') + '</span>' +
+              '</div>' +
+              '<div style="display:flex;align-items:center;gap:6px;">' +
+              '<span style="font-size:13px;color:' + textColor + ';font-weight:' + textWeight + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (c.last_message || '') + '</span>' +
+              unreadHtml +
+              '</div></div></div>';
           }).join('');
           checkUnreadDMs();
         })
@@ -1525,7 +1550,14 @@
         var data = results[0];
         if (!data.success) { msgContainer.innerHTML = '<div class="notif-empty">Error</div>'; return; }
         _dmOtherUserId = data.other ? data.other.id : null;
-        document.getElementById('dm-chat-username').textContent = data.other ? data.other.username : 'Conversación';
+        var uname = data.other ? data.other.username : 'Conversación';
+        document.getElementById('dm-chat-username').textContent = uname;
+        document.getElementById('dm-chat-header').onclick = function(e) {
+          if (e.target.tagName !== 'I' && e.target.tagName !== 'BUTTON' && data.other && data.other.username) {
+            window.location.href = '/profile/' + data.other.username;
+          }
+        };
+        document.getElementById('dm-chat-username').style.cursor = data.other ? 'pointer' : 'default';
 
         if (!data.messages.length) {
           msgContainer.innerHTML = '<div class="notif-empty" style="padding:40px;">Sin mensajes. Escribe algo para iniciar la conversaci&oacute;n.</div>';

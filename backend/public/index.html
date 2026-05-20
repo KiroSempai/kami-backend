@@ -3650,6 +3650,8 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
         }
         if (_currentCommunityId && !parentId) {
           cargarDatosDeComunidad(_currentCommunityId);
+        } else if (!parentId) {
+          renderFeed();
         }
       });
     }

@@ -300,13 +300,8 @@
     @media(max-width: 1000px) {
       .com-right { display: none; }
     }
-    @media(max-width: 600px) {
-      .com-sidebar { display: none !important; }
-      .com-main { margin-bottom: 56px; border-left: none; }
-      .com-logo { display: none; }
-      .com-post-btn { display: none; }
-    }
     .mobile-bottom-nav { display: none; }
+    .mobile-top-header { display: none; }
     .mobile-drawer-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
@@ -323,17 +318,16 @@
     body.drawer-open .mobile-drawer-overlay { opacity: 1; pointer-events: auto; }
     body.drawer-open .com-sidebar-drawer { transform: translateX(280px); }
     @media(max-width: 600px) {
-      .mobile-bottom-nav {
-        display: flex; justify-content: space-around; align-items: center;
-        position: fixed; bottom: 0; left: 0; width: 100%; height: 56px;
-        background: var(--bg-main, #0b0b0d);
-        border-top: 1px solid var(--border, rgba(255,255,255,0.08));
-        z-index: 9999; box-sizing: border-box;
-      }
-      .mobile-nav-btn {
-        background: none; border: none; color: var(--text-muted, #6b7280);
-        font-size: 22px; cursor: pointer; padding: 10px; transition: color 0.2s;
-      }
+      html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
+      .comunidad-layout { flex-direction: column; width: 100vw; max-width: 100%; margin: 0; }
+      .com-sidebar { display: none !important; }
+      .com-main { width: 100%; max-width: 100%; border-left: none; border-right: none; margin-bottom: 56px; }
+      .com-logo { display: none; }
+      .com-post-btn { display: none; }
+      .com-right { display: none; }
+      .mobile-top-header { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 53px; padding: 0 16px; position: sticky; top: 0; background: rgba(11,11,13,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 9998; box-sizing: border-box; }
+      .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; left: 0; width: 100vw; height: 56px; background: rgba(11,11,13,0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.08); z-index: 9999; box-sizing: border-box; padding-bottom: env(safe-area-inset-bottom); }
+      .mobile-nav-btn { background: none; border: none; color: #6b7280; font-size: 22px; cursor: pointer; padding: 12px; flex: 1; text-align: center; }
       .mobile-nav-btn.active { color: var(--accent, #e8344a); }
     }
 
@@ -621,6 +615,12 @@
 
     <!-- Main feed -->
     <main class="com-main">
+      <!-- 🚨 CABECERA SUPERIOR MÓVIL (avatar para abrir drawer) -->
+      <div class="mobile-top-header">
+        <img onclick="toggleMobileDrawer(true)" src="/img/default-avatar.png" id="mobile-top-avatar-btn" style="width:32px;height:32px;border-radius:50%;object-fit:cover;cursor:pointer;">
+        <span style="font-weight:800;font-size:16px;color:white;">KAMI</span>
+        <div style="width:32px;"></div>
+      </div>
       <div class="section-content active" id="section-inicio">
         <div id="inicio-main-view">
           <div class="feed-tabs">
@@ -3676,6 +3676,14 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
 
     // ── Init: cargar feed + notificaciones + avatar + inicializar hash ──
     loadInFeedAvatar();
+    // Cargar avatar en cabecera móvil
+    (function(){
+      var _u = JSON.parse(localStorage.getItem('kami_user') || 'null');
+      if (_u) {
+        var _el = document.getElementById('mobile-top-avatar-btn');
+        if (_el && _u.avatar) _el.src = _u.avatar;
+      }
+    })();
     if (localStorage.getItem('kami_token')) { window.trackAction('daily_login'); }
     renderFeed();
     checkNotifs();

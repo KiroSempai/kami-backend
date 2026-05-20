@@ -645,3 +645,26 @@ body.mensajes-page-active .com-nav-item {
 body.mensajes-page-active .com-right {
   display: none;
 }
+
+/* ── Mobile top header (avatar + logo) ── */
+.mobile-top-header { display:none; }
+
+/* ── Bottom navigation bar (mobile) ── */
+.mobile-bottom-nav { display:none; }
+
+/* ── Drawer overlay + panel (mobile) ── */
+.mobile-drawer-overlay {
+  position: fixed; top:0; left:0; width:100vw; height:100vh;
+  background:rgba(0,0,0,0.5); backdrop-filter:blur(2px);
+  z-index:100000; opacity:0; pointer-events:none; transition:opacity .3s ease;
+}
+.com-sidebar-drawer {
+  position:fixed; top:0; left:-280px; width:280px; height:100vh;
+  background:var(--bg-main,#0b0b0d);
+  border-right:1px solid var(--border,rgba(255,255,255,0.08));
+  z-index:100001; box-sizing:border-box; padding:24px 20px;
+  display:flex; flex-direction:column; gap:20px;
+  transition:transform .3s cubic-bezier(.1,.9,.2,1);
+}
+body.drawer-open .mobile-drawer-overlay { opacity:1; pointer-events:auto; }
+body.drawer-open .com-sidebar-drawer { transform:translateX(280px); }

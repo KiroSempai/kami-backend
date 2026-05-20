@@ -601,7 +601,7 @@ body::before {
 .dm-message-status { font-size:11px; color:#71767b; display:flex; justify-content:flex-end; gap:4px; margin-top:2px; }
 
 /* ── DM Layout (adaptable con fr) ── */
-.dm-layout { display:grid; grid-template-columns:minmax(260px,1fr) 3fr; height:100%; }
+.dm-layout { display:grid; grid-template-columns:minmax(260px,35%) 65%; height:100%; }
 .dm-list { border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
 .dm-list-header { padding:16px; font-size:18px; font-weight:700; border-bottom:1px solid var(--border); flex-shrink:0; }
 .dm-list-items { flex:1; overflow-y:auto; }

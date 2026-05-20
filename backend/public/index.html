@@ -1778,6 +1778,20 @@
           checkUnreadDMs();
           loadDMs();
         });
+        // DM leído en tiempo real: actualizar check único → doble
+        socket.on('dm-read', function(data) {
+          if (_currentDMConvId === data.conversation_id) {
+            var container = document.getElementById('dm-messages');
+            if (!container) return;
+            container.querySelectorAll('.chat-msg-own .dm-message-status svg').forEach(function(svg) {
+              if (svg.getAttribute('viewBox') === '0 0 12 9') {
+                svg.setAttribute('viewBox', '0 0 18 9');
+                svg.setAttribute('width', '18');
+                svg.innerHTML = '<path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="rgba(0,0,0,0.4)"/><path d="M10.1 6.1 7.4 3.4 6 4.8 10.1 9 18 1.1 16.6 0z" fill="rgba(0,0,0,0.4)" opacity="0.5"/>';
+              }
+            });
+          }
+        });
       }
     } catch(e) {}
 

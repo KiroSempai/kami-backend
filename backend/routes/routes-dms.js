@@ -216,6 +216,20 @@ router.post('/:id/read', auth, async (req, res) => {
       [convId, userId]
     );
 
+    // Notificar al otro participante que los mensajes fueron leídos
+    if (global.io) {
+      const other = await pool.query(
+        'SELECT user_id FROM dm_conversation_participants WHERE conversation_id = $1 AND user_id != $2 LIMIT 1',
+        [convId, userId]
+      );
+      if (other.rows.length) {
+        global.io.to('dm:' + other.rows[0].user_id).emit('dm-read', {
+          conversation_id: convId,
+          read_at: new Date(),
+        });
+      }
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error('[dms] Error marking read:', err.message);

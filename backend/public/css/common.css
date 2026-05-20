@@ -669,18 +669,19 @@ body.mensajes-page-active .com-right {
 body.drawer-open .mobile-drawer-overlay { opacity:1; pointer-events:auto; }
 body.drawer-open .com-sidebar-drawer { transform:translateX(280px); }
 
-/* ── Floating Action Button (mobile post) ── */
+/* ── Floating Action Button (mobile post, rojo KAMI) ── */
 .mobile-fab-post { display:none; }
 @media(max-width:600px) {
   .mobile-fab-post {
     display:flex !important; align-items:center; justify-content:center;
-    position:fixed; bottom:76px; right:clamp(12px,4vw,20px);
-    width:52px; height:52px;
-    background:var(--accent,#e8344a); border-radius:50%;
-    color:#fff; font-size:22px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
-    z-index:10000; border:none; cursor:pointer;
-    transition:transform .15s, opacity .15s;
+    position:fixed !important;
+    bottom:72px !important; right:16px !important;
+    width:52px !important; height:52px !important;
+    border-radius:50% !important; border:none !important;
+    z-index:10000 !important; cursor:pointer;
+    background:#e8344a !important; color:#fff !important; font-size:20px !important;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4) !important;
+    transition:transform .15s ease, background-color .15s ease;
   }
-  .mobile-fab-post:active { transform:scale(.9); }
+  .mobile-fab-post:active { transform:scale(.95); background:#cc293d !important; }
 }

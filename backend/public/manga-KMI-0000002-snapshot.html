@@ -331,7 +331,7 @@ window.__SNAPSHOT_MANGA_DATA__ = {"manga":{"id":"KMI-0000002","title":"Death Not
         async function loadManga() {
             try {
                 var result = await Promise.all([
-                    Promise.resolve({ ok: true, data: window.__SNAPSHOT_MANGA_DATA__.manga }),
+                    Promise.resolve({ ok: true, data: { manga: window.__SNAPSHOT_MANGA_DATA__.manga } }),
                     Promise.resolve({ ok: true, data: { mangaId: 'KMI-0000002', chapters: window.__SNAPSHOT_MANGA_DATA__.chapters } }),
                     Promise.resolve({ ok: true, data: { mangaId: 'KMI-0000002', rating: 8, totalRatings: 1, totalReads: 1, totalViews: 1, userRating: null, chaptersRead: 0 } }),
                 ]);

@@ -636,8 +636,18 @@ body.mensajes-page-active .dm-layout {
   body.mensajes-page-active .dm-layout { grid-template-columns: 1fr; }
 }
 body.mensajes-page-active .com-main {
+  flex: 1;
   border-left: none !important;
   border-right: none !important;
+}
+body.mensajes-page-active #section-mensajes.active {
+  width: 100% !important;
+  height: 100% !important;
+}
+body.mensajes-page-active .dm-layout {
+  max-width: none; width: 100% !important; margin: 0;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(255,255,255,0.08);
 }
 body.mensajes-page-active #section-mensajes.active {
   width: 100% !important;

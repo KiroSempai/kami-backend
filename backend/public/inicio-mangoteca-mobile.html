@@ -371,6 +371,33 @@ img { display:block; }
   </div>
 </div>
 
+<!-- TOP PAGE -->
+<div class="page" id="page-top">
+  <div class="section" style="padding-top:4px;">
+    <div class="sec-head" style="padding:0 14px 4px;">
+      <div class="sec-title" style="font-size:16px;font-family:var(--font-display);letter-spacing:1px;">Top <span style="color:var(--accent)">Rankings</span></div>
+    </div>
+    <div class="top-page">
+      <div class="chart-panel">
+        <div class="chart-head"><span><i class="ti ti-trophy" style="color:var(--gold);margin-right:5px"></i>Top Legibles</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="top-readable"></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-head"><span><i class="ti ti-chart-bar" style="color:var(--blue);margin-right:5px"></i>Top Seguimiento</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="top-tracking"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bnav-item active" onclick="switchPage('home',this)"><i class="ti ti-home-2"></i><span class="bnav-label">Inicio</span></div>
+  <div class="bnav-item" onclick="switchPage('search',this)"><i class="ti ti-search"></i><span class="bnav-label">Buscar</span></div>
+  <div class="bnav-item" onclick="switchPage('catalog',this)"><i class="ti ti-books"></i><span class="bnav-label">Catálogo</span></div>
+  <div class="bnav-item" onclick="switchPage('top',this)"><i class="ti ti-trophy"></i><span class="bnav-label">Top</span></div>
+</nav>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">

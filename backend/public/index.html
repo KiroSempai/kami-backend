@@ -1373,7 +1373,7 @@
         '<div class="chat-bubble">' +
         (isOwn ? '' : '<div class="chat-bubble-name">' + (m.username || 'Anónimo') + '</div>') +
         '<div class="chat-bubble-text">' + m.message + '</div>' +
-        (isOwn ? statusHtml : '<div class="chat-bubble-time">' + timeAgo(m.created_at) + '</div>') +
+        (isOwn ? statusHtml : '<div class="chat-bubble-time">' + timeStr + '</div>') +
         '</div></div>';
     }
 

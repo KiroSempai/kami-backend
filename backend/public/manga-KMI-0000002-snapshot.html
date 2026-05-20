@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base href="https://kami-backend-9aal.onrender.com/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargando…-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="https://kami-backend-9aal.onrender.com/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://kami-backend-9aal.onrender.com/css/common.css?v=9">
+    <link rel="stylesheet" href="https://kami-backend-9aal.onrender.com/css/perfil.css">
+    <link rel="stylesheet" href="https://kami-backend-9aal.onrender.com/css/kmi-detail.css?v=42">
+    <link rel="stylesheet" href="https://kami-backend-9aal.onrender.com/css/kmi-card.css">
+    <script src="https://kami-backend-9aal.onrender.com/js/offline.js?v=2"></script>
+    <script>
+window.__SNAPSHOT_MANGA_DATA__ = {"manga":{"id":"KMI-0000002","title":"Death Note","alternativeTitles":[],"cover":"/assets/manga/KMI-0000002/cover.jpg","description":"","type":"manga","status":"completed","genres":["Acci├│n","Dark Fantasy","Misterio","Psicol├│gico","Shonen"],"demographicTarget":"","author":"Kenjaro Miura","artist":"Kenjaro Miura","totalChapters":0,"isOneshot":false,"rating":8,"totalRatings":1,"totalReads":1,"chapters":{},"socialLinks":{},"createdAt":"2026-05-14T17:22:46.280Z","updatedAt":"2026-05-20T20:02:49.835Z","hasViewedCartelera":false},"chapters":[],"totalViews":1};
+
+
+    // Lazy loader para el lector — no bloquea la carga de la página
+    window.kamiOpenReader = (function() {
+      var loaded = false;
+      return function(mangaId, chapterNum) {
+        if (!loaded) {
+          loaded = true;
+          var s = document.createElement('script');
+          s.src = '/js/reader-protect.js?v=' + Date.now();
+          s.onload = function() { window.kamiOpenReader(mangaId, chapterNum); };
+          document.body.appendChild(s);
+        } else {
+          window.kamiOpenReader(mangaId, chapterNum);
+        }
+      };
+    })();
+    </script>
+</head>
+<body>
+  <div class="kmi-topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <img src="https://kami-backend-9aal.onrender.com/assets/logo-kami.png" alt="KAMI" style="height:22px;width:auto;">
+      <a href="javascript:void(0)" onclick="kmiVolver()" class="kmi-volver-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Volver
+      </a>
+    </div>
+  </div>
+  <script>
+  function kmiVolver() {
+    var ref = document.referrer || '';
+    if (!ref || ref.indexOf('/reader/') >= 0 || ref.indexOf('/manga/') >= 0) {
+      window.location.href = '/inicio-mangoteca';
+    } else {
+      history.back();
+    }
+  }
+  </script>
+
+    <!-- LOADING -->
+    <div id="loading">
+        <div class="skeleton">
+            <div style="display:flex;gap:32px;">
+                <div class="skeleton-cover"></div>
+                <div style="flex:1;">
+                    <div class="skeleton-row wide"></div>
+                    <div class="skeleton-row medium" style="margin-bottom:24px;"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row narrow"></div>
+    </div>
+          </div>
+
+        </div>
+</div>
+
+    <!-- ERROR -->
+    <div id="error-page" class="error-page" style="display:none;">
+        <h2>Manga no encontrado</h2>
+        <p>El manga que buscas no existe o ha sido eliminado.</p>
+        <a href="https://kami-backend-9aal.onrender.com/" class="btn-back">← Volver al inicio</a>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="manga-content" style="display:none;">
+      <!-- CARTELERA LAYOUT -->
+      <div class="cartelera-layout">
+        <!-- COLUMN 1: Cover + Info -->
+        <div class="cartelera-left" id="cartelera-left">
+          <div class="cartelera-card">
+            <!-- Title row (moved from banner) -->
+            <div class="manga-title-row">
+              <div class="manga-title" id="manga-title"></div>
+              <span class="manga-type-badge" id="manga-type-badge" style="display:none;"></span>
+              <span class="manga-status-badge" id="manga-status-badge" style="display:none;"></span>
+              <span class="manga-id-badge" id="manga-id-badge" style="display:none;"></span>
+              <span class="manga-viewed-badge" id="manga-viewed-badge" style="display:none;">Cartelera vista</span>
+            </div>
+            <div class="manga-subtitle" id="manga-subtitle" style="display:none;"></div>
+            <div class="manga-alt-titles" id="manga-alt-titles"></div>
+
+            <div class="manga-cover-wrap">
+              <div class="manga-cover" id="manga-cover"></div>
+              <div class="cover-rating" id="cover-rating" style="display:none;" onclick="toggleRatingVote(event)">
+                <div class="cover-rating-stars" id="cover-rating-stars"></div>
+                <span class="cover-rating-text" id="cover-rating-text"></span>
+                <span class="cover-rating-votes" id="cover-rating-votes"></span>
+              </div>
+              <div class="rating-vote-popup" id="rating-vote-popup" style="display:none;">
+                <div class="rating-stars-row">
+                  <span class="rating-star" data-val="1" onmouseover="hoverStar(1)" onmouseout="resetStars()" onclick="selectStar(1)">★</span>
+                  <span class="rating-star" data-val="2" onmouseover="hoverStar(2)" onmouseout="resetStars()" onclick="selectStar(2)">★</span>
+                  <span class="rating-star" data-val="3" onmouseover="hoverStar(3)" onmouseout="resetStars()" onclick="selectStar(3)">★</span>
+                  <span class="rating-star" data-val="4" onmouseover="hoverStar(4)" onmouseout="resetStars()" onclick="selectStar(4)">★</span>
+                  <span class="rating-star" data-val="5" onmouseover="hoverStar(5)" onmouseout="resetStars()" onclick="selectStar(5)">★</span>
+                </div>
+                <div class="rating-label" id="rating-label"></div>
+                <div class="rating-btn-row">
+                  <button class="status-btn" id="btn-rate-submit" disabled onclick="submitRating()">Enviar</button>
+                  <button class="status-btn" id="btn-rate-remove" style="display:none;" onclick="removeRating()">Quitar</button>
+                </div>
+                <div class="rating-status" id="rating-status"></div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-row"><span class="info-label">Autor</span><span class="info-value" id="info-author">—</span></div>
+              <div class="info-row"><span class="info-label">Arte</span><span class="info-value" id="info-artist">—</span></div>
+            </div>
+
+            <div class="rpm-row" id="manga-stats" style="display:none;">
+              <div class="rpm-item"><span class="rpm-label">Ranked</span><span class="rpm-value" id="ranked-value">#—</span></div>
+              <div class="rpm-item"><span class="rpm-label">Popularity</span><span class="rpm-value" id="popularity-value">#—</span></div>
+              <div class="rpm-item"><span class="rpm-label">Members</span><span class="rpm-value" id="members-value">—</span></div>
+            </div>
+
+            <div class="manga-description" id="manga-description"></div>
+
+            <div class="tags-section" id="manga-tags"></div>
+
+            <div class="stats-row">
+              <div class="stats-mini">
+                <span class="stats-mini-label">Lecturas</span>
+                <span class="stats-mini-value" id="stat-reads">—</span>
+              </div>
+              <div class="stats-mini">
+                <span class="stats-mini-label">Cap. leídos</span>
+                <span class="stats-mini-value" id="stat-chapters">—</span>
+              </div>
+            </div>
+
+            <button class="btn-add-library" id="btn-add-to-library" onclick="addToLibrary()">
+              <i class="ti ti-plus"></i> + Añadir
+            </button>
+          </div>
+        </div>
+
+        <!-- COLUMN 2: Biblioteca + Notes + Chapters + Feed + Recommendations -->
+        <div class="cartelera-center">
+
+          <div class="center-section">
+            <h2 class="section-title">Biblioteca</h2>
+            <div class="status-bar" id="status-bar">
+              <button class="state-chip sc-reading" data-state="leyendo" onclick="handleStatusClick(this, 'leyendo')"><div class="state-chip-dot"></div>Leyendo</button>
+              <button class="state-chip sc-continuing" data-state="continuando" onclick="handleStatusClick(this, 'continuando')"><div class="state-chip-dot"></div>Continuando</button>
+              <button class="state-chip sc-planned" data-state="pendientes" onclick="handleStatusClick(this, 'pendientes')"><div class="state-chip-dot"></div>Pendientes</button>
+              <button class="state-chip sc-completed" data-state="terminados" onclick="handleStatusClick(this, 'terminados')"><div class="state-chip-dot"></div>Terminados</button>
+              <button class="state-chip sc-dropped" data-state="abandonados" onclick="handleStatusClick(this, 'abandonados')"><div class="state-chip-dot"></div>Abandonados</button>
+              <button class="state-chip sc-rereading" data-state="releyendo" onclick="handleStatusClick(this, 'releyendo')"><div class="state-chip-dot"></div>Releyendo</button>
+              <button class="state-chip sc-favorite" id="btn-favorite" style="display:none;" onclick="handleToggleFavorite()"><div class="state-chip-dot"></div><span id="fav-label">♡ Favorito</span></button>
+              <button class="state-chip btn-remove" id="btn-remove-library" style="display:none;" onclick="handleRemoveFromLibrary()">🗑 Quitar</button>
+            </div>
+          </div>
+
+          <div class="center-section">
+            <div class="notes-header">
+              <i class="ti ti-pencil" style="font-size:14px;"></i>
+              Añadir nota
+            </div>
+            <textarea class="notes-input" id="notes-input" placeholder="Escribe una nota personal sobre este manga..." rows="2"></textarea>
+          </div>
+
+          <!-- CHAPTERS -->
+          <div class="center-section">
+            <div class="chapters-header">
+              <h2 class="section-title" style="margin-bottom:0;">Lista de capítulos</h2>
+              <button class="chapters-order-btn" id="chapters-order-btn" onclick="toggleChapterOrder()" title="Cambiar orden">
+                <i class="ti ti-chevron-up order-arrow active" id="order-arrow-up"></i>
+                <i class="ti ti-chevron-down order-arrow" id="order-arrow-down"></i>
+              </button>
+            </div>
+            <div class="chapter-list" id="chapter-list">
+              <div class="chapter-empty">Cargando capítulos...</div>
+            </div>
+            <button class="chapters-show-more" id="chapters-show-more" style="display:none;" onclick="showAllChapters()">
+              ver más (<span id="chapters-hidden-count">0</span>)
+            </button>
+          </div>
+
+          <!-- FEED -->
+          <div class="feed-header">
+            <h2 class="section-title" style="margin-bottom:4px;">Feed <span class="feed-manga-tag" id="feed-manga-tag">—</span></h2>
+          </div>
+          <div class="feed-tabs">
+            <button class="feed-tab active" data-tab="post" onclick="switchFeedTab('post')">Post</button>
+            <button class="feed-tab" data-tab="social" onclick="switchFeedTab('social')">Social</button>
+          </div>
+          <div class="feed-content" id="feed-content">
+            <div class="feed-tab-panel" id="feed-panel-post">
+              <div class="post-list" id="post-list">
+                <div class="post-empty">Cargando publicaciones...</div>
+              </div>
+            </div>
+            <div class="feed-tab-panel" id="feed-panel-social" style="display:none;">
+              <div class="post-empty" id="social-placeholder">
+                <i class="ti ti-users" style="font-size:40px;color:rgba(255,255,255,0.06);"></i>
+                <div style="margin-top:12px;color:rgba(255,255,255,0.08);">Grupo social próximamente</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="recommendations-section">
+            <h3 class="section-subtitle">Recomendaciones</h3>
+            <div class="rec-horizontal" id="rec-horizontal">
+              <div class="rec-empty">Cargando recomendaciones...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN 3: Activity + Comments sidebar -->
+        <div class="cartelera-right" id="right-sidebar">
+          <div class="drawer-header">Actividad Reciente</div>
+          <div class="activity-cards">
+            <div class="activity-card">
+              <div class="activity-card-icon"><i class="ti ti-user-plus"></i></div>
+              <div class="activity-card-body">
+                <div class="activity-card-value" id="activity-new-today">0</div>
+                <div class="activity-card-label">Nuevo miembro hoy</div>
+              </div>
+            </div>
+            <div class="activity-card">
+              <div class="activity-card-icon"><i class="ti ti-book-2"></i></div>
+              <div class="activity-card-body">
+                <div class="activity-card-value" id="activity-reading-week">0</div>
+                <div class="activity-card-label">Empezaron esta semana</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar trigger (fixed right edge) -->
+      <div class="sidebar-trigger" id="sidebar-trigger" onclick="toggleSidebar()">
+        <div class="trigger-line"></div>
+      </div>
+
+      <!-- Left column trigger (fixed left edge) -->
+      <div class="sidebar-trigger-left" id="sidebar-trigger-left" onclick="toggleLeftColumn()">
+        <div class="trigger-line"></div>
+      </div>
+
+      <!-- Comments FAB -->
+      <button class="comments-fab" id="comments-fab" onclick="toggleMangaComments()">
+        <i class="ti ti-message"></i>
+      </button>
+
+      <!-- Comments popover -->
+      <div class="comments-popover" id="comments-popover">
+        <div class="mcp-header">
+          <span class="mcp-title"><i class="ti ti-message"></i> Comentarios</span>
+          <button onclick="closeMangaComments()"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="mcp-body" id="mcp-body">
+          <div class="comment-empty">Cargando comentarios...</div>
+        </div>
+        <div class="mcp-footer">
+          <textarea id="mcp-input" placeholder="Escribe un comentario..." rows="1"></textarea>
+          <button id="mcp-submit-btn" onclick="submitMangaComment()">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        const mangaId = decodeURIComponent(window.location.pathname.replace(/\/+$/, '').split('/').pop());
+        if (!mangaId) { console.error('[KAMI] mangaId vacío desde URL:', window.location.pathname); showError(); }
+
+        let mangaData = null;
+        let libraryStatus = null;
+        var currentChapterList = [];
+        var _userProgress = 0;
+        var currentUserRating = null;
+
+        async function trackAction(action_type, chapter_id, metadata) { /* snapshot: disabled */ return;
+          var token = localStorage.getItem('kami_token');
+          if (!token) return;
+          try {
+            await fetch('/api/track', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ action_type, manga_id: mangaId, chapter_id, metadata: metadata || {} }),
+            });
+          } catch (e) {}
+        }
+
+        var loadMangaStarted = Date.now();
+        var loadMangaTimer = setInterval(function() {
+            var elapsed = Math.round((Date.now() - loadMangaStarted) / 1000);
+            var loadingEl = document.getElementById('loading');
+            if (loadingEl && loadingEl.style.display !== 'none') {
+                var skeleton = loadingEl.querySelector('.skeleton');
+                if (skeleton) {
+                    var msg = skeleton.querySelector('.load-timeout-msg');
+                    if (!msg) {
+                        msg = document.createElement('div');
+                        msg.className = 'load-timeout-msg';
+                        msg.style.cssText = 'text-align:center;color:rgba(255,255,255,0.2);font-size:12px;margin-top:16px;';
+                        skeleton.appendChild(msg);
+                    }
+                    if (elapsed > 8) {
+                        msg.textContent = 'Conectando con el servidor... (' + elapsed + 's)';
+                    }
+                }
+                if (elapsed > 25) {
+                    clearInterval(loadMangaTimer);
+                    showError();
+                }
+            } else {
+                clearInterval(loadMangaTimer);
+            }
+        }, 2000);
+
+        async function loadManga() {
+            try {
+                var result = await Promise.all([
+                    Promise.resolve({ ok: true, data: window.__SNAPSHOT_MANGA_DATA__.manga }),
+                    Promise.resolve({ ok: true, data: { mangaId: 'KMI-0000002', chapters: window.__SNAPSHOT_MANGA_DATA__.chapters } }),
+                    Promise.resolve({ ok: true, data: { mangaId: 'KMI-0000002', rating: 8, totalRatings: 1, totalReads: 1, totalViews: 1, userRating: null, chaptersRead: 0 } }),
+                ]);
+                clearInterval(loadMangaTimer);
+                var mangaResult = result[0], chaptersResult = result[1], statsResult = result[2];
+                if (!mangaResult.ok || !mangaResult.data?.manga) { console.error('[KAMI] manga no encontrado en API, resultado:', mangaResult); throw new Error('Not found'); }
+                mangaData = mangaResult.data.manga;
+                const chaptersData = chaptersResult.ok ? chaptersResult.data : null;
+                const statsData = statsResult.ok ? statsResult.data : null;
+                renderManga(mangaData, chaptersData?.chapters || [], statsData);
+                loadLibraryStatus();
+                // Track unique view + daily_login + manga_started
+                var token = localStorage.getItem('kami_token');
+                if (token) {
+                  fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(function(r){ return r.json(); })
+                    .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
+                    .catch(function(){});
+                  fetch('/api/manga/' + mangaId + '/view', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                      if (data.hasViewed === false && data.success) {
+                        var vb = document.getElementById('manga-viewed-badge');
+                        if (vb) vb.style.display = 'inline-flex';
+                      }
+                    })
+                    .catch(function(){});
+                  trackAction('daily_login');
+                  trackAction('manga_started');
+                }
+            } catch(e) {
+                clearInterval(loadMangaTimer);
+                console.error('[KAMI] Error en loadManga:', e);
+                showError();
+            }
+        }
+
+        async function loadLibraryStatus() {
+            const token = localStorage.getItem('kami_token');
+            if (!token) return;
+            try {
+                const r = await fetch(`/api/library/check/${mangaId}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await r.json();
+                if (r.ok) {
+                    libraryStatus = data;
+                    updateStatusButtons(data);
+                }
+            } catch (e) {
+                console.error('Error al cargar estado de biblioteca:', e);
+            }
+        }
+
+        function updateStatusButtons(data) {
+            document.querySelectorAll('#status-bar .state-chip').forEach(btn => {
+                btn.classList.remove('active');
+                if (!btn.dataset.state) return;
+                const state = btn.dataset.state;
+                const dbState = { leyendo:'reading', continuando:'continuing', pendientes:'planned', favoritos:'favorite', terminados:'completed', abandonados:'dropped', releyendo:'rereading' }[state];
+                if (data.inLibrary && data.status === dbState) {
+                    btn.classList.add('active');
+                }
+            });
+            const removeBtn = document.getElementById('btn-remove-library');
+            if (removeBtn) {
+                removeBtn.style.display = data.inLibrary ? 'inline-flex' : 'none';
+            }
+            const favBtn = document.getElementById('btn-favorite');
+            const favLabel = document.getElementById('fav-label');
+            if (favBtn) {
+                favBtn.style.display = data.inLibrary ? 'inline-flex' : 'none';
+                if (favLabel) favLabel.textContent = data.is_favorite ? '❤️ Quitar favorito' : '♡ Favorito';
+            }
+            const addBtn = document.getElementById('btn-add-to-library');
+            if (addBtn) {
+                if (data.inLibrary) {
+                    addBtn.innerHTML = '<i class="ti ti-check"></i> Añadido';
+                    addBtn.className = 'btn-add-library added';
+                } else {
+                    addBtn.innerHTML = '<i class="ti ti-plus"></i> + Añadir';
+                    addBtn.className = 'btn-add-library';
+                }
+            }
+        }
+
+        async function handleStatusClick(btn, state) {
+            const token = localStorage.getItem('kami_token');
+            if (!token) {
+                if (confirm('Debes iniciar sesi\u00f3n para usar la biblioteca. \u00bfIr al login?')) {
+                    window.location.href = '/login?return=' + encodeURIComponent(window.location.pathname);
+                }
+                return;
+            }
+
+            document.querySelectorAll('#status-bar .state-chip').forEach(b => {
+                if (b.dataset.state) b.classList.toggle('active', b === btn);
+            });
+            btn.innerHTML = '⏳ ' + (btn.textContent.trim().replace(/^[^A-Za-z\u00C0-\u024f]+/, ''));
+
+            try {
+                const r = await fetch('/api/library/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ manga_id: mangaId, status: state }),
+                });
+                const data = await r.json();
+                if (!r.ok) {
+                    alert('Error: ' + (data.error || 'No se pudo guardar'));
+                    loadLibraryStatus();
+                    return;
+                }
+                libraryStatus = { inLibrary: true, status: data.manga?.status || state, is_favorite: libraryStatus?.is_favorite || false };
+                updateStatusButtons(libraryStatus);
+                trackAction('library_' + state, null, {});
+            } catch (e) {
+                alert('Error de conexi\u00f3n: ' + e.message);
+                loadLibraryStatus();
+            }
+        }
+
+        async function handleRemoveFromLibrary() {
+            var confirmed = await new Promise(function(resolve) {
+                var m = document.getElementById('confirm-modal');
+                if (!m) { resolve(true); return; }
+                m.style.display = 'flex';
+                m.querySelector('.confirm-msg').textContent = '\u00bfEliminar este manga de tu biblioteca?';
+                m.querySelector('.confirm-yes').onclick = function() { m.style.display = 'none'; resolve(true); };
+                m.querySelector('.confirm-no').onclick = function() { m.style.display = 'none'; resolve(false); };
+            });
+            if (!confirmed) return;
+            const token = localStorage.getItem('kami_token');
+            if (!token) return;
+            try {
+                const r = await fetch('/api/library/' + mangaId, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                });
+                const data = await r.json();
+                if (!r.ok) { alert('Error: ' + (data.error || 'No se pudo eliminar')); return; }
+                libraryStatus = null;
+                updateStatusButtons({ inLibrary: false });
+            } catch (e) {
+                alert('Error de conexión: ' + e.message);
+            }
+        }
+
+        async function handleToggleFavorite() {
+            const token = localStorage.getItem('kami_token');
+            if (!token) return;
+            try {
+                const r = await fetch('/api/library/' + mangaId + '/favorite', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                });
+                const data = await r.json();
+                if (!r.ok) { alert('Error: ' + (data.error || 'No se pudo cambiar')); return; }
+                if (libraryStatus) libraryStatus.is_favorite = data.is_favorite;
+                updateStatusButtons(libraryStatus || { inLibrary: true, status: '', is_favorite: data.is_favorite });
+            } catch (e) {
+                alert('Error de conexión: ' + e.message);
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-page').style.display = 'block';
+            var mc = document.getElementById('manga-content');
+            if (mc) mc.style.display = 'none';
+        }
+
+        function renderManga(manga, chapters, stats) {
+            var loadingEl = document.getElementById('loading');
+            if (loadingEl) loadingEl.style.display = 'none';
+            var contentEl = document.getElementById('manga-content');
+            if (contentEl) contentEl.style.display = 'block';
+
+            document.title = `${manga.title}-KAMImanga`;
+
+            function setText(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val || '';
+            }
+            function setHTML(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.innerHTML = val || '';
+            }
+            function setDisplay(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = val || 'none';
+            }
+
+            setText('manga-title', manga.title);
+
+            const typeLabels = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', oneshot:'One-shot' };
+            var typeBadge = document.getElementById('manga-type-badge');
+            if (typeBadge) {
+                typeBadge.textContent = typeLabels[manga.type] || manga.type || 'Manga';
+                typeBadge.className = 'manga-type-badge type-badge-' + (manga.type || 'manga');
+                typeBadge.style.display = 'inline-flex';
+            }
+
+            const statusLabels = { ongoing:'En emisión', completed:'Completado', hiatus:'En hiato', cancelled:'Cancelado' };
+            var statusBadge = document.getElementById('manga-status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = statusLabels[manga.status] || manga.status || '';
+                statusBadge.style.display = manga.status ? 'inline-flex' : 'none';
+            }
+
+            var idBadge = document.getElementById('manga-id-badge');
+            if (idBadge) {
+                idBadge.textContent = manga.id;
+                idBadge.style.display = 'inline-flex';
+            }
+
+            var viewedBadge = document.getElementById('manga-viewed-badge');
+            if (viewedBadge) viewedBadge.style.display = manga.hasViewedCartelera ? 'inline-flex' : 'none';
+
+            var parts = [];
+            if (manga.author) parts.push('Por <a href="https://kami-backend-9aal.onrender.com/search?q=' + encodeURIComponent(manga.author) + '">' + manga.author + '</a>');
+            if (manga.artist && manga.artist !== manga.author) parts.push('Arte: ' + manga.artist);
+            setHTML('manga-subtitle', parts.join(' · ') || '&nbsp;');
+
+            var altEl = document.getElementById('manga-alt-titles');
+            var alts = (manga.alternativeTitles || []).filter(Boolean);
+            if (altEl) altEl.innerHTML = alts.length > 0 ? alts.map(function(t) { return '<span class="manga-alt-title">' + t + '</span>'; }).join('') : '';
+
+            var mangaStats = document.getElementById('manga-stats');
+            if (mangaStats) {
+                if (manga.ranked || manga.popularity || manga.members) {
+                    setText('ranked-value', manga.ranked ? '#' + manga.ranked.toLocaleString() : '#—');
+                    setText('popularity-value', manga.popularity ? '#' + manga.popularity.toLocaleString() : '#—');
+                    setText('members-value', manga.members ? manga.members.toLocaleString() : '—');
+                    mangaStats.style.display = 'flex';
+                } else {
+                    mangaStats.style.display = 'none';
+                }
+            }
+
+            var coverRatingEl = document.getElementById('cover-rating');
+            if (coverRatingEl) {
+                if (manga.rating > 0) {
+                    var full = Math.round(manga.rating / 2);
+                    var starsHtml = '';
+                    for (var si = 0; si < 5; si++) {
+                        starsHtml += '<span class="' + (si < full ? 'star-filled' : 'star-empty') + '">★</span>';
+                    }
+                    var coverRatingStars = document.getElementById('cover-rating-stars');
+                    if (coverRatingStars) coverRatingStars.innerHTML = starsHtml;
+                    setText('cover-rating-text', manga.rating.toFixed(1) + ' / 10');
+                    var coverRatingVotes = document.getElementById('cover-rating-votes');
+                    if (coverRatingVotes && manga.totalRatings) coverRatingVotes.textContent = ' · ' + manga.totalRatings.toLocaleString() + ' votos';
+                    coverRatingEl.style.display = 'flex';
+                } else {
+                    coverRatingEl.style.display = 'none';
+                }
+            }
+
+            var descEl = document.getElementById('manga-description');
+            if (descEl) {
+                var desc = manga.description || '';
+                if (desc) {
+                    descEl.textContent = desc;
+                    descEl.className = 'manga-description';
+                } else {
+                    descEl.textContent = 'Sin descripción disponible.';
+                    descEl.className = 'manga-description empty';
+                }
+            }
+
+            var tagsEl = document.getElementById('manga-tags');
+            if (tagsEl) {
+                var genres = manga.genres || [];
+                tagsEl.innerHTML = genres.map(function(g) { return '<span class="manga-tag">' + g + '</span>'; }).join('');
+            }
+
+            var coverEl = document.getElementById('manga-cover');
+            if (coverEl) {
+                if (manga.cover) {
+                    coverEl.innerHTML = '<img src="' + manga.cover + '" alt="' + (manga.title||'') + '" loading="lazy" onerror="kamiReplaceCover(this,\'' + (manga.type||'') + '\')">';
+                } else {
+                    coverEl.innerHTML = coverPlaceholder(manga.title, manga.type);
+                }
+            }
+
+            setText('info-author', manga.author || '—');
+            setText('info-artist', manga.artist || '—');
+
+            if (stats) {
+                setText('stat-reads', (stats.totalReads || 0).toLocaleString());
+                setText('stat-chapters', (stats.chaptersRead || 0).toLocaleString());
+                if (stats.userRating) currentUserRating = stats.userRating * 2;
+            }
+
+            setText('feed-manga-tag', '[' + manga.title + ']');
+
+            currentChapterList = chapters;
+
+            loadChapterList();
+            loadUserNotes();
+            loadActivity();
+            loadRecommendations();
+            loadMangaPosts();
+        }
+
+        function coverPlaceholder(title, type) {
+            return '<div class="cover-placeholder">' + window.kamiDefaultCover(type) + '<span>' + (title ? title.charAt(0).toUpperCase() : '?') + '</span></div>';
+        }
+
+        var chapterOrderDesc = true;
+
+        function toggleChapterOrder() {
+          chapterOrderDesc = !chapterOrderDesc;
+          document.getElementById('order-arrow-up').classList.toggle('active', !chapterOrderDesc);
+          document.getElementById('order-arrow-down').classList.toggle('active', chapterOrderDesc);
+          renderChapterList();
+        }
+
+        function renderChapterList() {
+          var container = document.getElementById('chapter-list');
+          var showMoreBtn = document.getElementById('chapters-show-more');
+          var hiddenCount = document.getElementById('chapters-hidden-count');
+          if (!container) return;
+          var list = (Array.isArray(currentChapterList) ? currentChapterList : []).slice();
+          if (!chapterOrderDesc) list.reverse();
+
+          var displayed = list.slice(0, 2);
+          var hidden = list.slice(2);
+
+          container.innerHTML = displayed.map(function(ch) {
+            return renderChapterRow(ch);
+          }).join('');
+
+          if (hidden.length > 0) {
+            hidden.forEach(function(ch) {
+              var row = document.createElement('div');
+              row.className = 'chapter-row blurred';
+              row.innerHTML = renderChapterRow(ch).replace('chapter-row', '');
+              container.appendChild(row);
+            });
+            hiddenCount.textContent = hidden.length;
+            showMoreBtn.style.display = 'block';
+          } else {
+            showMoreBtn.style.display = 'none';
+          }
+        }
+
+        function renderChapterRow(ch) {
+          var date = ch.createdAt ? new Date(ch.createdAt).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }) : (ch.releaseDate || '');
+          var numStr = String(ch.number).padStart(3, '0');
+          var readClass = _userProgress > 0 && ch.number <= _userProgress ? ' chapter-read' : '';
+          return '<div class="chapter-row' + readClass + '" onclick="window.location.href=\'/reader/' + mangaId + '/' + ch.number + '\'">' +
+            '<div class="chapter-thumb">#' + numStr + '</div>' +
+            '<div class="chapter-info">' +
+              '<div class="chapter-num-line">' +
+                '<span class="chapter-num">#' + numStr + '</span>' +
+                '<span class="chapter-date">' + date + '</span>' +
+              '</div>' +
+              '<div class="chapter-title">' + (ch.title ? escHtml('Cap\u00edtulo ' + ch.number + ': ' + ch.title) : escHtml('Cap\u00edtulo ' + ch.number)) + '</div>' +
+            '</div>' +
+            '<button class="chapter-comments-btn" onclick="event.stopPropagation();openChapterComments(' + ch.number + ')" title="Comentarios del cap\u00edtulo">' +
+              '<i class="ti ti-message"></i>' +
+              (ch.commentCount > 0 ? '<span class="cmt-count">' + ch.commentCount + '</span>' : '') +
+            '</button>' +
+          '</div>';
+        }
+
+        function showAllChapters() {
+          var container = document.getElementById('chapter-list');
+          var showMoreBtn = document.getElementById('chapters-show-more');
+          var list = (currentChapterList || []).slice();
+          if (!chapterOrderDesc) list.reverse();
+          container.innerHTML = list.map(function(ch) { return renderChapterRow(ch); }).join('');
+          showMoreBtn.style.display = 'none';
+        }
+
+        function loadChapterList() {
+          renderChapterList();
+        }
+
+        var currentCommentsChapter = null;
+
+        function ensureCommentsPanel() {
+          if (document.getElementById('chapter-comments-panel')) return;
+          var panel = document.createElement('div');
+          panel.id = 'chapter-comments-panel';
+          panel.innerHTML =
+            '<div class="cc-header">' +
+              '<div class="cc-title"><i class="ti ti-message"></i> <span id="cc-chapter-title">Comentarios</span></div>' +
+              '<button onclick="closeChapterComments()"><i class="ti ti-x"></i></button>' +
+            '</div>' +
+            '<div class="cc-body" id="cc-body"><div class="comment-empty">Cargando...</div></div>' +
+            '<div class="cc-footer">' +
+              '<textarea id="cc-input" placeholder="Escribe un comentario..." rows="1"></textarea>' +
+              '<button id="cc-submit-btn" onclick="submitChapterComment()">Enviar</button>' +
+            '</div>';
+          var overlay = document.createElement('div');
+          overlay.id = 'chapter-comments-overlay';
+          overlay.onclick = closeChapterComments;
+          document.body.appendChild(overlay);
+          document.body.appendChild(panel);
+        }
+
+        async function openChapterComments(chapterNum) {
+          var token = localStorage.getItem('kami_token');
+          if (!token) { alert('Debes iniciar sesión para ver comentarios'); return; }
+          ensureCommentsPanel();
+          currentCommentsChapter = chapterNum;
+          document.getElementById('cc-chapter-title').textContent = 'Cap\u00edtulo ' + chapterNum;
+          document.getElementById('chapter-comments-overlay').classList.add('open');
+          document.getElementById('chapter-comments-panel').classList.add('open');
+          document.getElementById('cc-input').value = '';
+          loadChapterComments();
+        }
+
+        function closeChapterComments() {
+          document.getElementById('chapter-comments-overlay').classList.remove('open');
+          document.getElementById('chapter-comments-panel').classList.remove('open');
+          currentCommentsChapter = null;
+        }
+
+        async function loadChapterComments() {
+          var body = document.getElementById('cc-body');
+          if (!body || !currentCommentsChapter) return;
+          body.innerHTML = '<div class="comment-empty">Cargando...</div>';
+          try {
+            var token = localStorage.getItem('kami_token');
+            var r = await fetch('/api/comments/' + mangaId + '/' + currentCommentsChapter, { headers: { 'Authorization': 'Bearer ' + token } });
+            var data = await r.json();
+            var comments = data.comments || [];
+            if (comments.length === 0) {
+              body.innerHTML = '<div class="comment-empty">Sin comentarios aún</div>';
+              return;
+            }
+            body.innerHTML = comments.map(function(c) {
+              var initial = (c.username || '?').substring(0, 2).toUpperCase();
+              var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+              var color = colors[(c.id || 0) % colors.length];
+              var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+              return '<div class="comment-item">' +
+                '<div class="comment-avatar" style="background:' + color + '">' + initial + '</div>' +
+                '<div class="comment-body"><div class="comment-meta">' +
+                  '<span class="comment-username">' + escHtml(c.username || 'Anónimo') + '</span>' +
+                  '<span class="comment-date">' + time + '</span>' +
+                '</div>' +
+                '<div class="comment-text">' + escHtml(c.text || '') + '</div></div>' +
+              '</div>';
+            }).join('');
+          } catch(e) {
+            body.innerHTML = '<div class="comment-empty">Error al cargar</div>';
+          }
+        }
+
+        async function submitChapterComment() {
+          if (!currentCommentsChapter) return;
+          var token = localStorage.getItem('kami_token');
+          if (!token) { alert('Debes iniciar sesión'); return; }
+          var input = document.getElementById('cc-input');
+          var btn = document.getElementById('cc-submit-btn');
+          if (!input || !input.value.trim()) return;
+          btn.disabled = true; btn.textContent = 'Enviando...';
+          try {
+            var r = await fetch('/api/comments/' + mangaId + '/' + currentCommentsChapter, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ text: input.value.trim() })
+            });
+            if (r.ok) { input.value = ''; loadChapterComments(); }
+            else { var d = await r.json(); alert(d.error || 'Error'); }
+          } catch(e) { alert('Error de conexión'); }
+          btn.disabled = false; btn.textContent = 'Enviar';
+        }
+
+        function toggleSidebar() {
+          document.body.classList.toggle('right-closed');
+        }
+
+        function toggleLeftColumn() {
+          document.body.classList.toggle('left-closed');
+        }
+
+        async function addToLibrary() {
+          var token = localStorage.getItem('kami_token');
+          if (!token) { alert('Debes iniciar sesión'); return; }
+          try {
+            var r = await fetch('/api/library/update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ manga_id: mangaId, status: 'pendientes' })
+            });
+            var d = await r.json();
+            if (r.ok) {
+              var btn = document.getElementById('btn-add-to-library');
+              btn.innerHTML = '<i class="ti ti-check"></i> Añadido';
+              btn.className = 'btn-add-library added';
+              loadLibraryStatus();
+              trackAction('library_pendientes');
+            } else { alert(d.error || 'Error'); }
+          } catch(e) { alert('Error de conexión'); }
+        }
+
+        async function loadUserNotes() {
+          var token = localStorage.getItem('kami_token');
+          if (!token) return;
+          try {
+            var r = await fetch('/api/manga/' + mangaId + '/notes', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (r.ok) {
+              var d = await r.json();
+              var ta = document.getElementById('notes-input');
+              if (ta) { ta.value = d.notes || ''; }
+            }
+          } catch(e) {}
+        }
+
+        async function saveNotes() {
+          var token = localStorage.getItem('kami_token');
+          if (!token) return;
+          var ta = document.getElementById('notes-input');
+          if (!ta) return;
+          try {
+            await fetch('/api/manga/' + mangaId + '/notes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ notes: ta.value })
+            });
+          } catch(e) {}
+        }
+
+        async function loadActivity() {
+          try {
+            var r = await fetch('/api/manga/' + mangaId + '/activity');
+            if (r.ok) {
+              var d = await r.json();
+              document.getElementById('activity-new-today').textContent = '+' + (d.newMembersToday || 0);
+              document.getElementById('activity-reading-week').textContent = '+' + (d.startedReadingWeek || 0);
+            }
+          } catch(e) {}
+        }
+
+        async function loadRecommendations() {
+          var container = document.getElementById('rec-horizontal');
+          if (!container) return;
+          try {
+            var r = await fetch('/api/manga/' + mangaId + '/recommendations?limit=6');
+            if (r.ok) {
+              var d = await r.json();
+              if (d.recommendations && d.recommendations.length > 0) {
+                container.innerHTML = d.recommendations.map(function(m) {
+                  var cover = m.cover || '';
+                  var initial = (m.title || '?').charAt(0).toUpperCase();
+                  var rating = m.rating ? parseFloat(m.rating).toFixed(1) : '';
+                  var coverHtml = cover
+                    ? '<img src="' + cover + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'rec-card-fallback\')">'
+                    : '<span class="rec-card-fallback">' + initial + '</span>';
+                  return '<a href="https://kami-backend-9aal.onrender.com/manga/' + m.id + '" class="rec-card">' +
+                    '<div class="rec-card-cover">' + coverHtml + '</div>' +
+                    '<div class="rec-card-title">' + (m.title || '') + '</div>' +
+                    (rating ? '<div class="rec-card-rating">' + rating + '</div>' : '') +
+                    '</a>';
+                }).join('');
+              } else {
+                container.innerHTML = '<div class="rec-empty">No hay recomendaciones disponibles</div>';
+              }
+            } else {
+              container.innerHTML = '<div class="rec-empty">No hay recomendaciones disponibles</div>';
+            }
+          } catch(e) {
+            container.innerHTML = '<div class="rec-empty">Error al cargar recomendaciones</div>';
+          }
+        }
+
+        function toggleMangaComments() {
+          var token = localStorage.getItem('kami_token');
+          if (!token) { alert('Debes iniciar sesión para ver comentarios'); return; }
+          var popover = document.getElementById('comments-popover');
+          var fab = document.getElementById('comments-fab');
+          var isOpen = popover.classList.contains('open');
+          if (isOpen) {
+            popover.classList.remove('open');
+            fab.classList.remove('active');
+          } else {
+            popover.classList.add('open');
+            fab.classList.add('active');
+            document.getElementById('mcp-input').value = '';
+            loadMangaComments();
+          }
+        }
+
+        function closeMangaComments() {
+          document.getElementById('comments-popover').classList.remove('open');
+          document.getElementById('comments-fab').classList.remove('active');
+        }
+
+        async function loadMangaComments() {
+          var body = document.getElementById('mcp-body');
+          if (!body) return;
+          body.innerHTML = '<div class="comment-empty">Cargando...</div>';
+          try {
+            var r = await fetch('/api/manga/' + mangaId + '/comments?limit=50');
+            if (r.ok) {
+              var d = await r.json();
+              if (d.comments && d.comments.length > 0) {
+                body.innerHTML = d.comments.map(function(c) {
+                  var initial = (c.username || '?').substring(0, 2).toUpperCase();
+                  var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+                  var color = colors[(c.id || 0) % colors.length];
+                  var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+                  return '<div class="comment-item">' +
+                    '<div class="comment-avatar" style="background:' + color + '">' + initial + '</div>' +
+                    '<div class="comment-body"><div class="comment-meta">' +
+                      '<span class="comment-username">' + escHtml(c.username || 'Anónimo') + '</span>' +
+                      '<span class="comment-date">' + time + '</span>' +
+                    '</div>' +
+                    '<div class="comment-text">' + escHtml(c.content || c.text || '') + '</div></div>' +
+                  '</div>';
+                }).join('');
+              } else {
+                body.innerHTML = '<div class="comment-empty">Sin comentarios aún</div>';
+              }
+            }
+          } catch(e) {}
+        }
+
+        async function submitMangaComment() {
+          var token = localStorage.getItem('kami_token');
+          if (!token) { alert('Debes iniciar sesión'); return; }
+          var input = document.getElementById('mcp-input');
+          var btn = document.getElementById('mcp-submit-btn');
+          if (!input || !input.value.trim()) return;
+          btn.disabled = true; btn.textContent = 'Enviando...';
+          try {
+            var r = await fetch('/api/manga/' + mangaId + '/comments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+              body: JSON.stringify({ content: input.value.trim() })
+            });
+            if (r.ok) { input.value = ''; loadMangaComments(); }
+            else { var d = await r.json(); alert(d.error || 'Error'); }
+          } catch(e) { alert('Error de conexión'); }
+          btn.disabled = false; btn.textContent = 'Enviar';
+        }
+
+        function switchFeedTab(tab) {
+          document.querySelectorAll('.feed-tab').forEach(function(t) { t.classList.remove('active'); });
+          document.querySelector('.feed-tab[data-tab="' + tab + '"]').classList.add('active');
+          document.getElementById('feed-panel-post').style.display = tab === 'post' ? 'block' : 'none';
+          document.getElementById('feed-panel-social').style.display = tab === 'social' ? 'block' : 'none';
+        }
+
+        async function loadMangaPosts() {
+          var container = document.getElementById('post-list');
+          if (!container) return;
+          container.innerHTML = '<div class="post-empty">Cargando publicaciones...</div>';
+          try {
+            var token = localStorage.getItem('kami_token');
+            var h = {}; if (token) h['Authorization'] = 'Bearer ' + token;
+            var r = await fetch('/api/manga/' + mangaId + '/posts', { headers: h });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            var data = await r.json();
+            var posts = data.posts || [];
+            if (posts.length === 0) {
+              container.innerHTML = '<div class="post-empty">No hay publicaciones aún. ¡Sé el primero!</div>';
+              return;
+            }
+            container.innerHTML = posts.map(function(p) {
+              var initial = (p.username || '?').substring(0, 2).toUpperCase();
+              var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+              var color = colors[(p.user_id || '').length % colors.length];
+              var time = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' }) : '';
+              return '<div class="post-item">' +
+                '<div class="post-item-header">' +
+                  '<div class="post-avatar" style="background:' + color + '">' + initial + '</div>' +
+                  '<span class="post-username">' + escHtml(p.username || 'Anónimo') + '</span>' +
+                  '<span class="post-time">' + time + '</span>' +
+                '</div>' +
+                (p.title ? '<div class="post-body" style="font-weight:600;color:#e0e0e0;margin-bottom:4px;">' + escHtml(p.title) + '</div>' : '') +
+                '<div class="post-body">' + escHtml(p.content) + '</div>' +
+              '</div>';
+            }).join('');
+          } catch(e) {
+            container.innerHTML = '<div class="post-empty">Error al cargar publicaciones</div>';
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+          var notesInput = document.getElementById('notes-input');
+          if (notesInput) {
+            var saveTimer;
+            notesInput.addEventListener('input', function() {
+              clearTimeout(saveTimer);
+              saveTimer = setTimeout(saveNotes, 800);
+            });
+          }
+        });
+
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            if (!document.body.classList.contains('right-closed')) toggleSidebar();
+            var cm = document.getElementById('chapter-comments-panel');
+            if (cm && cm.classList.contains('open')) closeChapterComments();
+          }
+        });
+
+        // Al volver del reader (pageshow), re-fetch progreso para atenuar capítulos
+        window.addEventListener('pageshow', function() {
+          var t = localStorage.getItem('kami_token');
+          if (t) {
+            fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + t } })
+              .then(function(r){ return r.json(); })
+              .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
+              .catch(function(){});
+          }
+        });
+        loadManga();
+        document.title = 'ScriptOK-' + mangaId;
+    </script>
+
+  <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(6px);" onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:18px;padding:32px;width:min(380px,90vw);box-shadow:0 24px 80px rgba(0,0,0,0.6);text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-bottom:4px;">CONFIRMAR</div>
+      <div class="confirm-msg" style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.5;"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
+        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var selectedRating = 0;
+
+    async function toggleRatingVote(event) {
+      event.stopPropagation();
+      var token = localStorage.getItem('kami_token');
+      if (!token) { alert('Debes iniciar sesión para votar'); return; }
+      var popup = document.getElementById('rating-vote-popup');
+      if (popup.style.display === 'block') { popup.style.display = 'none'; return; }
+
+      try {
+        var r = await fetch('/api/manga/' + mangaId + '/stats', {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        });
+        if (r.ok) {
+          var data = await r.json();
+          currentUserRating = data.userRating ? data.userRating * 2 : null;
+        }
+      } catch (e) {}
+
+      selectedRating = 0;
+      document.getElementById('rating-label').textContent = '';
+      document.getElementById('rating-status').style.display = 'none';
+      var btn = document.getElementById('btn-rate-submit');
+      btn.textContent = 'Enviar';
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      document.getElementById('btn-rate-remove').style.display = currentUserRating ? 'inline-flex' : 'none';
+      resetStars();
+
+      if (currentUserRating) {
+        var stars = Math.round(currentUserRating / 2);
+        selectedRating = stars;
+        document.getElementById('rating-label').textContent = '★'.repeat(stars) + '☆'.repeat(5-stars) + '  (' + currentUserRating.toFixed(1) + '/10)';
+        document.getElementById('btn-rate-submit').disabled = false;
+        document.getElementById('btn-rate-submit').style.opacity = '1';
+        resetStars();
+      }
+
+      popup.style.display = 'block';
+    }
+
+    document.addEventListener('click', function(e) {
+      var popup = document.getElementById('rating-vote-popup');
+      var coverRating = document.getElementById('cover-rating');
+      if (popup && popup.style.display === 'block' && !popup.contains(e.target) && (!coverRating || !coverRating.contains(e.target))) {
+        popup.style.display = 'none';
+      }
+    });
+
+    function hoverStar(val) {
+      document.querySelectorAll('.rating-star').forEach(function(s) {
+        s.style.color = parseInt(s.dataset.val) <= val ? '#f5c842' : 'var(--text-muted)';
+      });
+    }
+
+    function resetStars() {
+      document.querySelectorAll('.rating-star').forEach(function(s) {
+        s.style.color = parseInt(s.dataset.val) <= selectedRating ? '#f5c842' : 'var(--text-muted)';
+      });
+    }
+
+    function selectStar(val) {
+      selectedRating = val;
+      var labels = ['', '1 - Pésimo', '2 - Malo', '3 - Normal', '4 - Bueno', '5 - Excelente'];
+      document.getElementById('rating-label').textContent = '★'.repeat(val) + '☆'.repeat(5-val) + '  ' + labels[val];
+      document.getElementById('btn-rate-submit').disabled = false;
+      document.getElementById('btn-rate-submit').style.opacity = '1';
+      resetStars();
+    }
+
+    async function submitRating() {
+      if (!selectedRating) return;
+      var token = localStorage.getItem('kami_token');
+      if (!token) { alert('Debes iniciar sesión'); return; }
+      var btn = document.getElementById('btn-rate-submit');
+      btn.textContent = 'Enviando...';
+      btn.disabled = true;
+      try {
+        var userData = null;
+        try { userData = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+        var bodyData = { rating: selectedRating };
+        if (userData && userData.id) bodyData.userId = userData.id;
+        var r = await fetch('/api/manga/' + mangaId + '/rate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(bodyData)
+        });
+        var data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Error');
+        currentUserRating = selectedRating * 2;
+
+        // Update cover rating display
+        var coverRatingEl = document.getElementById('cover-rating');
+        var coverRatingStars = document.getElementById('cover-rating-stars');
+        var coverRatingText = document.getElementById('cover-rating-text');
+        var coverRatingVotes = document.getElementById('cover-rating-votes');
+        if (coverRatingEl && data.rating != null) {
+          var full = Math.round(data.rating / 2);
+          coverRatingStars.innerHTML = Array.from({length:5}, (_,i) =>
+            '<span class="' + (i < full ? 'star-filled' : 'star-empty') + '">★</span>'
+          ).join('');
+          coverRatingText.textContent = data.rating.toFixed(1) + ' / 10';
+          if (coverRatingVotes && data.totalRatings) coverRatingVotes.textContent = ' · ' + data.totalRatings.toLocaleString() + ' votos';
+          coverRatingEl.style.display = 'flex';
+        }
+
+        trackAction('manga_rated', null, { rating: selectedRating });
+        document.getElementById('rating-status').textContent = '✓ Votado';
+        document.getElementById('rating-status').style.color = '#2dca7a';
+        document.getElementById('rating-status').style.display = 'block';
+        btn.textContent = 'Votado';
+        btn.disabled = true;
+        btn.style.opacity = '0.4';
+        document.getElementById('btn-rate-remove').style.display = 'inline-flex';
+        document.getElementById('rating-label').textContent = '';
+        setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 2000);
+      } catch (err) {
+        document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
+        document.getElementById('rating-status').style.color = '#e8344a';
+        document.getElementById('rating-status').style.display = 'block';
+        btn.textContent = 'Enviar';
+        btn.disabled = false;
+      }
+    }
+
+    async function removeRating() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) return;
+      try {
+        var userData = null;
+        try { userData = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+        var bodyData = {};
+        if (userData && userData.id) bodyData.userId = userData.id;
+        var r = await fetch('/api/manga/' + mangaId + '/rate', {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData)
+        });
+        var data = await r.json();
+        if (!r.ok) throw new Error(data.error || 'Error');
+        currentUserRating = null;
+
+        // Update cover rating display
+        var coverRatingEl = document.getElementById('cover-rating');
+        var coverRatingStars = document.getElementById('cover-rating-stars');
+        var coverRatingText = document.getElementById('cover-rating-text');
+        var coverRatingVotes = document.getElementById('cover-rating-votes');
+        if (coverRatingEl && data.rating != null) {
+          var full = Math.round(data.rating / 2);
+          coverRatingStars.innerHTML = Array.from({length:5}, (_,i) =>
+            '<span class="' + (i < full ? 'star-filled' : 'star-empty') + '">★</span>'
+          ).join('');
+          coverRatingText.textContent = data.rating.toFixed(1) + ' / 10';
+          if (coverRatingVotes && data.totalRatings) coverRatingVotes.textContent = ' · ' + data.totalRatings.toLocaleString() + ' votos';
+          coverRatingEl.style.display = 'flex';
+        } else if (data.rating === 0 || data.rating == null) {
+          coverRatingEl.style.display = 'none';
+        }
+
+        document.getElementById('rating-status').textContent = '✓ Voto eliminado';
+        document.getElementById('rating-status').style.color = '#8888a0';
+        document.getElementById('rating-status').style.display = 'block';
+        document.getElementById('btn-rate-remove').style.display = 'none';
+        var btn = document.getElementById('btn-rate-submit');
+        btn.textContent = 'Enviar';
+        btn.disabled = true;
+        btn.style.opacity = '0.4';
+        selectedRating = 0;
+        resetStars();
+        document.getElementById('rating-label').textContent = '';
+        setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 1000);
+      } catch (err) {
+        document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
+        document.getElementById('rating-status').style.color = '#e8344a';
+        document.getElementById('rating-status').style.display = 'block';
+      }
+    }
+  </script>
+
+</body>
+</html>

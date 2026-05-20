@@ -625,12 +625,12 @@ body::before {
 
 /* ── Modo Mensajes: sidebar se contrae, DM layout centrado con max-width ── */
 body.mensajes-page-active .dm-layout {
-  max-width: 990px; width: 100% !important; margin: 0;
+  max-width: unset; width: 100% !important; margin: 0;
   border-left: 1px solid rgba(255,255,255,0.08);
   border-right: 1px solid rgba(255,255,255,0.08);
 }
 @media(max-width:900px) {
-  body.mensajes-page-active .dm-layout { max-width: 100%; border: none; }
+  body.mensajes-page-active .dm-layout { max-width: unset; border: none; }
 }
 @media(max-width:680px) {
   body.mensajes-page-active .dm-layout { grid-template-columns: 1fr; }

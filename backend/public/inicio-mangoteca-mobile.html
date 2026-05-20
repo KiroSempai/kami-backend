@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAMI — Mangoteca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/css/common.css?v=9">
+<style>
+:root {
+  --bg-base: #07070e;
+  --bg-surface: #0f0f1a;
+  --bg-card: #14141f;
+  --bg-card-hover: #1c1c2e;
+  --accent: #e8334a;
+  --accent-dim: rgba(232,51,74,0.18);
+  --gold: #f5c842;
+  --green: #2dca7a;
+  --blue: #4c9df5;
+  --text-primary: #f2f2fa;
+  --text-secondary: #8888a0;
+  --text-muted: #4a4a62;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --nav-top-h: 60px;
+  --nav-bot-h: 72px;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+body { background:var(--bg-base); color:var(--text-primary); font-family:var(--font-body); font-size:14px; line-height:1.6; overflow-x:hidden; min-height:100vh; padding-top:var(--nav-top-h); padding-bottom:var(--nav-bot-h); }
+a { color:inherit; text-decoration:none; }
+img { display:block; }
+::-webkit-scrollbar { display:none; }
+
+/* ── TOP NAV ── */
+.top-nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  height:var(--nav-top-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+  background:rgba(7,7,14,0.88);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.top-nav-left { display:flex; align-items:center; gap:10px; }
+.top-avatar {
+  width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg,#e8334a,#ff7c6e);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; font-weight:700; color:#fff; cursor:pointer;
+}
+.top-nav-logo { font-family:var(--font-display); font-size:22px; letter-spacing:3px; color:var(--text-primary); }
+.top-nav-logo span { color:var(--accent); }
+.top-nav-right { display:flex; align-items:center; gap:6px; }
+.top-icon-btn {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border);
+  color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:18px;
+}
+
+/* ── PAGES ── */
+.page { display:none; }
+.page.active { display:block; }
+
+/* ── HERO SLIDER ── */
+.hero {
+  position:relative; height:260px; overflow:hidden;
+  background:var(--bg-surface); margin-bottom:2px;
+}
+.hero-slide { position:absolute; inset:0; opacity:0; transition:opacity .6s ease; pointer-events:none; }
+.hero-slide.active { opacity:1; pointer-events:auto; }
+.hero-bg { position:absolute; inset:0; }
+.hero-gradient { position:absolute; inset:0; background:linear-gradient(to right,rgba(7,7,14,0.92) 0%,rgba(7,7,14,0.5) 55%,rgba(7,7,14,0.1) 100%); }
+.hero-grad-bottom { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to top,#07070e,transparent); }
+.hero-content { position:absolute; bottom:16px; left:16px; right:40%; z-index:10; }
+.hero-badge { display:inline-flex; align-items:center; gap:3px; background:var(--accent); color:#fff; font-size:8px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+.hero-title { font-family:var(--font-display); font-size:28px; letter-spacing:1px; line-height:.95; margin-bottom:4px; text-shadow:0 3px 12px rgba(0,0,0,0.6); }
+.hero-sub { font-size:9px; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.btn-hero-primary { display:inline-flex; align-items:center; gap:5px; background:var(--accent); color:#fff; padding:7px 12px; border-radius:999px; font-size:10px; font-weight:700; border:none; cursor:pointer; white-space:nowrap; }
+.hero-dots { position:absolute; bottom:12px; right:14px; display:flex; gap:4px; z-index:10; }
+.hero-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all .2s; }
+.hero-dot.active { background:var(--accent); width:16px; border-radius:3px; }
+
+/* ── SECTIONS ── */
+.section { padding:14px 0 0; }
+.sec-head { display:flex; align-items:center; justify-content:space-between; padding:0 14px; margin-bottom:10px; }
+.sec-title { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; }
+.sec-title i { font-size:15px; color:var(--accent); }
+.see-all { font-size:10px; font-weight:600; color:var(--accent); padding:3px 8px; border-radius:999px; background:var(--accent-dim); border:none; cursor:pointer; }
+
+/* ── HORIZONTAL SCROLL ── */
+.h-scroll { display:flex; gap:8px; overflow-x:auto; padding:0 14px 12px; scrollbar-width:none; }
+.h-scroll::-webkit-scrollbar { display:none; }
+
+/* ── MANGA CARD ── */
+.manga-card {
+  flex:0 0 100px; background:var(--bg-card); border-radius:14px; overflow:hidden;
+  border:1px solid var(--border); cursor:pointer; position:relative;
+}
+.manga-card:active { transform:scale(.96); }
+.manga-thumb { aspect-ratio:2/3; position:relative; overflow:hidden; background:var(--bg-surface); border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:center; }
+.manga-thumb i { font-size:28px; color:rgba(255,255,255,0.06); }
+.thumb-gradient { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.85) 100%); }
+.thumb-score { position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.7); border:1px solid rgba(245,200,66,0.3); color:var(--gold); font-size:8px; font-weight:700; padding:1px 4px; border-radius:6px; display:flex; align-items:center; gap:2px; }
+.manga-title { font-size:10px; font-weight:700; line-height:1.3; padding:6px 7px 5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* ── CATALOG GRID ── */
+.catalog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:0 14px 20px; }
+.catalog-grid .manga-card { flex:unset; }
+
+/* ── FILTER PILLS ── */
+.filter-pills { display:flex; gap:6px; overflow-x:auto; padding:0 14px 8px; scrollbar-width:none; }
+.filter-pill {
+  flex-shrink:0; padding:5px 12px; border-radius:999px; font-size:10px; font-weight:600;
+  border:1px solid var(--border); color:var(--text-secondary); background:var(--bg-card);
+  cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;
+}
+.filter-pill.active { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.filter-pill i { font-size:12px; }
+
+/* ── GENRE PILLS ── */
+.genre-pills { display:flex; gap:6px; overflow-x:auto; padding:0 14px 10px; scrollbar-width:none; }
+.genre-pill {
+  flex-shrink:0; padding:5px 14px; border-radius:999px; font-size:11px; font-weight:600;
+  color:var(--text-secondary); background:var(--bg-card); border:1px solid var(--border);
+  cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;
+}
+.genre-pill.active { background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+
+/* ── SEARCH ── */
+.search-page { padding:14px; }
+.search-bar-wrap { position:relative; margin-bottom:12px; }
+.search-bar {
+  width:100%; padding:11px 14px 11px 38px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:999px;
+  color:var(--text-primary); font-family:inherit; font-size:13px; outline:none;
+}
+.search-bar:focus { border-color:var(--accent); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:16px; }
+
+/* ── GENRE GRID ── */
+.genre-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.genre-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:14px;
+  padding:14px 12px; cursor:pointer; display:flex; align-items:center; gap:10px; position:relative; overflow:hidden;
+}
+.genre-card:active { transform:scale(.97); }
+.genre-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.genre-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+.genre-name { font-size:12px; font-weight:700; }
+.genre-count { font-size:9px; color:var(--text-muted); }
+
+/* ── TOP RANKINGS ── */
+.top-page { padding:0 14px 20px; }
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
+.chart-head { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; }
+.chart-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.03); cursor:pointer; }
+.chart-row:last-child { border-bottom:none; }
+.chart-num { width:20px; text-align:center; font-family:var(--font-display); font-size:17px; color:var(--text-muted); flex-shrink:0; }
+.chart-num.t1 { color:var(--gold); }
+.chart-num.t2 { color:#c0c0c0; }
+.chart-num.t3 { color:#cd7f32; }
+.chart-cover { width:32px; height:44px; border-radius:10px; background:var(--bg-surface); flex-shrink:0; overflow:hidden; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; position:relative; }
+.chart-body { flex:1; min-width:0; }
+.chart-body .t { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chart-body .s { font-size:10px; color:var(--text-muted); }
+.chart-score { font-size:12px; font-weight:700; color:var(--gold); display:flex; align-items:center; gap:2px; }
+.chart-avail { font-size:8px; font-weight:700; padding:1px 6px; border-radius:999px; margin-top:2px; display:inline-block; }
+.ca-readable { background:rgba(45,202,122,0.12); color:var(--green); }
+.ca-tracking { background:rgba(76,157,245,0.12); color:var(--blue); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:200;
+  height:var(--nav-bot-h);
+  background:rgba(7,7,14,0.95); backdrop-filter:blur(28px);
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 4px; padding-bottom:env(safe-area-inset-bottom,0);
+}
+.bnav-item {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; flex:1; height:100%; color:var(--text-muted); cursor:pointer;
+  font-size:20px; padding-top:4px;
+}
+.bnav-item.active { color:var(--accent); }
+.bnav-label { font-size:9px; font-weight:500; letter-spacing:0.3px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position:fixed; inset:0; z-index:400;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(8px);
+  display:flex; align-items:flex-end; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .25s ease;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--bg-surface); border:1px solid var(--border-hover);
+  border-radius:20px 20px 0 0; width:100%; max-width:480px;
+  transform:translateY(50px); transition:transform .3s ease;
+  overflow:hidden; padding-bottom:env(safe-area-inset-bottom,0);
+}
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-handle { width:36px; height:4px; border-radius:999px; background:var(--border-hover); margin:10px auto 4px; }
+.modal-head { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); }
+.modal-cover { width:40px; height:54px; border-radius:10px; background:var(--bg-card); flex-shrink:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); }
+.modal-title { font-size:14px; font-weight:700; }
+.modal-author { font-size:11px; color:var(--text-secondary); margin-top:1px; }
+.modal-close { margin-left:auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:var(--text-secondary); cursor:pointer; font-size:16px; }
+.modal-body { padding:14px 16px; }
+.modal-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.modal-states { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:14px; }
+.state-btn {
+  display:flex; align-items:center; gap:6px; padding:9px 12px; border-radius:12px;
+  border:1px solid var(--border); background:var(--bg-card); cursor:pointer;
+  font-size:11px; font-weight:600; color:var(--text-secondary);
+}
+.state-btn i { font-size:14px; }
+.state-btn.selected { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.score-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.stars { display:flex; gap:4px; }
+.star { font-size:20px; color:var(--text-muted); cursor:pointer; }
+.star.lit { color:var(--gold); }
+.modal-foot { display:flex; gap:8px; padding:12px 16px 16px; border-top:1px solid var(--border); }
+.btn-primary {
+  display:inline-flex; align-items:center; gap:6px; flex:1; justify-content:center;
+  background:var(--accent); color:#fff; padding:11px 18px; border-radius:999px;
+  font-size:12px; font-weight:700; border:none; cursor:pointer;
+}
+.btn-ghost {
+  display:inline-flex; align-items:center; gap:5px;
+  background:none; color:var(--text-secondary); padding:11px 14px; border-radius:999px;
+  font-size:12px; font-weight:600; border:1px solid var(--border); cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<script src="/js/menu-global.js"></script>
+<script src="/js/offline.js?v=2"></script>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="top-nav-left">
+    <div class="top-avatar" onclick="window.location.href='/'">K</div>
+  </div>
+  <div class="top-nav-logo">K<span>A</span>MI</div>
+  <div class="top-nav-right">
+    <button class="top-icon-btn" onclick="window.location.href='/'"><i class="ti ti-bell"></i></button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+
+  <!-- Hero Slider -->
+  <div class="hero" id="hero">
+    <div class="hero-slide active" id="slide-0">
+      <div class="hero-bg" style="background:linear-gradient(135deg,#0a0005,#2d0a0a)"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-grad-bottom"></div>
+      <div class="hero-content">
+        <div class="hero-badge"><i class="ti ti-flame" style="font-size:8px"></i>DESTACADO</div>
+        <div class="hero-title" id="htitle-0">BERSERK</div>
+        <div class="hero-sub" id="hsub-0"><span>Kentaro Miura</span></div>
+        <button class="btn-hero-primary" id="hbtn-0"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+      </div>
+    </div>
+    <div class="hero-slide" id="slide-1">
+      <div class="hero-bg" style="background:linear-gradient(135deg,#001020,#002a40)"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-grad-bottom"></div>
+      <div class="hero-content">
+        <div class="hero-badge" style="background:#4c9df5">TENDENCIA</div>
+        <div class="hero-title" id="htitle-1">VINLAND SAGA</div>
+        <div class="hero-sub" id="hsub-1"><span>Makoto Yukimura</span></div>
+        <button class="btn-hero-primary" id="hbtn-1"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+      </div>
+    </div>
+    <div class="hero-slide" id="slide-2">
+      <div class="hero-bg" style="background:linear-gradient(135deg,#0d0020,#1a0040)"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-grad-bottom"></div>
+      <div class="hero-content">
+        <div class="hero-badge" style="background:#a855f7">COMPLETADO</div>
+        <div class="hero-title" id="htitle-2">KIMETSU NO YAIBA</div>
+        <div class="hero-sub" id="hsub-2"><span>Koyoharu Gotouge</span></div>
+        <button class="btn-hero-primary" id="hbtn-2" style="background:#a855f7"><i class="ti ti-bookmark-plus"></i> Mi Lista</button>
+      </div>
+    </div>
+    <div class="hero-slide" id="slide-3">
+      <div class="hero-bg" style="background:linear-gradient(135deg,#100800,#2a1200)"></div>
+      <div class="hero-gradient"></div>
+      <div class="hero-grad-bottom"></div>
+      <div class="hero-content">
+        <div class="hero-badge" style="background:#f59e0b">CLÁSICO</div>
+        <div class="hero-title" id="htitle-3">ATTACK ON TITAN</div>
+        <div class="hero-sub" id="hsub-3"><span>Hajime Isayama</span></div>
+        <button class="btn-hero-primary" id="hbtn-3"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
+      </div>
+    </div>
+    <div class="hero-dots" id="hero-dots"></div>
+  </div>
+
+  <!-- Trending -->
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title"><i class="ti ti-flame"></i>Tendencia</div>
+      <button class="see-all">Ver todo</button>
+    </div>
+    <div class="h-scroll" id="trending-scroll"></div>
+  </div>
+
+  <!-- Novedades -->
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title"><i class="ti ti-sparkles"></i>Novedades</div>
+      <button class="see-all">Ver todo</button>
+    </div>
+    <div class="h-scroll" id="new-scroll"></div>
+  </div>
+
+  <!-- Generos -->
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title"><i class="ti ti-category"></i>Géneros</div>
+    </div>
+    <div class="genre-pills" id="genre-pills"></div>
+  </div>
+</div>
+
+<!-- SEARCH PAGE -->
+<div class="page" id="page-search">
+  <div class="search-page">
+    <p style="font-size:18px;font-weight:800;margin-bottom:12px;font-family:var(--font-display);letter-spacing:1px;">Bus<span style="color:var(--accent)">car</span></p>
+    <div class="search-bar-wrap">
+      <i class="ti ti-search search-icon"></i>
+      <input type="text" class="search-bar" id="search-input" placeholder="Título, autor, género...">
+    </div>
+    <div id="search-results"></div>
+    <p style="font-size:10px;color:var(--text-muted);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:16px;">Explorar por género</p>
+    <div class="genre-grid" id="genre-grid"></div>
+  </div>
+</div>
+
+<!-- CATALOG PAGE -->
+<div class="page" id="page-catalog">
+  <div class="section" style="padding-top:4px;">
+    <div class="sec-head" style="padding:0 14px;">
+      <div class="sec-title" style="font-size:16px;font-family:var(--font-display);letter-spacing:1px;">Cat<span style="color:var(--accent)">álogo</span></div>
+    </div>
+    <div class="filter-pills" id="cat-pills">
+      <div class="filter-pill active" data-filter="">Todo</div>
+      <div class="filter-pill" data-filter="manga">Manga</div>
+      <div class="filter-pill" data-filter="manhwa">Manhwa</div>
+      <div class="filter-pill" data-filter="manhua">Manhua</div>
+      <div class="filter-pill" data-filter="oneshot">One-shot</div>
+    </div>
+    <div class="catalog-grid" id="catalog-grid"></div>
+  </div>
+</div>
+
+<!-- TOP PAGE -->
+<div class="page" id="page-top">
+  <div class="section" style="padding-top:4px;">
+    <div class="sec-head" style="padding:0 14px 4px;">
+      <div class="sec-title" style="font-size:16px;font-family:var(--font-display);letter-spacing:1px;">Top <span style="color:var(--accent)">Rankings</span></div>
+    </div>
+    <div class="top-page">
+      <div class="chart-panel">
+        <div class="chart-head"><span><i class="ti ti-trophy" style="color:var(--gold);margin-right:5px"></i>Top Legibles</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="top-readable"></div>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-head"><span><i class="ti ti-chart-bar" style="color:var(--blue);margin-right:5px"></i>Top Seguimiento</span><span style="font-size:10px;color:var(--text-muted)">Mayo 2026</span></div>
+        <div id="top-tracking"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bnav-item active" onclick="switchPage('home',this)"><i class="ti ti-home-2"></i><span class="bnav-label">Inicio</span></div>
+  <div class="bnav-item" onclick="switchPage('search',this)"><i class="ti ti-search"></i><span class="bnav-label">Buscar</span></div>
+  <div class="bnav-item" onclick="switchPage('catalog',this)"><i class="ti ti-books"></i><span class="bnav-label">Catálogo</span></div>
+  <div class="bnav-item" onclick="switchPage('top',this)"><i class="ti ti-trophy"></i><span class="bnav-label">Top</span></div>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-cover"><i class="ti ti-book-2"></i></div>
+      <div>
+        <div class="modal-title" id="modal-title">Título</div>
+        <div class="modal-author" id="modal-author">Autor</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">Estado de lectura</div>
+      <div class="modal-states" id="modal-states"></div>
+      <div class="modal-label">Puntuación</div>
+      <div class="score-row">
+        <div class="stars" id="stars"></div>
+        <span id="score-display" style="font-size:11px;color:var(--text-muted)">0/5</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-primary" onclick="saveList()"><i class="ti ti-check"></i>Guardar</button>
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Helpers ──
+function cardHtml(m) {
+  var c = m.color || '#14141f';
+  return '<div class="manga-card" onclick="location.href=\'/manga/' + m.id + '\'">' +
+    '<div class="manga-thumb" style="background:' + c + '"><i class="ti ti-book-2"></i><div class="thumb-gradient"></div>' +
+    (m.rating ? '<div class="thumb-score"><i class="ti ti-star-filled" style="font-size:7px"></i>' + m.rating + '</div>' : '') +
+    '</div><div class="manga-title">' + (m.title || '') + '</div></div>';
+}
+
+function chartRow(m, i, type) {
+  var nc = i===0?'t1':i===1?'t2':i===2?'t3':'';
+  var ac = type==='r'?'ca-readable':'ca-tracking';
+  var at = type==='r'?'Legible':'Seguimiento';
+  return '<div class="chart-row" onclick="location.href=\'/manga/'+m.id+'\'">' +
+    '<div class="chart-num '+nc+'">'+(i+1)+'</div>' +
+    '<div class="chart-cover" style="background:'+(m.color||'var(--bg-surface)')+'"><i class="ti ti-book-2" style="font-size:10px;color:rgba(255,255,255,0.1)"></i></div>' +
+    '<div class="chart-body"><div class="t">'+(m.title||'')+'</div><div class="s">'+(m.author||'')+'</div></div>' +
+    '<div style="text-align:right"><div class="chart-score"><i class="ti ti-star-filled" style="font-size:9px"></i>'+(m.rating||'?')+'</div>' +
+    '<div class="chart-avail '+ac+'">'+at+'</div></div></div>';
+}
+
+// ── Hero slider ──
+var heroData = [];
+var heroIdx = 0;
+var heroTimer;
+
+function initHero(data) {
+  heroData = (data && data.trending) ? data.trending.slice(0,4) : [];
+  var dotsEl = document.getElementById('hero-dots');
+  dotsEl.innerHTML = '';
+  heroData.forEach(function(m,i){
+    var t = document.getElementById('htitle-'+i);
+    var s = document.getElementById('hsub-'+i);
+    var b = document.getElementById('hbtn-'+i);
+    if (t) t.textContent = m.title || '';
+    if (s) s.innerHTML = '<span>' + (m.author || '') + '</span>';
+    if (b) b.onclick = function(){ window.location.href='/manga/'+m.id; };
+    var d = document.createElement('div');
+    d.className = 'hero-dot' + (i===0?' active':'');
+    d.onclick = function(){ goSlide(i); };
+    dotsEl.appendChild(d);
+  });
+  if (heroData.length > 1) { clearInterval(heroTimer); heroTimer = setInterval(function(){ goSlide((heroIdx+1)%heroData.length); }, 5000); }
+}
+function goSlide(n) {
+  document.querySelectorAll('.hero-slide').forEach(function(s){ s.classList.remove('active'); });
+  var sl = document.getElementById('slide-'+n); if (sl) sl.classList.add('active');
+  document.querySelectorAll('.hero-dot').forEach(function(d,i){ d.classList.toggle('active',i===n); });
+  heroIdx = n;
+  clearInterval(heroTimer);
+  var total = document.querySelectorAll('.hero-slide').length;
+  if (total > 1) heroTimer = setInterval(function(){ goSlide((heroIdx+1)%total); }, 5000);
+}
+
+// ── Load data ──
+kamiOffline.safeFetch('/api/manga/trending?limit=4', {}, { cacheKey: 'm_hero', maxAge: 3600000 }).then(function(r){ if (r.ok) initHero(r.data); });
+kamiOffline.safeFetch('/api/manga/trending?limit=12', {}, { cacheKey: 'm_trend', maxAge: 3600000 }).then(function(r){
+  var d = r.ok ? (r.data.trending||[]) : [];
+  document.getElementById('trending-scroll').innerHTML = d.map(function(m){ return cardHtml(m); }).join('');
+});
+kamiOffline.safeFetch('/api/manga/latest?limit=12', {}, { cacheKey: 'm_new', maxAge: 3600000 }).then(function(r){
+  var d = r.ok ? (r.data.latest||[]) : [];
+  document.getElementById('new-scroll').innerHTML = d.map(function(m){ return cardHtml(m); }).join('');
+});
+kamiOffline.safeFetch('/api/manga?limit=30&sort=popular', {}, { cacheKey: 'm_cat', maxAge: 3600000 }).then(function(r){
+  var d = r.ok ? (r.data.mangas||[]) : [];
+  document.getElementById('catalog-grid').innerHTML = d.map(function(m){ return cardHtml(m); }).join('');
+});
+kamiOffline.safeFetch('/api/manga?sort=rating&limit=5&status=completed', {}, { cacheKey: 'm_topr', maxAge: 3600000 }).then(function(r){
+  var d = r.ok ? (r.data.mangas||[]) : [];
+  document.getElementById('top-readable').innerHTML = d.map(function(m,i){ return chartRow(m,i,'r'); }).join('');
+});
+kamiOffline.safeFetch('/api/manga?sort=popular&limit=5&status=ongoing', {}, { cacheKey: 'm_topt', maxAge: 3600000 }).then(function(r){
+  var d = r.ok ? (r.data.mangas||[]) : [];
+  document.getElementById('top-tracking').innerHTML = d.map(function(m,i){ return chartRow(m,i,'t'); }).join('');
+});
+
+// ── Genres ──
+var GENRES = [
+  { name:'Acción', icon:'ti ti-sword', color:'#e8334a' },
+  { name:'Romance', icon:'ti ti-heart', color:'#f472b6' },
+  { name:'Fantasía', icon:'ti ti-wand', color:'#a855f7' },
+  { name:'Drama', icon:'ti ti-masks-theater', color:'#f59e0b' },
+  { name:'Horror', icon:'ti ti-ghost', color:'#c084fc' },
+  { name:'Sci-Fi', icon:'ti ti-rocket', color:'#06b6d4' },
+  { name:'Slice of Life', icon:'ti ti-coffee', color:'#34d399' },
+  { name:'Deportes', icon:'ti ti-ball-football', color:'#f97316' },
+];
+document.getElementById('genre-pills').innerHTML = GENRES.map(function(g){
+  return '<div class="genre-pill" style="color:'+g.color+'"><i class="'+g.icon+'"></i>'+g.name+'</div>';
+}).join('');
+document.getElementById('genre-grid').innerHTML = GENRES.map(function(g){
+  return '<div class="genre-card" style="--g:'+g.color+'"><div class="genre-icon" style="background:'+g.color+'22;color:'+g.color+'"><i class="'+g.icon+'"></i></div><div><div class="genre-name">'+g.name+'</div><div class="genre-count">Explorar</div></div></div>';
+}).join('');
+
+// ── Page switching ──
+function switchPage(id, el) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.bnav-item').forEach(function(b){ b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── Catalog filter pills ──
+document.querySelectorAll('#cat-pills .filter-pill').forEach(function(p){
+  p.addEventListener('click', function(){
+    document.querySelectorAll('#cat-pills .filter-pill').forEach(function(x){ x.classList.remove('active'); });
+    p.classList.add('active');
+  });
+});
+
+// ── Search ──
+document.getElementById('search-input').addEventListener('input', function(){
+  var q = this.value.trim();
+  if (q.length < 2) { document.getElementById('search-results').innerHTML = ''; return; }
+  kamiOffline.safeFetch('/api/manga/search?q='+encodeURIComponent(q)+'&limit=10', {}, { cacheKey: 'ms_'+q, maxAge: 300000 }).then(function(r){
+    var d = r.ok ? (r.data.results||[]) : [];
+    document.getElementById('search-results').innerHTML = d.length
+      ? d.map(function(m){ return cardHtml(m); }).join('')
+      : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Sin resultados</div>';
+  });
+});
+
+// ── Modal ──
+var STATES = [
+  { icon:'ti ti-book-open', label:'Leyendo', color:'var(--green)' },
+  { icon:'ti ti-bookmark', label:'Planeo leer', color:'var(--blue)' },
+  { icon:'ti ti-circle-check', label:'Completado', color:'var(--gold)' },
+  { icon:'ti ti-player-pause', label:'En pausa', color:'#ff9d4a' },
+  { icon:'ti ti-trash', label:'Abandonado', color:'#f76565' },
+];
+var _modalId = null, _modalScore = 0;
+
+function openModal(title, author, id) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-author').textContent = author;
+  _modalId = id; _modalScore = 0;
+  document.getElementById('modal-states').innerHTML = STATES.map(function(s){
+    return '<div class="state-btn" onclick="selectState(this)"><i class="'+s.icon+'" style="color:'+s.color+'"></i>'+s.label+'</div>';
+  }).join('');
+  var starsEl = document.getElementById('stars');
+  starsEl.innerHTML = '';
+  for (var i=1;i<=5;i++) {
+    var st = document.createElement('i');
+    st.className = 'ti ti-star star';
+    st.onclick = function(n){ return function(){ setScore(n); }; }(i);
+    starsEl.appendChild(st);
+  }
+  document.getElementById('score-display').textContent = '0/5';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function selectState(el) {
+  document.querySelectorAll('.state-btn').forEach(function(b){ b.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+function setScore(n) {
+  _modalScore = n;
+  document.querySelectorAll('.star').forEach(function(s,i){
+    s.className = i < n ? 'ti ti-star-filled star lit' : 'ti ti-star star';
+  });
+  document.getElementById('score-display').textContent = n + '/5';
+}
+function saveList() {
+  var sel = document.querySelector('.state-btn.selected');
+  if (!sel) { closeModal(); return; }
+  var state = sel.textContent.trim().toLowerCase().replace(/\s+/g,'_');
+  var token = localStorage.getItem('kami_token');
+  if (!token || !_modalId) { closeModal(); return; }
+  fetch('/api/library/' + _modalId, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+    body: JSON.stringify({ status: state, score: _modalScore || 0 })
+  }).catch(function(){});
+  closeModal();
+}
+</script>
+<script src="/js/notifications.js"></script>
+</body>
+</html>

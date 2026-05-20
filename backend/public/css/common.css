@@ -636,8 +636,6 @@ body.mensajes-page-active .dm-layout {
   body.mensajes-page-active .dm-layout { grid-template-columns: 1fr; }
 }
 body.mensajes-page-active .com-main {
-  width: 100% !important;
-  max-width: 100% !important;
   border-left: none !important;
   border-right: none !important;
 }

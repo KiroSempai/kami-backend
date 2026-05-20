@@ -623,9 +623,9 @@ body::before {
 .dm-empty-btn:hover { background:#cc293d; }
 .dm-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 
-/* ── Modo Mensajes: sidebar se contrae, DM layout centrado con max-width ── */
+/* ── Modo Mensajes: sidebar se contrae, DM layout ocupa todo ── */
 body.mensajes-page-active .dm-layout {
-  max-width: unset; width: 100% !important; margin: 0;
+  max-width: none; width: 100% !important; margin: 0;
   border-left: 1px solid rgba(255,255,255,0.08);
   border-right: 1px solid rgba(255,255,255,0.08);
 }

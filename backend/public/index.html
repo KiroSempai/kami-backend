@@ -787,9 +787,8 @@
             </div>
           </div>
           <div class="dm-empty" id="dm-empty">
-            <h3>Selecciona un mensaje</h3>
-            <p>Elige una conversaci&oacute;n de tu lista actual o visita un perfil para iniciar un chat.</p>
-            <button class="dm-empty-btn" onclick="goToSection('explorar')">Buscar usuarios</button>
+            <i class="ti ti-message" style="font-size:32px;opacity:0.3;"></i>
+            <span>Selecciona una conversaci&oacute;n o ve a un perfil para iniciar un DM.</span>
           </div>
         </div>
       </div>
@@ -1486,7 +1485,7 @@
         .then(function(r){ return r.json(); })
         .then(function(d){
           if (!d.success || !d.conversations.length) {
-            document.getElementById('dm-conversations').innerHTML = '<div style="padding:20px 16px;font-size:13.5px;color:#71767b;line-height:1.4;">No tienes conversaciones abiertas todav&iacute;a. Visita un perfil para enviar un mensaje directo.</div>';
+            document.getElementById('dm-conversations').innerHTML = '<div class="notif-empty" style="padding:40px 20px;">Sin conversaciones. Ve a un perfil para iniciar un DM.</div>';
             return;
           }
           document.getElementById('dm-conversations').innerHTML = d.conversations.map(function(c){

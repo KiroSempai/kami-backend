@@ -612,25 +612,10 @@ body::before {
 .dm-item-time { font-size:10px; color:var(--text-muted); white-space:nowrap; }
 .dm-chat { display:flex; flex-direction:column; min-width:0; }
 .dm-chat-header { padding:12px 16px; font-weight:600; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.dm-empty { display:flex; align-items:flex-start; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; padding:0 60px; background:#000000; }
-.dm-empty h3 { font-size:30px; font-weight:800; color:#e7e9ea; margin:0 0 8px 0; }
-.dm-empty p { font-size:14px; color:#71767b; line-height:1.4; margin:0 0 24px 0; max-width:360px; }
-.dm-empty-btn { background:#e8344a; color:#fff; border:none; padding:12px 24px; border-radius:9999px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .15s ease; }
-.dm-empty-btn:hover { background:#cc293d; }
+.dm-empty { display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; }
 .dm-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 
-/* ── Modo Mensajes: sidebar se contrae, DM layout centrado con max-width ── */
-body.mensajes-page-active .dm-layout {
-  max-width: 990px; margin: 0 auto;
-  border-left: 1px solid rgba(255,255,255,0.08);
-  border-right: 1px solid rgba(255,255,255,0.08);
-}
-@media(max-width:900px) {
-  body.mensajes-page-active .dm-layout { max-width: 100%; border: none; }
-}
-@media(max-width:680px) {
-  body.mensajes-page-active .dm-layout { grid-template-columns: 1fr; }
-}
+/* ── Modo Mensajes: sidebar se contrae naturalmente a solo iconos ── */
 body.mensajes-page-active .com-sidebar {
   width: auto;
   flex: none;

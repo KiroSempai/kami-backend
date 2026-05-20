@@ -3665,7 +3665,28 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
         if (_currentCommunityId && !parentId) {
           cargarDatosDeComunidad(_currentCommunityId);
         } else if (!parentId) {
-          renderFeed();
+          // Optimistic: insertar el post al inicio del feed
+          let feedContainer = document.getElementById('com-feed');
+          if (feedContainer) {
+            let u = {};
+            try { u = JSON.parse(localStorage.getItem('kami_user') || '{}'); } catch(e) {}
+            let optPost = {
+              id: data.post.id,
+              user: data.post.user || u.username || 'Anónimo',
+              handle: '@' + (data.post.user || u.username || 'anon').toLowerCase(),
+              avatar: data.post.avatar || u.avatar || null,
+              text: text,
+              type: 'post', spoiler: false,
+              media_url: typeof selectedGifUrl !== 'undefined' ? selectedGifUrl : null,
+              manga: typeof linkedManga !== 'undefined' && linkedManga ? { id: linkedManga.id, title: linkedManga.title, cover: linkedManga.cover || null } : undefined,
+              likes: 0, replies: 0, reposts: 0, views_count: 0,
+              author_role: u.role || 'user', created_at: data.post.created_at,
+              user_has_liked: false, user_has_reposted: false, user_has_bookmarked: false,
+            };
+            feedContainer.insertAdjacentHTML('afterbegin', renderFeedPosts([optPost]));
+            setTimeout(trackFeedViews, 100);
+          }
+          localStorage.removeItem('kami_feed_cache_foryou');
         }
       });
     }

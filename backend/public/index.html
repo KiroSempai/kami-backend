@@ -1357,7 +1357,9 @@
 
     function renderChatMessageHtml(m, isOwn) {
       var ownCls = isOwn ? ' chat-msg-own' : '';
-      var statusHtml = isOwn ? '<div class="dm-message-status">Le&iacute;do · ' + timeAgo(m.created_at) + '</div>' : '';
+      var timeStr = '';
+      try { var d = new Date(m.created_at); timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); } catch(e) { timeStr = ''; }
+      var statusHtml = isOwn ? '<div class="dm-message-status"><svg viewBox="0 0 12 9" width="14" height="10" fill="var(--accent)" style="vertical-align:middle;margin-right:2px;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z"/></svg>' + timeStr + '</div>' : '';
       return '<div class="chat-msg' + ownCls + '">' +
         '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
         '<div class="chat-bubble">' +

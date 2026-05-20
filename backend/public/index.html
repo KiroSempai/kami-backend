@@ -1626,6 +1626,38 @@
       }).catch(function(){ msgContainer.innerHTML = '<div class="notif-empty">Error</div>'; });
     }
 
+    // ── DM retry queue ──
+    var _dmRetryQueue = [];
+    var _dmRetryTimer = null;
+
+    function _dmStartRetryTimer() {
+      if (_dmRetryTimer) return;
+      _dmRetryTimer = setInterval(function() {
+        if (!_dmRetryQueue.length) { clearInterval(_dmRetryTimer); _dmRetryTimer = null; return; }
+        var token = localStorage.getItem('kami_token');
+        if (!token) return;
+        _dmRetryQueue.forEach(function(item, idx) {
+          fetch('/api/dms/' + item.convId, {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
+            body: JSON.stringify({ message: item.message })
+          }).then(function(r){
+            if (!r.ok) throw new Error();
+            _dmRetryQueue.splice(idx, 1);
+            // Actualizar el mensaje en el DOM a single check
+            var el = document.getElementById('dm-messages');
+            if (el) {
+              var msgEl = el.querySelector('[data-msg-id="' + item.tmpId + '"]');
+              if (msgEl) {
+                msgEl.outerHTML = renderChatMessageHtml({ id: item.tmpId, message: item.message, created_at: item.created_at, sender_id: item.myUserId, username: item.username, avatar: item.avatar }, true, null, false);
+              }
+            }
+            loadDMs();
+          }).catch(function(){});
+        });
+      }, 5000);
+    }
+
     function sendDM() {
       var input = document.getElementById('dm-input');
       var msg = input.value.trim();
@@ -1657,12 +1689,14 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }).then(function(){
-        // Éxito: reemplazar el msg optimista (el refresco loadDMs se encarga)
+        // Éxito
       }).catch(function(){
-        // Fallo: marcar el mensaje como no enviado
+        // Fallo: agregar a cola de reintento
+        _dmRetryQueue.push({ tmpId: tmpId, convId: _currentDMConvId, message: msg, created_at: optData.created_at, myUserId: myUserId, username: optData.username, avatar: optData.avatar });
+        _dmStartRetryTimer();
         var failedEl = container ? container.querySelector('[data-msg-id="' + tmpId + '"]') : null;
         if (failedEl) {
-          failedEl.outerHTML = renderChatMessageHtml({ id: tmpId, message: msg, created_at: new Date().toISOString(), sender_id: myUserId, username: localUser ? localUser.username : 'T\u00fa', avatar: localUser ? localUser.avatar : null, _retry: true }, true, null, true);
+          failedEl.outerHTML = renderChatMessageHtml({ id: tmpId, message: msg, created_at: optData.created_at, sender_id: myUserId, username: optData.username, avatar: optData.avatar, _retry: true }, true, null, true);
         }
       }).finally(function(){
         if (btn) btn.disabled = false;

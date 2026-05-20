@@ -1598,7 +1598,7 @@
 
     function sincronizarBotoneraInferiorMovil(sectionId) {
       document.querySelectorAll('.mobile-nav-btn').forEach(function(b){ b.classList.remove('active'); });
-      var mapa = { 'inicio':'mbtn-inicio', 'explorar':'mbtn-explorar', 'comunidades':'mbtn-comunidades', 'mensajes':'mbtn-mensajes' };
+      var mapa = { 'inicio':'mbtn-inicio', 'explorar':'mbtn-explorar', 'notificaciones':'mbtn-notificaciones', 'mensajes':'mbtn-mensajes' };
       var id = mapa[sectionId];
       if (id) { var btn = document.getElementById(id); if (btn) btn.classList.add('active'); }
     }
@@ -3734,10 +3734,10 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
 
   <!-- 🚨 BARRA DE NAVEGACIÓN INFERIOR MÓVIL -->
   <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-btn active" id="mbtn-inicio" onclick="goToSection('inicio')">🏠</button>
-    <button class="mobile-nav-btn" id="mbtn-explorar" onclick="goToSection('explorar')">🔍</button>
-    <button class="mobile-nav-btn" id="mbtn-comunidades" onclick="goToSection('comunidades')">👥</button>
-    <button class="mobile-nav-btn" id="mbtn-mensajes" onclick="goToSection('mensajes')">✉️</button>
+    <button class="mobile-nav-btn active" id="mbtn-inicio" onclick="goToSection('inicio')"><i class="ti ti-home"></i></button>
+    <button class="mobile-nav-btn" id="mbtn-explorar" onclick="goToSection('explorar')"><i class="ti ti-search"></i></button>
+    <button class="mobile-nav-btn" id="mbtn-notificaciones" onclick="goToSection('notificaciones')"><i class="ti ti-bell"></i></button>
+    <button class="mobile-nav-btn" id="mbtn-mensajes" onclick="goToSection('mensajes')"><i class="ti ti-message"></i></button>
   </nav>
 
   <!-- 🚨 DRAWER LATERAL DESPLIZABLE (MÓVIL) -->

@@ -329,6 +329,10 @@
       .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; left: 0; width: 100vw; height: 56px; background: rgba(11,11,13,0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.08); z-index: 9999; box-sizing: border-box; padding-bottom: env(safe-area-inset-bottom); }
       .mobile-nav-btn { background: none; border: none; color: #6b7280; font-size: 22px; cursor: pointer; padding: 12px; flex: 1; text-align: center; }
       .mobile-nav-btn.active { color: var(--accent, #e8344a); }
+      .feed-post { background: #000000; padding: 12px clamp(12px,4vw,16px) !important; gap: clamp(10px,3vw,14px) !important; }
+      .feed-post-avatar { width: clamp(36px,10vw,42px) !important; height: clamp(36px,10vw,42px) !important; }
+      .feed-post-actions { display: flex !important; justify-content: space-between !important; width: 100% !important; max-width: 400px !important; margin-top: 12px !important; }
+      .feed-post-action { padding: 6px !important; }
     }
 
     /* ─── GIF Picker ─── */
@@ -3720,6 +3724,9 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
   </div>
 
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- 🚨 BOTÓN FLOTANTE (FAB) PARA NUEVO POST EN MÓVIL -->
+  <button class="mobile-fab-post" style="display:none;" onclick="openComposer(null, null, null, null, '', null)">📝</button>
 
   <!-- 🚨 BARRA DE NAVEGACIÓN INFERIOR MÓVIL -->
   <nav class="mobile-bottom-nav">

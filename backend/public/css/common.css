@@ -668,3 +668,19 @@ body.mensajes-page-active .com-right {
 }
 body.drawer-open .mobile-drawer-overlay { opacity:1; pointer-events:auto; }
 body.drawer-open .com-sidebar-drawer { transform:translateX(280px); }
+
+/* ── Floating Action Button (mobile post) ── */
+.mobile-fab-post { display:none; }
+@media(max-width:600px) {
+  .mobile-fab-post {
+    display:flex !important; align-items:center; justify-content:center;
+    position:fixed; bottom:76px; right:clamp(12px,4vw,20px);
+    width:52px; height:52px;
+    background:var(--accent,#e8344a); border-radius:50%;
+    color:#fff; font-size:22px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    z-index:10000; border:none; cursor:pointer;
+    transition:transform .15s, opacity .15s;
+  }
+  .mobile-fab-post:active { transform:scale(.9); }
+}

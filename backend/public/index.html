@@ -1373,7 +1373,7 @@
             : (isRead
               ? '<svg viewBox="0 0 18 9" width="18" height="10" style="vertical-align:middle;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="' + checkFill + '"/><path d="M10.1 6.1 7.4 3.4 6 4.8 10.1 9 18 1.1 16.6 0z" fill="' + checkFill + '" opacity="0.5"/></svg>'
               : '<svg viewBox="0 0 12 9" width="14" height="10" style="vertical-align:middle;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="' + checkFill + '"/></svg>'))
-          + (failed ? ' <span style="color:#e8344a;font-size:11px;" onclick="' + (m._retry ? 'retrySendDM(' + m.id + ')' : '') + '">No enviado</span>' : timeStr) + '</div>';
+          + (failed ? ' <span style="color:var(--text-muted);font-size:11px;">No enviado</span>' : timeStr) + '</div>';
       }
       return '<div class="chat-msg' + ownCls + '"' + msgIdAttr + '>' +
         '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
@@ -1678,7 +1678,7 @@
       try { localUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
       var tmpId = Date.now();
       var optData = { id: tmpId, message: msg, created_at: new Date().toISOString(), sender_id: myUserId, username: localUser ? localUser.username : 'T\u00fa', avatar: localUser ? localUser.avatar : null };
-      if (container) container.insertAdjacentHTML('beforeend', renderChatMessageHtml(optData, true, null, false));
+      if (container) container.insertAdjacentHTML('beforeend', renderChatMessageHtml(optData, true, null, true)); // 🕐 pendiente
       if (container) container.scrollTop = container.scrollHeight;
 
       fetch('/api/dms/' + _currentDMConvId, {
@@ -1689,15 +1689,15 @@
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       }).then(function(){
-        // Éxito
+        // Éxito: 🕐 → ✓
+        var msgEl = container ? container.querySelector('[data-msg-id="' + tmpId + '"]') : null;
+        if (msgEl) {
+          msgEl.outerHTML = renderChatMessageHtml({ id: tmpId, message: msg, created_at: optData.created_at, sender_id: myUserId, username: optData.username, avatar: optData.avatar }, true, null, false);
+        }
       }).catch(function(){
-        // Fallo: agregar a cola de reintento
+        // Fallo: agregar a cola de reintento (ya muestra 🕐) y guardar para retry
         _dmRetryQueue.push({ tmpId: tmpId, convId: _currentDMConvId, message: msg, created_at: optData.created_at, myUserId: myUserId, username: optData.username, avatar: optData.avatar });
         _dmStartRetryTimer();
-        var failedEl = container ? container.querySelector('[data-msg-id="' + tmpId + '"]') : null;
-        if (failedEl) {
-          failedEl.outerHTML = renderChatMessageHtml({ id: tmpId, message: msg, created_at: optData.created_at, sender_id: myUserId, username: optData.username, avatar: optData.avatar, _retry: true }, true, null, true);
-        }
       }).finally(function(){
         if (btn) btn.disabled = false;
         loadDMs();

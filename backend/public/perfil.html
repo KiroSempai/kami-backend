@@ -137,15 +137,15 @@
                 </div>
 
                 <div class="profile-actions">
-                    <button class="btn btn-ghost" id="btn-share-profile">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                            <polyline points="16 6 12 2 8 6" />
-                            <line x1="12" y1="2" x2="12" y2="15" />
-                        </svg>
-                        Compartir perfil
-                    </button>
+<button class="btn btn-ghost" id="btn-share-profile" onclick="compartirPerfilActual()">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
+        viewBox="0 0 24 24">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+        <polyline points="16 6 12 2 8 6" />
+        <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+    Compartir perfil
+</button>
                     <a class="btn btn-ghost" id="btn-edit-profile" href="/perfil-editor/">
                         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
@@ -2003,7 +2003,7 @@
               if (token && !data.canEdit) {
                 renderFollowButton(data.isFollowing, data.user.id, username);
               }
-              renderSocialActions(data.isFriend, data.user.id);
+              renderSocialActions(data.isFriend, data.user.id, data.user.username);
 
               if (data.counts) {
                 document.getElementById('stat-followers').textContent = data.counts.followers || 0;
@@ -2044,7 +2044,27 @@
         actionsEl.insertBefore(btn, actionsEl.firstChild);
       }
 
-      function renderSocialActions(isFriend, userId) {
+      function showToast(tipo, msg) {
+        var c = document.getElementById('toast-container');
+        if (!c) { c = document.createElement('div'); c.id = 'toast-container'; c.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;'; document.body.appendChild(c); }
+        var t = document.createElement('div');
+        t.style.cssText = 'padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;animation:toastIn .3s ease;background:' + (tipo === 'error' ? '#e8344a' : '#2dca7a') + ';box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        t.textContent = msg;
+        c.appendChild(t);
+        setTimeout(function(){ t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+      }
+
+      function compartirPerfilActual() {
+        var url = window.location.href;
+        if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
+          navigator.share({ title: 'Perfil en KAMI', text: 'Echa un vistazo a este perfil en KAMI!', url: url }).catch(function(){});
+        } else {
+          navigator.clipboard.writeText(url);
+          showToast('success', 'Enlace copiado al portapapeles');
+        }
+      }
+
+      function renderSocialActions(isFriend, userId, username) {
         var actionsEl = document.querySelector('.profile-actions');
         if (!actionsEl) return;
         var existing = document.getElementById('social-friend-btn');
@@ -2079,27 +2099,25 @@
 
       function toggleFollow(userId, username, btn) {
         var token = localStorage.getItem('kami_token');
-        if (!token) { alert('Debes iniciar sesión'); return; }
+        if (!token) { showToast('error', 'Debes iniciar sesi\u00f3n'); return; }
 
         var isFollowing = btn.textContent.trim().startsWith('Siguiendo');
 
         if (isFollowing) {
-          // Unfollow via DELETE (compatibilidad)
           fetch('/api/social/follow/' + userId, {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + token },
           })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-              if (data.error) { alert(data.error); return; }
+              if (data.error) { showToast('error', data.error); return; }
               btn.className = 'btn btn-primary';
               btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Seguir';
               var countEl = document.getElementById('stat-followers');
               if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
             })
-            .catch(function(e) { alert('Error: ' + e.message); });
+            .catch(function(e) { showToast('error', 'Error: ' + e.message); });
         } else {
-          // Follow via nuevo endpoint unificado
           fetch('/api/social/follow', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -2107,19 +2125,19 @@
           })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-              if (data.error) { alert(data.error); return; }
+              if (data.error) { showToast('error', data.error); return; }
               btn.className = 'btn btn-ghost';
               btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Siguiendo';
               var countEl = document.getElementById('stat-followers');
               if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
             })
-            .catch(function(e) { alert('Error: ' + e.message); });
+            .catch(function(e) { showToast('error', 'Error: ' + e.message); });
         }
       }
 
       function addFriend(username) {
         var token = localStorage.getItem('kami_token');
-        if (!token) { alert('Debes iniciar sesión'); return; }
+        if (!token) { showToast('error', 'Debes iniciar sesi\u00f3n'); return; }
         fetch('/api/friends/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -2127,8 +2145,8 @@
         })
           .then(function(r) { return r.json(); })
           .then(function(data) {
-            if (data.error) { alert(data.error); return; }
-            alert('✓ Ahora eres amigo de ' + username);
+            if (data.error) { showToast('error', data.error); return; }
+            showToast('success', '\u2713 Ahora eres amigo de ' + username);
             var btn = document.getElementById('social-friend-btn');
             if (btn) {
               btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Amigo';
@@ -2137,7 +2155,7 @@
               btn.title = 'Ya sois amigos';
             }
           })
-          .catch(function(e) { alert('Error: ' + e.message); });
+          .catch(function(e) { showToast('error', 'Error: ' + e.message); });
       }
 
       function startDMWithUser(recipientId, username) {

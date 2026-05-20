@@ -1626,12 +1626,26 @@
       if (!token) return;
       var btn = document.querySelector('#dm-chat-view .chat-send-btn');
       if (btn) btn.disabled = true;
+
+      // Optimistic: agregar mensaje inmediatamente
+      var container = document.getElementById('dm-messages');
+      var empty = container ? container.querySelector('.notif-empty') : null;
+      if (empty) container.innerHTML = '';
+      var myUserId = null;
+      try { var _u = JSON.parse(localStorage.getItem('kami_user') || 'null'); if (_u) myUserId = _u.id; } catch(e) {}
+      var localUser = null;
+      try { localUser = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
+      var optData = { id: Date.now(), message: msg, created_at: new Date().toISOString(), sender_id: myUserId, username: localUser ? localUser.username : 'T\u00fa', avatar: localUser ? localUser.avatar : null };
+      if (container) container.insertAdjacentHTML('beforeend', renderChatMessageHtml(optData, true, null));
+      if (container) container.scrollTop = container.scrollHeight;
+
       fetch('/api/dms/' + _currentDMConvId, {
         method: 'POST',
         headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + token },
         body: JSON.stringify({ message: msg })
       }).then(function(r){return r.json()}).catch(function(){}).finally(function(){
         if (btn) btn.disabled = false;
+        loadDMs();
       });
     }
 

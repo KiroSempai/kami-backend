@@ -791,7 +791,10 @@
           <div class="dm-chat" id="dm-chat-view" style="display:none;">
             <div class="dm-chat-header" id="dm-chat-header" style="cursor:default;">
               <button onclick="cerrarDM()" style="background:none;border:none;color:var(--text-secondary);font-size:18px;cursor:pointer;padding:0 4px;"><i class="ti ti-arrow-left"></i></button>
-              <span id="dm-chat-username" style="cursor:pointer;"></span>
+              <div>
+                <div id="dm-chat-username" style="cursor:pointer;font-weight:600;"></div>
+                <div id="dm-presence-indicator" style="font-size:11px;color:var(--green);"></div>
+              </div>
             </div>
             <div class="chat-messages" id="dm-messages"></div>
             <div class="chat-input-wrap">
@@ -1357,11 +1360,12 @@
 
     function renderChatMessageHtml(m, isOwn, lastReadAt) {
       var ownCls = isOwn ? ' chat-msg-own' : '';
+      var msgIdAttr = isOwn && m.id ? ' data-msg-id="' + m.id + '"' : '';
       var timeStr = '';
       try { var d = new Date(m.created_at); timeStr = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); } catch(e) { timeStr = ''; }
       var statusHtml = '';
       if (isOwn) {
-        var isRead = lastReadAt && new Date(m.created_at) <= new Date(lastReadAt);
+        var isRead = m.read_at || (lastReadAt && new Date(m.created_at) <= new Date(lastReadAt));
         var checkFill = 'rgba(0,0,0,0.4)';
         statusHtml = '<div class="dm-message-status">' +
           (isRead
@@ -1369,7 +1373,7 @@
             : '<svg viewBox="0 0 12 9" width="14" height="10" style="vertical-align:middle;"><path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="' + checkFill + '"/></svg>')
           + timeStr + '</div>';
       }
-      return '<div class="chat-msg' + ownCls + '">' +
+      return '<div class="chat-msg' + ownCls + '"' + msgIdAttr + '>' +
         '<div class="chat-avatar">' + renderChatAvatar(m.avatar, m.username) + '</div>' +
         '<div class="chat-bubble">' +
         (isOwn ? '' : '<div class="chat-bubble-name">' + (m.username || 'Anónimo') + '</div>') +
@@ -1615,6 +1619,8 @@
         msgContainer.scrollTop = msgContainer.scrollHeight;
         // Refresh conversation list to update active state + unread
         loadDMs();
+        // Notificar presencia
+        fetch('/api/dms/' + convId + '/presence', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body: JSON.stringify({online:true}) }).catch(function(){});
       }).catch(function(){ msgContainer.innerHTML = '<div class="notif-empty">Error</div>'; });
     }
 
@@ -1668,10 +1674,16 @@
     }
 
     function cerrarDM() {
+      var convId = _currentDMConvId;
       _currentDMConvId = null;
       _dmOtherUserId = null;
       document.getElementById('dm-chat-view').style.display = 'none';
       document.getElementById('dm-empty').style.display = 'flex';
+      // Notificar offline
+      var token = localStorage.getItem('kami_token');
+      if (token && convId) {
+        fetch('/api/dms/' + convId + '/presence', { method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body: JSON.stringify({online:false}) }).catch(function(){});
+      }
     }
 
     function toggleMobileDrawer(open) {
@@ -1790,6 +1802,33 @@
                 svg.innerHTML = '<path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="rgba(0,0,0,0.4)"/><path d="M10.1 6.1 7.4 3.4 6 4.8 10.1 9 18 1.1 16.6 0z" fill="rgba(0,0,0,0.4)" opacity="0.5"/>';
               }
             });
+          }
+        });
+        // DM mensajes leídos individualmente (per-message)
+        socket.on('dm-messages-read', function(data) {
+          if (_currentDMConvId === data.conversation_id && data.message_ids && data.message_ids.length) {
+            var container = document.getElementById('dm-messages');
+            if (!container) return;
+            data.message_ids.forEach(function(id) {
+              var msgEl = container.querySelector('.chat-msg-own[data-msg-id="' + id + '"]');
+              if (msgEl) {
+                var svg = msgEl.querySelector('.dm-message-status svg');
+                if (svg) {
+                  svg.setAttribute('viewBox', '0 0 18 9');
+                  svg.setAttribute('width', '18');
+                  svg.innerHTML = '<path d="M4.1 6.1 1.4 3.4 0 4.8 4.1 9 12 1.1 10.6 0z" fill="rgba(0,0,0,0.4)"/><path d="M10.1 6.1 7.4 3.4 6 4.8 10.1 9 18 1.1 16.6 0z" fill="rgba(0,0,0,0.4)" opacity="0.5"/>';
+                }
+              }
+            });
+          }
+        });
+        // DM presencia (en línea / en el chat)
+        socket.on('dm-presence', function(data) {
+          if (_currentDMConvId === data.conversation_id) {
+            var indicator = document.getElementById('dm-presence-indicator');
+            if (indicator) {
+              indicator.textContent = data.online ? 'En l\u00ednea' : '';
+            }
           }
         });
       }

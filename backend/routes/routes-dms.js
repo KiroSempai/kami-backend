@@ -119,8 +119,31 @@ router.get('/:id', auth, async (req, res) => {
     if (!(await isParticipant(convId, userId)))
       return res.status(403).json({ error: 'No eres participante' });
 
+    // Marcar como leídos los mensajes del otro usuario que aún no se habían leído
+    const readResult = await pool.query(`
+      UPDATE dm_messages SET read_at = NOW(), read_by = $1
+      WHERE conversation_id = $2 AND sender_id != $1 AND read_at IS NULL
+      RETURNING id
+    `, [userId, convId]);
+
+    const justReadIds = readResult.rows.map(r => r.id);
+
+    // Notificar al otro participante qué mensajes fueron leídos
+    if (justReadIds.length > 0 && global.io) {
+      const other = await pool.query(
+        'SELECT user_id FROM dm_conversation_participants WHERE conversation_id = $1 AND user_id != $2 LIMIT 1',
+        [convId, userId]
+      );
+      if (other.rows.length) {
+        global.io.to('dm:' + other.rows[0].user_id).emit('dm-messages-read', {
+          conversation_id: convId,
+          message_ids: justReadIds,
+        });
+      }
+    }
+
     const r = await pool.query(`
-      SELECT dm.id, dm.message, dm.created_at, dm.sender_id,
+      SELECT dm.id, dm.message, dm.created_at, dm.sender_id, dm.read_at,
              u.username, u.avatar
       FROM dm_messages dm
       LEFT JOIN users u ON u.id = dm.sender_id
@@ -130,21 +153,15 @@ router.get('/:id', auth, async (req, res) => {
 
     // Obtener info del otro participante
     const other = await pool.query(`
-      SELECT u.id, u.username, u.avatar, u.created_at FROM users u
+      SELECT u.id, u.username, u.avatar FROM users u
       JOIN dm_conversation_participants cp ON cp.user_id = u.id
-      WHERE cp.conversation_id = $1 AND cp.user_id != $2 LIMIT 1
-    `, [convId, userId]);
-
-    // Obtener last_read_at del otro participante (para mostrar "Leído"/"Enviado")
-    const otherRead = await pool.query(`
-      SELECT cp.last_read_at FROM dm_conversation_participants cp
       WHERE cp.conversation_id = $1 AND cp.user_id != $2 LIMIT 1
     `, [convId, userId]);
 
     res.json({
       success: true,
       messages: r.rows,
-      other: { ...(other.rows[0] || {}), last_read_at: otherRead.rows[0]?.last_read_at || null },
+      other: other.rows[0] || null,
     });
   } catch (err) {
     console.error('[dms] Error getting messages:', err.message);
@@ -216,13 +233,26 @@ router.post('/:id/read', auth, async (req, res) => {
       [convId, userId]
     );
 
-    // Notificar al otro participante que los mensajes fueron leídos
+    // Marcar mensajes individuales como leídos
+    const readResult = await pool.query(`
+      UPDATE dm_messages SET read_at = NOW(), read_by = $1
+      WHERE conversation_id = $2 AND sender_id != $1 AND read_at IS NULL
+      RETURNING id
+    `, [userId, convId]);
+
+    const justReadIds = readResult.rows.map(r => r.id);
+
+    // Notificar al otro participante
     if (global.io) {
       const other = await pool.query(
         'SELECT user_id FROM dm_conversation_participants WHERE conversation_id = $1 AND user_id != $2 LIMIT 1',
         [convId, userId]
       );
       if (other.rows.length) {
+        global.io.to('dm:' + other.rows[0].user_id).emit('dm-messages-read', {
+          conversation_id: convId,
+          message_ids: justReadIds,
+        });
         global.io.to('dm:' + other.rows[0].user_id).emit('dm-read', {
           conversation_id: convId,
           read_at: new Date(),
@@ -251,6 +281,33 @@ router.get('/unread/count', auth, async (req, res) => {
   } catch (err) {
     console.error('[dms] Error unread:', err.message);
     res.status(500).json({ error: 'Error al contar no leídos' });
+  }
+});
+
+// 🚪 [POST] /api/dms/:id/presence — Notificar presencia en el chat
+router.post('/:id/presence', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const convId = parseInt(req.params.id);
+    const { online } = req.body;
+    if (!convId) return res.status(400).json({ error: 'ID inválido' });
+
+    if (global.io) {
+      const other = await pool.query(
+        'SELECT user_id FROM dm_conversation_participants WHERE conversation_id = $1 AND user_id != $2 LIMIT 1',
+        [convId, userId]
+      );
+      if (other.rows.length) {
+        global.io.to('dm:' + other.rows[0].user_id).emit('dm-presence', {
+          conversation_id: convId,
+          user_id: userId,
+          online: !!online,
+        });
+      }
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al notificar presencia' });
   }
 });
 

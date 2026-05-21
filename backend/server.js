@@ -300,7 +300,7 @@ function noCache(req, res, next) {
 // 📄 Rutas de páginas HTML
 // ═══════════════════════════════════════════════════════════════════════════════
 
-app.get('/',              (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/',              (req, res) => res.sendFile(path.join(__dirname, 'public', 'kami-forum.html')));
 app.get('/inicio-mangoteca', (req, res) => {
   const ua = (req.headers['user-agent'] || '').toLowerCase();
   const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);

@@ -315,6 +315,12 @@
     .post-action i {
       font-size: 14px;
     }
+    .post-action.liked { color: var(--accent); }
+    .post-action.reposted { color: var(--green); }
+    .post-action.bookmarked { color: var(--blue); }
+    .notification.unread { background: rgba(232,51,74,0.06); border-left: 3px solid var(--accent); padding-left: 13px; }
+    .bnav-badge { position: absolute; top: 2px; right: 6px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; display: none; align-items: center; justify-content: center; pointer-events: none; }
+    .bnav-item { position: relative; }
 
     /* ── COMPOSE ── */
     .compose {
@@ -852,6 +858,16 @@
       return Math.floor(h / 24) + 'd';
     }
 
+    function showToast(type, msg) {
+      var c = document.getElementById('toast-c');
+      if (!c) { c = document.createElement('div'); c.id = 'toast-c'; c.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center'; document.body.appendChild(c); }
+      var t = document.createElement('div');
+      t.style.cssText = 'padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;background:' + (type === 'error' ? '#e8344a' : '#2dca7a') + ';box-shadow:0 4px 12px rgba(0,0,0,.3);animation:fadeUp .3s';
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(function(){ t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
+    }
+
     async function loadFeed() {
       const feed = document.getElementById('posts-feed');
       feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Cargando...</div>';
@@ -859,7 +875,7 @@
       var opts = { headers: {} };
       if (token) opts.headers['Authorization'] = 'Bearer ' + token;
       try {
-        var r = await fetch('/api/feed/for-you?limit=15', opts);
+        var r = await fetch('/api/feed/posts?limit=25', opts);
         if (!r.ok) throw new Error('Error');
         var d = await r.json();
         if (!d.success || !d.posts || !d.posts.length) {
@@ -869,7 +885,7 @@
         postsData = d.posts;
         renderPosts(d.posts);
       } catch(e) {
-        feed.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Error de conexión</div>';
+        feed.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Error de conexi&oacute;n</div>';
       }
     }
 
@@ -881,11 +897,13 @@
           ? '<img src="' + p.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
           : initial;
         var likeClass = p.user_has_liked ? ' liked' : '';
+        var repostClass = p.user_has_reposted ? ' reposted' : '';
+        var bmClass = p.user_has_bookmarked ? ' bookmarked' : '';
         return '<div class="post">' +
           '<div class="post-avatar">' + avatarHtml + '</div>' +
           '<div class="post-content">' +
           '<div class="post-header">' +
-          '<div class="post-author">' + (p.user || 'Anónimo') + '</div>' +
+          '<a href="/profile/' + encodeURIComponent(p.user) + '" style="color:inherit;text-decoration:none;"><div class="post-author">' + (p.user || 'Anónimo') + '</div></a>' +
           '<div class="post-handle">' + (p.handle || '@' + (p.user || '').toLowerCase()) + '</div>' +
           '<div class="post-time">' + timeAgo(p.created_at) + '</div>' +
           '</div>' +
@@ -893,26 +911,85 @@
           (p.media_url ? '<div style="margin-top:8px;border-radius:14px;overflow:hidden;max-height:300px;"><img src="' + p.media_url + '" style="width:100%;display:block;object-fit:cover;"></div>' : '') +
           '<div class="post-actions">' +
           '<div class="post-action"><i class="ti ti-message-circle"></i> ' + (p.replies || 0) + '</div>' +
-          '<div class="post-action"><i class="ti ti-repeat"></i> ' + (p.reposts || 0) + '</div>' +
-          '<div class="post-action' + likeClass + '" onclick="toggleLike(' + p.id + ')"><i class="ti ti-heart"></i> ' + (p.likes || 0) + '</div>' +
-          '<div class="post-action"><i class="ti ti-share"></i></div>' +
+          '<div class="post-action' + repostClass + '" onclick="toggleRepost(' + p.id + ')"><i class="ti ti-repeat"></i> <span class="repost-cnt">' + (p.reposts || 0) + '</span></div>' +
+          '<div class="post-action' + likeClass + '" onclick="toggleLike(' + p.id + ')"><i class="ti ti-heart"></i> <span class="like-cnt">' + (p.likes || 0) + '</span></div>' +
+          '<div class="post-action' + bmClass + '" onclick="toggleBookmark(' + p.id + ')"><i class="ti ti-bookmark"></i></div>' +
           '</div></div></div>';
       }).join('');
     }
 
-    function renderNotifications() {
-      const feed = document.getElementById('notifications-feed');
-      feed.innerHTML = notificationsData.map(notif => `
-        <div class="notification">
-          <div class="notification-icon"><i class="ti ${notif.icon}"></i></div>
-          <div class="notification-content">
-            <div class="notification-text">${notif.text}</div>
-            <div class="notification-time">Hace ${notif.time}</div>
-          </div>
-        </div>
-      `).join('');
+    async function interact(postId, type) {
+      var token = localStorage.getItem('kami_token');
+      if (!token) { showToast('error', 'Debes iniciar sesi\u00f3n'); return; }
+      try {
+        var r = await fetch('/api/feed/interact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ post_id: postId, interaction_type: type })
+        });
+        if (r.ok) loadFeed();
+      } catch(e) {}
+    }
+    function toggleLike(id) { interact(id, 'like'); }
+    function toggleRepost(id) { interact(id, 'repost'); }
+    function toggleBookmark(id) { interact(id, 'bookmark'); }
+
+    async function loadNotifications() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) { document.getElementById('notifications-feed').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Inicia sesi\u00f3n para ver notificaciones</div>'; return; }
+      var feed = document.getElementById('notifications-feed');
+      feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Cargando...</div>';
+      try {
+        var r = await fetch('/api/feed/notifications?limit=30', { headers: { 'Authorization': 'Bearer ' + token } });
+        var d = await r.json();
+        if (!d.success || !d.notifications || !d.notifications.length) {
+          feed.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Sin notificaciones a\u00fan</div>';
+          return;
+        }
+        var icons = { like:'❤️',repost:'🔁',bookmark:'🔖',reply:'💬',follow:'👤' };
+        feed.innerHTML = d.notifications.map(function(n){
+          return '<div class="notification' + (n.read ? '' : ' unread') + '">' +
+            '<div class="notification-icon">' + (icons[n.type] || '🔔') + '</div>' +
+            '<div class="notification-content">' +
+            '<div class="notification-text"><strong>' + (n.actor?.username || 'Alguien') + '</strong> ' +
+            (n.type === 'like' ? 'le dio like a tu post' :
+             n.type === 'repost' ? 'comparti\u00f3 tu post' :
+             n.type === 'bookmark' ? 'guard\u00f3 tu post' :
+             n.type === 'reply' ? 'respondi\u00f3 a tu post' :
+             n.type === 'follow' ? 'te comenz\u00f3 a seguir' : 'interactu\u00f3') +
+            '</div><div class="notification-time">' + timeAgo(n.created_at) + '</div></div></div>';
+        }).join('');
+        updateNotifBadge(d.unread_count);
+      } catch(e) { feed.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Error al cargar</div>'; }
     }
 
+    function updateNotifBadge(count) {
+      var badge = document.querySelector('.bnav-badge');
+      if (badge) {
+        if (count > 0) { badge.textContent = count > 9 ? '9+' : count; badge.style.display = 'flex'; }
+        else { badge.style.display = 'none'; }
+      }
+    }
+
+    async function loadBookmarks() {
+      var token = localStorage.getItem('kami_token');
+      if (!token) { document.getElementById('bookmarks-content').innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Inicia sesi\u00f3n</div>'; return; }
+      var el = document.getElementById('bookmarks-content');
+      el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Cargando...</div>';
+      try {
+        var r = await fetch('/api/feed/bookmarks', { headers: { 'Authorization': 'Bearer ' + token } });
+        var d = await r.json();
+        if (!d.success || !d.posts || !d.posts.length) {
+          el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Sin marcadores guardados</div>';
+          return;
+        }
+        postsData = d.posts;
+        renderPosts(d.posts);
+      } catch(e) { el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">Error al cargar</div>'; }
+    }
+
+    function renderNotifications() { loadNotifications(); }
+    function renderBookmarks() { loadBookmarks(); }
     function renderMessages() {
       const list = document.getElementById('messages-list');
       list.innerHTML = messagesData.map((msg, idx) => `

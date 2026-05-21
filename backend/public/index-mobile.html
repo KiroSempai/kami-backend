@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="stylesheet" href="/css/glass-hub.css">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <style>
     :root {
       --bg-base: #07070e;
@@ -709,6 +710,290 @@
       justify-content: center;
       font-weight: 700;
     }
+    /* --- CSS Ported from index.html / common.css --- */
+    /* Base feed post card */
+    .feed-post { display:flex; flex-wrap:wrap; gap:12px; padding:16px; border-bottom:1px solid var(--border); background: #000000 !important; }
+    .feed-post:hover { background:rgba(255,255,255,0.02); }
+    .feed-post-avatar { width:40px; height:40px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .feed-post-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .feed-post-body { flex:1; min-width:0; }
+    .feed-post-header { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+    .feed-post-user { font-size:14px; font-weight:700; color:#f0f0f0; display:flex; align-items:center; gap:4px; text-decoration:none; }
+    .feed-post-user:hover { text-decoration:underline; }
+    .feed-post-handle { font-size:12px; color:rgba(255,255,255,0.25); text-decoration:none; }
+    .feed-post-handle:hover { text-decoration:underline; color:rgba(255,255,255,0.4); }
+    .feed-post-time { font-size:11px; color:rgba(255,255,255,0.2); margin-left:auto; white-space:nowrap; }
+    .feed-post-reading { font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(76,157,245,0.1); color:#4c9df5; font-weight:600; }
+    .feed-post-text { font-size:14.5px !important; line-height:1.4 !important; color:#e7e9ea !important; margin-top:4px !important; word-wrap:break-word; }
+    .feed-post-text .spoiler-blur { filter:blur(6px); cursor:pointer; transition:.2s; display:inline; }
+    .feed-post-text .spoiler-blur:hover { filter:blur(3px); }
+    .feed-post-text .spoiler-blur.revealed { filter:none; }
+    .feed-post-actions { display:flex !important; justify-content:space-between !important; width:100% !important; max-width:380px !important; margin-top:10px !important; }
+    .feed-post-action { color:#71767b !important; font-size:13px !important; display:flex; align-items:center; gap:4px; padding:4px; background:none; border:none; cursor:pointer; font-family:inherit; transition:.1s; }
+    .feed-post-action:hover { color:#e8344a !important; }
+    .feed-post-action i { font-size:16px; }
+    .feed-post-action.liked { color:#e8344a !important; }
+    .feed-post-action.liked i.ti-heart { animation:heartPop .3s ease; }
+    .feed-post-action.reposted { color:var(--green) !important; }
+    .feed-post-action.bookmarked { color:var(--blue) !important; }
+    .feed-post-action.tuerca { margin-left:auto; }
+    .feed-post-action.tuerca:hover { color:#f5c842 !important; }
+
+    @keyframes heartPop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+    /* Reply card in thread (compact style) */
+    .feed-post-reply { display: flex; gap: 12px; padding: 12px 16px 12px 0; background: var(--bg-primary); border-bottom: 1px solid var(--border); border-left: 2px solid var(--border); margin-left: 16px; width: auto; box-sizing: border-box; }
+    .feed-post-reply .feed-post-avatar { width: 36px !important; height: 36px !important; min-width: 36px !important; margin-top: 2px; }
+    .feed-post-reply .feed-post-avatar img { width: 36px !important; height: 36px !important; border-radius: 50%; object-fit: cover; }
+    .feed-post-reply .feed-post-body { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .feed-post-reply .feed-post-user { font-size: 13px; }
+    .feed-post-reply .feed-post-text { font-size: 14px; }
+    .feed-post-reply .feed-post-actions { margin-top: 4px; }
+
+    .parent-thread-context { position: relative; width: 100%; }
+    .parent-thread-context::after { content: ""; position: absolute; left: 36px; top: 52px; bottom: 0; width: 2px; background-color: var(--border); z-index: 1; }
+    .parent-thread-context .feed-post { border-bottom: none !important; }
+
+    .repost-indicator-banner { display:flex; align-items:center; gap:4px; padding:4px 16px 0; font-size:11px; font-weight:700; color:var(--text-muted); width:100%; box-sizing:border-box; }
+    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
+    .feed-post-manga:hover { background:rgba(255,255,255,0.05); }
+    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+    .feed-post-manga-info { flex:1; min-width:0; }
+    .feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
+    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
+    .feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+
+    .feed-post-media { position:relative; margin-top:10px; border-radius:14px; overflow:hidden; }
+    .feed-post-media img { width:100%; display:block; border-radius:14px; max-height:300px; object-fit:cover; background:rgba(255,255,255,0.03); }
+    .feed-post-media-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; z-index:1; }
+
+    .feed-post-quote { display:flex; align-items:center; gap:8px; margin-top:8px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:12px; color:var(--text-secondary); transition:.15s; }
+    .feed-post-quote:hover { background:rgba(255,255,255,0.04); border-color:var(--border-hover); }
+    .feed-post-quote i { font-size:14px; color:var(--accent); }
+
+    .role-badge-admin { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ff1493; border:1px solid rgba(255,20,147,0.3); background:rgba(255,20,147,0.06); line-height:1.4; }
+    .role-badge-golden { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ffd700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); line-height:1.4; }
+    .role-badge-silver { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#c0c0c0; border:1px solid rgba(192,192,192,0.3); background:rgba(192,192,192,0.06); line-height:1.4; }
+    .badge-role { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700; letter-spacing:0.3px; line-height:1.4; margin-left:3px; }
+    .badge-role.creator { color:#ffd700; border:1px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.08); }
+    .badge-role.moderator { color:#4c9df5; border:1px solid rgba(76,157,245,0.4); background:rgba(76,157,245,0.08); }
+
+    /* Spoilers */
+    .feed-post-spoiler { position:relative; }
+    .spoiler-overlay { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(232,52,74,0.15); backdrop-filter:blur(6px); cursor:pointer; color:rgba(255,255,255,0.5); font-size:13px; font-weight:600; transition:.2s; }
+    .spoiler-overlay:hover { background:rgba(232,52,74,0.25); color:#fff; }
+    .spoiler-overlay i { font-size:20px; }
+    .feed-post-spoiler .feed-post-avatar,
+    .feed-post-spoiler .feed-post-body { opacity:0.3; pointer-events:none; filter:blur(2px); }
+
+    /* Modals & Overlays */
+    .composer-overlay { display:none; position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); }
+    .composer-overlay.open { display:block; }
+    .composer { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:501; width:min(560px,92vw); background:rgba(14,14,30,0.96); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column; max-height:90vh; }
+    .composer.open { display:flex; }
+    .comp-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .comp-close,.comp-drafts { width:32px; height:32px; border-radius:50%; border:none; background:rgba(255,255,255,0.06); color:#8888a0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:.15s; }
+    .comp-close:hover,.comp-drafts:hover { background:rgba(232,52,74,0.12); color:#e8344a; }
+    .comp-body { display:flex; gap:12px; padding:16px 20px; flex:1; min-height:120px; }
+    .comp-avatar { width:40px; height:40px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; background:linear-gradient(135deg,#e8344a,#f5c842); overflow:hidden; }
+    .comp-avatar img { width:100%; height:100%; object-fit:cover; }
+    .comp-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+    .comp-audience { background:rgba(232,52,74,0.1); border:1px solid rgba(232,52,74,0.2); color:#e8344a; font-size:11px; font-weight:600; padding:4px 10px; border-radius:999px; cursor:pointer; font-family:inherit; outline:none; max-width:200px; }
+    .comp-textarea-wrap { position:relative; flex:1; }
+    .comp-textarea { width:100%; background:none; border:none; outline:none; color:#e0e0e0; font-family:inherit; font-size:18px; resize:none; min-height:100px; line-height:1.5; }
+    .comp-textarea::placeholder { color:rgba(255,255,255,0.15); }
+    .comp-footer { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-top:1px solid rgba(255,255,255,0.06); }
+    .comp-tools { display:flex; align-items:center; gap:4px; }
+    .comp-tool { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:#e8344a; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:.15s; }
+    .comp-tool:hover { background:rgba(232,52,74,0.1); }
+    .comp-actions { display:flex; align-items:center; gap:12px; }
+    .comp-thread-btn { width:34px; height:34px; border-radius:50%; border:none; background:transparent; color:#e8344a; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; transition:.15s; }
+    .comp-thread-btn:hover { background:rgba(232,52,74,0.1); }
+    .comp-counter { font-size:13px; color:rgba(255,255,255,0.25); min-width:24px; text-align:center; font-variant-numeric:tabular-nums; }
+    .comp-counter.warning { color:#f5c842; }
+    .comp-counter.over { color:#e8344a; }
+    .comp-submit { padding:8px 20px; border-radius:999px; border:none; background:#e8344a; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-submit:disabled { opacity:0.4; cursor:default; }
+    .comp-submit:hover:not(:disabled) { background:#c8283d; }
+
+    .comp-link-manga { display:inline-flex; align-items:center; gap:4px; padding:5px 12px; border-radius:999px; border:1px solid rgba(76,157,245,0.25); background:rgba(76,157,245,0.08); color:#4c9df5; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-link-manga:hover { background:rgba(76,157,245,0.15); border-color:rgba(76,157,245,0.4); }
+    .comp-link-manga i { font-size:14px; }
+    .comp-manga-tag { display:flex; align-items:center; gap:6px; width:auto; max-width:50%; box-sizing:border-box; padding:4px 10px; height:36px; margin-left:auto; background:rgba(76,157,245,0.06); border:1px solid rgba(76,157,245,0.12); border-radius:10px; font-size:11px; color:#4c9df5; cursor:default; transition:.1s; overflow:hidden; flex-shrink:0; }
+    .comp-manga-tag img { width:18px; height:26px; border-radius:3px; object-fit:cover; flex-shrink:0; }
+    .comp-manga-name { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
+    .comp-manga-search { position:relative; z-index:10; margin-bottom:4px; }
+    .comp-manga-search input { width:100%; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#e0e0e0; font-family:inherit; font-size:13px; outline:none; box-sizing:border-box; }
+    .comp-manga-search input:focus { border-color:rgba(76,157,245,0.4); }
+    .comp-manga-search input::placeholder { color:rgba(255,255,255,0.15); }
+    .comp-manga-results { position:absolute; top:100%; left:0; right:0; background:rgba(18,18,36,0.95); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.06); border-radius:8px; margin-top:4px; max-height:200px; overflow-y:auto; }
+    .comp-manga-result { display:flex; align-items:center; gap:8px; padding:8px 12px; cursor:pointer; transition:.1s; }
+    .comp-manga-result:hover { background:rgba(255,255,255,0.04); }
+    .comp-manga-result img { width:20px; height:28px; border-radius:4px; object-fit:cover; }
+    .comp-manga-result span { font-size:13px; color:#e0e0e0; }
+
+    .comp-spoiler-row { display:flex; align-items:center; margin-bottom:2px; }
+    .comp-spoiler-toggle { display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; color:rgba(255,255,255,0.3); user-select:none; }
+    .comp-spoiler-toggle input { display:none; }
+    .comp-spoiler-slider { width:36px; height:20px; background:rgba(255,255,255,0.08); border-radius:10px; position:relative; transition:.2s; }
+    .comp-spoiler-slider::before { content:''; position:absolute; left:2px; top:2px; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.2); transition:.2s; }
+    .comp-spoiler-toggle input:checked + .comp-spoiler-slider { background:rgba(232,52,74,0.3); }
+    .comp-spoiler-toggle input:checked + .comp-spoiler-slider::before { transform:translateX(16px); background:#e8344a; }
+    .comp-spoiler-toggle input:checked ~ .comp-spoiler-label { color:#e8344a; }
+    .comp-spoiler-label { display:flex; align-items:center; gap:4px; font-weight:600; font-size:12px; }
+    .comp-textarea-wrap.spoiler { border:2px solid rgba(232,52,74,0.3); border-radius:10px; padding:8px; margin:-10px; background:rgba(232,52,74,0.04); }
+
+    .comp-type-pills { display:flex; gap:4px; flex-wrap:wrap; }
+    .comp-pill { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:rgba(255,255,255,0.3); font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .comp-pill:hover { border-color:rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); }
+    .comp-pill.active { border-color:rgba(232,52,74,0.3); background:rgba(232,52,74,0.08); color:#e8344a; }
+
+    .comp-gif-preview { position:relative; margin:8px 0; border-radius:12px; overflow:hidden; max-height:200px; background:rgba(0,0,0,0.2); }
+    .comp-gif-preview img { width:100%; max-height:200px; object-fit:contain; display:block; border-radius:12px; }
+    .comp-gif-remove { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); border:none; color:#fff; font-size:16px; width:28px; height:28px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.2s; }
+    .comp-gif-remove:hover { background:rgba(232,52,74,0.8); }
+    .comp-gif-badge { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; }
+
+    /* GIF Picker */
+    .gif-picker-overlay { position:fixed; inset:0; z-index:9998; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); }
+    .gif-picker { width:480px; max-width:90vw; height:80vh; max-height:80vh; background:var(--bg-surface); border:1px solid var(--border); border-radius:16px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 16px 64px rgba(0,0,0,0.5); }
+    .gif-picker-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); font-weight:700; font-size:15px; }
+    .gif-picker-close { background:none; border:none; color:var(--text-secondary); font-size:20px; cursor:pointer; padding:4px; border-radius:6px; transition:.2s; }
+    .gif-picker-close:hover { background:rgba(255,255,255,0.06); color:var(--text-primary); }
+    .gif-picker-search { display:flex; align-items:center; gap:10px; padding:12px 18px; border-bottom:1px solid var(--border); }
+    .gif-picker-search i { color:var(--text-muted); font-size:18px; flex-shrink:0; }
+    .gif-picker-search input { flex:1; background:rgba(255,255,255,0.06); border:none; border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:13px; outline:none; }
+    .gif-picker-search input:focus { background:rgba(255,255,255,0.1); }
+    .gif-picker-search input::placeholder { color:var(--text-muted); }
+    .gif-categories { display:flex; gap:6px; padding:10px 18px; flex-wrap:wrap; border-bottom:1px solid var(--border); overflow-x: auto; }
+    .gif-cat-btn { background:rgba(255,255,255,0.06); border:none; border-radius:20px; padding:6px 14px; font-size:12px; color:var(--text-secondary); cursor:pointer; transition:.2s; white-space:nowrap; }
+    .gif-cat-btn:hover { background:rgba(232,51,74,0.15); color:var(--accent); }
+    .gif-cat-btn.active { background:var(--accent); color:#fff; }
+    .gif-results { flex:1; min-height:0; overflow-y:scroll; padding:8px; }
+    .gif-grid { display:flex; flex-wrap:wrap; margin:-4px; }
+    .gif-result-item { position:relative; border-radius:8px; overflow:hidden; cursor:pointer; background:rgba(255,255,255,0.03); transition:.2s; width:50%; padding:4px; aspect-ratio:16/9; box-sizing:border-box; }
+    .gif-result-item:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+    .gif-result-item img { width:100%; height:100%; object-fit:cover; display:block; border-radius:8px; }
+    .gif-result-item .gif-label { position:absolute; bottom:6px; left:6px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; letter-spacing:0.5px; }
+
+    /* Algorithm modal */
+    .algo-modal-overlay { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.5); }
+    .algo-modal-overlay.open { display:block; }
+    .algo-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:601; width:min(400px,92vw); background:rgba(14,14,30,0.96); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:18px; box-shadow:0 24px 80px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column; max-height:80vh; }
+    .algo-modal.open { display:flex; }
+    .algo-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .algo-header h3 { font-size:15px; font-weight:700; color:#e0e0e0; display:flex; align-items:center; gap:8px; }
+    .algo-header h3 i { color:#f5c842; }
+    .algo-close { width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.06); color:#8888a0; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; transition:.15s; }
+    .algo-close:hover { background:rgba(232,52,74,0.12); color:#e8344a; }
+    .algo-body { padding:16px 18px; overflow-y:auto; }
+    .algo-score { text-align:center; padding:12px 0 16px; }
+    .algo-score-num { font-size:36px; font-weight:800; color:#e8344a; }
+    .algo-score-label { font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px; }
+    .algo-bar { display:flex; align-items:center; gap:10px; padding:6px 0; }
+    .algo-bar-label { font-size:12px; color:rgba(255,255,255,0.5); width:120px; flex-shrink:0; }
+    .algo-bar-track { flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,0.06); overflow:hidden; }
+    .algo-bar-fill { height:100%; border-radius:3px; transition:width .3s; }
+    .algo-bar-fill.positive { background:#2dca7a; }
+    .algo-bar-fill.negative { background:#e8344a; }
+    .algo-bar-fill.neutral { background:#4c9df5; }
+    .algo-bar-value { font-size:11px; font-weight:600; width:40px; text-align:right; flex-shrink:0; }
+    .algo-bar-value.pos { color:#2dca7a; }
+    .algo-bar-value.neg { color:#e8344a; }
+    .algo-bar-value.neu { color:#4c9df5; }
+    .algo-footer { padding:10px 18px; border-top:1px solid rgba(255,255,255,0.06); font-size:10px; color:rgba(255,255,255,0.15); text-align:center; }
+
+    /* Repost Menu & Quote Preview */
+    .repost-menu { z-index:9999; background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; padding:4px; min-width:160px; box-shadow:0 8px 32px rgba(0,0,0,0.4); position: absolute; display: none; }
+    .repost-menu.open { display: block; }
+    .repost-menu-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-radius:8px; font-size:13px; color:var(--text-primary); transition:.15s; }
+    .repost-menu-item:hover { background:rgba(255,255,255,0.06); }
+    .repost-menu-item i { font-size:16px; color:var(--text-secondary); }
+
+    .comp-quote-preview { margin:8px 0; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+    .comp-quote-header { padding:8px 12px; font-size:11px; font-weight:600; color:var(--text-muted); background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); text-transform:uppercase; letter-spacing:0.5px; }
+    .comp-quote-body { display:flex; gap:10px; padding:12px; }
+    .comp-quote-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+    .comp-quote-avatar img { width:100%; height:100%; object-fit:cover; }
+    .comp-quote-content { flex:1; min-width:0; }
+    .comp-quote-user { font-size:12px; font-weight:600; color:var(--text-primary); }
+    .comp-quote-text { font-size:12px; color:var(--text-secondary); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    /* Feed Tabs */
+    .feed-tabs { display:flex; border-bottom:1px solid rgba(255,255,255,0.06); position:sticky; top:0; background:rgba(14,14,30,0.85); backdrop-filter:blur(8px); z-index:10; }
+    .feed-tab { flex:1; padding:12px 0; text-align:center; font-size:13px; font-weight:500; color:rgba(255,255,255,0.4); cursor:pointer; border-bottom:2px solid transparent; transition:.15s; background:none; border:none; font-family:inherit; }
+    .feed-tab:hover { color:#e0e0e0; background:rgba(255,255,255,0.03); }
+    .feed-tab.active { color:#e0e0e0; border-bottom-color:#e8344a; font-weight:600; }
+    .feed-filter { display:flex; gap:6px; padding:8px 16px; border-bottom:1px solid rgba(255,255,255,0.04); flex-wrap:wrap; position:sticky; top:46px; background:rgba(14,14,30,0.85); backdrop-filter:blur(8px); z-index:9; overflow-x: auto; }
+    .feed-filter-btn { padding:4px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:rgba(255,255,255,0.25); font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; transition:.15s; }
+    .feed-filter-btn:hover { border-color:rgba(255,255,255,0.12); color:rgba(255,255,255,0.5); }
+    .feed-filter-btn.active { border-color:rgba(232,52,74,0.3); background:rgba(232,52,74,0.08); color:#e8344a; }
+
+    /* Chats & DMs */
+    .chat-date-sep { display:flex; align-items:center; gap:12px; padding:16px 0 8px; font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; justify-content:center; }
+    .chat-date-sep::before, .chat-date-sep::after { content:''; flex:1; height:1px; background:var(--border); }
+    .chat-msg { display:flex; gap:8px; padding:4px 0; max-width:85%; }
+    .chat-msg-own { align-self:flex-end; flex-direction:row-reverse; }
+    .chat-avatar { width:28px; height:28px; min-width:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; overflow:hidden; flex-shrink:0; }
+    .chat-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .chat-bubble { border-radius:16px 16px 16px 4px; padding:10px 14px; display:flex; flex-direction:column; gap:2px; box-shadow:none; }
+    .chat-msg:not(.chat-msg-own) .chat-bubble { background:#e8344a; color:#fff; border:none; }
+    .chat-msg-own .chat-bubble { background:#ffffff; border-radius:16px 16px 4px 16px; color:#000000; border:none; }
+    .chat-bubble-name { font-size:11px; font-weight:700; color:var(--accent); }
+    .chat-bubble-text { font-size:14px; line-height:1.4; word-break:break-word; }
+    .chat-bubble-time { font-size:11px; color:rgba(255,255,255,0.7); text-align:right; margin-top:4px; }
+    .dm-message-status { font-size:11px; color:#71767b; display:flex; justify-content:flex-end; gap:4px; margin-top:2px; }
+    .chat-msg-own .dm-message-status { color:rgba(0,0,0,0.5); }
+
+    .dm-layout { display:flex; flex-direction:column; height:100%; }
+    .dm-list { overflow-y:auto; display:flex; flex-direction:column; flex:1; }
+    .dm-list-header { padding:16px; font-size:18px; font-weight:700; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .dm-list-items { flex:1; overflow-y:auto; }
+    .dm-item { display:flex; gap:10px; padding:12px 16px; cursor:pointer; transition:background .1s; border-bottom:1px solid rgba(255,255,255,0.03); }
+    .dm-item:hover { background:rgba(255,255,255,0.03); }
+    .dm-item.active { background:rgba(255,255,255,0.06); }
+    .dm-item-avatar { width:40px; height:40px; min-width:40px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:700; overflow:hidden; }
+    .dm-item-avatar img { width:100%; height:100%; object-fit:cover; }
+    .dm-chat { display:flex; flex-direction:column; min-width:0; flex:1; }
+    .dm-chat-header { padding:12px 16px; font-weight:600; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-shrink:0; }
+    .dm-empty { display:flex; align-items:flex-start; justify-content:center; color:var(--text-muted); font-size:14px; flex-direction:column; gap:8px; padding:0 30px; background:#000000; flex:1; }
+    .dm-empty h3 { font-size:24px; font-weight:800; color:#e7e9ea; margin:0 0 8px 0; }
+    .dm-empty-btn { background:#e8344a; color:#fff; border:none; padding:10px 20px; border-radius:9999px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+    .dm-unread-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+
+    /* Skeleton */
+    .feed-skeleton { pointer-events:none; }
+    .sk-pulse { animation:skPulse 1.5s ease-in-out infinite; }
+    @keyframes skPulse { 0%,100% { opacity:0.3; transform:scale(1); } 50% { opacity:0.6; transform:scale(1.02); } }
+
+    /* Member List Panel items */
+    .rm-card { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; transition:.1s; }
+    .rm-card:hover { background:rgba(255,255,255,0.02); }
+    .rm-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:600; }
+    .rm-info { flex:1; min-width:0; line-height:1.3; }
+    .rm-name { font-size:13px; font-weight:600; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rm-role { font-size:11px; color:var(--text-muted); }
+    .rm-actions { display:flex; gap:4px; flex-shrink:0; }
+    .rm-btn { padding:3px 7px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text-secondary); font-size:11px; cursor:pointer; font-family:inherit; transition:.1s; white-space:nowrap; }
+    .rm-btn:hover { border-color:var(--accent); color:var(--text-primary); }
+
+    /* Floating Action Button (mobile post) */
+    .mobile-fab-post {
+      display:flex !important; align-items:center; justify-content:center;
+      position:fixed !important; bottom:80px !important; right:16px !important;
+      width:54px !important; height:54px !important; border-radius:50% !important; border:none !important;
+      z-index:999 !important; cursor:pointer; background:#e8344a !important; color:#fff !important; font-size:20px !important;
+      box-shadow:0 4px 14px rgba(0,0,0,0.4) !important; transition:transform .15s ease, background-color .15s ease;
+    }
+    .mobile-fab-post:active { transform:scale(.95); background:#cc293d !important; }
+
+    /* Dots menu */
+    .dots-menu { position: absolute; display: none; z-index: 9999; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; min-width: 160px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .dots-menu.open { display: block; }
+    .dots-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; border-radius: 8px; font-size: 13px; color: var(--text-primary); transition: .15s; }
+    .dots-menu-item:hover { background: rgba(255,255,255,0.06); }
+    .dots-menu-item.delete { color: #e8344a; }
   </style>
 </head>
 <body>
@@ -735,27 +1020,60 @@
   <div class="main">
     <!-- INICIO PAGE -->
     <div class="page active" id="page-inicio">
-      <div class="compose">
-        <div class="compose-avatar">RD</div>
-        <div class="compose-content">
-          <textarea class="compose-input" placeholder="¿Qué está pasando?" id="composeText" rows="3"></textarea>
-          <div class="compose-actions">
-            <div class="compose-icons">
-              <div class="compose-icon"><i class="ti ti-photo"></i></div>
-              <div class="compose-icon"><i class="ti ti-movie"></i></div>
-              <div class="compose-icon"><i class="ti ti-chart-bar"></i></div>
-              <div class="compose-icon"><i class="ti ti-mood-smile"></i></div>
-            </div>
-            <button class="compose-btn" onclick="postTweet()">Postear</button>
-          </div>
-        </div>
+      <div id="inicio-main-view">
+        <div id="posts-feed"></div>
       </div>
-      <div id="posts-feed"></div>
+      <div id="inicio-post-detail-view" style="display:none;">
+        <div class="post-detail-header">
+          <button onclick="cerrarHiloPost()" class="post-detail-back"><i class="ti ti-arrow-left"></i></button>
+          <span class="post-detail-title">Post</span>
+        </div>
+        <div id="post-detail-content"></div>
+      </div>
     </div>
 
     <!-- EXPLORAR PAGE -->
     <div class="page" id="page-explorar">
-      <div id="explore-content"></div>
+      <div id="explorer-main-view">
+        <div style="padding:10px 16px;position:sticky;top:0;background:rgba(7,7,14,0.9);backdrop-filter:blur(8px);z-index:5;">
+          <input type="text" id="explore-search-input" placeholder="Buscar hilos, comunidades, usuarios..." oninput="debounceExploreSearch(this.value)" style="width:100%;padding:10px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+          <div id="explore-results" style="display:none;position:absolute;top:100%;left:16px;right:16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,0.5);max-height:300px;overflow-y:auto;z-index:100;"></div>
+        </div>
+        <div id="explore-content"></div>
+      </div>
+      <div id="explorar-comunidad-detail-view" style="display:none;">
+        <div class="post-detail-header">
+          <button onclick="cerrarVistaComunidad()" class="post-detail-back"><i class="ti ti-arrow-left"></i></button>
+          <span style="font-size:16px;font-weight:700;" id="comunidad-detail-title"></span>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;" id="comunidad-detail-join-btn"></div>
+        </div>
+        <div id="comunidad-detail-banner" class="comm-hover-edit" style="width:100%;height:140px;background:linear-gradient(135deg,var(--accent),#1d9bf0);background-size:cover;background-position:center;position:relative;"></div>
+        <div style="display:flex;align-items:flex-end;gap:12px;padding:0 16px 12px;margin-top:-32px;position:relative;z-index:2;">
+          <div class="comm-hover-edit" style="width:80px;height:80px;min-width:80px;border-radius:50%;border:3px solid var(--bg-surface);position:relative;">
+            <div id="comunidad-detail-avatar" style="width:100%;height:100%;border-radius:50%;background:var(--bg-card);display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-weight:700;font-size:32px;overflow:hidden;"></div>
+          </div>
+          <div style="flex:1;">
+            <div id="comunidad-detail-description" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></div>
+            <div id="comunidad-detail-meta" style="font-size:12px;color:var(--text-muted);margin-top:4px;"></div>
+          </div>
+        </div>
+        <!-- Pestañas para posts y chat de comunidad -->
+        <div class="feed-tabs" id="comm-tabs" style="display:flex;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
+          <button class="feed-tab active" id="comm-tab-posts" onclick="switchCommTab('posts')" style="flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;background:none;border:none;color:var(--text-primary);border-bottom:2px solid var(--accent);cursor:pointer;">Foro</button>
+          <button class="feed-tab" id="comm-tab-chat" onclick="switchCommTab('chat')" style="flex:1;padding:10px 0;text-align:center;font-size:13px;font-weight:600;background:none;border:none;color:var(--text-secondary);border-bottom:2px solid transparent;cursor:pointer;">Chat en vivo</button>
+        </div>
+        <div id="comunidad-posts-container">
+          <div id="comunidad-infeed-composer"></div>
+          <div id="comunidad-detail-posts"></div>
+        </div>
+        <div id="comunidad-chat-container" style="display:none;flex-direction:column;height:calc(100vh - 380px);">
+          <div id="comm-chat-messages" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+          <div class="chat-input-area" style="display:flex;padding:8px 12px;border-top:1px solid var(--border);">
+            <textarea id="comm-chat-input" class="chat-input" placeholder="Enviar mensaje al chat..." rows="1" oninput="autoResizeTextarea(this)"></textarea>
+            <button class="chat-send" onclick="sendCommChatMessage()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- MARCADORES PAGE -->
@@ -770,8 +1088,35 @@
 
     <!-- MENSAJES PAGE -->
     <div class="page" id="page-mensajes">
-      <div id="messages-list"></div>
-      <div id="chat-container" style="display: none;"></div>
+      <div id="messages-list">
+        <div style="padding:10px 16px;background:rgba(7,7,14,0.9);backdrop-filter:blur(8px);">
+          <input type="text" placeholder="Buscar mensajes..." oninput="filtrarConversaciones(this.value)" style="width:100%;padding:10px 16px;border-radius:20px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+        <div id="dm-conversations"></div>
+      </div>
+      <div id="chat-container" style="display: none; height: calc(100vh - 132px); flex-direction: column;">
+        <div class="chat-view" style="height: 100%; display: flex; flex-direction: column;">
+          <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 12px;" id="dm-chat-header">
+              <button style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer;" onclick="cerrarDM()">
+                <i class="ti ti-arrow-left"></i>
+              </button>
+              <div>
+                <div style="font-weight: 600; color: var(--text-primary);" id="dm-chat-username">Usuario</div>
+                <div style="font-size: 12px; color: var(--text-muted);" id="dm-presence-indicator"></div>
+              </div>
+            </div>
+            <button style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer;">
+              <i class="ti ti-dots-vertical"></i>
+            </button>
+          </div>
+          <div class="chat-messages" id="dm-messages" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;"></div>
+          <div class="chat-input-area">
+            <input type="text" id="dm-input" class="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendDM()" autocomplete="off">
+            <button class="chat-send" onclick="sendDM()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1149,6 +1494,165 @@
     loadFeed();
     renderSubtabs();
   </script>
+  <!-- Floating Action Button (mobile post) -->
+  <button class="mobile-fab-post" onclick="openComposer()">📝</button>
+
+  <!-- Post Composer Modal -->
+  <div class="composer-overlay" id="composer-overlay" onclick="closeComposer()"></div>
+  <div class="composer" id="composer">
+    <div class="comp-header">
+      <button onclick="closeComposer()" class="comp-close"><i class="ti ti-x"></i></button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="comp-drafts" onclick="loadDraft()" title="Borradores"><i class="ti ti-file-text"></i></button>
+      </div>
+    </div>
+    <div class="comp-body">
+      <div class="comp-avatar" id="comp-avatar">?</div>
+      <div class="comp-main">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <select class="comp-audience" id="comp-community">
+            <option value="">Mi perfil</option>
+            <option value="seinen">Comunidad Seinen</option>
+            <option value="shonen">Comunidad Shonen</option>
+            <option value="fanart">Club de Arte/Fanart</option>
+            <option value="lectores">Lectores Avanzados</option>
+          </select>
+          <button class="comp-link-manga" onclick="openMangaSearch()" id="comp-link-btn"><i class="ti ti-book"></i> Vincular manga</button>
+          <div class="comp-manga-tag" id="comp-manga-tag" style="display:none;">
+            <img id="comp-manga-cover" src="" alt="">
+            <span class="comp-manga-name" id="comp-manga-name">Manga</span>
+            <span style="margin-left:auto;flex-shrink:0;cursor:pointer;" onclick="removeLinkedManga()">✕</span>
+          </div>
+        </div>
+
+        <div class="comp-manga-search" id="comp-manga-search" style="display:none;">
+          <input type="text" id="comp-manga-input" placeholder="Buscar manga..." oninput="searchManga(this.value)" autocomplete="off">
+          <div id="comp-manga-results"></div>
+        </div>
+
+        <div class="comp-spoiler-row" id="comp-spoiler-row">
+          <label class="comp-spoiler-toggle">
+            <input type="checkbox" id="comp-spoiler" onchange="toggleSpoiler(this.checked)">
+            <span class="comp-spoiler-slider"></span>
+            <span class="comp-spoiler-label"><i class="ti ti-eye-off"></i> Contiene spoilers</span>
+          </label>
+        </div>
+
+        <div class="comp-textarea-wrap" id="comp-textarea-wrap">
+          <textarea class="comp-textarea" id="comp-textarea" placeholder="¿Qué está pasando?" maxlength="280" oninput="compUpdate(this)"></textarea>
+          <div class="comp-preview" id="comp-preview"></div>
+        </div>
+
+        <div class="comp-gif-preview" id="comp-gif-preview" style="display:none">
+          <img id="comp-gif-img" src="" alt="GIF">
+          <button class="comp-gif-remove" onclick="removeGif()"><i class="ti ti-x"></i></button>
+          <span class="comp-gif-badge">GIF</span>
+        </div>
+
+        <div class="comp-type-pills" id="comp-type-pills">
+          <button class="comp-pill" data-type="fanart" onclick="togglePill(this)"><i class="ti ti-artboard"></i> FanArt</button>
+          <button class="comp-pill" data-type="review" onclick="togglePill(this)"><i class="ti ti-notes"></i> Reseña</button>
+          <button class="comp-pill" data-type="theory" onclick="togglePill(this)"><i class="ti ti-bulb"></i> Teoría</button>
+          <button class="comp-pill" data-type="collection" onclick="togglePill(this)"><i class="ti ti-package"></i> Coleccionismo</button>
+          <button class="comp-pill" data-type="memes" onclick="togglePill(this)"><i class="ti ti-mood-smile"></i> Memes</button>
+        </div>
+      </div>
+    </div>
+    <div class="comp-creator-options" id="comp-creator-options" style="display:none;padding:8px 16px;border-top:1px solid var(--border);">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:var(--text-secondary);">
+        <input type="checkbox" id="comp-is-news">
+        📢 Destacar en "Últimas Noticias"
+      </label>
+      <label id="comp-global-opt" style="display:none;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#ff4a4a;">
+        <input type="checkbox" id="comp-is-global">
+        👑 Anuncio Global del Sitio
+      </label>
+    </div>
+    <div class="comp-footer">
+      <div class="comp-tools">
+        <button class="comp-tool" onclick="document.getElementById('comp-media-input').click()" title="Media"><i class="ti ti-photo"></i></button>
+        <input type="file" id="comp-media-input" accept="image/*,video/*" multiple style="display:none" onchange="subirImagenPost(this)">
+        <button class="comp-tool" onclick="openGifPicker()" title="GIF"><i class="ti ti-gif"></i></button>
+        <button class="comp-tool" onclick="openChapterSelector()" title="Capítulo"><i class="ti ti-bookmark"></i></button>
+        <button class="comp-tool" title="Panel"><i class="ti ti-layout-grid"></i></button>
+        <button class="comp-tool" title="Encuesta"><i class="ti ti-chart-bar"></i></button>
+      </div>
+      <div class="comp-actions">
+        <button class="comp-thread-btn" title="Añadir hilo"><i class="ti ti-plus"></i></button>
+        <div class="comp-counter" id="comp-counter">0</div>
+        <button class="comp-submit" id="comp-submit" disabled onclick="submitPost()">Postear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GIF Picker -->
+  <div class="gif-picker-overlay" id="gif-picker" style="display:none" onclick="if(event.target===this)closeGifPicker()">
+    <div class="gif-picker">
+      <div class="gif-picker-header">
+        <span>Buscar GIF</span>
+        <button onclick="closeGifPicker()" class="gif-picker-close"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="gif-picker-search">
+        <i class="ti ti-search"></i>
+        <input type="text" id="gif-search-input" placeholder="Buscar GIFs..." oninput="debounceGifSearch(this.value)" autocomplete="off">
+      </div>
+      <div class="gif-categories" id="gif-categories"></div>
+      <div class="gif-results" id="gif-results">
+        <div class="gif-grid" id="gif-grid"></div>
+        <div id="scroll-sentinel" style="height:20px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Members Panel -->
+  <div class="gif-picker-overlay" id="members-panel" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+    <div class="gif-picker" style="height:auto;max-height:70vh;display:flex;flex-direction:column;">
+      <div class="gif-picker-header">
+        <span id="members-panel-title">Miembros</span>
+        <button onclick="document.getElementById('members-panel').style.display='none'" class="gif-picker-close"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <input type="text" id="members-search-input" placeholder="Buscar miembro..." oninput="filterMembers(this.value)" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+      </div>
+      <div id="members-panel-list" style="flex:1;min-height:0;overflow-y:auto;padding:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Algorithm Score Modal -->
+  <div class="algo-modal-overlay" id="algo-modal-overlay" onclick="if(event.target===this)closeAlgorithm()"></div>
+  <div class="algo-modal" id="algo-modal">
+    <div class="algo-header">
+      <h3><i class="ti ti-settings"></i> Métrica de Recomendación</h3>
+      <button onclick="closeAlgorithm()" class="algo-close"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="algo-body">
+      <div class="algo-score">
+        <div class="algo-score-num">0.00</div>
+        <div class="algo-score-label">PUNTUACIÓN TOTAL DEL ALGORITMO</div>
+      </div>
+      <div id="algo-bars"></div>
+    </div>
+    <div class="algo-footer">
+      Esta puntuación determina la posición de este post en el feed "Para ti".
+    </div>
+  </div>
+
+  <!-- Repost Context Menu -->
+  <div class="repost-menu" id="repost-menu">
+    <div class="repost-menu-item" id="repost-menu-item-simple" onclick="doRepost(false)"><i class="ti ti-repeat"></i> Repostear</div>
+    <div class="repost-menu-item" id="repost-menu-item-quote" onclick="doRepost(true)"><i class="ti ti-quote"></i> Citar Post</div>
+  </div>
+
+  <!-- Dots Options Menu -->
+  <div class="dots-menu" id="dots-menu">
+    <div class="dots-menu-item" id="dots-menu-delete" onclick="deletePostAction()" style="display:none;color:#e8344a;"><i class="ti ti-trash"></i> Eliminar publicación</div>
+    <div class="dots-menu-item" id="dots-menu-follow" onclick="followUserAction()"><i class="ti ti-user-plus"></i> Seguir usuario</div>
+    <div class="dots-menu-item" onclick="copyPostLinkAction()"><i class="ti ti-link"></i> Copiar enlace al post</div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" style="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;"></div>
+
   <script src="/js/glass-hub.js"></script>
 </body>
 </html>

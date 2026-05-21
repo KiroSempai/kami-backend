@@ -1474,13 +1474,13 @@
 
     const FILTER_TAG_MAP = { 'FanArt':'fanart', 'Reseña':'review', 'Teoría':'theory', 'Coleccionismo':'collection', 'Memes':'memes' };
     function toggleFilter(el) {
+      document.querySelectorAll('.feed-filter-btn').forEach(function(b) { b.classList.toggle('active', b === el); });
       let tagText = el.textContent.trim();
       if (tagText === 'Todos') {
         currentFilter = 'Todos';
       } else {
         currentFilter = FILTER_TAG_MAP[tagText] || tagText.toLowerCase();
       }
-      renderFeedFilters();
       renderFeed();
     }
 
@@ -1529,7 +1529,7 @@
       }, 10000);
 
       fetch(url, { headers: token ? { 'Authorization': 'Bearer ' + token } : {} })
-        .then(r => r.json())
+        .then(r => { if (!r.ok) { showFeedError('HTTP ' + r.status); return; } return r.json(); })
         .then(data => {
           clearTimeout(timeout);
           if (!data || !data.success || !data.posts) { showFeedError('Error al procesar posts'); return; }
@@ -2518,10 +2518,10 @@
         if (token) headers['Authorization'] = 'Bearer ' + token;
 
         Promise.all([
-          fetch('/api/feed/explore-data', { headers }).then(r => r.json()).catch(() => ({ success:false })),
-          fetch('/api/feed/explore-topics').then(r => r.json()).catch(() => ({ success:false })),
-          fetch('/api/feed/explore-hashtags').then(r => r.json()).catch(() => ({ success:false })),
-          fetch('/api/feed/trending-posts').then(r => r.json()).catch(() => ({ success:false }))
+          fetch('/api/communities/trending/channels', { headers }).then(r => r.json()).catch(() => ({ success:false })),
+          fetch('/api/communities/trending/topics', { headers }).then(r => r.json()).catch(() => ({ success:false })),
+          fetch('/api/communities/trending/hashtags', { headers }).then(r => r.json()).catch(() => ({ success:false })),
+          fetch('/api/communities/trending', { headers }).then(r => r.json()).catch(() => ({ success:false }))
         ])
         .then(results => {
           let companyData = results[0];
@@ -2616,7 +2616,10 @@
       } else if (tab === 'explorar-comunidades') {
         content.innerHTML = '<div class="notif-loading" style="text-align:center;padding:20px;color:var(--text-muted);"><i class="ti ti-loader animate-spin"></i> Cargando comunidades...</div>';
         
-        fetch('/api/communities')
+        let _cHeaders = {};
+        let _cToken = localStorage.getItem('kami_token');
+        if (_cToken) _cHeaders['Authorization'] = 'Bearer ' + _cToken;
+        fetch('/api/communities', { headers: _cHeaders })
           .then(r => r.json())
           .then(d => {
             if (!d.success || !d.communities.length) { content.innerHTML = '<div class="notif-empty" style="padding:20px;text-align:center;color:var(--text-muted);">Sin comunidades creadas todavía</div>'; return; }

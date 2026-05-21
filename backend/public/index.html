@@ -463,7 +463,7 @@
         <span class="com-logo-text">KAMI</span>
       </a>
 
-      <button class="com-nav-item active" data-section="inicio" onclick="goToSection('inicio')">
+      <button class="com-nav-item active" data-section="inicio" onclick="if(/mobile|android|iphone|ipad|tablet/i.test(navigator.userAgent)||window.innerWidth<=600)window.location.href='/';else goToSection('inicio')">
         <i class="ti ti-home"></i>
         <span>Inicio</span>
       </button>
@@ -1453,6 +1453,10 @@
     // ── Navigation + community list ──
     let _origGoToSection = goToSection;
     goToSection = function(section) {
+      if (section === 'inicio' && (/mobile|android|iphone|ipad|tablet/i.test(navigator.userAgent)||window.innerWidth<=600)) {
+        window.location.href = '/';
+        return;
+      }
       _origGoToSection(section);
       if (section === 'inicio') {
         initInFeedComposer();

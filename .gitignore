@@ -3,3 +3,10 @@ node_modules/
 *.log
 body.json
 login-result.txt
+# Secretos: nunca en git
+client_secret_*.json
+*.pem
+.env.*
+!.env.example
+backend/.env.*
+!backend/.env.example

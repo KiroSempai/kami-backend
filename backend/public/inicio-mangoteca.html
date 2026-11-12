@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="/css/kmi-card.css">
   <style>
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-    body { background:#0e0e1e; color:#fff; font-family:'Plus Jakarta Sans',sans-serif; }
+    body { background:var(--k-bg); color: var(--k-text); font-family:'Plus Jakarta Sans',sans-serif; }
     .mangoteca-layout { display: flex; min-height: calc(100vh - 64px); }
     .mangoteca-content { flex: 1; min-width: 0; }
   /* ── MOBILE LAYOUT (<600px) ── */
@@ -24,7 +24,7 @@
     :root { --nav-top-h:56px; --nav-bot-h:64px; }
     .mangoteca-layout { padding-top:var(--nav-top-h); padding-bottom:var(--nav-bot-h); display:block; }
     .mangoteca-content { overflow-x:hidden; }
-    body { background:#07070e; padding:0; }
+    body { background:var(--k-bg); padding:0; }
     .hero { display:none; }
     .section-header,
     .features-strip,
@@ -44,16 +44,16 @@
     .mob-top-left { display:flex; align-items:center; gap:10px; }
     .mob-top-avatar {
       width:34px; height:34px; border-radius:50%;
-      background:linear-gradient(135deg,#e8334a,#ff7c6e);
+      background:linear-gradient(135deg,var(--k-accent),#ff7c6e);
       display:flex; align-items:center; justify-content:center;
-      font-size:13px; font-weight:700; color:#fff; cursor:pointer;
+      font-size:13px; font-weight:700; color: var(--k-text); cursor:pointer;
     }
-    .mob-top-logo { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:#e7e9ea; }
-    .mob-top-logo span { color:#e8344a; }
+    .mob-top-logo { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--k-text); }
+    .mob-top-logo span { color:var(--k-accent); }
     .mob-top-right { display:flex; align-items:center; gap:4px; }
     .mob-top-icon {
       width:34px; height:34px; border-radius:50%;
-      background:rgba(255,255,255,0.05); border:1px solid var(--border);
+      background:rgb(var(--k-ink) / 0.05); border:1px solid var(--border);
       color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
       cursor:pointer; font-size:17px;
     }
@@ -84,13 +84,13 @@
     .mob-hero-slide.active { opacity:1; pointer-events:auto; }
     .mob-hero-bg { position:absolute; inset:0; }
     .mob-hero-gradient { position:absolute; inset:0; background:linear-gradient(to right,rgba(7,7,14,0.92) 0%,rgba(7,7,14,0.5) 55%,rgba(7,7,14,0.1) 100%); }
-    .mob-hero-grad-bottom { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to top,#07070e,transparent); }
+    .mob-hero-grad-bottom { position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to top,var(--k-bg),transparent); }
     .mob-hero-content { position:absolute; bottom:16px; left:16px; right:40%; z-index:10; }
-    .mob-hero-badge { display:inline-flex; align-items:center; gap:3px; background:var(--accent); color:#fff; font-size:8px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+    .mob-hero-badge { display:inline-flex; align-items:center; gap:3px; background:var(--accent); color: var(--k-text); font-size:8px; font-weight:700; padding:2px 7px; border-radius:999px; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
     .mob-hero-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; line-height:.95; margin-bottom:4px; text-shadow:0 3px 12px rgba(0,0,0,0.6); }
     .mob-hero-sub { font-size:9px; color:var(--text-secondary); margin-bottom:8px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
     .mob-hero-dots { position:absolute; bottom:12px; right:14px; display:flex; gap:4px; z-index:10; }
-    .mob-hero-dot { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all .2s; }
+    .mob-hero-dot { width:5px; height:5px; border-radius:50%; background:rgb(var(--k-ink) / 0.2); cursor:pointer; transition:all .2s; }
     .mob-hero-dot.active { background:var(--accent); width:16px; border-radius:3px; }
 
     /* ── SECTION MOBILE ── */
@@ -98,7 +98,7 @@
     .mob-sec-head { display:flex; align-items:center; justify-content:space-between; padding:0 14px; margin-bottom:10px; }
     .mob-sec-title { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; }
     .mob-sec-title i { font-size:15px; color:var(--accent); }
-    .mob-see-all { font-size:10px; font-weight:600; color:var(--accent); padding:3px 8px; border-radius:999px; background:rgba(232,51,74,0.1); border:none; cursor:pointer; }
+    .mob-see-all { font-size:10px; font-weight:600; color:var(--accent); padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--k-accent) 10%, transparent); border:none; cursor:pointer; }
 
     /* ── HORIZONTAL SCROLL ── */
     .mob-h-scroll { display:flex; gap:8px; overflow-x:auto; padding:0 14px 12px; scrollbar-width:none; }
@@ -111,7 +111,7 @@
     }
     .mob-manga-card:active { transform:scale(.96); }
     .mob-manga-thumb { aspect-ratio:2/3; position:relative; overflow:hidden; background:var(--bg-surface); border-radius:14px 14px 0 0; display:flex; align-items:center; justify-content:center; }
-    .mob-manga-thumb i { font-size:28px; color:rgba(255,255,255,0.06); }
+    .mob-manga-thumb i { font-size:28px; color:rgb(var(--k-ink) / 0.06); }
     .mob-thumb-gradient { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,0.85) 100%); }
     .mob-manga-title { font-size:10px; font-weight:700; line-height:1.3; padding:6px 7px 5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
@@ -122,7 +122,7 @@
       color:var(--text-secondary); background:var(--bg-card); border:1px solid var(--border);
       cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px;
     }
-    .mob-genre-pill.active { background:rgba(232,51,74,0.15); border-color:var(--accent); color:var(--accent); }
+    .mob-genre-pill.active { background:color-mix(in srgb, var(--k-accent) 15%, transparent); border-color:var(--accent); color:var(--accent); }
     .mob-genre-pill i { font-size:13px; }
 
     /* ── CATALOG GRID ── */
@@ -158,7 +158,7 @@
     .mob-top-page { padding:0 14px 20px; }
     .mob-chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:16px; }
     .mob-chart-head { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; }
-    .mob-chart-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.03); cursor:pointer; }
+    .mob-chart-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgb(var(--k-ink) / 0.03); cursor:pointer; }
     .mob-chart-row:last-child { border-bottom:none; }
     .mob-chart-num { width:20px; text-align:center; font-family:'Bebas Neue',sans-serif; font-size:17px; color:var(--text-muted); flex-shrink:0; }
     .mob-chart-num.t1 { color:var(--gold); }
@@ -170,8 +170,8 @@
     .mob-chart-body .s { font-size:10px; color:var(--text-muted); }
     .mob-chart-score { font-size:12px; font-weight:700; color:var(--gold); display:flex; align-items:center; gap:2px; }
     .mob-chart-avail { font-size:8px; font-weight:700; padding:1px 6px; border-radius:999px; margin-top:2px; display:inline-block; }
-    .mob-ca-readable { background:rgba(45,202,122,0.12); color:var(--green); }
-    .mob-ca-tracking { background:rgba(76,157,245,0.12); color:var(--blue); }
+    .mob-ca-readable { background:color-mix(in srgb, var(--k-ok) 12%, transparent); color:var(--green); }
+    .mob-ca-tracking { background:color-mix(in srgb, var(--k-info) 12%, transparent); color:var(--blue); }
 
     /* ── MODAL ── */
     .mob-modal-overlay {
@@ -193,7 +193,7 @@
     .mob-modal-cover { width:40px; height:54px; border-radius:10px; background:var(--bg-card); flex-shrink:0; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); }
     .mob-modal-title { font-size:14px; font-weight:700; }
     .mob-modal-author { font-size:11px; color:var(--text-secondary); margin-top:1px; }
-    .mob-modal-close { margin-left:auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:var(--text-secondary); cursor:pointer; font-size:16px; }
+    .mob-modal-close { margin-left:auto; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgb(var(--k-ink) / 0.06); border:none; color:var(--text-secondary); cursor:pointer; font-size:16px; }
     .mob-modal-body { padding:14px 16px; }
     .mob-modal-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
     .mob-modal-states { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:14px; }
@@ -203,7 +203,7 @@
       font-size:11px; font-weight:600; color:var(--text-secondary); transition:all .15s;
     }
     .mob-state-btn i { font-size:14px; }
-    .mob-state-btn.selected { border-color:var(--accent); color:var(--accent); background:rgba(232,51,74,0.1); }
+    .mob-state-btn.selected { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--k-accent) 10%, transparent); }
     .mob-score-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
     .mob-stars { display:flex; gap:4px; }
     .mob-star { font-size:20px; color:var(--text-muted); cursor:pointer; }
@@ -211,7 +211,7 @@
     .mob-modal-foot { display:flex; gap:8px; padding:12px 16px 16px; border-top:1px solid var(--border); }
     .mob-btn-primary {
       display:inline-flex; align-items:center; gap:6px; flex:1; justify-content:center;
-      background:var(--accent); color:#fff; padding:11px 18px; border-radius:999px;
+      background:var(--accent); color: var(--k-text); padding:11px 18px; border-radius:999px;
       font-size:12px; font-weight:700; border:none; cursor:pointer;
     }
     .mob-btn-ghost {
@@ -227,13 +227,14 @@
       border:1px solid var(--border); color:var(--text-secondary); background:var(--bg-card);
       cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;
     }
-    .mob-filter-pill.active { border-color:var(--accent); color:var(--accent); background:rgba(232,51,74,0.1); }
+    .mob-filter-pill.active { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--k-accent) 10%, transparent); }
     .mob-filter-pill i { font-size:12px; }
   }
   </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
-  <script src="/js/menu-global.js"></script>
 
 <!-- ═══ TOP NAV MOBILE ═══ -->
 <nav class="mob-top-nav mob-only" style="display:none;">
@@ -264,7 +265,7 @@
     <div class="mob-hero-gradient"></div>
     <div class="mob-hero-grad-bottom"></div>
     <div class="mob-hero-content">
-      <div class="mob-hero-badge" style="background:#4c9df5">TENDENCIA</div>
+      <div class="mob-hero-badge" style="background:var(--k-info)">TENDENCIA</div>
       <div class="mob-hero-title" id="mob-hero-title-1">VINLAND SAGA</div>
       <div class="mob-hero-sub" id="mob-hero-sub-1"><span>Makoto Yukimura</span></div>
       <button class="btn-hero-primary" style="padding:7px 12px;font-size:10px"><i class="ti ti-player-play" style="font-size:11px"></i> Leer</button>
@@ -339,7 +340,7 @@
         </div>
       </div>
       <!-- Cover 2 (featured) -->
-      <div class="hero-cover" style="border: 2px solid rgba(232,51,74,0.5); box-shadow: 0 0 40px rgba(232,51,74,0.2);">
+      <div class="hero-cover" style="border: 2px solid color-mix(in srgb, var(--k-accent) 50%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--k-accent) 20%, transparent);">
         <div class="placeholder-img">
           ⛩
         </div>
@@ -357,7 +358,7 @@
         </div>
         <div class="hero-cover-overlay">
           <div>
-            <div class="hero-cover-tag" style="background:#4c9df5;">Histórico</div>
+            <div class="hero-cover-tag" style="background:var(--k-info);">Histórico</div>
             <div class="hero-cover-title">Kingdom</div>
           </div>
         </div>
@@ -471,7 +472,7 @@
     <div class="features-grid">
 
       <div class="feature-item">
-        <div class="feature-icon" style="background:rgba(232,51,74,0.15); color:var(--accent);">
+        <div class="feature-icon" style="background:color-mix(in srgb, var(--k-accent) 15%, transparent); color:var(--accent);">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
@@ -482,7 +483,7 @@
       </div>
 
       <div class="feature-item">
-        <div class="feature-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">
+        <div class="feature-icon" style="background:color-mix(in srgb, var(--k-info) 15%, transparent); color:var(--blue);">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <rect x="2" y="3" width="20" height="14" rx="2" />
             <path d="M8 21h8m-4-4v4" />
@@ -494,7 +495,7 @@
       </div>
 
       <div class="feature-item">
-        <div class="feature-icon" style="background:rgba(245,200,66,0.15); color:var(--accent-gold);">
+        <div class="feature-icon" style="background:color-mix(in srgb, var(--k-gold) 15%, transparent); color:var(--accent-gold);">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 6v6l4 2" />
@@ -506,7 +507,7 @@
       </div>
 
       <div class="feature-item">
-        <div class="feature-icon" style="background:rgba(45,202,122,0.15); color:var(--green);">
+        <div class="feature-icon" style="background:color-mix(in srgb, var(--k-ok) 15%, transparent); color:var(--green);">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
@@ -532,7 +533,7 @@
       </div>
 
       <div class="feature-item">
-        <div class="feature-icon" style="background:rgba(232,51,74,0.12); color:var(--accent);">
+        <div class="feature-icon" style="background:color-mix(in srgb, var(--k-accent) 12%, transparent); color:var(--accent);">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <rect x="3" y="3" width="7" height="7" rx="1" />
             <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -764,7 +765,7 @@
 
     // ── Build manga card for mobile ──
     function mobCard(m) {
-      var color = m.color || '#14141f';
+      var color = m.color || 'var(--k-surface-1)';
       return '<div class="mob-manga-card" onclick="location.href=\'/manga/' + m.id + '\'">' +
         '<div class="mob-manga-thumb" style="background:' + color + '">' +
         '<i class="ti ti-book-2"></i>' +
@@ -812,7 +813,7 @@
 
     // ── Genre pills ──
     var GENRES = [
-      { name:'Acción', icon:'ti ti-sword', color:'#e8334a', slug:'accion' },
+      { name:'Acción', icon:'ti ti-sword', color:'var(--k-accent)', slug:'accion' },
       { name:'Romance', icon:'ti ti-heart', color:'#f472b6', slug:'romance' },
       { name:'Fantasía', icon:'ti ti-wand', color:'#a855f7', slug:'fantasia' },
       { name:'Drama', icon:'ti ti-masks-theater', color:'#f59e0b', slug:'drama' },
@@ -847,7 +848,7 @@
           var availTxt = type==='readable'?'Legible':'Seguimiento';
           return '<div class="mob-chart-row" onclick="location.href=\'/manga/'+m.id+'\'">' +
             '<div class="mob-chart-num '+numCls+'">'+(i+1)+'</div>' +
-            '<div class="mob-chart-cover" style="background:'+(m.color||'var(--bg-surface)')+'"><i class="ti ti-book-2" style="font-size:10px;color:rgba(255,255,255,0.1)"></i></div>' +
+            '<div class="mob-chart-cover" style="background:'+(m.color||'var(--bg-surface)')+'"><i class="ti ti-book-2" style="font-size:10px;color:rgb(var(--k-ink) / 0.1)"></i></div>' +
             '<div class="mob-chart-body"><div class="t">'+(m.title||'')+'</div><div class="s">'+(m.author||'')+'</div></div>' +
             '<div style="text-align:right"><div class="mob-chart-score"><i class="ti ti-star-filled" style="font-size:9px"></i>'+(m.rating||'?')+'</div>' +
             '<div class="mob-chart-avail '+availCls+'">'+availTxt+'</div></div></div>';

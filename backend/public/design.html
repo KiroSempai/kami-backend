@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sistema de diseño · KAMI</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Solo maquetación de esta página de referencia; los componentes vienen de kami.css */
+    .ds-hero { display: grid; gap: var(--k-4); padding-block: var(--k-8) var(--k-4); }
+    .ds-hero .k-display { font-size: var(--k-fs-hero); margin: 0; }
+    .ds-hero .k-display span { color: var(--k-accent); text-shadow: var(--k-glow-text); }
+    .ds-lede { font-size: var(--k-fs-lg); color: var(--k-text-2); max-width: 62ch; margin: 0; line-height: 1.6; }
+    .ds-toc { position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); z-index: 5; padding-block: var(--k-3); background: color-mix(in srgb, var(--k-bg) 92%, transparent); backdrop-filter: blur(10px); }
+    @media (max-width: 640px) { .ds-toc { position: static; } }
+    .ds-sec { display: grid; gap: var(--k-5); padding-top: var(--k-12); scroll-margin-top: 120px; }
+    .ds-sec > header { display: grid; gap: var(--k-2); }
+    .ds-sec > header p { margin: 0; color: var(--k-text-2); max-width: 64ch; }
+    .ds-swatches { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .ds-sw { border: 1px solid var(--k-line); border-radius: var(--k-r-md); overflow: hidden; background: var(--k-surface-1); }
+    .ds-sw i { display: block; height: 64px; background: var(--_c); border-bottom: 1px solid var(--k-line); }
+    .ds-sw div { padding: var(--k-2) var(--k-3); display: grid; gap: 2px; }
+    .ds-sw b { font-size: var(--k-fs-sm); }
+    .ds-sw code { font: 11px var(--k-font-mono); color: var(--k-text-3); }
+    .ds-demo { display: flex; flex-wrap: wrap; gap: var(--k-3); align-items: center; }
+    .ds-type { display: grid; gap: var(--k-4); }
+    .ds-type-row { display: grid; grid-template-columns: 140px 1fr; gap: var(--k-4); align-items: baseline; border-bottom: 1px solid var(--k-line); padding-bottom: var(--k-3); }
+    .ds-type-row code { font: 12px var(--k-font-mono); color: var(--k-text-3); }
+    @media (max-width: 640px) { .ds-type-row { grid-template-columns: 1fr; gap: var(--k-1); } }
+    .ds-form { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .ds-rules { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .ds-rules .k-card p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.55; }
+    .ds-rules code, .ds-sec p code { font: 12.5px var(--k-font-mono); background: rgb(var(--k-ink) / 0.06); padding: 1px 6px; border-radius: 5px; }
+    .ds-work { --k-work-accent: #f5b83d; }
+  </style>
+</head>
+<body>
+<main class="k-page" id="k-main">
+
+  <section class="ds-hero">
+    <span class="k-eyebrow">神 · Sistema de diseño</span>
+    <h1 class="k-display">Una sola <span>tinta</span> para todo KAMI</h1>
+    <p class="ds-lede">Tokens, componentes y reglas que comparten todas las páginas. Cada color sale del tema y del acento que elige el lector, así que cualquier cambio aquí llega a toda la web.</p>
+    <div class="k-row">
+      <button type="button" class="k-btn k-btn--primary k-btn--lg" data-k-appearance><i class="ti ti-palette" aria-hidden="true"></i>Cambiar apariencia</button>
+      <a class="k-btn k-btn--secondary k-btn--lg" href="#reglas">Cómo usarlo</a>
+    </div>
+  </section>
+
+  <nav class="ds-toc" aria-label="Secciones">
+    <div class="k-chips k-chips--scroll">
+      <a class="k-chip" href="#color">Color</a><a class="k-chip" href="#tipografia">Tipografía</a><a class="k-chip" href="#botones">Botones</a><a class="k-chip" href="#campos">Campos</a><a class="k-chip" href="#etiquetas">Chips e insignias</a><a class="k-chip" href="#pestanas">Pestañas</a><a class="k-chip" href="#tarjetas">Tarjetas y portadas</a><a class="k-chip" href="#avisos">Avisos</a><a class="k-chip" href="#vacios">Estados vacíos</a><a class="k-chip" href="#reglas">Reglas</a>
+    </div>
+  </nav>
+
+  <section class="ds-sec" id="color">
+    <header><h2 class="k-h2">Color</h2><p>Superficies en capas sobre el fondo, tres niveles de texto y un único acento. Los semánticos (correcto, aviso, error, info) nunca sustituyen al acento.</p></header>
+    <div class="ds-swatches" id="ds-swatches"></div>
+  </section>
+
+  <section class="ds-sec" id="tipografia">
+    <header><h2 class="k-h2">Tipografía</h2><p>Big Shoulders Display para la voz de los títulos, Plus Jakarta Sans para leer y JetBrains Mono para cifras e identificadores. El lector puede cambiar a una fuente de alta legibilidad.</p></header>
+    <div class="ds-type">
+      <div class="ds-type-row"><code>.k-display</code><div class="k-display" style="font-size:var(--k-fs-hero)">Capítulo 128</div></div>
+      <div class="ds-type-row"><code>.k-h1</code><h3 class="k-h1">La espada del eclipse</h3></div>
+      <div class="ds-type-row"><code>.k-h2</code><h3 class="k-h2">Novedades de la semana</h3></div>
+      <div class="ds-type-row"><code>.k-h3</code><h3 class="k-h3">Notas del autor</h3></div>
+      <div class="ds-type-row"><code>cuerpo</code><p style="margin:0;max-width:62ch;line-height:1.65">Guts levantó la espada una vez más. Llovía sobre el campamento y nadie se atrevía a mirarle a los ojos.</p></div>
+      <div class="ds-type-row"><code>.k-eyebrow</code><span class="k-eyebrow">Exclusiva KAMI</span></div>
+      <div class="ds-type-row"><code>.k-num</code><span class="k-num">KMI-0000001 · 12.480 lecturas · 4,8 ★</span></div>
+    </div>
+  </section>
+
+  <section class="ds-sec" id="botones">
+    <header><h2 class="k-h2">Botones</h2><p>Un solo botón primario por zona. Las acciones secundarias van en contorno y las terciarias en silencioso. Todos tienen estado de foco, de pulsado y de desactivado.</p></header>
+    <div class="ds-demo">
+      <button type="button" class="k-btn k-btn--primary"><i class="ti ti-player-play" aria-hidden="true"></i>Leer capítulo 1</button>
+      <button type="button" class="k-btn k-btn--secondary"><i class="ti ti-bookmark" aria-hidden="true"></i>Añadir a biblioteca</button>
+      <button type="button" class="k-btn">Seguir al autor</button>
+      <button type="button" class="k-btn k-btn--quiet">Ver todos</button>
+      <button type="button" class="k-btn k-btn--danger"><i class="ti ti-trash" aria-hidden="true"></i>Borrar borrador</button>
+      <button type="button" class="k-btn k-btn--primary" disabled>Publicando…</button>
+    </div>
+    <div class="ds-demo">
+      <button type="button" class="k-btn k-btn--primary k-btn--sm">Pequeño</button>
+      <button type="button" class="k-btn k-btn--primary">Normal</button>
+      <button type="button" class="k-btn k-btn--primary k-btn--lg">Grande</button>
+      <button type="button" class="k-btn k-btn--secondary k-btn--icon" aria-label="Compartir"><i class="ti ti-share" aria-hidden="true"></i></button>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon" aria-label="Más opciones"><i class="ti ti-dots" aria-hidden="true"></i></button>
+    </div>
+  </section>
+
+  <section class="ds-sec" id="campos">
+    <header><h2 class="k-h2">Campos</h2><p>Etiqueta siempre visible, ayuda debajo y el error junto al campo que lo causa.</p></header>
+    <form class="ds-form" onsubmit="event.preventDefault(); KAMI.toast('Borrador guardado', 'ok')">
+      <div class="k-field"><label class="k-label" for="ds-title">Título de la obra <span class="k-req">*</span></label><input class="k-input" id="ds-title" name="title" placeholder="Ej.: La espada del eclipse…" autocomplete="off"><span class="k-help">Aparece en la portada y en las búsquedas.</span></div>
+      <div class="k-field"><label class="k-label" for="ds-type">Formato</label><select class="k-select" id="ds-type" name="type"><option>Novela</option><option>Manga</option><option>Manhwa (vertical)</option></select></div>
+      <div class="k-field"><label class="k-label" for="ds-email">Email de cobro</label><input class="k-input" id="ds-email" name="email" type="email" autocomplete="email" spellcheck="false" aria-invalid="true" value="autor@" aria-describedby="ds-email-err"><span class="k-error" id="ds-email-err">Falta el dominio del email, por ejemplo autor@correo.com.</span></div>
+      <div class="k-field"><label class="k-label" for="ds-search">Buscar</label><div class="k-input-group"><i class="ti ti-search" aria-hidden="true"></i><input class="k-input" id="ds-search" name="q" type="search" placeholder="Obras, autores…" autocomplete="off"></div></div>
+      <div class="k-field" style="grid-column:1/-1"><label class="k-label" for="ds-notes">Notas del autor</label><textarea class="k-textarea" id="ds-notes" name="notes" placeholder="Gracias por leer. El próximo capítulo sale el viernes…"></textarea></div>
+      <div class="k-row" style="grid-column:1/-1">
+        <label class="k-check"><input type="checkbox" checked> Contiene spoilers del volumen 2</label>
+        <label class="k-switch"><input type="checkbox" checked> Capítulo adelantado para mecenas</label>
+        <button class="k-btn k-btn--primary" type="submit" style="margin-left:auto">Guardar borrador</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="ds-sec" id="etiquetas">
+    <header><h2 class="k-h2">Chips e insignias</h2><p>Los chips filtran y cambian estado al pulsarlos. Las insignias solo informan.</p></header>
+    <div class="k-chips" id="ds-chips">
+      <button type="button" class="k-chip" aria-pressed="true">Todo</button><button type="button" class="k-chip" aria-pressed="false">Novela</button><button type="button" class="k-chip" aria-pressed="false">Manga</button><button type="button" class="k-chip" aria-pressed="false">Manhwa</button><button type="button" class="k-chip" aria-pressed="false">Fantasía oscura</button><button type="button" class="k-chip" aria-pressed="false">Completas</button>
+    </div>
+    <div class="ds-demo">
+      <span class="k-badge k-badge--accent">Nuevo cap.</span><span class="k-badge k-badge--gold">Exclusiva</span><span class="k-badge k-badge--ok">Completa</span><span class="k-badge k-badge--warn">Pausa anunciada</span><span class="k-badge k-badge--info">Traducida</span><span class="k-badge k-badge--bad">+18</span><span class="k-badge">Borrador</span><span class="k-badge k-badge--solid">Top 1</span><span class="k-count">12</span>
+    </div>
+  </section>
+
+  <section class="ds-sec" id="pestanas">
+    <header><h2 class="k-h2">Pestañas</h2><p>Pestañas subrayadas para secciones de una página y control segmentado para opciones cortas.</p></header>
+    <div role="tablist" class="k-tabs" id="ds-tabs">
+      <button role="tab" class="k-tab" aria-selected="true">Capítulos</button><button role="tab" class="k-tab" aria-selected="false">Comunidad</button><button role="tab" class="k-tab" aria-selected="false">Wiki</button><button role="tab" class="k-tab" aria-selected="false">Reseñas</button>
+    </div>
+    <div class="k-segmented" role="group" aria-label="Orden" id="ds-seg"><button type="button" aria-pressed="true">Recientes</button><button type="button" aria-pressed="false">Populares</button><button type="button" aria-pressed="false">Mejor valoradas</button></div>
+  </section>
+
+  <section class="ds-sec" id="tarjetas">
+    <header><h2 class="k-h2">Tarjetas y portadas</h2><p>La portada es la pieza central del catálogo. El brillo al pasar el ratón usa el color propio de la obra si el autor lo ha elegido (la segunda usa dorado).</p></header>
+    <div class="k-grid k-grid--covers">
+      <a class="k-cover" href="/manga/KMI-0000001"><div class="k-cover__art"><img src="/assets/manga/KMI-0000001/cover.webp" alt="Portada de Berserk" width="300" height="450" loading="lazy"><div class="k-cover__badges"><span class="k-badge k-badge--solid">Top 1</span></div></div><div class="k-cover__title">Berserk</div><div class="k-cover__meta"><span>Manga</span><span>·</span><span class="k-num">7,0 ★</span></div></a>
+      <a class="k-cover ds-work" href="/manga/KMI-0000002"><div class="k-cover__art"><img src="/assets/manga/KMI-0000002/cover.jpg" alt="Portada de Death Note" width="300" height="450" loading="lazy"><div class="k-cover__badges"><span class="k-badge k-badge--gold">Exclusiva</span></div></div><div class="k-cover__title">Death Note</div><div class="k-cover__meta"><span>Manga</span><span>·</span><span>Completa</span></div></a>
+      <div class="k-cover" aria-hidden="true"><div class="k-cover__art k-skeleton"></div><div class="k-skeleton" style="height:12px;width:80%"></div><div class="k-skeleton" style="height:10px;width:50%"></div></div>
+    </div>
+    <div class="k-grid">
+      <article class="k-card"><h3 class="k-card__title">Estadísticas de la obra</h3><div class="k-row" style="gap:var(--k-8)"><div class="k-stat"><b class="k-num">12.480</b><span>Lecturas</span></div><div class="k-stat"><b class="k-num">63%</b><span>Retención</span></div><div class="k-stat"><b class="k-num">412</b><span>Mecenas</span></div></div></article>
+      <article class="k-card k-card--interactive"><div class="k-row"><span class="k-avatar">KM</span><div style="min-width:0"><div style="font-weight:700">Kentaro Miura</div><div class="k-faint" style="font-size:13px">Autor · 2 obras</div></div><button type="button" class="k-btn k-btn--secondary k-btn--sm" style="margin-left:auto">Seguir</button></div></article>
+    </div>
+  </section>
+
+  <section class="ds-sec" id="avisos">
+    <header><h2 class="k-h2">Avisos</h2><p>En línea para el contexto y toast para confirmar acciones. Los mensajes dicen qué pasó y qué hacer.</p></header>
+    <div class="k-stack">
+      <div class="k-alert"><i class="ti ti-info-circle" aria-hidden="true"></i><div>El capítulo 13 se libera gratis el 20 de noviembre. Los mecenas ya pueden leerlo.</div></div>
+      <div class="k-alert k-alert--ok"><i class="ti ti-circle-check" aria-hidden="true"></i><div>Pago enviado: 128,40 € llegarán a tu cuenta en 2 días hábiles.</div></div>
+      <div class="k-alert k-alert--warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div>Tu contrato exclusivo vence el 1 de marzo. Renuévalo o pasa a no exclusivo desde Estudio.</div></div>
+      <div class="k-alert k-alert--bad"><i class="ti ti-alert-circle" aria-hidden="true"></i><div>No se pudo subir la página 4: pesa 31 MB y el máximo es 20 MB. Comprímela y vuelve a intentarlo.</div></div>
+    </div>
+    <div class="ds-demo"><button type="button" class="k-btn" onclick="KAMI.toast('Añadido a tu biblioteca', 'ok')">Probar toast</button><button type="button" class="k-btn k-btn--quiet" onclick="KAMI.toast('No hay conexión. Lo guardamos y se enviará al volver.', 'bad')">Probar error</button></div>
+  </section>
+
+  <section class="ds-sec" id="vacios">
+    <header><h2 class="k-h2">Estados vacíos</h2><p>Nunca una pantalla en blanco: dicen qué aparecerá y cómo empezar.</p></header>
+    <div class="k-card"><div class="k-empty"><i class="ti ti-books" aria-hidden="true"></i><h3>Tu biblioteca está vacía</h3><p>Las obras que sigas aparecerán aquí con tu progreso de lectura.</p><a class="k-btn k-btn--primary" href="/inicio-mangoteca">Explorar obras</a></div></div>
+  </section>
+
+  <section class="ds-sec" id="reglas">
+    <header><h2 class="k-h2">Reglas</h2><p>Lo que hay que respetar al crear o migrar una página.</p></header>
+    <div class="ds-rules">
+      <div class="k-card"><h3 class="k-card__title">Cabecera de cada página</h3><p>Enlaza <code>/css/kami.css</code> y <code>/js/kami-shell.js</code> al final del <code>&lt;head&gt;</code>. La nav, la barra móvil y el panel de apariencia salen solos. Nunca dibujes una nav propia.</p></div>
+      <div class="k-card"><h3 class="k-card__title">Nada de colores sueltos</h3><p>Usa <code>var(--k-…)</code>. Para transparencias, <code>rgb(var(--k-ink) / .06)</code> o <code>color-mix()</code> con el acento. Así funcionan el tema claro y los acentos del lector.</p></div>
+      <div class="k-card"><h3 class="k-card__title">Componentes antes que CSS nuevo</h3><p>Botón, campo, chip, pestaña, tarjeta, portada, aviso y vacío ya existen con prefijo <code>k-</code>. Si falta uno, se añade a <code>kami.css</code>, no a la página.</p></div>
+      <div class="k-card"><h3 class="k-card__title">Modos del shell</h3><p><code>data-shell="minimal"</code> en el <code>&lt;body&gt;</code> deja logo y volver (fichas inmersivas); <code>"none"</code> quita la nav (lector a pantalla completa).</p></div>
+      <div class="k-card"><h3 class="k-card__title">Color de la obra</h3><p>El autor puede fijar <code>--k-work-accent</code> en su ficha. Las portadas y los detalles de esa obra lo usan sin tocar el acento del lector.</p></div>
+      <div class="k-card"><h3 class="k-card__title">Migrar una página</h3><p>Sustituye sus clases antiguas por las <code>k-</code>, borra su <code>&lt;style&gt;</code> propio y quita su línea de la sección de compatibilidad de <code>kami.css</code>.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Muestras de color leídas en vivo de los tokens (cambian con el tema y el acento)
+  (function () {
+    var tokens = [
+      ['Fondo', '--k-bg'], ['Superficie 1', '--k-surface-1'], ['Superficie 2', '--k-surface-2'], ['Superficie 3', '--k-surface-3'],
+      ['Texto', '--k-text'], ['Texto 2', '--k-text-2'], ['Texto 3', '--k-text-3'], ['Acento', '--k-accent'],
+      ['Correcto', '--k-ok'], ['Aviso', '--k-warn'], ['Error', '--k-bad'], ['Info', '--k-info'], ['Oro', '--k-gold'],
+    ];
+    var box = document.getElementById('ds-swatches');
+    function render() {
+      var cs = getComputedStyle(document.documentElement);
+      box.innerHTML = tokens.map(function (t) {
+        return '<div class="ds-sw"><i style="--_c:var(' + t[1] + ')"></i><div><b>' + t[0] + '</b><code>' + t[1] + ' · ' + cs.getPropertyValue(t[1]).trim() + '</code></div></div>';
+      }).join('');
+    }
+    render();
+    document.addEventListener('kami:appearance', function () { requestAnimationFrame(render); });
+    // Chips, pestañas y segmentado de ejemplo
+    document.getElementById('ds-chips').addEventListener('click', function (e) {
+      var b = e.target.closest('.k-chip'); if (!b) return;
+      this.querySelectorAll('.k-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(c === b)); });
+    });
+    document.getElementById('ds-tabs').addEventListener('click', function (e) {
+      var b = e.target.closest('.k-tab'); if (!b) return;
+      this.querySelectorAll('.k-tab').forEach(function (c) { c.setAttribute('aria-selected', String(c === b)); });
+    });
+    document.getElementById('ds-seg').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      this.querySelectorAll('button').forEach(function (c) { c.setAttribute('aria-pressed', String(c === b)); });
+    });
+  })();
+</script>
+</body>
+</html>

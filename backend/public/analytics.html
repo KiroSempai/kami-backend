@@ -16,36 +16,36 @@
             --sidebar-collapsed: 60px;
             --header-h: 56px;
             --radius-card: 10px;
-            --glow-accent: 0 0 20px rgba(232,51,74,0.08);
+            --glow-accent: 0 0 20px color-mix(in srgb, var(--k-accent) 8%, transparent);
         }
-        body { background: #0a0a0f; color: #e0e0e0; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+        body { background: var(--k-bg); color: var(--k-text); font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+        ::-webkit-scrollbar-thumb { background: rgb(var(--k-ink) / 0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--k-ink) / 0.15); }
 
         /* LAYOUT */
         .analytics-layout { display: flex; height: 100vh; }
 
         /* SIDEBAR */
-        .sidebar { width: var(--sidebar-w); background: #0d0d18; border-right: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; z-index: 10; }
-        .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .sidebar { width: var(--sidebar-w); background: var(--k-bg); border-right: 1px solid rgb(var(--k-ink) / 0.04); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; z-index: 10; }
+        .sidebar-brand { padding: 20px 20px 16px; border-bottom: 1px solid rgb(var(--k-ink) / 0.04); }
         .sidebar-brand .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
-        .sidebar-brand .logo-mark { color: var(--accent,#e8344a); font-size: 26px; }
-        .sidebar-brand .logo-sub { font-size: 10px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+        .sidebar-brand .logo-mark { color: var(--accent,var(--k-accent)); font-size: 26px; }
+        .sidebar-brand .logo-sub { font-size: 10px; color: rgb(var(--k-ink) / 0.25); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
         .sidebar-nav { padding: 12px 0; flex: 1; }
-        .sidebar-nav .nav-section { padding: 8px 20px 4px; font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
-        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgba(255,255,255,0.45); text-decoration: none; font-size: 13px; font-weight: 500; transition: all .15s; border-left: 2px solid transparent; cursor: pointer; }
-        .sidebar-nav a:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.02); }
-        .sidebar-nav a.active { color: var(--accent,#e8344a); background: rgba(232,51,74,0.06); border-left-color: var(--accent,#e8344a); }
+        .sidebar-nav .nav-section { padding: 8px 20px 4px; font-size: 10px; color: rgb(var(--k-ink) / 0.2); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 10px; padding: 10px 20px; color: rgb(var(--k-ink) / 0.45); text-decoration: none; font-size: 13px; font-weight: 500; transition: all .15s; border-left: 2px solid transparent; cursor: pointer; }
+        .sidebar-nav a:hover { color: rgb(var(--k-ink) / 0.75); background: rgb(var(--k-ink) / 0.02); }
+        .sidebar-nav a.active { color: var(--accent,var(--k-accent)); background: color-mix(in srgb, var(--k-accent) 6%, transparent); border-left-color: var(--accent,var(--k-accent)); }
         .sidebar-nav a .icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
-        .sidebar-nav .divider { height: 1px; background: rgba(255,255,255,0.04); margin: 8px 20px; }
+        .sidebar-nav .divider { height: 1px; background: rgb(var(--k-ink) / 0.04); margin: 8px 20px; }
 
         /* MAIN */
-        .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #0a0a0f; position: relative; }
+        .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--k-bg); position: relative; }
         .main-header { padding: 28px 32px 0; flex-shrink: 0; }
         .main-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1.5px; }
-        .main-header p { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 2px; font-weight: 400; }
+        .main-header p { font-size: 13px; color: rgb(var(--k-ink) / 0.35); margin-top: 2px; font-weight: 400; }
         .main-body { padding: 24px 32px 40px; }
 
         /* SECTION CONTENT */
@@ -54,30 +54,30 @@
 
         /* KPI ROW */
         .kpi-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .kpi-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-card); padding: 16px; position: relative; overflow: hidden; }
+        .kpi-card { background: rgb(var(--k-ink) / 0.03); border: 1px solid rgb(var(--k-ink) / 0.05); border-radius: var(--radius-card); padding: 16px; position: relative; overflow: hidden; }
         .kpi-card .kpi-icon { font-size: 18px; margin-bottom: 8px; opacity: 0.5; }
-        .kpi-card .kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; color: #fff; line-height: 1; }
-        .kpi-card .kpi-lbl { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
-        .kpi-card .kpi-sub { font-size: 11px; color: rgba(255,255,255,0.2); margin-top: 2px; }
+        .kpi-card .kpi-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; color: var(--k-text); line-height: 1; }
+        .kpi-card .kpi-lbl { font-size: 11px; color: rgb(var(--k-ink) / 0.3); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .kpi-card .kpi-sub { font-size: 11px; color: rgb(var(--k-ink) / 0.2); margin-top: 2px; }
         .kpi-card .kpi-trend { position: absolute; top: 12px; right: 12px; font-size: 11px; font-weight: 600; }
-        .kpi-card .kpi-trend.up { color: #2dca7a; }
-        .kpi-card .kpi-trend.down { color: #e8344a; }
+        .kpi-card .kpi-trend.up { color: var(--k-ok); }
+        .kpi-card .kpi-trend.down { color: var(--k-accent); }
         .kpi-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: var(--radius-card) var(--radius-card) 0 0; opacity: 0.3; }
-        .kpi-card.accent::after { background: var(--accent,#e8344a); }
-        .kpi-card.blue::after { background: #4c9df5; }
-        .kpi-card.green::after { background: #2dca7a; }
-        .kpi-card.gold::after { background: #f5c842; }
-        .kpi-card.purple::after { background: #a78bfa; }
-        .kpi-card.orange::after { background: #fb923c; }
+        .kpi-card.accent::after { background: var(--accent,var(--k-accent)); }
+        .kpi-card.blue::after { background: var(--k-info); }
+        .kpi-card.green::after { background: var(--k-ok); }
+        .kpi-card.gold::after { background: var(--k-gold); }
+        .kpi-card.purple::after { background: var(--k-violet); }
+        .kpi-card.orange::after { background: var(--k-orange); }
 
         /* CHART GRID */
         .chart-full { margin-bottom: 16px; }
         .chart-half { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .chart-quarter { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-        .chart-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); border-radius: var(--radius-card); padding: 20px; }
+        .chart-card { background: rgb(var(--k-ink) / 0.02); border: 1px solid rgb(var(--k-ink) / 0.04); border-radius: var(--radius-card); padding: 20px; }
         .chart-card .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .chart-card .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; color: rgba(255,255,255,0.7); }
-        .chart-card .card-tag { font-size: 10px; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .chart-card .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; color: rgb(var(--k-ink) / 0.7); }
+        .chart-card .card-tag { font-size: 10px; color: rgb(var(--k-ink) / 0.2); background: rgb(var(--k-ink) / 0.04); padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; }
         .chart-wrap { position: relative; width: 100%; height: 280px; }
         .chart-wrap.tall { height: 360px; }
         .chart-wrap canvas { width: 100% !important; height: 100% !important; }
@@ -85,38 +85,38 @@
         /* HEATMAP */
         .heatmap-grid { display: flex; flex-direction: column; gap: 3px; }
         .heatmap-row { display: flex; gap: 3px; }
-        .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; background: rgba(255,255,255,0.03); transition: all .15s; cursor: pointer; position: relative; }
+        .heatmap-cell { width: 14px; height: 14px; border-radius: 3px; background: rgb(var(--k-ink) / 0.03); transition: all .15s; cursor: pointer; position: relative; }
         .heatmap-cell:hover { transform: scale(1.3); z-index: 2; }
-        .heatmap-cell.lvl1 { background: rgba(76,157,245,0.15); }
-        .heatmap-cell.lvl2 { background: rgba(76,157,245,0.3); }
-        .heatmap-cell.lvl3 { background: rgba(76,157,245,0.5); }
-        .heatmap-cell.lvl4 { background: rgba(76,157,245,0.75); }
-        .heatmap-cell.lvl5 { background: rgba(76,157,245,1); }
-        .heatmap-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: rgba(255,255,255,0.2); max-width: 500px; }
-        .heatmap-side { display: flex; flex-direction: column; gap: 3px; margin-right: 6px; font-size: 9px; color: rgba(255,255,255,0.15); }
+        .heatmap-cell.lvl1 { background: color-mix(in srgb, var(--k-info) 15%, transparent); }
+        .heatmap-cell.lvl2 { background: color-mix(in srgb, var(--k-info) 30%, transparent); }
+        .heatmap-cell.lvl3 { background: color-mix(in srgb, var(--k-info) 50%, transparent); }
+        .heatmap-cell.lvl4 { background: color-mix(in srgb, var(--k-info) 75%, transparent); }
+        .heatmap-cell.lvl5 { background: color-mix(in srgb, var(--k-info) 100%, transparent); }
+        .heatmap-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: rgb(var(--k-ink) / 0.2); max-width: 500px; }
+        .heatmap-side { display: flex; flex-direction: column; gap: 3px; margin-right: 6px; font-size: 9px; color: rgb(var(--k-ink) / 0.15); }
         .heatmap-side span { height: 14px; display: flex; align-items: center; }
 
         /* TABLE */
         .table-wrap { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .data-table th { text-align: left; padding: 10px 14px; color: rgba(255,255,255,0.25); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.04); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
-        .data-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); color: rgba(255,255,255,0.6); }
-        .data-table tr:hover td { background: rgba(255,255,255,0.02); }
-        .data-table .mini-cover { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; background: rgba(255,255,255,0.05); display: inline-block; vertical-align: middle; margin-right: 8px; }
+        .data-table th { text-align: left; padding: 10px 14px; color: rgb(var(--k-ink) / 0.25); font-weight: 600; border-bottom: 1px solid rgb(var(--k-ink) / 0.04); text-transform: uppercase; letter-spacing: 1px; font-size: 10px; }
+        .data-table td { padding: 10px 14px; border-bottom: 1px solid rgb(var(--k-ink) / 0.03); color: rgb(var(--k-ink) / 0.6); }
+        .data-table tr:hover td { background: rgb(var(--k-ink) / 0.02); }
+        .data-table .mini-cover { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; background: rgb(var(--k-ink) / 0.05); display: inline-block; vertical-align: middle; margin-right: 8px; }
         .data-table .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .data-table .badge-action { background: rgba(76,157,245,0.12); color: #4c9df5; }
-        .data-table .badge-read { background: rgba(45,202,122,0.12); color: #2dca7a; }
-        .data-table .badge-rate { background: rgba(245,200,66,0.12); color: #f5c842; }
+        .data-table .badge-action { background: color-mix(in srgb, var(--k-info) 12%, transparent); color: var(--k-info); }
+        .data-table .badge-read { background: color-mix(in srgb, var(--k-ok) 12%, transparent); color: var(--k-ok); }
+        .data-table .badge-rate { background: color-mix(in srgb, var(--k-gold) 12%, transparent); color: var(--k-gold); }
 
         /* PLACEHOLDER */
-        .placeholder-card { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.06); border-radius: var(--radius-card); padding: 40px; text-align: center; }
+        .placeholder-card { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; background: rgb(var(--k-ink) / 0.02); border: 1px dashed rgb(var(--k-ink) / 0.06); border-radius: var(--radius-card); padding: 40px; text-align: center; }
         .placeholder-card .ph-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.3; }
-        .placeholder-card .ph-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgba(255,255,255,0.3); }
-        .placeholder-card .ph-desc { font-size: 12px; color: rgba(255,255,255,0.15); margin-top: 4px; }
+        .placeholder-card .ph-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgb(var(--k-ink) / 0.3); }
+        .placeholder-card .ph-desc { font-size: 12px; color: rgb(var(--k-ink) / 0.15); margin-top: 4px; }
 
         /* LOADING */
         .loading-wrap { display: flex; align-items: center; justify-content: center; min-height: 300px; }
-        .loading-wrap .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.04); border-top-color: var(--accent,#e8344a); border-radius: 50%; animation: spin .8s linear infinite; }
+        .loading-wrap .spinner { width: 32px; height: 32px; border: 3px solid rgb(var(--k-ink) / 0.04); border-top-color: var(--accent,var(--k-accent)); border-radius: 50%; animation: spin .8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* RESPONSIVE */
@@ -141,6 +141,8 @@
             .sidebar.mobile-open { display: flex; position: fixed; inset: 0; width: 100%; z-index: 100; }
         }
     </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
 <div class="analytics-layout">
@@ -307,7 +309,7 @@
         const actVals = activityData.map(r => r.count);
         if (actVals.length > 0) {
             makeLine('chart-activity', actLabels, [
-                { label: 'Acciones', data: actVals, borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.08)', fill: true }
+                { label: 'Acciones', data: actVals, borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 8%, transparent)', fill: true }
             ]);
         }
 
@@ -347,14 +349,14 @@
             <div class="chart-card chart-full">
                 <div class="card-header"><div class="card-title">🗺️ Mapa de Lectura Global</div><div class="card-tag">día × hora</div></div>
                 <div id="global-heatmap" style="display:flex;"></div>
-                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:rgba(255,255,255,0.2);">
+                <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:rgb(var(--k-ink) / 0.2);">
                     <span>Menos</span>
-                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(255,255,255,0.03);"></div>
-                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.15);"></div>
-                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.3);"></div>
-                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.5);"></div>
-                    <div style="width:12px;height:12px;border-radius:2px;background:rgba(76,157,245,0.75);"></div>
-                    <div style="width:12px;height:12px;border-radius:2px;background:#4c9df5;"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:rgb(var(--k-ink) / 0.03);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:color-mix(in srgb, var(--k-info) 15%, transparent);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:color-mix(in srgb, var(--k-info) 30%, transparent);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:color-mix(in srgb, var(--k-info) 50%, transparent);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:color-mix(in srgb, var(--k-info) 75%, transparent);"></div>
+                    <div style="width:12px;height:12px;border-radius:2px;background:var(--k-info);"></div>
                     <span>Más</span>
                     <span style="margin-left:auto;">🎯 ' + (d.avgChaptersPerDay || 0) + ' caps/día promedio global</span>
                 </div>
@@ -382,13 +384,13 @@
         const hours = d.hourActivity && d.hourActivity.length ? d.hourActivity : Array.from({length:24}, (_, i) => ({hour: i, count: Math.round(50 + Math.random() * 200)}));
         const maxH = Math.max(...hours.map(h => h.count), 1);
         makeLine('chart-hours', hours.map(h => h.hour + 'h'), [
-            { label: 'Acciones', data: hours.map(h => h.count), borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,0.08)', fill: true, tension: 0.4 }
+            { label: 'Acciones', data: hours.map(h => h.count), borderColor: 'var(--k-orange)', backgroundColor: 'rgba(251,146,60,0.08)', fill: true, tension: 0.4 }
         ]);
 
         // Chapters/day avg
         const avgData = Array.from({length:30}, (_, i) => ({ day: i+1, val: Math.max(0, (d.avgChaptersPerDay || 5) * (0.5 + Math.random())) }));
         makeLine('chart-chapters-avg', avgData.map(a => 'D' + a.day), [
-            { label: 'Caps/día', data: avgData.map(a => a.val), borderColor: '#2dca7a', backgroundColor: 'rgba(45,202,122,0.08)', fill: true }
+            { label: 'Caps/día', data: avgData.map(a => a.val), borderColor: 'var(--k-ok)', backgroundColor: 'color-mix(in srgb, var(--k-ok) 8%, transparent)', fill: true }
         ]);
 
         // Genres
@@ -397,16 +399,16 @@
 
         // Types
         const types = d.favoriteType && d.favoriteType.length ? d.favoriteType : [{type:'manga',count:1}];
-        const typeColors = {manga:'#e8344a', manhwa:'#4c9df5', manhua:'#f5c842', oneshot:'#a78bfa'};
+        const typeColors = {manga:'var(--k-accent)', manhwa:'var(--k-info)', manhua:'var(--k-gold)', oneshot:'var(--k-violet)'};
         makeHorizBar('chart-types', types.map(t => t.type || '?'), types.map(t => t.count), 'Cantidad', types.map(t => typeColors[t.type] || '#666'));
 
         // Top by time
         const topTime = d.topMangasByTime && d.topMangasByTime.length ? d.topMangasByTime.slice(0, 10) : [{title:'—', totalMinutes:0}];
-        makeHorizBar('chart-top-time', topTime.map(m => m.title || '?'), topTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', '#a78bfa');
+        makeHorizBar('chart-top-time', topTime.map(m => m.title || '?'), topTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', 'var(--k-violet)');
 
         // Top by reads
         const topReads = d.topMangasByReads && d.topMangasByReads.length ? d.topMangasByReads.slice(0, 10) : [{title:'—', reads:0}];
-        makeHorizBar('chart-top-reads', topReads.map(m => m.title || '?'), topReads.map(m => m.reads || 0), 'Lecturas', '#4c9df5');
+        makeHorizBar('chart-top-reads', topReads.map(m => m.title || '?'), topReads.map(m => m.reads || 0), 'Lecturas', 'var(--k-info)');
 
         // Table
         const tableEl = document.getElementById('patterns-table');
@@ -497,21 +499,21 @@
         const accData = regs.map(r => { acc += r.count; return acc; });
         const regLabels = regs.map(r => r.date ? r.date.slice(5) : '');
         makeLine('chart-accum', regLabels, [
-            { label: 'Usuarios', data: accData, borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.05)', fill: true }
+            { label: 'Usuarios', data: accData, borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 5%, transparent)', fill: true }
         ]);
 
         // DAU/WAU/MAU
         const dauLabels = (d.dailyActiveUsers || []).map(r => r.date ? r.date.slice(5) : '');
         const dauVals = (d.dailyActiveUsers || []).map(r => r.count);
         makeLine('chart-dau-wau-mau', dauLabels, [
-            { label: 'DAU', data: dauVals, borderColor: '#4c9df5', backgroundColor: 'rgba(76,157,245,0.05)', fill: true }
+            { label: 'DAU', data: dauVals, borderColor: 'var(--k-info)', backgroundColor: 'color-mix(in srgb, var(--k-info) 5%, transparent)', fill: true }
         ]);
 
         // Retention (simulated)
         const weeks = Array.from({length: 12}, (_, i) => 'Sem ' + (i+1));
         const retention = weeks.map((_, i) => Math.max(0, 100 - i * 7 + (Math.random() * 10 - 5)));
         makeLine('chart-retention', weeks, [
-            { label: 'Retención %', data: retention, borderColor: '#2dca7a', backgroundColor: 'rgba(45,202,122,0.08)', fill: true }
+            { label: 'Retención %', data: retention, borderColor: 'var(--k-ok)', backgroundColor: 'color-mix(in srgb, var(--k-ok) 8%, transparent)', fill: true }
         ]);
 
         // Registration source
@@ -569,18 +571,18 @@
         if (growth.length > 0) {
             const labels = growth.map(r => r.date ? r.date.slice(5) : '');
             makeLine('chart-premium-growth', labels, [
-                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
-                { label: 'Gold', data: growth.map(r => r.gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
-                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 6%, transparent)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: growth.map(r => r.gold), borderColor: 'var(--k-gold)', backgroundColor: 'color-mix(in srgb, var(--k-gold) 4%, transparent)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgb(var(--k-ink) / 0.04)', fill: false, tension: 0.3 },
             ]);
         } else {
             const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
             const silver = ((d.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
             const gold = ((d.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
             makeLine('chart-premium-growth', months, [
-                { label: 'Premium Total', data: months.map(() => d.premiumTotal), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
-                { label: 'Gold', data: months.map(() => gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
-                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+                { label: 'Premium Total', data: months.map(() => d.premiumTotal), borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 6%, transparent)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: months.map(() => gold), borderColor: 'var(--k-gold)', backgroundColor: 'color-mix(in srgb, var(--k-gold) 4%, transparent)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgb(var(--k-ink) / 0.04)', fill: false, tension: 0.3 },
             ]);
         }
 
@@ -588,20 +590,20 @@
         const silverCount = ((d.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
         const goldCount = ((d.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
         if (silverCount > 0 || goldCount > 0) {
-            makeHorizBar('chart-premium-tier', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['#f5c842', '#ffffff']);
+            makeHorizBar('chart-premium-tier', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['var(--k-gold)', '#ffffff']);
         }
 
         // Engagement
         const eng = d.topEngagement && d.topEngagement.length ? d.topEngagement.slice(0, 10) : [{title:'—', interactions:0}];
-        makeHorizBar('chart-engagement', eng.map(m => m.title || '?'), eng.map(m => m.interactions || 0), 'Interacciones', '#f5c842');
+        makeHorizBar('chart-engagement', eng.map(m => m.title || '?'), eng.map(m => m.interactions || 0), 'Interacciones', 'var(--k-gold)');
 
         // Added
         const added = d.mostAddedToLibrary && d.mostAddedToLibrary.length ? d.mostAddedToLibrary.slice(0, 10) : [{title:'—', adds:0}];
-        makeHorizBar('chart-added', added.map(m => m.title || '?'), added.map(m => m.adds || 0), 'Añadidos', '#4c9df5');
+        makeHorizBar('chart-added', added.map(m => m.title || '?'), added.map(m => m.adds || 0), 'Añadidos', 'var(--k-info)');
 
         // Viewed
         const viewed = d.mostViewed && d.mostViewed.length ? d.mostViewed.slice(0, 10) : [{title:'—', views:0}];
-        makeHorizBar('chart-viewed', viewed.map(m => m.title || '?'), viewed.map(m => m.views || 0), 'Visitas', '#a78bfa');
+        makeHorizBar('chart-viewed', viewed.map(m => m.title || '?'), viewed.map(m => m.views || 0), 'Visitas', 'var(--k-violet)');
     }
 
     // ══════════════════════════════════════════════
@@ -618,16 +620,16 @@
                 ${kpiCard('📈', d.actionsThisMonth.toLocaleString(), 'Este Mes (30d)', '', 'green')}
             </div>
             <div style="display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap;">
-                <label style="font-size:11px;color:rgba(255,255,255,0.3);">Filtrar por tipo:</label>
-                <select id="tl-filter" onchange="reloadTimeline()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e0e0e0;padding:6px 12px;border-radius:6px;font-size:12px;">
+                <label style="font-size:11px;color:rgb(var(--k-ink) / 0.3);">Filtrar por tipo:</label>
+                <select id="tl-filter" onchange="reloadTimeline()" style="background:rgb(var(--k-ink) / 0.04);border:1px solid rgb(var(--k-ink) / 0.06);color:var(--k-text);padding:6px 12px;border-radius:6px;font-size:12px;">
                     <option value="all">Todos</option>
                     <option value="chapter_read">Lectura</option>
                     <option value="daily_login">Login</option>
                     <option value="manga_rated">Valoración</option>
                     <option value="manga_started">Inicio</option>
                 </select>
-                <label style="font-size:11px;color:rgba(255,255,255,0.3);">Días:</label>
-                <select id="tl-days" onchange="reloadTimeline()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#e0e0e0;padding:6px 12px;border-radius:6px;font-size:12px;">
+                <label style="font-size:11px;color:rgb(var(--k-ink) / 0.3);">Días:</label>
+                <select id="tl-days" onchange="reloadTimeline()" style="background:rgb(var(--k-ink) / 0.04);border:1px solid rgb(var(--k-ink) / 0.06);color:var(--k-text);padding:6px 12px;border-radius:6px;font-size:12px;">
                     <option value="7">7</option>
                     <option value="30" selected>30</option>
                     <option value="90">90</option>
@@ -655,7 +657,7 @@
         const timeline = d.timeline || [];
         const dates = [...new Set(timeline.map(t => t.date))].sort();
         const types = [...new Set(timeline.map(t => t.actionType))];
-        const colorMap = { chapter_read: '#4c9df5', daily_login: '#2dca7a', manga_rated: '#f5c842', manga_started: '#a78bfa', library_reading: '#e8344a' };
+        const colorMap = { chapter_read: 'var(--k-info)', daily_login: 'var(--k-ok)', manga_rated: 'var(--k-gold)', manga_started: 'var(--k-violet)', library_reading: 'var(--k-accent)' };
         const datasets = types.map((type, i) => ({
             label: type,
             data: dates.map(d => { const e = timeline.find(t => t.date === d && t.actionType === type); return e ? e.count : 0; }),
@@ -710,18 +712,18 @@
         if (growth.length > 0) {
             const labels = growth.map(r => r.date ? r.date.slice(5) : '');
             makeLine('chart-premium-evolution', labels, [
-                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
-                { label: 'Gold', data: growth.map(r => r.gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
-                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+                { label: 'Premium Total', data: growth.map(r => r.total), borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 6%, transparent)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: growth.map(r => r.gold), borderColor: 'var(--k-gold)', backgroundColor: 'color-mix(in srgb, var(--k-gold) 4%, transparent)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: growth.map(r => r.silver), borderColor: '#ffffff', backgroundColor: 'rgb(var(--k-ink) / 0.04)', fill: false, tension: 0.3 },
             ]);
         } else {
             const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
             const silver = ((b.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
             const gold = ((b.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
             makeLine('chart-premium-evolution', months, [
-                { label: 'Premium Total', data: months.map(() => b.premiumTotal), borderColor: '#e8344a', backgroundColor: 'rgba(232,52,74,0.06)', fill: true, tension: 0.3 },
-                { label: 'Gold', data: months.map(() => gold), borderColor: '#f5c842', backgroundColor: 'rgba(245,200,66,0.04)', fill: false, tension: 0.3 },
-                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)', fill: false, tension: 0.3 },
+                { label: 'Premium Total', data: months.map(() => b.premiumTotal), borderColor: 'var(--k-accent)', backgroundColor: 'color-mix(in srgb, var(--k-accent) 6%, transparent)', fill: true, tension: 0.3 },
+                { label: 'Gold', data: months.map(() => gold), borderColor: 'var(--k-gold)', backgroundColor: 'color-mix(in srgb, var(--k-gold) 4%, transparent)', fill: false, tension: 0.3 },
+                { label: 'Silver', data: months.map(() => silver), borderColor: '#ffffff', backgroundColor: 'rgb(var(--k-ink) / 0.04)', fill: false, tension: 0.3 },
             ]);
         }
 
@@ -729,7 +731,7 @@
         const silverCount = ((b.premiumByTier||[]).find(t => t.tier === 'silver')||{}).count || 0;
         const goldCount = ((b.premiumByTier||[]).find(t => t.tier === 'gold')||{}).count || 0;
         if (silverCount > 0 || goldCount > 0) {
-            makeHorizBar('chart-premium-tier-detail', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['#f5c842', '#ffffff']);
+            makeHorizBar('chart-premium-tier-detail', ['Gold', 'Silver'], [goldCount, silverCount], 'Usuarios', ['var(--k-gold)', '#ffffff']);
         }
 
         const tbody = document.getElementById('premium-table');
@@ -763,9 +765,9 @@
         const byReads = d.topMangasByReads && d.topMangasByReads.length ? d.topMangasByReads.slice(0, 10) : [{title:'—', reads:0}];
         const byRating = d.topRated && d.topRated.length ? d.topRated.slice(0, 10) : [{title:'—', rating:0}];
 
-        makeHorizBar('chart-top-time-detail', byTime.map(m => m.title || '?'), byTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', '#a78bfa');
-        makeHorizBar('chart-top-reads-detail', byReads.map(m => m.title || '?'), byReads.map(m => m.reads || 0), 'Lecturas', '#4c9df5');
-        makeHorizBar('chart-top-rated-detail', byRating.map(m => m.title || '?'), byRating.map(m => m.rating || 0), 'Rating', '#f5c842');
+        makeHorizBar('chart-top-time-detail', byTime.map(m => m.title || '?'), byTime.map(m => Math.round((m.totalMinutes || 0) / 60)), 'Horas', 'var(--k-violet)');
+        makeHorizBar('chart-top-reads-detail', byReads.map(m => m.title || '?'), byReads.map(m => m.reads || 0), 'Lecturas', 'var(--k-info)');
+        makeHorizBar('chart-top-rated-detail', byRating.map(m => m.title || '?'), byRating.map(m => m.rating || 0), 'Rating', 'var(--k-gold)');
     }
 
     // ══════════════════════════════════════════════
@@ -792,7 +794,7 @@
         tbody.innerHTML = '<tr><th>Usuario</th><th>Acción</th><th>Manga</th><th>Cap</th><th>Fecha</th></tr>' +
             items.map(r => {
                 const badgeClass = r.actionType === 'chapter_read' ? 'badge-read' : r.actionType === 'manga_rated' ? 'badge-rate' : 'badge-action';
-                return '<tr><td>' + (r.username || '—') + '</td><td><span class="badge ' + badgeClass + '">' + (r.actionType || '') + '</span></td><td>' + (r.mangaTitle || '—') + '</td><td>' + (r.chapterId || '—') + '</td><td style="color:rgba(255,255,255,0.25);font-size:11px;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString('es-ES') : '') + '</td></tr>';
+                return '<tr><td>' + (r.username || '—') + '</td><td><span class="badge ' + badgeClass + '">' + (r.actionType || '') + '</span></td><td>' + (r.mangaTitle || '—') + '</td><td>' + (r.chapterId || '—') + '</td><td style="color:rgb(var(--k-ink) / 0.25);font-size:11px;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString('es-ES') : '') + '</td></tr>';
             }).join('');
     }
 
@@ -822,8 +824,8 @@
                     <div class="ph-desc">Volver a General</div>
                 </div>
             </div>
-            <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.04);">
-                <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;color:rgba(255,255,255,0.4);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.4)'">
+            <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid rgb(var(--k-ink) / 0.04);">
+                <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgb(var(--k-ink) / 0.03);border:1px solid rgb(var(--k-ink) / 0.06);border-radius:8px;color:rgb(var(--k-ink) / 0.4);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='rgb(var(--k-ink) / 0.15)';this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.borderColor='rgb(var(--k-ink) / 0.06)';this.style.color='rgba(255,255,255,0.4)'">
                     ← Volver a KAMI
                 </a>
             </div>
@@ -845,17 +847,17 @@
         charts[canvasId] = new Chart(ctx, {
             type: 'line',
             data: { labels, datasets },
-            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: datasets.length > 1, position: 'top', labels: { color: 'rgba(255,255,255,0.4)', font: { size: 10 }, boxWidth: 12 } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 }, maxTicksLimit: 15 } } } }
+            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { display: datasets.length > 1, position: 'top', labels: { color: 'rgb(var(--k-ink) / 0.4)', font: { size: 10 }, boxWidth: 12 } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgb(var(--k-ink) / 0.03)' }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 }, maxTicksLimit: 15 } } } }
         });
     }
 
     function makeBar(canvasId, labels, data, label) {
         const ctx = getCtx(canvasId);
         if (!ctx || !labels.length) return;
-        const colors = labels.map((_, i) => ['#e8344a','#4c9df5','#2dca7a','#f5c842','#a78bfa','#fb923c','#4fc3f7','#ba68c8'][i % 8]);
+        const colors = labels.map((_, i) => ['var(--k-accent)','var(--k-info)','var(--k-ok)','var(--k-gold)','var(--k-violet)','var(--k-orange)','#4fc3f7','#ba68c8'][i % 8]);
         charts[canvasId] = new Chart(ctx, {
             type: 'bar', data: { labels, datasets: [{ label, data, backgroundColor: colors, borderRadius: 4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgb(var(--k-ink) / 0.03)' }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 } } } } }
         });
     }
 
@@ -863,18 +865,18 @@
         const ctx = getCtx(canvasId);
         if (!ctx || !labels.length) return;
         charts[canvasId] = new Chart(ctx, {
-            type: 'bar', data: { labels, datasets: [{ label, data, backgroundColor: color || '#4c9df5', borderRadius: 4 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } }, x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 10 } } } } }
+            type: 'bar', data: { labels, datasets: [{ label, data, backgroundColor: color || 'var(--k-info)', borderRadius: 4 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { display: false }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 } } }, x: { beginAtZero: true, grid: { color: 'rgb(var(--k-ink) / 0.03)' }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 10 } } } } }
         });
     }
 
     function makeDoughnut(canvasId, labels, data) {
         const ctx = getCtx(canvasId);
         if (!ctx || !labels.length) return;
-        const colors = ['#e8344a','#4c9df5','#2dca7a','#f5c842','#a78bfa','#fb923c','#4fc3f7','#ba68c8'];
+        const colors = ['var(--k-accent)','var(--k-info)','var(--k-ok)','var(--k-gold)','var(--k-violet)','var(--k-orange)','#4fc3f7','#ba68c8'];
         charts[canvasId] = new Chart(ctx, {
             type: 'doughnut', data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: 'rgba(255,255,255,0.4)', font: { size: 10 }, boxWidth: 12 } } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: 'rgb(var(--k-ink) / 0.4)', font: { size: 10 }, boxWidth: 12 } } } }
         });
     }
 
@@ -882,8 +884,8 @@
         const ctx = getCtx(canvasId);
         if (!ctx || !labels.length) return;
         charts[canvasId] = new Chart(ctx, {
-            type: 'radar', data: { labels, datasets: [{ data, borderColor: '#4c9df5', backgroundColor: 'rgba(76,157,245,0.08)', pointBackgroundColor: '#4c9df5', pointRadius: 3 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.2)', font: { size: 9 }, backdropColor: 'transparent' } } } }
+            type: 'radar', data: { labels, datasets: [{ data, borderColor: 'var(--k-info)', backgroundColor: 'color-mix(in srgb, var(--k-info) 8%, transparent)', pointBackgroundColor: 'var(--k-info)', pointRadius: 3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { grid: { color: 'rgb(var(--k-ink) / 0.04)' }, ticks: { color: 'rgb(var(--k-ink) / 0.2)', font: { size: 9 }, backdropColor: 'transparent' } } } }
         });
     }
 

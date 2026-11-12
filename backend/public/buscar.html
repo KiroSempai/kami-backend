@@ -11,22 +11,23 @@
   <link rel="stylesheet" href="/css/common.css">
   <style>
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-    body { background:#0e0e1e; color:#e0e0e0; font-family:'Plus Jakarta Sans',sans-serif; }
+    body { background:var(--k-bg); color:var(--k-text); font-family:'Plus Jakarta Sans',sans-serif; }
     .buscar-layout { display: flex; max-width: 800px; margin: 0 auto; min-height: calc(100vh - 64px); flex-direction: column; }
-    .buscar-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .buscar-query { font-size: 20px; font-weight: 700; color: #e0e0e0; }
-    .buscar-result-count { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 4px; }
-    .buscar-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .buscar-tab { flex: 1; padding: 14px 0; text-align: center; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.4); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
-    .buscar-tab:hover { color: #e0e0e0; background: rgba(255,255,255,0.03); }
-    .buscar-tab.active { color: #e0e0e0; border-bottom-color: #e8344a; font-weight: 600; }
+    .buscar-header { padding: 20px 24px; border-bottom: 1px solid rgb(var(--k-ink) / 0.06); }
+    .buscar-query { font-size: 20px; font-weight: 700; color: var(--k-text); }
+    .buscar-result-count { font-size: 13px; color: rgb(var(--k-ink) / 0.3); margin-top: 4px; }
+    .buscar-tabs { display: flex; border-bottom: 1px solid rgb(var(--k-ink) / 0.06); }
+    .buscar-tab { flex: 1; padding: 14px 0; text-align: center; font-size: 13px; font-weight: 500; color: rgb(var(--k-ink) / 0.4); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+    .buscar-tab:hover { color: var(--k-text); background: rgb(var(--k-ink) / 0.03); }
+    .buscar-tab.active { color: var(--k-text); border-bottom-color: var(--k-accent); font-weight: 600; }
     .buscar-content { padding: 24px; flex: 1; }
-    .buscar-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.15); font-size: 14px; }
+    .buscar-empty { text-align: center; padding: 60px 20px; color: rgb(var(--k-ink) / 0.15); font-size: 14px; }
     .buscar-empty i { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3; }
   </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
-  <script src="/js/menu-global.js"></script>
 
   <div class="buscar-layout">
     <div class="buscar-header">

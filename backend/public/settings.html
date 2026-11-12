@@ -12,10 +12,11 @@
     rel="stylesheet">
     <link rel="stylesheet" href="/css/common.css?v=9">
     <link rel="stylesheet" href="/css/settings.css">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 
 <body>
-  <script src="/js/menu-global.js"></script>
 <!-- ═══════════ CONTAINER ═══════════ -->
   <div class="container">
 
@@ -80,13 +81,13 @@
 
           <!-- INFO DEL USUARIO (rellenado desde localStorage) -->
           <div style="display:flex;align-items:center;gap:16px;padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--border);">
-            <div id="settings-user-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#e8334a,#f5c842);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Plus Jakarta Sans',sans-serif;">YU</div>
+            <div id="settings-user-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--k-accent),var(--k-gold));display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color: var(--k-text);flex-shrink:0;font-family:'Plus Jakarta Sans',sans-serif;">YU</div>
             <div>
-              <div id="settings-user-name" style="font-size:18px;font-weight:700;color:#f2f2fa;">Usuario</div>
+              <div id="settings-user-name" style="font-size:18px;font-weight:700;color:var(--k-text);">Usuario</div>
               <div id="settings-user-email" style="font-size:13px;color:var(--text-muted);margin-top:2px;">email@ejemplo.com</div>
               <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                <span id="settings-user-role" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#8888a0;">user</span>
-                <span id="settings-user-premium" style="display:none;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.28);color:#f5c842;">★ Premium</span>
+                <span id="settings-user-role" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:rgb(var(--k-ink) / 0.04);border:1px solid rgb(var(--k-ink) / 0.1);color:var(--k-text-3);">user</span>
+                <span id="settings-user-premium" style="display:none;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;background:color-mix(in srgb, var(--k-gold) 12%, transparent);border:1px solid color-mix(in srgb, var(--k-gold) 28%, transparent);color:var(--k-gold);">★ Premium</span>
                 <span id="settings-user-joined" style="font-size:10px;color:var(--text-muted);padding:2px 7px;">Miembro desde —</span>
               </div>
             </div>
@@ -203,7 +204,7 @@
             <input type="password" class="form-input" id="pw-confirm" placeholder="Confirma la contraseña" autocomplete="new-password">
           </div>
 
-          <div id="pw-error" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(232,51,74,0.1);border:1px solid rgba(232,51,74,0.3);color:#e8334a;margin-bottom:16px;"></div>
+          <div id="pw-error" style="display:none;padding:10px 14px;border-radius:10px;font-size:13px;background:color-mix(in srgb, var(--k-accent) 10%, transparent);border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);color:var(--k-accent);margin-bottom:16px;"></div>
 
           <div style="display: flex; gap: 12px;">
             <button class="btn btn-primary" id="pw-btn">Cambiar contraseña</button>
@@ -288,17 +289,17 @@
 
           <div style="font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 12px;">
             <div
-              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgb(var(--k-ink) / 0.03); border-radius: var(--radius-md);">
               <span>✓ Login exitoso</span>
               <span style="color: var(--text-muted);">hace 2 horas</span>
             </div>
             <div
-              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgb(var(--k-ink) / 0.03); border-radius: var(--radius-md);">
               <span>✓ Cambio de contraseña</span>
               <span style="color: var(--text-muted);">hace 5 días</span>
             </div>
             <div
-              style="display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md);">
+              style="display: flex; justify-content: space-between; padding: 12px; background: rgb(var(--k-ink) / 0.03); border-radius: var(--radius-md);">
               <span>✓ Login desde nuevo dispositivo</span>
               <span style="color: var(--text-muted);">hace 1 semana</span>
             </div>
@@ -438,7 +439,7 @@
           </p>
 
           <div class="color-grid">
-            <div class="color-option active" style="background: linear-gradient(135deg, #0a0a0f, #1a1a2f);"></div>
+            <div class="color-option active" style="background: linear-gradient(135deg, var(--k-bg), #1a1a2f);"></div>
             <div class="color-option" style="background: linear-gradient(135deg, #0f0f0f, #2a2a2a);"></div>
             <div class="color-option" style="background: linear-gradient(135deg, #1a0810, #2d1520);"></div>
             <div class="color-option" style="background: linear-gradient(135deg, #0f1a1f, #1a2d35);"></div>
@@ -856,13 +857,13 @@
               <div class="form-description">De tu almacenamiento en la nube</div>
             </div>
             <div
-              style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; overflow: hidden;">
+              style="background: rgb(var(--k-ink) / 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; overflow: hidden;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
                 <span>234 MB</span>
                 <span>1 GB</span>
               </div>
               <div
-                style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                style="width: 100%; height: 6px; background: rgb(var(--k-ink) / 0.1); border-radius: 10px; overflow: hidden;">
                 <div style="width: 23.4%; height: 100%; background: var(--green);"></div>
               </div>
             </div>
@@ -885,12 +886,12 @@
           </p>
 
           <button class="btn"
-            style="background: rgba(232,51,74,0.15); color: var(--accent); border: 1px solid rgba(232,51,74,0.3);">
+            style="background: color-mix(in srgb, var(--k-accent) 15%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);">
             🗑️ Eliminar toda mi biblioteca
           </button>
 
           <button class="btn"
-            style="background: rgba(232,51,74,0.15); color: var(--accent); border: 1px solid rgba(232,51,74,0.3); margin-top: 10px;">
+            style="background: color-mix(in srgb, var(--k-accent) 15%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); margin-top: 10px;">
             🚫 Eliminar mi cuenta permanentemente
           </button>
         </div>

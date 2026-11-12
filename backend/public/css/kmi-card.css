@@ -10,7 +10,7 @@
   --kmi-card-shadow: 0 2px 8px rgba(0,0,0,0.2);
   --kmi-card-hover-shadow: 0 8px 30px rgba(0,0,0,0.4);
   --kmi-card-hover-transform: translateY(-4px);
-  --kmi-card-hover-border: rgba(255,255,255,0.15);
+  --kmi-card-hover-border: rgb(var(--k-ink) / 0.15);
 
   --kmi-cover-aspect: 2 / 3;
   --kmi-cover-bg: var(--bg-card);
@@ -31,7 +31,7 @@
   --kmi-badge-rank-color: #fff;
 
   --kmi-badge-rating-bg: rgba(0,0,0,0.75);
-  --kmi-badge-rating-color: #f5c842;
+  --kmi-badge-rating-color: var(--k-gold);
   --kmi-badge-rating-size: 11px;
 
   --kmi-overlay-gradient: linear-gradient(transparent, rgba(0,0,0,0.85));
@@ -164,7 +164,7 @@
 .kmi-overlay-track {
   flex: 1;
   height: 3px;
-  background: rgba(255,255,255,0.1);
+  background: rgb(var(--k-ink) / 0.1);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -175,7 +175,7 @@
 .kmi-overlay-btn {
   font-size: 11px;
   font-weight: 600;
-  color: #fff;
+  color: var(--k-text);
   background: var(--accent);
   text-align: center;
   padding: 4px 0;

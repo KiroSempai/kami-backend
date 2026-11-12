@@ -146,7 +146,7 @@
 
             // Shake en los inputs
             [emailInput, passInput].forEach(inp => {
-                inp.style.borderColor = '#e8334a';
+                inp.style.borderColor = 'var(--k-accent)';
                 inp.style.animation = 'kamiShake 0.4s ease';
                 setTimeout(() => {
                     inp.style.animation = '';
@@ -258,14 +258,14 @@
         margin-bottom: 18px;
       }
       .alert-warning {
-        background: rgba(232,51,74,0.1);
-        border: 1px solid rgba(232,51,74,0.3);
-        color: #e8334a;
+        background: color-mix(in srgb, var(--k-accent) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);
+        color: var(--k-accent);
       }
       .alert-success {
-        background: rgba(45,202,122,0.1);
-        border: 1px solid rgba(45,202,122,0.3);
-        color: #2dca7a;
+        background: color-mix(in srgb, var(--k-ok) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--k-ok) 30%, transparent);
+        color: var(--k-ok);
       }
     `;
         document.head.appendChild(s);
@@ -296,8 +296,8 @@
                 const form = document.getElementById('login-form');
                 if (form) {
                     const hint = document.createElement('p');
-                    hint.style.cssText = 'margin-top:14px;font-size:11px;color:#4a4a62;text-align:center;line-height:1.6;';
-                    hint.innerHTML = '💡 <strong style="color:#6a6a82;">Demo local</strong> — usa <code style="color:#8888a0;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px;">yu@example.com</code> / <code style="color:#8888a0;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px;">12345678</code>';
+                    hint.style.cssText = 'margin-top:14px;font-size:11px;color:var(--k-text-3);text-align:center;line-height:1.6;';
+                    hint.innerHTML = '💡 <strong style="color:var(--k-text-3);">Demo local</strong> — usa <code style="color:var(--k-text-3);background:rgb(var(--k-ink) / 0.05);padding:1px 5px;border-radius:3px;">yu@example.com</code> / <code style="color:var(--k-text-3);background:rgb(var(--k-ink) / 0.05);padding:1px 5px;border-radius:3px;">12345678</code>';
                     form.appendChild(hint);
                 }
             }

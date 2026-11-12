@@ -14,10 +14,11 @@
     <link rel="stylesheet" href="/css/perfil.css">
     <link rel="stylesheet" href="/css/biblioteca.css">
     <link rel="stylesheet" href="/css/kmi-card.css">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 
 <body>
-  <script src="/js/menu-global.js"></script>
 <div id="page-loader">
       <div class="spinner"></div>
       <p style="color:var(--text-muted);font-size:14px;">Cargando biblioteca...</p>
@@ -457,9 +458,9 @@
                 var label = status ? ({ reading:'Leyendo', continuing:'Continuando', planned:'Pendientes', favorite:'Favoritos', completed:'Terminados', dropped:'Abandonados', rereading:'Releyendo' })[status] || status : null;
                 var overlay = '';
                 overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
-                overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>' + (m.type||'manga') + '</span><span style="color:#f5c842;">★ ' + (m.rating ? m.rating.toFixed(1) : '—') + '</span></div>';
-                overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:0%;height:100%;background:var(--blue);border-radius:2px;"></div></div></div>';
-                overlay += '<div onclick="event.stopPropagation();addToLibrary(\'' + m.id + '\',\'' + (m.title||'').replace(/'/g,"\\'") + '\')" style="font-size:11px;font-weight:600;color:#fff;background:var(--accent);text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + (status ? label : '+ Añadir') + '</div>';
+                overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>' + (m.type||'manga') + '</span><span style="color:var(--k-gold);">★ ' + (m.rating ? m.rating.toFixed(1) : '—') + '</span></div>';
+                overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgb(var(--k-ink) / 0.1);border-radius:2px;overflow:hidden;"><div style="width:0%;height:100%;background:var(--blue);border-radius:2px;"></div></div></div>';
+                overlay += '<div onclick="event.stopPropagation();addToLibrary(\'' + m.id + '\',\'' + (m.title||'').replace(/'/g,"\\'") + '\')" style="font-size:11px;font-weight:600;color: var(--k-text);background:var(--accent);text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + (status ? label : '+ Añadir') + '</div>';
                 overlay += '</div>';
                 if (status) overlay += '<div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--bg-surface);z-index:2;"></div>';
                 var html = window.kamiMangaCard(m, { showRating: false, extraOverlay: overlay });

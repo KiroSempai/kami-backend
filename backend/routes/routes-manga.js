@@ -11,6 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const { upload, MANGA_ASSETS_DIR } = require('../upload-config');
 const { verifyToken } = require('../config');
+const { requireAuth, requireMangaEditor, requireNotBanned, hasOwnershipColumn } = require('../middleware/auth');
 
 function formatId(num) {
     return `KMI-${String(num).padStart(7, '0')}`;
@@ -269,7 +270,7 @@ router.get('/:id', async (req, res) => {
 
 
 
-router.post('/', upload.single('coverImage'), async (req, res) => {
+router.post('/', requireAuth, requireNotBanned, upload.single('coverImage'), async (req, res) => {
     try {
         const {
             title, alternativeTitles = '[]', description = '',
@@ -304,15 +305,17 @@ router.post('/', upload.single('coverImage'), async (req, res) => {
             coverPath = `/assets/manga/${formattedId}/${finalName}`;
         }
 
+        const withOwner = await hasOwnershipColumn();
         const result = await pool.query(`
-            INSERT INTO mangas (id, title, alternative_titles, cover, description, type, status, genres, demographic_target, author, artist, total_chapters, is_oneshot)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+            INSERT INTO mangas (id, title, alternative_titles, cover, description, type, status, genres, demographic_target, author, artist, total_chapters, is_oneshot${withOwner ? ', created_by' : ''})
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13${withOwner ? ',$14' : ''})
             RETURNING id, title, type, status, cover, created_at
         `, [
             formattedId, title.trim(), altArr, coverPath, description || '',
             type, status, genresArr, demographicTarget || '',
             author || '', artist || author || '',
             isOneshot === 'true' ? 1 : (parseInt(totalChapters) || 0), isOneshot === 'true',
+            ...(withOwner ? [req.user.userId] : []),
         ]);
 
         const newManga = result.rows[0];
@@ -320,11 +323,7 @@ router.post('/', upload.single('coverImage'), async (req, res) => {
         // Auto-crear comunidad para el nuevo manga
         try {
             const commId = 'com-' + newManga.id;
-            let creatorId = null;
-            try {
-                const tok = req.headers.authorization?.split(' ')[1];
-                if (tok) { const u = require('../config').verifyToken(tok); creatorId = u.userId; }
-            } catch(e) {}
+            const creatorId = req.user.userId;
             await pool.query(`
                 INSERT INTO communities (id, name, description, manga_id, type, created_by)
                 VALUES ($1, $2, $3, $4, 'both', $5)
@@ -360,7 +359,7 @@ router.post('/', upload.single('coverImage'), async (req, res) => {
     }
 });
 
-router.put('/:id', upload.single('coverImage'), async (req, res) => {
+router.put('/:id', requireAuth, requireMangaEditor, upload.single('coverImage'), async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, type, status, genres, demographicTarget, author, artist, alternativeTitles, totalChapters, isOneshot, socialLinks } = req.body;
@@ -592,12 +591,12 @@ router.get('/:id/stats', async (req, res) => {
 });
 
 // POST /api/manga/:id/reading — Actualizar progreso de lectura
-router.post('/:id/reading', async (req, res) => {
+router.post('/:id/reading', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { userId, lastChapter, lastPage, totalPagesRead } = req.body;
-
-        if (!userId) return res.status(401).json({ error: 'Debes iniciar sesión' });
+        // El usuario sale del token, nunca del cuerpo: antes se podía escribir el progreso de otro
+        const userId = req.user.userId;
+        const { lastChapter, lastPage, totalPagesRead } = req.body;
 
         await pool.query(`
             INSERT INTO user_reading (user_id, manga_id, last_chapter, last_page, total_pages_read)
@@ -706,7 +705,7 @@ router.post('/:id/chapter-read', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAuth, requireMangaEditor, async (req, res) => {
     try {
         const { id } = req.params;
 

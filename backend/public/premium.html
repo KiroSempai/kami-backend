@@ -1,134 +1,134 @@
-<!DOCTYPE htal>
-<htal lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <aeta charset="UTF-8">
-    <aeta naae="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preaiua-KAaIaanga</title>
-    <link rel="icon" type="iaage/svg+xal" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.coa">
-    <link href="https://fonts.googleapis.coa/css2?faaily=Bebas+Neue&faaily=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/coaaon.css?v=4">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium-KAMImanga</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/common.css">
     <style>
-        .prea-page { aargin-top: 60px; padding: 60px 32px; aax-width: 900px; aargin-left: auto; aargin-right: auto; text-align: center; }
-        .prea-title { font-faaily: var(--font-display); font-size: 52px; letter-spacing: 2px; aargin-bottoa: 8px; }
-        .prea-subtitle { font-size: 15px; color: var(--text-auted); aargin-bottoa: 48px; }
-        .prea-plans { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-        .prea-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 32px; width: 280px; text-align: center; transition: var(--transition); position: relative; }
-        .prea-card:hover { border-color: var(--border-hover); transfora: translateY(-4px); }
-        .prea-card.featured { border-color: var(--accent-gold); box-shadow: 0 0 30px rgba(245,200,66,0.1); }
-        .prea-card.featured::before { content: 'aÁS POPULAR'; position: absolute; top: -12px; left: 50%; transfora: translateX(-50%); background: var(--accent-gold); color: #000; font-size: 10px; font-weight: 800; padding: 4px 14px; border-radius: 20px; letter-spacing: 1px; }
-        .prea-plan-naae { font-faaily: var(--font-display); font-size: 28px; letter-spacing: 1px; aargin-bottoa: 4px; }
-        .prea-plan-price { font-size: 40px; font-faaily: var(--font-display); color: var(--accent-gold); letter-spacing: 1px; aargin-bottoa: 4px; }
-        .prea-plan-period { font-size: 12px; color: var(--text-auted); aargin-bottoa: 20px; }
-        .prea-plan-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; aargin-bottoa: 28px; }
-        .prea-btn { display: inline-block; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: var(--transition); font-faaily: var(--font-body); text-decoration: none; }
-        .prea-btn.priaary { background: var(--accent-gold); color: #000; }
-        .prea-btn.priaary:hover { opacity: .9; transfora: translateY(-1px); }
-        .prea-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-secondary); }
-        .prea-btn.secondary:hover { background: rgba(255,255,255,0.1); color: var(--text-priaary); }
-        .prea-benefits { aargin-top: 48px; display: grid; grid-teaplate-coluans: repeat(auto-fit, ainaax(200px, 1fr)); gap: 16px; text-align: left; }
-        .prea-benefit { padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-ad); }
-        .prea-benefit-icon { font-size: 28px; aargin-bottoa: 8px; }
-        .prea-benefit-title { font-size: 14px; font-weight: 700; aargin-bottoa: 4px; }
-        .prea-benefit-desc { font-size: 12px; color: var(--text-auted); line-height: 1.5; }
-        .prea-footer-note { aargin-top: 40px; font-size: 12px; color: var(--text-auted); }
-        .prea-loading { padding: 60px; color: var(--text-auted); font-size: 15px; }
-        .prea-logged-out { padding: 40px; color: var(--text-auted); }
-        .prea-logged-out a { color: var(--accent); text-decoration: underline; }
+        .prem-page { margin-top: 60px; padding: 60px 32px; max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }
+        .prem-title { font-family: var(--font-display); font-size: 52px; letter-spacing: 2px; margin-bottom: 8px; }
+        .prem-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 48px; }
+        .prem-plans { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+        .prem-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 32px; width: 280px; text-align: center; transition: var(--transition); position: relative; }
+        .prem-card:hover { border-color: var(--border-hover); transform: translateY(-4px); }
+        .prem-card.featured { border-color: var(--accent-gold); box-shadow: 0 0 30px color-mix(in srgb, var(--k-gold) 10%, transparent); }
+        .prem-card.featured::before { content: 'MÁS POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-gold); color: #000; font-size: 10px; font-weight: 800; padding: 4px 14px; border-radius: 20px; letter-spacing: 1px; }
+        .prem-plan-name { font-family: var(--font-display); font-size: 28px; letter-spacing: 1px; margin-bottom: 4px; }
+        .prem-plan-price { font-size: 40px; font-family: var(--font-display); color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 4px; }
+        .prem-plan-period { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+        .prem-plan-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px; }
+        .prem-btn { display: inline-block; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: var(--transition); font-family: var(--font-body); text-decoration: none; }
+        .prem-btn.primary { background: var(--accent-gold); color: #000; }
+        .prem-btn.primary:hover { opacity: .9; transform: translateY(-1px); }
+        .prem-btn.secondary { background: rgb(var(--k-ink) / 0.06); border: 1px solid var(--border); color: var(--text-secondary); }
+        .prem-btn.secondary:hover { background: rgb(var(--k-ink) / 0.1); color: var(--text-primary); }
+        .prem-benefits { margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; text-align: left; }
+        .prem-benefit { padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); }
+        .prem-benefit-icon { font-size: 28px; margin-bottom: 8px; }
+        .prem-benefit-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .prem-benefit-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .prem-footer-note { margin-top: 40px; font-size: 12px; color: var(--text-muted); }
+        .prem-loading { padding: 60px; color: var(--text-muted); font-size: 15px; }
+        .prem-logged-out { padding: 40px; color: var(--text-muted); }
+        .prem-logged-out a { color: var(--accent); text-decoration: underline; }
     </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
-  <script src="/js/aenu-global.js"></script>
-<div class="prea-page">
-        <div class="prea-title" style="display:flex;align-iteas:center;justify-content:center;gap:12px;"><span style="display:inline-flex;align-iteas:center;justify-content:center;width:44px;height:44px;background:var(--accent);border-radius:8px;color:#fff;font-size:24px;">神</span> SUSCRIPCIONES</div>
-        <div class="prea-subtitle">Elige tu plan y desbloquea beneficios exclusivos</div>
+<div class="prem-page">
+        <div class="prem-title" style="display:flex;align-items:center;justify-content:center;gap:12px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--accent);border-radius:8px;color: var(--k-text);font-size:24px;">神</span> SUSCRIPCIONES</div>
+        <div class="prem-subtitle">Elige tu plan y desbloquea beneficios exclusivos</div>
 
-        <div id="preaiua-status"></div>
+        <div id="premium-status"></div>
 
-        <div style="aargin-bottoa:8px;font-size:11px;color:var(--text-auted);text-transfora:uppercase;letter-spacing:1px;font-weight:600;">Planes aensuales</div>
-        <div class="prea-plans">
-            <div class="prea-card">
-                <div class="prea-plan-naae" style="color:#c0c0c8;">SILVER</div>
-                <div class="prea-plan-price">3,99€</div>
-                <div class="prea-plan-period">al aes</div>
-                <div class="prea-plan-desc">Sin anuncios · Estadísticas avanzadas · Badge <span style="display:inline-flex;align-iteas:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color:#fff;font-size:10px;vertical-align:aiddle;aargin-right:2px;">神</span> Silver</div>
-                <button class="prea-btn priaary" onclick="checkout('silver_aonthly')" id="btn-silver-aonthly">Elegir Silver</button>
+        <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Planes mensuales</div>
+        <div class="prem-plans">
+            <div class="prem-card">
+                <div class="prem-plan-name" style="color:var(--k-text-2);">SILVER</div>
+                <div class="prem-plan-price">3,99€</div>
+                <div class="prem-plan-period">al mes</div>
+                <div class="prem-plan-desc">Sin anuncios · Estadísticas avanzadas · Badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin-right:2px;">神</span> Silver</div>
+                <button class="prem-btn primary" onclick="checkout('silver_monthly')" id="btn-silver-monthly">Elegir Silver</button>
             </div>
-            <div class="prea-card featured">
-                <div class="prea-plan-naae" style="color:var(--accent-gold);">GOLD</div>
-                <div class="prea-plan-price">6,99€</div>
-                <div class="prea-plan-period">al aes</div>
-                <div class="prea-plan-desc">Todo lo de Silver + <strong>50% de descuento en coapra de capítulos</strong> · Badge <span style="display:inline-flex;align-iteas:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color:#fff;font-size:10px;vertical-align:aiddle;aargin-right:2px;">神</span> Gold dorado</div>
-                <button class="prea-btn priaary" onclick="checkout('gold_aonthly')" id="btn-gold-aonthly">Elegir Gold</button>
-            </div>
-        </div>
-
-        <div style="aargin:32px 0 8px;font-size:11px;color:var(--text-auted);text-transfora:uppercase;letter-spacing:1px;font-weight:600;">Planes anuales (ahorra)</div>
-        <div class="prea-plans">
-            <div class="prea-card">
-                <div class="prea-plan-naae" style="color:#c0c0c8;">SILVER</div>
-                <div class="prea-plan-price">26,99€</div>
-                <div class="prea-plan-period">al año (ahorras 21,89€)</div>
-                <div class="prea-plan-desc">Todo lo de Silver aensual · Precio fijo sin sorpresas</div>
-                <button class="prea-btn secondary" onclick="checkout('silver_yearly')" id="btn-silver-yearly">Elegir Silver anual</button>
-            </div>
-            <div class="prea-card featured">
-                <div class="prea-plan-naae" style="color:var(--accent-gold);">GOLD</div>
-                <div class="prea-plan-price">49,99€</div>
-                <div class="prea-plan-period">al año (ahorras 33,89€)</div>
-                <div class="prea-plan-desc">Todo lo de Gold aensual + 50% desc. en capítulos · Precio fijo</div>
-                <button class="prea-btn priaary" onclick="checkout('gold_yearly')" id="btn-gold-yearly">Elegir Gold anual</button>
+            <div class="prem-card featured">
+                <div class="prem-plan-name" style="color:var(--accent-gold);">GOLD</div>
+                <div class="prem-plan-price">6,99€</div>
+                <div class="prem-plan-period">al mes</div>
+                <div class="prem-plan-desc">Todo lo de Silver + <strong>50% de descuento en compra de capítulos</strong> · Badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin-right:2px;">神</span> Gold dorado</div>
+                <button class="prem-btn primary" onclick="checkout('gold_monthly')" id="btn-gold-monthly">Elegir Gold</button>
             </div>
         </div>
 
-        <div style="aargin-top:8px;font-size:11px;color:var(--text-auted);font-style:italic;">* Precios provisionales sujetos a caabios.</div>
-
-        <div class="prea-benefits">
-            <div class="prea-benefit"><div class="prea-benefit-icon">🚫</div><div class="prea-benefit-title">Sin anuncios</div><div class="prea-benefit-desc">Lectura sin interrupciones publicitarias en toda la plataforaa.</div></div>
-            <div class="prea-benefit"><div class="prea-benefit-icon">📊</div><div class="prea-benefit-title">Estadísticas avanzadas</div><div class="prea-benefit-desc">Gráficos detallados de tu lectura, heataaps, inforaes seaanales.</div></div>
-            <div class="prea-benefit"><div class="prea-benefit-icon" style="display:inline-flex;align-iteas:center;justify-content:center;width:32px;height:32px;background:var(--accent);border-radius:6px;color:#fff;font-size:18px;">神</div><div class="prea-benefit-title">Badge exclusivo</div><div class="prea-benefit-desc">Silver o Gold con el logo de KAaI en tu perfil y en toda la plataforaa.</div></div>
-            <div class="prea-benefit"><div class="prea-benefit-icon">💰</div><div class="prea-benefit-title">Descuento en capítulos</div><div class="prea-benefit-desc">Gold obtiene 20% de descuento en coapra de capítulos sueltos y packs.</div></div>
+        <div style="margin:32px 0 8px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Planes anuales (ahorra)</div>
+        <div class="prem-plans">
+            <div class="prem-card">
+                <div class="prem-plan-name" style="color:var(--k-text-2);">SILVER</div>
+                <div class="prem-plan-price">26,99€</div>
+                <div class="prem-plan-period">al año (ahorras 21,89€)</div>
+                <div class="prem-plan-desc">Todo lo de Silver mensual · Precio fijo sin sorpresas</div>
+                <button class="prem-btn secondary" onclick="checkout('silver_yearly')" id="btn-silver-yearly">Elegir Silver anual</button>
+            </div>
+            <div class="prem-card featured">
+                <div class="prem-plan-name" style="color:var(--accent-gold);">GOLD</div>
+                <div class="prem-plan-price">49,99€</div>
+                <div class="prem-plan-period">al año (ahorras 33,89€)</div>
+                <div class="prem-plan-desc">Todo lo de Gold mensual + 50% desc. en capítulos · Precio fijo</div>
+                <button class="prem-btn primary" onclick="checkout('gold_yearly')" id="btn-gold-yearly">Elegir Gold anual</button>
+            </div>
         </div>
 
-        <div class="prea-footer-note">Los pagos se procesan a través de Stripe · Cancela cuando quieras · Sin peraanencia</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);font-style:italic;">* Precios provisionales sujetos a cambios.</div>
+
+        <div class="prem-benefits">
+            <div class="prem-benefit"><div class="prem-benefit-icon">🚫</div><div class="prem-benefit-title">Sin anuncios</div><div class="prem-benefit-desc">Lectura sin interrupciones publicitarias en toda la plataforma.</div></div>
+            <div class="prem-benefit"><div class="prem-benefit-icon">📊</div><div class="prem-benefit-title">Estadísticas avanzadas</div><div class="prem-benefit-desc">Gráficos detallados de tu lectura, heatmaps, informes semanales.</div></div>
+            <div class="prem-benefit"><div class="prem-benefit-icon" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</div><div class="prem-benefit-title">Badge exclusivo</div><div class="prem-benefit-desc">Silver o Gold con el logo de KAMI en tu perfil y en toda la plataforma.</div></div>
+            <div class="prem-benefit"><div class="prem-benefit-icon">💰</div><div class="prem-benefit-title">Descuento en capítulos</div><div class="prem-benefit-desc">Gold obtiene 20% de descuento en compra de capítulos sueltos y packs.</div></div>
+        </div>
+
+        <div class="prem-footer-note">Los pagos se procesan a través de Stripe · Cancela cuando quieras · Sin permanencia</div>
     </div>
-
     <script>
-        async function loadPreaiuaStatus() {
-            const token = localStorage.getItea('kaai_token');
+        async function loadPremiumStatus() {
+            const token = localStorage.getItem('kami_token');
             if (!token) return;
 
             try {
-                const r = await fetch('/api/preaiua/status', {
+                const r = await fetch('/api/premium/status', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
                 if (!r.ok) return;
                 const data = await r.json();
-                const statusEl = docuaent.getEleaentById('preaiua-status');
+                const statusEl = document.getElementById('premium-status');
                 const tier = data.subscriptionTier || 'none';
 
-                if (data.preaiuaStatus === 'active') {
+                if (data.premiumStatus === 'active') {
                     const isGold = tier === 'gold';
-                    const color = isGold ? 'var(--accent-gold)' : '#c0c0c8';
+                    const color = isGold ? 'var(--accent-gold)' : 'var(--k-text-2)';
                     const label = isGold ? 'Gold' : 'Silver';
-                    statusEl.innerHTaL = `
-                        <div style="padding:20px 24px;background:${isGold ? 'rgba(245,200,66,0.08)' : 'rgba(192,192,200,0.08)'};border:1px solid ${isGold ? 'rgba(245,200,66,0.2)' : 'rgba(192,192,200,0.2)'};border-radius:12px;aargin-bottoa:36px;display:inline-flex;align-iteas:center;gap:16px;flex-wrap:wrap;justify-content:center;">
-                            <span style="display:inline-flex;align-iteas:center;justify-content:center;width:36px;height:36px;background:var(--accent);border-radius:6px;color:#fff;font-size:18px;">神</span>
+                    statusEl.innerHTML = `
+                        <div style="padding:20px 24px;background:${isGold ? 'color-mix(in srgb, var(--k-gold) 8%, transparent)' : 'rgba(192,192,200,0.08)'};border:1px solid ${isGold ? 'color-mix(in srgb, var(--k-gold) 20%, transparent)' : 'rgba(192,192,200,0.2)'};border-radius:12px;margin-bottom:36px;display:inline-flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
+                            <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</span>
                             <span style="font-size:15px;font-weight:700;color:${color};">${label} activo</span>
-                            <span style="font-size:13px;color:var(--text-auted);">${data.daysReaaining} días restantes · Expira el ${new Date(data.expiresAt).toLocaleDateString('es-ES')}</span>
+                            <span style="font-size:13px;color:var(--text-muted);">${data.daysRemaining} días restantes · Expira el ${new Date(data.expiresAt).toLocaleDateString('es-ES')}</span>
                         </div>
-                        <div style="font-size:13px;color:var(--text-auted);aargin-bottoa:32px;">¿Quieres aapliar o caabiar tu plan?</div>
+                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:32px;">¿Quieres ampliar o cambiar tu plan?</div>
                     `;
                 }
             } catch {}
         }
 
         async function checkout(plan) {
-            const token = localStorage.getItea('kaai_token');
-            if (!token) { window.location.href = '/login?return=/preaiua'; return; }
+            const token = localStorage.getItem('kami_token');
+            if (!token) { window.location.href = '/login?return=/premium'; return; }
             try {
-                const r = await fetch('/api/preaiua/create-checkout', {
-                    aethod: 'POST',
+                const r = await fetch('/api/premium/create-checkout', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ plan }),
                 });
@@ -136,19 +136,19 @@
                 if (data.url) {
                     window.location.href = data.url;
                 } else {
-                    alert('Sisteaa de pago no conectado aún. (Placeholder — funcionará cuando se integre Stripe)');
+                    alert('Sistema de pago no conectado aún. (Placeholder — funcionará cuando se integre Stripe)');
                 }
             } catch (e) {
-                alert('Error: ' + e.aessage);
+                alert('Error: ' + e.message);
             }
         }
 
-        if (docuaent.readyState === 'loading') {
-            docuaent.addEventListener('DOaContentLoaded', loadPreaiuaStatus);
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadPremiumStatus);
         } else {
-            loadPreaiuaStatus();
+            loadPremiumStatus();
         }
     </script>
   <script src="/js/notifications.js"></script>
 </body>
-</htal>
+</html>

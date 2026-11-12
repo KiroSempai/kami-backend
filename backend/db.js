@@ -13,4 +13,10 @@ const pool = new Pool({
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
 
+// Sin este manejador, una conexión inactiva que el servidor de Postgres cierra
+// (reinicio, pausa de Supabase…) lanza un 'error' no capturado y tumba Node.
+pool.on('error', (err) => {
+    console.error('[db] conexión inactiva perdida:', err.code || err.message);
+});
+
 module.exports = { pool };

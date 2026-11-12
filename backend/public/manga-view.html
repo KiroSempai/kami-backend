@@ -30,6 +30,8 @@
       };
     })();
     </script>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
   <div class="kmi-topbar">
@@ -207,8 +209,8 @@
             </div>
             <div class="feed-tab-panel" id="feed-panel-social" style="display:none;">
               <div class="post-empty" id="social-placeholder">
-                <i class="ti ti-users" style="font-size:40px;color:rgba(255,255,255,0.06);"></i>
-                <div style="margin-top:12px;color:rgba(255,255,255,0.08);">Grupo social próximamente</div>
+                <i class="ti ti-users" style="font-size:40px;color:rgb(var(--k-ink) / 0.06);"></i>
+                <div style="margin-top:12px;color:rgb(var(--k-ink) / 0.08);">Grupo social próximamente</div>
               </div>
             </div>
           </div>
@@ -308,7 +310,7 @@
                     if (!msg) {
                         msg = document.createElement('div');
                         msg.className = 'load-timeout-msg';
-                        msg.style.cssText = 'text-align:center;color:rgba(255,255,255,0.2);font-size:12px;margin-top:16px;';
+                        msg.style.cssText = 'text-align:center;color:rgb(var(--k-ink) / 0.2);font-size:12px;margin-top:16px;';
                         skeleton.appendChild(msg);
                     }
                     if (elapsed > 8) {
@@ -764,7 +766,7 @@
             }
             body.innerHTML = comments.map(function(c) {
               var initial = (c.username || '?').substring(0, 2).toUpperCase();
-              var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+              var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
               var color = colors[(c.id || 0) % colors.length];
               var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
               return '<div class="comment-item">' +
@@ -932,7 +934,7 @@
               if (d.comments && d.comments.length > 0) {
                 body.innerHTML = d.comments.map(function(c) {
                   var initial = (c.username || '?').substring(0, 2).toUpperCase();
-                  var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+                  var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
                   var color = colors[(c.id || 0) % colors.length];
                   var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
                   return '<div class="comment-item">' +
@@ -994,7 +996,7 @@
             }
             container.innerHTML = posts.map(function(p) {
               var initial = (p.username || '?').substring(0, 2).toUpperCase();
-              var colors = ['#e8344a','#f5c842','#4c9df5','#2dca7a','#a78bfa','#fb923c'];
+              var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
               var color = colors[(p.user_id || '').length % colors.length];
               var time = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' }) : '';
               return '<div class="post-item">' +
@@ -1003,7 +1005,7 @@
                   '<span class="post-username">' + escHtml(p.username || 'Anónimo') + '</span>' +
                   '<span class="post-time">' + time + '</span>' +
                 '</div>' +
-                (p.title ? '<div class="post-body" style="font-weight:600;color:#e0e0e0;margin-bottom:4px;">' + escHtml(p.title) + '</div>' : '') +
+                (p.title ? '<div class="post-body" style="font-weight:600;color:var(--k-text);margin-bottom:4px;">' + escHtml(p.title) + '</div>' : '') +
                 '<div class="post-body">' + escHtml(p.content) + '</div>' +
               '</div>';
             }).join('');
@@ -1051,8 +1053,8 @@
       <div style="font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-bottom:4px;">CONFIRMAR</div>
       <div class="confirm-msg" style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.5;"></div>
       <div style="display:flex;gap:10px;">
-        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
-        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
+        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color: var(--k-text);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
+        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgb(var(--k-ink) / 0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgb(var(--k-ink) / 0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
       </div>
     </div>
   </div>
@@ -1109,13 +1111,13 @@
 
     function hoverStar(val) {
       document.querySelectorAll('.rating-star').forEach(function(s) {
-        s.style.color = parseInt(s.dataset.val) <= val ? '#f5c842' : 'var(--text-muted)';
+        s.style.color = parseInt(s.dataset.val) <= val ? 'var(--k-gold)' : 'var(--text-muted)';
       });
     }
 
     function resetStars() {
       document.querySelectorAll('.rating-star').forEach(function(s) {
-        s.style.color = parseInt(s.dataset.val) <= selectedRating ? '#f5c842' : 'var(--text-muted)';
+        s.style.color = parseInt(s.dataset.val) <= selectedRating ? 'var(--k-gold)' : 'var(--text-muted)';
       });
     }
 
@@ -1166,7 +1168,7 @@
 
         trackAction('manga_rated', null, { rating: selectedRating });
         document.getElementById('rating-status').textContent = '✓ Votado';
-        document.getElementById('rating-status').style.color = '#2dca7a';
+        document.getElementById('rating-status').style.color = 'var(--k-ok)';
         document.getElementById('rating-status').style.display = 'block';
         btn.textContent = 'Votado';
         btn.disabled = true;
@@ -1176,7 +1178,7 @@
         setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 2000);
       } catch (err) {
         document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
-        document.getElementById('rating-status').style.color = '#e8344a';
+        document.getElementById('rating-status').style.color = 'var(--k-accent)';
         document.getElementById('rating-status').style.display = 'block';
         btn.textContent = 'Enviar';
         btn.disabled = false;
@@ -1218,7 +1220,7 @@
         }
 
         document.getElementById('rating-status').textContent = '✓ Voto eliminado';
-        document.getElementById('rating-status').style.color = '#8888a0';
+        document.getElementById('rating-status').style.color = 'var(--k-text-3)';
         document.getElementById('rating-status').style.display = 'block';
         document.getElementById('btn-rate-remove').style.display = 'none';
         var btn = document.getElementById('btn-rate-submit');
@@ -1231,7 +1233,7 @@
         setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 1000);
       } catch (err) {
         document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
-        document.getElementById('rating-status').style.color = '#e8344a';
+        document.getElementById('rating-status').style.color = 'var(--k-accent)';
         document.getElementById('rating-status').style.display = 'block';
       }
     }

@@ -1,23 +1,23 @@
 /* KAMI - perfil.css */
 
 :root {
-            --bg-base: #0e0e1e;
-            --bg-surface: #16162a;
-            --bg-card: #1c1c34;
-            --bg-card-hover: #22223c;
-            --accent: #e8334a;
-            --accent-glow: rgba(232, 51, 74, 0.15);
-            --accent-gold: #f5c842;
-            --accent-gold-glow: rgba(245, 200, 66, 0.12);
-            --text-primary: #f2f2fa;
-            --text-secondary: #a0a0b8;
-            --text-muted: #6a6a82;
-            --border: rgba(255, 255, 255, 0.10);
-            --border-hover: rgba(255, 255, 255, 0.18);
-            --green: #2dca7a;
-            --blue: #4c9df5;
-            --purple: #a78bfa;
-            --orange: #fb923c;
+            --bg-base: var(--k-bg);
+            --bg-surface: var(--k-surface-1);
+            --bg-card: var(--k-surface-2);
+            --bg-card-hover: var(--k-surface-3);
+            --accent: var(--k-accent);
+            --accent-glow: color-mix(in srgb, var(--k-accent) 15%, transparent);
+            --accent-gold: var(--k-gold);
+            --accent-gold-glow: color-mix(in srgb, var(--k-gold) 12%, transparent);
+            --text-primary: var(--k-text);
+            --text-secondary: var(--k-text-2);
+            --text-muted: var(--k-text-3);
+            --border: rgb(var(--k-ink) / 0.10);
+            --border-hover: rgb(var(--k-ink) / 0.18);
+            --green: var(--k-ok);
+            --blue: var(--k-info);
+            --purple: var(--k-violet);
+            --orange: var(--k-orange);
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 16px;
@@ -76,7 +76,7 @@
         .profile-banner {
             height: 200px;
             background:
-                linear-gradient(135deg, #1a0510 0%, #0d0818 30%, #07070e 60%, #0a0d1a 100%);
+                linear-gradient(135deg, #1a0510 0%, #0d0818 30%, var(--k-bg) 60%, #0a0d1a 100%);
             position: relative;
             overflow: hidden;
         }
@@ -86,8 +86,8 @@
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(ellipse 50% 100% at 20% 50%, rgba(232, 51, 74, 0.18) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 80% at 80% 30%, rgba(76, 157, 245, 0.12) 0%, transparent 70%);
+                radial-gradient(ellipse 50% 100% at 20% 50%, color-mix(in srgb, var(--k-accent) 18%, transparent) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 80% at 80% 30%, color-mix(in srgb, var(--k-info) 12%, transparent) 0%, transparent 70%);
         }
 
         /* Edit banner btn */
@@ -139,14 +139,14 @@
             width: 88px;
             height: 88px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #e8334a, #f5c842);
+            background: linear-gradient(135deg, var(--k-accent), var(--k-gold));
             border: 4px solid var(--bg-surface);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: var(--font-display);
             font-size: 32px;
-            color: #fff;
+            color: var(--k-text);
             letter-spacing: 1px;
             position: relative;
         }
@@ -186,8 +186,8 @@
         }
 
         .profile-admin {
-            background: rgba(232, 51, 74, 0.15);
-            border: 1px solid rgba(232, 51, 74, 0.3);
+            background: color-mix(in srgb, var(--k-accent) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);
             color: var(--accent);
             font-size: 11px;
             font-weight: 700;
@@ -199,7 +199,7 @@
 
         .profile-verified {
             background: var(--blue);
-            color: #fff;
+            color: var(--k-text);
             font-size: 11px;
             font-weight: 700;
             padding: 3px 8px;
@@ -211,7 +211,7 @@
         .profile-silver {
             background: rgba(192, 192, 200, 0.15);
             border: 1px solid rgba(192, 192, 200, 0.3);
-            color: #c0c0c8;
+            color: var(--k-text-2);
             font-size: 11px;
             font-weight: 700;
             padding: 3px 8px;
@@ -221,8 +221,8 @@
         }
 
         .profile-gold {
-            background: rgba(245, 200, 66, 0.15);
-            border: 1px solid rgba(245, 200, 66, 0.3);
+            background: color-mix(in srgb, var(--k-gold) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-gold) 30%, transparent);
             color: var(--accent-gold);
             font-size: 11px;
             font-weight: 700;
@@ -233,8 +233,8 @@
         }
 
         .profile-moderator {
-            background: rgba(76, 157, 245, 0.15);
-            border: 1px solid rgba(76, 157, 245, 0.3);
+            background: color-mix(in srgb, var(--k-info) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-info) 30%, transparent);
             color: var(--blue);
             font-size: 11px;
             font-weight: 700;
@@ -245,8 +245,8 @@
         }
 
         .profile-company {
-            background: rgba(167, 139, 250, 0.15);
-            border: 1px solid rgba(167, 139, 250, 0.3);
+            background: color-mix(in srgb, var(--k-violet) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-violet) 30%, transparent);
             color: var(--purple);
             font-size: 11px;
             font-weight: 700;
@@ -257,8 +257,8 @@
         }
 
         .profile-banned {
-            background: rgba(232, 51, 74, 0.15);
-            border: 1px solid rgba(232, 51, 74, 0.3);
+            background: color-mix(in srgb, var(--k-accent) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);
             color: var(--accent);
             font-size: 11px;
             font-weight: 700;
@@ -288,7 +288,7 @@
             gap: 4px;
             font-size: 11px;
             color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgb(var(--k-ink) / 0.04);
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 2px 8px;
@@ -320,21 +320,21 @@
 
         .btn-primary {
             background: var(--accent);
-            color: #fff;
+            color: var(--k-text);
         }
 
         .btn-primary:hover {
-            background: #c8283d;
+            background: var(--k-accent-strong);
         }
 
         .btn-ghost {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgb(var(--k-ink) / 0.06);
             color: var(--text-secondary);
             border: 1px solid var(--border);
         }
 
         .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgb(var(--k-ink) / 0.1);
             color: var(--text-primary);
         }
 
@@ -361,7 +361,7 @@
         }
 
         .profile-stat:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgb(var(--k-ink) / 0.02);
         }
 
         .profile-stat-val {
@@ -425,7 +425,7 @@
             position: sticky;
             top: 60px;
             z-index: 100;
-            background: rgba(15, 15, 26, 0.95);
+            background: color-mix(in srgb, var(--k-surface-1) 95%, transparent);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             padding: 0 48px;
@@ -466,7 +466,7 @@
         .tab-count {
             font-size: 10px;
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgb(var(--k-ink) / 0.08);
             padding: 2px 6px;
             border-radius: 10px;
             color: var(--text-muted);
@@ -530,7 +530,7 @@
         }
 
         .state-chip.active {
-            color: #fff;
+            color: var(--k-text);
             border-color: transparent;
         }
 
@@ -548,32 +548,32 @@
         }
 
         .sc-reading.active {
-            background: rgba(76, 157, 245, 0.2);
-            border-color: rgba(76, 157, 245, 0.4);
+            background: color-mix(in srgb, var(--k-info) 20%, transparent);
+            border-color: color-mix(in srgb, var(--k-info) 40%, transparent);
             color: var(--blue);
         }
 
         .sc-continuing.active {
-            background: rgba(45, 202, 122, 0.18);
-            border-color: rgba(45, 202, 122, 0.35);
+            background: color-mix(in srgb, var(--k-ok) 18%, transparent);
+            border-color: color-mix(in srgb, var(--k-ok) 35%, transparent);
             color: var(--green);
         }
 
         .sc-pending.active {
-            background: rgba(245, 200, 66, 0.15);
-            border-color: rgba(245, 200, 66, 0.3);
+            background: color-mix(in srgb, var(--k-gold) 15%, transparent);
+            border-color: color-mix(in srgb, var(--k-gold) 30%, transparent);
             color: var(--accent-gold);
         }
 
         .sc-favorites.active {
-            background: rgba(232, 51, 74, 0.18);
-            border-color: rgba(232, 51, 74, 0.35);
+            background: color-mix(in srgb, var(--k-accent) 18%, transparent);
+            border-color: color-mix(in srgb, var(--k-accent) 35%, transparent);
             color: var(--accent);
         }
 
         .sc-completed.active {
-            background: rgba(167, 139, 250, 0.18);
-            border-color: rgba(167, 139, 250, 0.35);
+            background: color-mix(in srgb, var(--k-violet) 18%, transparent);
+            border-color: color-mix(in srgb, var(--k-violet) 35%, transparent);
             color: var(--purple);
         }
 
@@ -590,20 +590,20 @@
         }
 
         .sc-all.active {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.2);
+            background: rgb(var(--k-ink) / 0.08);
+            border-color: rgb(var(--k-ink) / 0.2);
             color: var(--text-primary);
         }
 
         .sc-planned.active {
-            background: rgba(245,200,66,0.15);
-            border-color: rgba(245,200,66,0.3);
+            background: color-mix(in srgb, var(--k-gold) 15%, transparent);
+            border-color: color-mix(in srgb, var(--k-gold) 30%, transparent);
             color: var(--accent-gold);
         }
 
         .sc-favorite.active {
-            background: rgba(232,51,74,0.18);
-            border-color: rgba(232,51,74,0.35);
+            background: color-mix(in srgb, var(--k-accent) 18%, transparent);
+            border-color: color-mix(in srgb, var(--k-accent) 35%, transparent);
             color: var(--accent);
         }
 
@@ -614,8 +614,8 @@
             justify-content: space-between;
             margin-bottom: 20px;
             padding: 10px 16px;
-            background: rgba(76, 157, 245, 0.06);
-            border: 1px solid rgba(76, 157, 245, 0.15);
+            background: color-mix(in srgb, var(--k-info) 6%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-info) 15%, transparent);
             border-radius: var(--radius-md);
         }
 
@@ -634,7 +634,7 @@
         }
 
         .sort-select {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgb(var(--k-ink) / 0.06);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 5px 10px;
@@ -691,7 +691,7 @@
 
         .lib-progress-bar {
             height: 3px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgb(var(--k-ink) / 0.15);
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 5px;
@@ -705,7 +705,7 @@
         .lib-chapter-info {
             font-size: 10px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgb(var(--k-ink) / 0.85);
             display: flex;
             justify-content: space-between;
         }
@@ -725,7 +725,7 @@
             top: 8px;
             left: 8px;
             background: var(--accent);
-            color: #fff;
+            color: var(--k-text);
             font-size: 9px;
             font-weight: 800;
             padding: 2px 6px;
@@ -772,7 +772,7 @@
             left: 8px;
             right: 8px;
             background: var(--accent);
-            color: #fff;
+            color: var(--k-text);
             font-size: 10px;
             font-weight: 700;
             padding: 6px;
@@ -880,7 +880,7 @@
             font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgb(var(--k-ink) / 0.04);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 2px 8px;
@@ -908,21 +908,21 @@
             width: 12px;
             height: 12px;
             border-radius: 2px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgb(var(--k-ink) / 0.05);
             transition: var(--transition);
             cursor: default;
         }
 
         .heatmap-day[data-level="1"] {
-            background: rgba(232, 51, 74, 0.2);
+            background: color-mix(in srgb, var(--k-accent) 20%, transparent);
         }
 
         .heatmap-day[data-level="2"] {
-            background: rgba(232, 51, 74, 0.4);
+            background: color-mix(in srgb, var(--k-accent) 40%, transparent);
         }
 
         .heatmap-day[data-level="3"] {
-            background: rgba(232, 51, 74, 0.65);
+            background: color-mix(in srgb, var(--k-accent) 65%, transparent);
         }
 
         .heatmap-day[data-level="4"] {
@@ -930,7 +930,7 @@
         }
 
         .heatmap-day:hover {
-            outline: 1.5px solid rgba(255, 255, 255, 0.3);
+            outline: 1.5px solid rgb(var(--k-ink) / 0.3);
         }
 
         .heatmap-legend {
@@ -978,7 +978,7 @@
 
         .genre-bar-track {
             height: 6px;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgb(var(--k-ink) / 0.06);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -1016,7 +1016,7 @@
         .weekly-bar {
             width: 100%;
             border-radius: 4px 4px 0 0;
-            background: rgba(232, 51, 74, 0.3);
+            background: color-mix(in srgb, var(--k-accent) 30%, transparent);
             transition: var(--transition);
             cursor: default;
             position: relative;
@@ -1165,7 +1165,7 @@
         }
 
         .history-entry:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgb(var(--k-ink) / 0.03);
         }
 
         .history-time {
@@ -1261,7 +1261,7 @@
             justify-content: center;
             font-size: 13px;
             font-weight: 700;
-            color: #fff;
+            color: var(--k-text);
             flex-shrink: 0;
             font-family: var(--font-body);
         }
@@ -1338,7 +1338,7 @@
             gap: 4px;
             padding: 3px 8px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgb(var(--k-ink) / 0.04);
             border: 1px solid var(--border);
             font-size: 11px;
             color: var(--text-muted);
@@ -1390,7 +1390,7 @@
             justify-content: center;
             font-size: 11px;
             font-weight: 700;
-            color: #fff;
+            color: var(--k-text);
             font-family: var(--font-body);
             flex-shrink: 0;
             position: relative;
@@ -1506,7 +1506,7 @@
             gap: 4px;
             font-size: 10px;
             color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgb(var(--k-ink) / 0.04);
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 2px 7px;
@@ -1538,7 +1538,7 @@
 
         .xp-bar-track {
             height: 8px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgb(var(--k-ink) / 0.08);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -1583,7 +1583,7 @@
         }
 
         .achievement-card {
-            background: #141416;
+            background: var(--k-surface-1);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px;
@@ -1595,13 +1595,13 @@
         }
 
         .achievement-card.unlocked {
-            border-color: rgba(245, 200, 66, 0.25);
-            background: #141416;
-            box-shadow: inset 0 0 15px rgba(245, 200, 66, 0.03);
+            border-color: color-mix(in srgb, var(--k-gold) 25%, transparent);
+            background: var(--k-surface-1);
+            box-shadow: inset 0 0 15px color-mix(in srgb, var(--k-gold) 3%, transparent);
         }
 
         .achievement-card.locked {
-            background: #141416;
+            background: var(--k-surface-1);
             opacity: 0.45;
         }
 
@@ -1634,8 +1634,8 @@
             right: 10px;
             font-size: 9px;
             font-weight: 800;
-            background: rgba(245, 200, 66, 0.15);
-            border: 1px solid rgba(245, 200, 66, 0.3);
+            background: color-mix(in srgb, var(--k-gold) 15%, transparent);
+            border: 1px solid color-mix(in srgb, var(--k-gold) 30%, transparent);
             color: var(--accent-gold);
             border-radius: 3px;
             padding: 2px 5px;
@@ -1645,7 +1645,7 @@
         .achievement-progress {
             width: 80%;
             height: 3px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgb(var(--k-ink) / 0.1);
             border-radius: 4px;
             margin-top: auto;
             overflow: hidden;

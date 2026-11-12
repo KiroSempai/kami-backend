@@ -1,16 +1,16 @@
 /* KAMI - generos.css */
 
 :root {
-            --bg-base: #0e0e1e;
-            --bg-surface: #16162a;
-            --bg-card: #1c1c34;
-            --accent: #e8334a;
-            --text-primary: #f2f2fa;
-            --text-secondary: #a0a0b8;
-            --text-muted: #6a6a82;
-            --border: rgba(255, 255, 255, 0.10);
-            --blue: #4c9df5;
-            --green: #2dca7a;
+            --bg-base: var(--k-bg);
+            --bg-surface: var(--k-surface-1);
+            --bg-card: var(--k-surface-2);
+            --accent: var(--k-accent);
+            --text-primary: var(--k-text);
+            --text-secondary: var(--k-text-2);
+            --text-muted: var(--k-text-3);
+            --border: rgb(var(--k-ink) / 0.10);
+            --blue: var(--k-info);
+            --green: var(--k-ok);
             --radius-md: 10px;
             --radius-lg: 16px;
             --font-display: 'Bebas Neue', sans-serif;
@@ -104,14 +104,14 @@
         }
 
         .filter-chip:hover {
-            border-color: rgba(255, 255, 255, 0.14);
+            border-color: rgb(var(--k-ink) / 0.14);
             color: var(--text-primary);
         }
 
         .filter-chip.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: #fff;
+            color: var(--k-text);
         }
 
         /* ─── GRID ─── */
@@ -159,7 +159,7 @@
             gap: 8px;
             font-size: 32px;
             color: var(--text-muted);
-            background: linear-gradient(135deg, rgba(232, 51, 74, 0.1), rgba(76, 157, 245, 0.1));
+            background: linear-gradient(135deg, color-mix(in srgb, var(--k-accent) 10%, transparent), color-mix(in srgb, var(--k-info) 10%, transparent));
         }
 
         .trend-badge {
@@ -167,7 +167,7 @@
             top: 8px;
             left: 8px;
             background: var(--accent);
-            color: #fff;
+            color: var(--k-text);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 9px;
@@ -182,7 +182,7 @@
             bottom: 8px;
             right: 8px;
             background: rgba(0, 0, 0, 0.7);
-            color: #f5c842;
+            color: var(--k-gold);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 10px;

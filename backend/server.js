@@ -192,18 +192,36 @@ app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/db-test', async (req, res) => {
-  try {
-    const { pool } = require('./db');
-    const r = await pool.query('SELECT 1 AS ok');
-    res.json({ db: 'ok', result: r.rows[0] });
-  } catch (e) {
-    res.status(500).json({ db: 'error', message: e.message });
-  }
-});
+// (Eliminado /db-test: exponía errores internos de la base de datos.)
 
 // ─── Middleware global ───────────────────────────────────────────────────────
-app.use(cors());
+// ─── Orígenes permitidos y cabeceras de seguridad ───────────────────────────
+// La web y la API comparten origen, así que no hace falta abrir CORS a todos.
+// Para permitir otro dominio (app móvil, panel externo): ALLOWED_ORIGINS=https://a.com,https://b.com
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+function originAllowed(origin) {
+  if (!origin) return true;                                   // misma página, curl, apps nativas
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) && process.env.NODE_ENV !== 'production') return true;
+  return false;
+}
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  // Mismo origen: el navegador manda Origin igual al host; se permite siempre
+  if (origin && origin.replace(/^https?:\/\//, '') === req.headers.host) return next();
+  if (!originAllowed(origin)) return res.status(403).json({ error: 'Origen no permitido.' });
+  next();
+});
+app.use(cors({ origin: (origin, cb) => cb(null, originAllowed(origin) ? (origin || true) : false), credentials: true }));
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  if (process.env.NODE_ENV === 'production') res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -279,9 +297,8 @@ app.use((req, res, next) => {
 
 // ─── Ruta raíz (antes de static para evitar que express.static sirva index.html) ──
 app.get('/', (req, res) => {
-  const ua = (req.headers['user-agent'] || '').toLowerCase();
-  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
-  const file = isMobile ? 'index-mobile.html' : 'index.html';
+  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
+  const file = 'index.html';
   res.sendFile(path.join(__dirname, 'public', file));
 });
 
@@ -309,9 +326,8 @@ function noCache(req, res, next) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 app.get('/inicio-mangoteca', (req, res) => {
-  const ua = (req.headers['user-agent'] || '').toLowerCase();
-  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
-  const file = isMobile ? 'inicio-mangoteca-mobile.html' : 'inicio-mangoteca.html';
+  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
+  const file = 'inicio-mangoteca.html';
   res.sendFile(path.join(__dirname, 'public', file));
 });
 app.get('/mangoteca',     (req, res) => res.redirect('/inicio-mangoteca'));
@@ -319,9 +335,8 @@ app.get('/register',      (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/login',         (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/perfil',        noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil.html')));
 app.get('/profile/:username', noCache, (req, res) => {
-  const ua = (req.headers['user-agent'] || '').toLowerCase();
-  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
-  const file = isMobile ? 'perfil-mobile.html' : 'perfil.html';
+  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
+  const file = 'perfil.html';
   res.sendFile(path.join(__dirname, 'public', file));
 });
 app.get('/perfil-editor/:username', (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil-editor.html')));
@@ -335,15 +350,15 @@ app.get('/menu-edit',     (req, res) => res.sendFile(path.join(__dirname, 'publi
 app.get('/manga/:id/upload-chapter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'upload-chapter.html')));
 app.get('/manga/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manga-edit.html')));
 app.get('/manga/:id', (req, res) => {
-  const ua = (req.headers['user-agent'] || '').toLowerCase();
-  const isMobile = /mobile|android|iphone|ipad|tablet/i.test(ua);
-  const file = isMobile ? 'manga-view-mobile.html' : 'manga-view.html';
+  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
+  const file = 'manga-view.html';
   res.sendFile(path.join(__dirname, 'public', file));
 });
 app.get('/premium',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium.html')));
 app.get('/premium/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium-success.html')));
 app.get('/messages',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'messages.html')));
 app.get('/admin/analytics', (req, res) => res.sendFile(path.join(__dirname, 'public', 'analytics.html')));
+app.get('/design',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'design.html')));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🌐 Rutas API
@@ -412,7 +427,7 @@ analyticsScheduler.start();
 
 // Crear servidor HTTP y montar Socket.io
 const server = http.createServer(app);
-global.io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
+global.io = new Server(server, { cors: { origin: (origin, cb) => cb(null, originAllowed(origin)), methods: ['GET', 'POST'] } });
 
 // Canales de WebSocket para tiempo real (posts, chat, DMs)
 global.io.on('connection', (socket) => {

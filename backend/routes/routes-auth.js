@@ -47,19 +47,7 @@ function extractToken(req) {
     return req.headers.authorization?.split(' ')[1] ?? null;
 }
 
-router.get('/pool-test', async (req, res) => {
-    try {
-        const r = await pool.query('SELECT 1 AS ok');
-        const u = await pool.query("SELECT id, username, email, password FROM users WHERE email = 'kirouchihaks@gmail.com'");
-        let bcryptTest = 'not tested';
-        try {
-            bcryptTest = await bcrypt.compare('1234', u.rows[0]?.password || '');
-        } catch(e) { bcryptTest = 'bcrypt error: ' + e.message; }
-        res.json({ pool: 'ok', test: r.rows[0], user: { id: u.rows[0]?.id, username: u.rows[0]?.username }, bcryptTest });
-    } catch(e) {
-        res.status(500).json({ pool: 'error', message: e.message, stack: e.stack?.split('\n').slice(0,3).join('; ') });
-    }
-});
+// (Eliminado /pool-test: era público y comprobaba la contraseña del admin.)
 
 // ══════════════════════════════════════════════════════
 // POST /api/auth/register

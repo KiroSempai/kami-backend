@@ -40,32 +40,32 @@
         }
 
     /* ─── Feed post styles (copiado de index.html) ─── */
-    .feed-post { display:flex; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); transition:.1s; }
-    .feed-post:hover { background:rgba(255,255,255,0.02); }
-    .feed-post-avatar { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; text-decoration:none; }
+    .feed-post { display:flex; gap:10px; padding:14px 16px; border-bottom:1px solid rgb(var(--k-ink) / 0.04); transition:.1s; }
+    .feed-post:hover { background:rgb(var(--k-ink) / 0.02); }
+    .feed-post-avatar { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color: var(--k-text); text-decoration:none; }
     .feed-post-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
     .feed-post-avatar:hover { opacity:0.9; }
     .feed-post-body { flex:1; min-width:0; }
     .feed-post-header { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
     .feed-post-user { font-size:14px; font-weight:700; color:#f0f0f0; display:flex; align-items:center; gap:4px; text-decoration:none; }
     .feed-post-user:hover { text-decoration:underline; }
-    .feed-post-handle { font-size:12px; color:rgba(255,255,255,0.25); text-decoration:none; }
-    .feed-post-handle:hover { text-decoration:underline; color:rgba(255,255,255,0.4); }
-    .feed-post-time { font-size:11px; color:rgba(255,255,255,0.2); margin-left:auto; white-space:nowrap; }
+    .feed-post-handle { font-size:12px; color:rgb(var(--k-ink) / 0.25); text-decoration:none; }
+    .feed-post-handle:hover { text-decoration:underline; color:rgb(var(--k-ink) / 0.4); }
+    .feed-post-time { font-size:11px; color:rgb(var(--k-ink) / 0.2); margin-left:auto; white-space:nowrap; }
     .role-badge-admin { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ff1493; border:1px solid rgba(255,20,147,0.3); background:rgba(255,20,147,0.06); line-height:1.4; }
     .role-badge-golden { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#ffd700; border:1px solid rgba(255,215,0,0.3); background:rgba(255,215,0,0.06); line-height:1.4; }
     .role-badge-silver { display:inline-flex; align-items:center; gap:2px; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; color:#c0c0c0; border:1px solid rgba(192,192,192,0.3); background:rgba(192,192,192,0.06); line-height:1.4; }
-    .feed-post-text { font-size:13px; color:#e0e0e0; line-height:1.5; margin-top:4px; word-wrap:break-word; }
-    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; cursor:pointer; transition:.1s; }
-    .feed-post-manga:hover { background:rgba(255,255,255,0.05); }
-    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; font-weight:700; }
+    .feed-post-text { font-size:13px; color:var(--k-text); line-height:1.5; margin-top:4px; word-wrap:break-word; }
+    .feed-post-manga { display:flex; align-items:center; gap:8px; margin-top:8px; padding:8px 12px; background:rgb(var(--k-ink) / 0.03); border:1px solid rgb(var(--k-ink) / 0.06); border-radius:10px; cursor:pointer; transition:.1s; }
+    .feed-post-manga:hover { background:rgb(var(--k-ink) / 0.05); }
+    .feed-post-manga-cover { width:24px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; color: var(--k-text); font-weight:700; }
     .feed-post-manga-info { flex:1; min-width:0; }
-    .feed-post-manga-title { font-size:12px; font-weight:600; color:#e0e0e0; }
-    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid rgba(232,52,74,0.2); background:rgba(232,52,74,0.06); color:#e8344a; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
-    .feed-post-manga-add:hover { background:rgba(232,52,74,0.12); }
+    .feed-post-manga-title { font-size:12px; font-weight:600; color:var(--k-text); }
+    .feed-post-manga-add { padding:4px 10px; border-radius:999px; border:1px solid color-mix(in srgb, var(--k-accent) 20%, transparent); background:color-mix(in srgb, var(--k-accent) 6%, transparent); color:var(--k-accent); font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; transition:.15s; white-space:nowrap; }
+    .feed-post-manga-add:hover { background:color-mix(in srgb, var(--k-accent) 12%, transparent); }
     .feed-post-actions { display:flex; align-items:center; gap:24px; margin-top:10px; }
-    .feed-post-action { display:flex; align-items:center; gap:4px; background:none; border:none; color:rgba(255,255,255,0.25); font-size:11px; cursor:pointer; font-family:inherit; padding:4px; border-radius:4px; transition:.1s; }
-    .feed-post-action:hover { background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5); }
+    .feed-post-action { display:flex; align-items:center; gap:4px; background:none; border:none; color:rgb(var(--k-ink) / 0.25); font-size:11px; cursor:pointer; font-family:inherit; padding:4px; border-radius:4px; transition:.1s; }
+    .feed-post-action:hover { background:rgb(var(--k-ink) / 0.04); color:rgb(var(--k-ink) / 0.5); }
     .feed-post-action i { font-size:16px; }
     .feed-post-action.liked { color:var(--accent); }
     .feed-post-action.liked i.ti-heart { animation:heartPop .3s ease; }
@@ -73,14 +73,14 @@
     .feed-post-action.reposted { color:var(--green); }
     .feed-post-action.bookmarked { color:var(--blue); }
     .feed-post-media { position:relative; margin-top:10px; border-radius:14px; overflow:hidden; }
-    .feed-post-media img { width:100%; display:block; border-radius:14px; max-height:300px; object-fit:cover; background:rgba(255,255,255,0.03); }
-    .feed-post-media-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; z-index:1; }
+    .feed-post-media img { width:100%; display:block; border-radius:14px; max-height:300px; object-fit:cover; background:rgb(var(--k-ink) / 0.03); }
+    .feed-post-media-badge { position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.7); color: var(--k-text); font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; letter-spacing:0.5px; z-index:1; }
     .feed-post-quote { display:flex; align-items:center; gap:8px; margin-top:8px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:12px; color:var(--text-secondary); transition:.15s; }
-    .feed-post-quote:hover { background:rgba(255,255,255,0.04); border-color:var(--border-hover); }
+    .feed-post-quote:hover { background:rgb(var(--k-ink) / 0.04); border-color:var(--border-hover); }
     .feed-post-quote i { font-size:14px; color:var(--accent); }
     .feed-post-spoiler { position:relative; }
-    .spoiler-overlay { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(232,52,74,0.15); backdrop-filter:blur(6px); border-radius:0; cursor:pointer; color:rgba(255,255,255,0.5); font-size:13px; font-weight:600; transition:.2s; }
-    .spoiler-overlay:hover { background:rgba(232,52,74,0.25); color:#fff; }
+    .spoiler-overlay { position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:8px; background:color-mix(in srgb, var(--k-accent) 15%, transparent); backdrop-filter:blur(6px); border-radius:0; cursor:pointer; color:rgb(var(--k-ink) / 0.5); font-size:13px; font-weight:600; transition:.2s; }
+    .spoiler-overlay:hover { background:color-mix(in srgb, var(--k-accent) 25%, transparent); color: var(--k-text); }
     .spoiler-overlay i { font-size:20px; }
     .feed-post-spoiler .feed-post-avatar,
     .feed-post-spoiler .feed-post-body { opacity:0.3; pointer-events:none; filter:blur(2px); }
@@ -88,14 +88,15 @@
     /* ─── Floating menus ─── */
     .repost-menu { z-index:9999; background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; padding:4px; min-width:160px; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
     .repost-menu-item { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-radius:8px; font-size:13px; color:var(--text-primary); transition:.15s; }
-    .repost-menu-item:hover { background:rgba(255,255,255,0.06); }
+    .repost-menu-item:hover { background:rgb(var(--k-ink) / 0.06); }
     .repost-menu-item i { font-size:16px; color:var(--text-secondary); }
 
     </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 
 <body>
-  <script src="/js/menu-global.js"></script>
 <div id="profile-loader">
         <div class="spinner"></div>
         <p style="color:var(--text-muted);font-size:14px;">Cargando perfil...</p>
@@ -109,7 +110,7 @@
         <div class="profile-banner">
         </div>
 
-        <button id="btn-moderation" style="display:none;position:absolute;top:12px;right:12px;z-index:50;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--font-body);border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.25);color:rgba(255,255,255,0.7);cursor:pointer;transition:all .15s;" onclick="if(window.openModPanel)window.openModPanel();else alert('Moderación no disponible')">Moderar</button>
+        <button id="btn-moderation" style="display:none;position:absolute;top:12px;right:12px;z-index:50;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--font-body);border:1px solid rgb(var(--k-ink) / 0.2);background:rgba(0,0,0,0.25);color:rgb(var(--k-ink) / 0.7);cursor:pointer;transition:all .15s;" onclick="if(window.openModPanel)window.openModPanel();else alert('Moderación no disponible')">Moderar</button>
 
         <!-- Info bar -->
         <div class="profile-info-bar">
@@ -125,8 +126,8 @@
                     <span class="profile-username" id="profile-username-display"></span>
                     <span class="profile-verified" id="profile-verified-tag" style="display:none;">✓ Verificado</span>
                     <span class="profile-admin" id="profile-admin-tag" style="display:none;">⚡ Admin</span>
-                    <span class="profile-silver" id="profile-silver-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color:#fff;font-size:7px;margin-right:3px;">神</span> Silver</span>
-                    <span class="profile-gold" id="profile-gold-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color:#fff;font-size:7px;margin-right:3px;">神</span> Gold</span>
+                    <span class="profile-silver" id="profile-silver-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color: var(--k-text);font-size:7px;margin-right:3px;">神</span> Silver</span>
+                    <span class="profile-gold" id="profile-gold-tag" style="display:none;"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:var(--accent);border-radius:3px;color: var(--k-text);font-size:7px;margin-right:3px;">神</span> Gold</span>
                     <span class="profile-moderator" id="profile-moderator-tag" style="display:none;">🛡️ Moderador</span>
                     <span class="profile-company" id="profile-company-tag" style="display:none;">🏢 Empresa</span>
                     <span class="profile-banned" id="profile-banned-tag" style="display:none;">🚫 Baneado</span>
@@ -300,19 +301,19 @@
         <!-- Top stat cards -->
         <div class="stats-grid-top">
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:rgba(76,157,245,0.15); color:var(--blue);">📖</div>
+                <div class="stat-card-icon" style="background:color-mix(in srgb, var(--k-info) 15%, transparent); color:var(--blue);">📖</div>
                 <div class="stat-card-val" id="stat-hours-val">—</div>
                 <div class="stat-card-lbl">Horas leídas</div>
                 <div class="stat-card-trend" id="stat-hours-trend" style="color:var(--green);"></div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:rgba(232,51,74,0.15); color:var(--accent);">📄</div>
+                <div class="stat-card-icon" style="background:color-mix(in srgb, var(--k-accent) 15%, transparent); color:var(--accent);">📄</div>
                 <div class="stat-card-val" id="stat-caps-val">—</div>
                 <div class="stat-card-lbl">Capítulos totales</div>
                 <div class="stat-card-trend" id="stat-caps-trend" style="color:var(--green);"></div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-icon" style="background:rgba(167,139,250,0.15); color:var(--purple);">📚</div>
+                <div class="stat-card-icon" style="background:color-mix(in srgb, var(--k-violet) 15%, transparent); color:var(--purple);">📚</div>
                 <div class="stat-card-val" id="stat-titles-val">—</div>
                 <div class="stat-card-lbl">Títulos leídos</div>
                 <div class="stat-card-trend" id="stat-titles-trend" style="color:var(--green);"></div>
@@ -374,7 +375,7 @@
                 <div class="card-title" style="margin-bottom:0;">Más datos</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                     <div
-                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        style="padding:14px; background:rgb(var(--k-ink) / 0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
                         <div id="stat-caps-per-day"
                             style="font-size:22px; font-family:var(--font-display); color:var(--text-primary); letter-spacing:1px;">
                             —</div>
@@ -383,7 +384,7 @@
                             Cap/día media</div>
                     </div>
                     <div
-                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        style="padding:14px; background:rgb(var(--k-ink) / 0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
                         <div id="stat-hours-per-week"
                             style="font-size:22px; font-family:var(--font-display); color:var(--accent-gold); letter-spacing:1px;">
                             —</div>
@@ -392,7 +393,7 @@
                             Horas/semana</div>
                     </div>
                     <div
-                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        style="padding:14px; background:rgb(var(--k-ink) / 0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
                         <div id="stat-max-streak"
                             style="font-size:22px; font-family:var(--font-display); color:var(--green); letter-spacing:1px;">
                             —</div>
@@ -401,7 +402,7 @@
                             Racha récord</div>
                     </div>
                     <div
-                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
+                        style="padding:14px; background:rgb(var(--k-ink) / 0.03); border:1px solid var(--border); border-radius:var(--radius-md);">
                         <div id="stat-mangas-per-month"
                             style="font-size:22px; font-family:var(--font-display); color:var(--blue); letter-spacing:1px;">
                             —</div>
@@ -410,7 +411,7 @@
                             Mangas/mes</div>
                     </div>
                     <div
-                        style="padding:14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); grid-column:span 2;">
+                        style="padding:14px; background:rgb(var(--k-ink) / 0.03); border:1px solid var(--border); border-radius:var(--radius-md); grid-column:span 2;">
                         <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Tipo favorito</div>
                         <div id="stat-fav-type" style="display:flex; gap:6px;"></div>
                     </div>
@@ -922,7 +923,7 @@
             return posts.map(function(p) {
                 var avatarStyle, avatarContent;
                 if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
-                    avatarStyle = 'background:rgba(232,52,74,0.08);padding:0;';
+                    avatarStyle = 'background:color-mix(in srgb, var(--k-accent) 8%, transparent);padding:0;';
                     avatarContent = '<img src="' + p.avatar + '" alt="">';
                 } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
                     avatarStyle = p.avatar;
@@ -931,7 +932,7 @@
                     avatarStyle = 'padding:0;';
                     avatarContent = '<img src="' + p.avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';
                 } else {
-                    avatarStyle = 'background:' + (p.avatar || '#e8344a') + ';';
+                    avatarStyle = 'background:' + (p.avatar || 'var(--k-accent)') + ';';
                     avatarContent = p.user.charAt(0);
                 }
                 var mangaBlock = p.manga && p.manga.title ? '' +
@@ -939,7 +940,7 @@
                     '<div class="feed-post-manga-cover"' +
                     (p.manga.cover && p.manga.cover.indexOf('/') >= 0
                         ? ' style="background:transparent;overflow:hidden;"><img src="' + p.manga.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;">'
-                        : ' style="background:' + (p.manga.cover || '#e8344a') + ';">' + p.manga.title.charAt(0)) +
+                        : ' style="background:' + (p.manga.cover || 'var(--k-accent)') + ';">' + p.manga.title.charAt(0)) +
                     '</div>' +
                     '<div class="feed-post-manga-info"><div class="feed-post-manga-title">' + p.manga.title + (p.chapter ? ' · Cap. ' + p.chapter : '') + '</div></div>' +
                     '<button class="feed-post-manga-add" onclick="event.stopPropagation();openCommunity(\'com-' + p.manga.id + '\')">📢 Comunidad</button>' +
@@ -994,7 +995,7 @@
           if (p.avatar && typeof p.avatar === 'string' && (p.avatar.indexOf('/') === 0 || p.avatar.indexOf('http') === 0)) {
             avatarContent = '<img src="' + p.avatar + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">';
           } else if (p.avatar && p.avatar.indexOf('linear-gradient') >= 0) {
-            avatarContent = '<div style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:' + p.avatar + ';color:#fff;font-weight:700;font-size:16px;">' + p.user.charAt(0).toUpperCase() + '</div>';
+            avatarContent = '<div style="width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:' + p.avatar + ';color: var(--k-text);font-weight:700;font-size:16px;">' + p.user.charAt(0).toUpperCase() + '</div>';
           } else if (p.avatar && p.avatar.indexOf('base64') >= 0) {
             avatarContent = '<img src="' + p.avatar + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">';
           } else {
@@ -1347,8 +1348,8 @@
                     <span class="top-manga-num" style="color:${RANK_COLORS[i] || 'var(--text-muted)'};">${i + 1}</span>
                     <div class="top-manga-cover">
                         ${m.cover
-                            ? '<img src="' + m.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" onerror="this.outerHTML=\'<div style=background:linear-gradient(145deg,#1a1a2e,#16213e);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;>📖</div>\'">'
-                            : '<div style="background:linear-gradient(145deg,#1a1a2e,#16213e);width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;">📖</div>'
+                            ? '<img src="' + m.cover + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" onerror="this.outerHTML=\'<div style=background:linear-gradient(145deg,var(--k-surface-2),var(--k-surface-2));width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;>📖</div>\'">'
+                            : '<div style="background:linear-gradient(145deg,var(--k-surface-2),var(--k-surface-2));width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:6px;">📖</div>'
                         }
                     </div>
                     <div>
@@ -1445,24 +1446,24 @@
       .edit-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
       .edit-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; }
       .edit-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
-      .edit-close { background:rgba(255,255,255,0.06); border:none; border-radius:8px; width:32px; height:32px; cursor:pointer; color:var(--text-muted); font-size:20px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
-      .edit-close:hover { background:rgba(255,255,255,0.12); color:var(--text-primary); }
+      .edit-close { background:rgb(var(--k-ink) / 0.06); border:none; border-radius:8px; width:32px; height:32px; cursor:pointer; color:var(--text-muted); font-size:20px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+      .edit-close:hover { background:rgb(var(--k-ink) / 0.12); color:var(--text-primary); }
       .edit-section { margin-bottom:20px; }
       .edit-label { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
       .edit-counter { font-weight:400; text-transform:none; letter-spacing:0; }
 
       .edit-avatar-row { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
-      .edit-avatar-preview { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color:#fff; flex-shrink:0; border:2px solid rgba(232,51,74,0.5); overflow:hidden; background-size:cover; background-position:center; background:linear-gradient(135deg,#e8334a,#f5c842); }
+      .edit-avatar-preview { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color: var(--k-text); flex-shrink:0; border:2px solid color-mix(in srgb, var(--k-accent) 50%, transparent); overflow:hidden; background-size:cover; background-position:center; background:linear-gradient(135deg,var(--k-accent),var(--k-gold)); }
       .edit-avatar-controls { flex:1; min-width:0; }
-      .upload-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:8px; padding:7px 14px; color:var(--text-secondary); cursor:pointer; font-size:12px; transition:all .15s; margin-bottom:8px; }
-      .upload-btn:hover { background:rgba(255,255,255,0.1); color:var(--text-primary); }
+      .upload-btn { display:inline-flex; align-items:center; gap:6px; background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); border-radius:8px; padding:7px 14px; color:var(--text-secondary); cursor:pointer; font-size:12px; transition:all .15s; margin-bottom:8px; }
+      .upload-btn:hover { background:rgb(var(--k-ink) / 0.1); color:var(--text-primary); }
       .edit-hint { font-size:11px; color:var(--text-muted); margin-bottom:6px; }
 
-      .edit-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; outline:none; transition:border-color .2s; box-sizing:border-box; }
-      .edit-input:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+      .edit-input { width:100%; background:rgb(var(--k-ink) / 0.04); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; outline:none; transition:border-color .2s; box-sizing:border-box; }
+      .edit-input:focus { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 5%, transparent); }
       .edit-input--sm { max-width:160px; }
-      .edit-textarea { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; resize:vertical; outline:none; line-height:1.6; transition:border-color .2s; box-sizing:border-box; }
-      .edit-textarea:focus { border-color:var(--accent); background:rgba(232,51,74,0.05); }
+      .edit-textarea { width:100%; background:rgb(var(--k-ink) / 0.04); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; resize:vertical; outline:none; line-height:1.6; transition:border-color .2s; box-sizing:border-box; }
+      .edit-textarea:focus { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 5%, transparent); }
 
       .edit-swatches { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
       .swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all .15s; flex-shrink:0; }
@@ -1473,16 +1474,16 @@
 
       .edit-status { display:none; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
       .edit-status.show { display:block; }
-      .edit-status.success { background:rgba(45,202,122,0.12); border:1px solid rgba(45,202,122,0.3); color:var(--green); }
-      .edit-status.error { background:rgba(232,51,74,0.12); border:1px solid rgba(232,51,74,0.3); color:var(--accent); }
+      .edit-status.success { background:color-mix(in srgb, var(--k-ok) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color:var(--green); }
+      .edit-status.error { background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); }
 
       .edit-actions { display:flex; gap:10px; justify-content:flex-end; }
       .edit-btn { padding:10px 22px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
-      .edit-btn--primary { background:linear-gradient(135deg,var(--accent),#c0223a); color:#fff; }
+      .edit-btn--primary { background:linear-gradient(135deg,var(--accent),var(--k-accent-strong)); color: var(--k-text); }
       .edit-btn--primary:hover { opacity:.9; }
       .edit-btn--primary:disabled { opacity:.5; cursor:not-allowed; }
-      .edit-btn--secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
-      .edit-btn--secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+      .edit-btn--secondary { background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); color:var(--text-muted); }
+      .edit-btn--secondary:hover { color:var(--text-primary); background:rgb(var(--k-ink) / 0.1); }
 
       /* ── Modales reutilizables (moderación) ── */
       .overlay-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:3000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
@@ -1495,36 +1496,36 @@
       .modal-box-body { padding:16px 24px 20px; overflow-y:auto; flex:1; }
       .modal-box-footer { display:flex; justify-content:flex-end; gap:8px; padding:0 24px 20px; }
       .modal-btn { padding:9px 20px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
-      .modal-btn.primary { background:var(--accent); color:#fff; }
+      .modal-btn.primary { background:var(--accent); color: var(--k-text); }
       .modal-btn.primary:hover { opacity:.9; }
-      .modal-btn.secondary { background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-muted); }
-      .modal-btn.secondary:hover { color:var(--text-primary); background:rgba(255,255,255,0.1); }
+      .modal-btn.secondary { background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); color:var(--text-muted); }
+      .modal-btn.secondary:hover { color:var(--text-primary); background:rgb(var(--k-ink) / 0.1); }
       .mod-action-item { border-radius:8px; }
-      .mod-action-item:not(:last-child) { border-bottom:1px solid rgba(255,255,255,0.04); }
-      #mod-modal table tbody tr:hover { background:rgba(255,255,255,0.02); }
+      .mod-action-item:not(:last-child) { border-bottom:1px solid rgb(var(--k-ink) / 0.04); }
+      #mod-modal table tbody tr:hover { background:rgb(var(--k-ink) / 0.02); }
     </style>
 
     <script>
       /* ─── Edit Modal State ─── */
       const AVATAR_COLORS = [
-        'linear-gradient(135deg,#e8334a,#f5c842)',
-        'linear-gradient(135deg,#4c9df5,#a855f7)',
-        'linear-gradient(135deg,#2dca7a,#4c9df5)',
-        'linear-gradient(135deg,#f5c842,#fb923c)',
-        'linear-gradient(135deg,#a855f7,#e8334a)',
-        'linear-gradient(135deg,#fb923c,#e8334a)',
-        'linear-gradient(135deg,#2dca7a,#a855f7)',
+        'linear-gradient(135deg,var(--k-accent),var(--k-gold))',
+        'linear-gradient(135deg,var(--k-info),#a855f7)',
+        'linear-gradient(135deg,var(--k-ok),var(--k-info))',
+        'linear-gradient(135deg,var(--k-gold),var(--k-orange))',
+        'linear-gradient(135deg,#a855f7,var(--k-accent))',
+        'linear-gradient(135deg,var(--k-orange),var(--k-accent))',
+        'linear-gradient(135deg,var(--k-ok),#a855f7)',
         'linear-gradient(135deg,#1e293b,#334155)',
       ];
       const BANNER_GRADIENTS = [
-        'linear-gradient(135deg,#0f0f1a,#1a1a2e)',
+        'linear-gradient(135deg,var(--k-bg),var(--k-surface-2))',
         'linear-gradient(135deg,#200a0a,#3d1010)',
         'linear-gradient(135deg,#0a1520,#102035)',
         'linear-gradient(135deg,#1a1028,#2d1040)',
         'linear-gradient(135deg,#0f1a0f,#1a2d1a)',
         'linear-gradient(135deg,#1a100a,#2d1f0a)',
         'linear-gradient(135deg,#200a14,#3d1028)',
-        'linear-gradient(135deg,#07070e,#0f0f1a)',
+        'linear-gradient(135deg,var(--k-bg),var(--k-bg))',
       ];
 
       let editState = {
@@ -1637,7 +1638,7 @@
         const len = document.getElementById('edit-bio').value.length;
         const el = document.getElementById('bio-counter');
         el.textContent = `${len}/300`;
-        el.style.color = len > 270 ? '#e8334a' : '#8888a0';
+        el.style.color = len > 270 ? 'var(--k-accent)' : 'var(--k-text-3)';
       }
 
       function openEditModal() {
@@ -1663,7 +1664,7 @@
             prev.style.background = 'none';
             prev.innerHTML = '';
           } else {
-            prev.style.background = 'rgba(232,51,74,0.08)';
+            prev.style.background = 'color-mix(in srgb, var(--k-accent) 8%, transparent)';
             prev.style.backgroundImage = 'none';
             prev.innerHTML = '<img src="' + avatarVal + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
           }
@@ -1814,7 +1815,7 @@
             const textNode = [...el.childNodes].find(n => n.nodeType === 3 && n.nodeValue.trim());
             if (textNode) textNode.nodeValue = ' ';
           } else if (isUrlImage) {
-            el.style.cssText += '; background: rgba(232,51,74,0.08) !important; overflow: hidden;';
+            el.style.cssText += '; background: color-mix(in srgb, var(--k-accent) 8%, transparent) !important; overflow: hidden;';
             el.innerHTML = '<img src="' + avatar + '" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">';
           } else {
             el.style.backgroundImage = 'none';
@@ -2048,7 +2049,7 @@
         var c = document.getElementById('toast-container');
         if (!c) { c = document.createElement('div'); c.id = 'toast-container'; c.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;'; document.body.appendChild(c); }
         var t = document.createElement('div');
-        t.style.cssText = 'padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;animation:toastIn .3s ease;background:' + (tipo === 'error' ? '#e8344a' : '#2dca7a') + ';box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        t.style.cssText = 'padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color: var(--k-text);animation:toastIn .3s ease;background:' + (tipo === 'error' ? 'var(--k-accent)' : 'var(--k-ok)') + ';box-shadow:0 4px 12px rgba(0,0,0,0.3);';
         t.textContent = msg;
         c.appendChild(t);
         setTimeout(function(){ t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(function(){ t.remove(); }, 300); }, 3000);
@@ -2263,7 +2264,7 @@
         });
 
         if (entries.length === 0) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;opacity:0.3;">📚</div><div style="font-size:15px;">No hay mangas aquí</div><div style="font-size:12px;margin-top:4px;">Explora el catálogo y añade tus primeros títulos</div><a href="/biblioteca" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">Ir al catálogo</a></div>';
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 24px;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;opacity:0.3;">📚</div><div style="font-size:15px;">No hay mangas aquí</div><div style="font-size:12px;margin-top:4px;">Explora el catálogo y añade tus primeros títulos</div><a href="/biblioteca" style="display:inline-block;margin-top:16px;padding:10px 24px;background:var(--accent);color: var(--k-text);border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;">Ir al catálogo</a></div>';
           return;
         }
 
@@ -2274,14 +2275,14 @@
           var overlay = '';
           overlay += '<div style="position:absolute;bottom:0;left:0;right:0;padding:24px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.85));z-index:2;display:flex;flex-direction:column;gap:4px;">';
           overlay += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);"><span>Cap. ' + (m.progress || 0) + '/' + (m.totalChapters || '?') + '</span><span>' + pct + '%</span></div>';
-          overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
+          overlay += '<div style="display:flex;gap:4px;"><div style="flex:1;height:3px;background:rgb(var(--k-ink) / 0.1);border-radius:2px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + statusColor + ';border-radius:2px;"></div></div></div>';
           var nextChapter = Math.min(m.progress + 1, (m.totalChapters && m.totalChapters > 0 ? m.totalChapters : Infinity));
           var isCompleted = m.totalChapters > 0 && m.progress >= m.totalChapters;
           var btnText = isCompleted ? 'Completado' : (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + nextChapter);
           if (!isCompleted && (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned')) {
-            overlay += '<div onclick="window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\';return false;" style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+            overlay += '<div onclick="window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\';return false;" style="font-size:11px;font-weight:600;color: var(--k-text);background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           } else {
-            overlay += '<div style="font-size:11px;font-weight:600;color:#fff;background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+            overlay += '<div style="font-size:11px;font-weight:600;color: var(--k-text);background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           }
           overlay += '</div>';
           if (statusKey) overlay += '<div style="position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:' + statusColor + ';border:2px solid var(--bg-surface);z-index:2;"></div>';
@@ -2361,7 +2362,7 @@
             body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNumber, minutes: 5 })
           });
           let toast = document.createElement('div');
-          toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#2dca7a;color:white;padding:12px 20px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-weight:500;transition:all 0.4s ease;';
+          toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--k-ok);color:white;padding:12px 20px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.15);font-weight:500;transition:all 0.4s ease;';
           toast.innerHTML = '📖 <strong>' + title + '</strong> · Cap. ' + chapterNumber + ' marcado';
           document.body.appendChild(toast);
           setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 400); }, 3000);
@@ -2399,19 +2400,19 @@
           });
           var html = '<div class="history-timeline">';
           var emojiMap = {
-            chapter_read: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
-            manga_started: { icon:'🚀', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
-            library_completed: { icon:'✅', bg:'rgba(45,202,122,0.15)', color:'var(--green)' },
-            library_favorite: { icon:'❤️', bg:'rgba(232,51,74,0.15)', color:'var(--accent)' },
-            library_planned: { icon:'➕', bg:'rgba(245,200,66,0.1)', color:'var(--accent-gold)' },
-            library_pendientes: { icon:'➕', bg:'rgba(245,200,66,0.1)', color:'var(--accent-gold)' },
-            library_reading: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
-            library_leyendo: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
-            library_continuando: { icon:'📖', bg:'rgba(76,157,245,0.15)', color:'var(--blue)' },
+            chapter_read: { icon:'📖', bg:'color-mix(in srgb, var(--k-info) 15%, transparent)', color:'var(--blue)' },
+            manga_started: { icon:'🚀', bg:'color-mix(in srgb, var(--k-info) 15%, transparent)', color:'var(--blue)' },
+            library_completed: { icon:'✅', bg:'color-mix(in srgb, var(--k-ok) 15%, transparent)', color:'var(--green)' },
+            library_favorite: { icon:'❤️', bg:'color-mix(in srgb, var(--k-accent) 15%, transparent)', color:'var(--accent)' },
+            library_planned: { icon:'➕', bg:'color-mix(in srgb, var(--k-gold) 10%, transparent)', color:'var(--accent-gold)' },
+            library_pendientes: { icon:'➕', bg:'color-mix(in srgb, var(--k-gold) 10%, transparent)', color:'var(--accent-gold)' },
+            library_reading: { icon:'📖', bg:'color-mix(in srgb, var(--k-info) 15%, transparent)', color:'var(--blue)' },
+            library_leyendo: { icon:'📖', bg:'color-mix(in srgb, var(--k-info) 15%, transparent)', color:'var(--blue)' },
+            library_continuando: { icon:'📖', bg:'color-mix(in srgb, var(--k-info) 15%, transparent)', color:'var(--blue)' },
             library_dropped: { icon:'🗑️', bg:'rgba(100,100,120,0.15)', color:'var(--text-muted)' },
             library_remove: { icon:'🗑️', bg:'rgba(100,100,120,0.15)', color:'var(--text-muted)' },
-            library_status_change: { icon:'🔄', bg:'rgba(255,255,255,0.05)', color:'var(--text-muted)' },
-            manga_rated: { icon:'⭐', bg:'rgba(245,200,66,0.1)', color:'#f5c842' },
+            library_status_change: { icon:'🔄', bg:'rgb(var(--k-ink) / 0.05)', color:'var(--text-muted)' },
+            manga_rated: { icon:'⭐', bg:'color-mix(in srgb, var(--k-gold) 10%, transparent)', color:'var(--k-gold)' },
             daily_login: { icon:'🔥', bg:'rgba(251,146,60,0.15)', color:'var(--orange)' }
           };
           Object.keys(grupos).forEach(function(dia) {
@@ -2419,7 +2420,7 @@
             grupos[dia].forEach(function(e) {
               var time = new Date(e.created_at).toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
               var meta = e.metadata || {};
-              var em = emojiMap[e.action_type] || { icon:'📌', bg:'rgba(255,255,255,0.05)', color:'var(--text-muted)' };
+              var em = emojiMap[e.action_type] || { icon:'📌', bg:'rgb(var(--k-ink) / 0.05)', color:'var(--text-muted)' };
               var texto = e.action_type;
               if (e.action_type === 'chapter_read') texto = 'Leíste <strong>' + (e.manga_title || '') + '</strong> — Cap. ' + (meta.chapter || '');
               else if (e.action_type === 'manga_started') texto = 'Empezaste <strong>' + (e.manga_title || '') + '</strong>';
@@ -2594,8 +2595,8 @@
           if (!btn || !stored.role) return;
           if (!MOD_ROLES.includes(stored.role)) return;
           btn.style.display = 'block';
-          btn.onmouseenter = function() { this.style.borderColor = 'rgba(255,255,255,0.5)'; this.style.color = '#fff'; };
-          btn.onmouseleave = function() { this.style.borderColor = 'rgba(255,255,255,0.2)'; this.style.color = 'rgba(255,255,255,0.7)'; };
+          btn.onmouseenter = function() { this.style.borderColor = 'rgb(var(--k-ink) / 0.5)'; this.style.color = '#fff'; };
+          btn.onmouseleave = function() { this.style.borderColor = 'rgb(var(--k-ink) / 0.2)'; this.style.color = 'rgb(var(--k-ink) / 0.7)'; };
           btn.onclick = function() { window.openModPanel(); };
         } catch(e) { console.error('initModButton error:', e); }
       }
@@ -2642,7 +2643,7 @@
         const isCompany = myRole === 'company';
 
         const mutedActive = u.mutedUntil && new Date(u.mutedUntil) > new Date();
-        const statusColor = u.isBanned ? '#e8334a' : mutedActive ? '#fb923c' : '#2dca7a';
+        const statusColor = u.isBanned ? 'var(--k-accent)' : mutedActive ? 'var(--k-orange)' : 'var(--k-ok)';
         const statusIcon = u.isBanned ? '🚫' : mutedActive ? '🔇' : '✅';
         const statusLabel = u.isBanned ? 'Baneado' : mutedActive ? 'Silenciado' : 'Activo';
 
@@ -2651,7 +2652,7 @@
             <div class="modal-box" style="max-width:640px;width:min(640px,94vw);">
               <div class="modal-box-header" style="padding:20px 24px 0;border-bottom:1px solid var(--border);padding-bottom:16px;">
                 <div style="display:flex;align-items:center;gap:12px;">
-                  <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(232,51,74,0.12);border-radius:10px;color:var(--accent);font-size:18px;">🛡️</div>
+                  <div style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:color-mix(in srgb, var(--k-accent) 12%, transparent);border-radius:10px;color:var(--accent);font-size:18px;">🛡️</div>
                   <div>
                     <div class="modal-box-title" style="font-size:18px;">Panel de moderación</div>
                     <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${u.username} · ${stored.role || '?'}</div>
@@ -2662,8 +2663,8 @@
               <div class="modal-box-body" style="padding:20px 24px;max-height:70vh;overflow-y:auto;">
 
                 <!-- ── INFO TARJETA USUARIO ── -->
-                <div style="display:flex;gap:16px;padding:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;">
-                  <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#e8334a,#f5c842);color:#fff;font-size:22px;font-weight:700;flex-shrink:0;">${u.username ? u.username[0].toUpperCase() : '?'}</div>
+                <div style="display:flex;gap:16px;padding:16px;background:rgb(var(--k-ink) / 0.03);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;">
+                  <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--k-accent),var(--k-gold));color: var(--k-text);font-size:22px;font-weight:700;flex-shrink:0;">${u.username ? u.username[0].toUpperCase() : '?'}</div>
                   <div style="flex:1;min-width:0;">
                     <div style="font-size:15px;font-weight:700;">${escHtml(u.username)}</div>
                     <div style="font-size:11px;color:var(--text-muted);margin-top:4px;display:flex;flex-wrap:wrap;gap:10px;">
@@ -2684,7 +2685,7 @@
 
                 <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">
                   ${!u.isBanned && isMod ? `<div class="mod-action-item" onclick="modAction('ban')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(232,51,74,0.06)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='color-mix(in srgb, var(--k-accent) 6%, transparent)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">🚫</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--accent);">Ban permanente</div><div style="font-size:10px;color:var(--text-muted);">Bloquear acceso permanentemente</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2692,7 +2693,7 @@
                   </div>` : ''}
 
                   ${!u.isBanned && isMod && !isCompany ? `<div class="mod-action-item" onclick="modAction('ban_temp')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(232,51,74,0.06)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='color-mix(in srgb, var(--k-accent) 6%, transparent)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">⏳</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--accent);">Ban temporal</div><div style="font-size:10px;color:var(--text-muted);">Bloquear por tiempo definido</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2700,7 +2701,7 @@
                   </div>` : ''}
 
                   ${u.isBanned && isMod ? `<div class="mod-action-item" onclick="modAction('unban')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(45,202,122,0.06)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='color-mix(in srgb, var(--k-ok) 6%, transparent)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">✅</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--green);">Desbanear</div><div style="font-size:10px;color:var(--text-muted);">Restaurar acceso al usuario</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2716,7 +2717,7 @@
                   </div>` : ''}
 
                   ${isMod && (u.strikes || 0) > 0 && !isCompany ? `<div class="mod-action-item" onclick="modAction('clear_strikes')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.04)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">🧹</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-secondary);">Limpiar strikes</div><div style="font-size:10px;color:var(--text-muted);">Eliminar todos los strikes del usuario</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2724,7 +2725,7 @@
                   </div>` : ''}
 
                   ${!mutedActive && isMod ? `<div class="mod-action-item" onclick="modAction('mute')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(76,157,245,0.06)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='color-mix(in srgb, var(--k-info) 6%, transparent)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">🔇</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--blue);">Silenciar usuario</div><div style="font-size:10px;color:var(--text-muted);">Suspender comentarios temporalmente</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2732,7 +2733,7 @@
                   </div>` : ''}
 
                   ${isMod ? `<div class="mod-action-item" onclick="modAction('warn')">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(167,139,250,0.06)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='color-mix(in srgb, var(--k-violet) 6%, transparent)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">📨</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--purple);">Enviar aviso</div><div style="font-size:10px;color:var(--text-muted);">Mensaje directo de advertencia al usuario</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2740,7 +2741,7 @@
                   </div>` : ''}
 
                   ${isMod ? `<div class="mod-action-item" onclick="window.location.href='/messages'">
-                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.04)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">💬</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-secondary);;">Ir a mensajes</div><div style="font-size:10px;color:var(--text-muted);">Ver todas las conversaciones y apelaciones</div></div>
                       <span style="font-size:11px;color:var(--text-muted);">→</span>
@@ -2759,7 +2760,7 @@
                   ${data.history.length === 0 ? '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">Sin historial de sanciones</div>' :
                     `<table style="width:100%;border-collapse:collapse;font-size:11px;">
                       <thead>
-                        <tr style="background:rgba(255,255,255,0.03);">
+                        <tr style="background:rgb(var(--k-ink) / 0.03);">
                           <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Acción</th>
                           <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Motivo</th>
                           <th style="padding:8px 10px;text-align:left;color:var(--text-muted);font-weight:600;">Moderador</th>
@@ -2769,12 +2770,12 @@
                       <tbody>
                         ${data.history.map(h => {
                           const actionColors = {
-                            ban_permanent: '#e8334a', ban_temporary: '#e8334a',
-                            unban: '#2dca7a', strike: '#fb923c',
-                            clear_strikes: '#8888a0', warning: '#a78bfa',
-                            mute: '#4c9df5',
+                            ban_permanent: 'var(--k-accent)', ban_temporary: 'var(--k-accent)',
+                            unban: 'var(--k-ok)', strike: 'var(--k-orange)',
+                            clear_strikes: 'var(--k-text-3)', warning: 'var(--k-violet)',
+                            mute: 'var(--k-info)',
                           };
-                          const color = actionColors[h.actionType] || '#8888a0';
+                          const color = actionColors[h.actionType] || 'var(--k-text-3)';
                           return `<tr style="border-top:1px solid var(--border);">
                             <td style="padding:8px 10px;"><span style="color:${color};font-weight:600;">${h.actionType.replace(/_/g,' ')}</span></td>
                             <td style="padding:8px 10px;color:var(--text-secondary);">${escHtml(h.reason || '—')}</td>
@@ -2788,7 +2789,7 @@
 
               </div>
               <div class="modal-box-footer" style="padding:12px 24px 16px;border-top:1px solid var(--border);">
-                <button class="modal-btn" onclick="closeModPanel()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 20px;">Cerrar panel</button>
+                <button class="modal-btn" onclick="closeModPanel()" style="background:rgb(var(--k-ink) / 0.06);border:1px solid var(--border);color:var(--text-muted);padding:8px 20px;">Cerrar panel</button>
               </div>
             </div>
           </div>
@@ -2908,7 +2909,7 @@
         const card = document.createElement('div');
         card.className = 'list-card';
         card.innerHTML = '<div class="list-card-mosaic">' +
-          mosaic.map(e => '<div class="list-cover-cell" style="background:linear-gradient(145deg,#0f0f1a,#1a1a2e);font-size:24px;">' + e + '</div>').join('') +
+          mosaic.map(e => '<div class="list-cover-cell" style="background:linear-gradient(145deg,var(--k-bg),var(--k-surface-2));font-size:24px;">' + e + '</div>').join('') +
           '</div><div class="list-card-body"><div class="list-card-name">' + escHtml(name) + '</div>' +
           '<div class="list-card-desc" style="font-size:11px;color:var(--text-muted);font-style:italic;">Creada ahora</div>' +
           '<div class="list-card-footer"><span class="list-card-count">0 títulos</span><span class="list-visibility">' + visType + '</span></div></div>';
@@ -2977,16 +2978,16 @@
       <div class="modal-box-body">
         <div style="margin-bottom:16px;">
           <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;">Nombre de la lista</div>
-          <input type="text" id="list-name-input" placeholder="Ej: Mi top seinen, Favoritos, Pendientes..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:14px;font-family:var(--font-body);outline:none;box-sizing:border-box;transition:border-color .15s;" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
+          <input type="text" id="list-name-input" placeholder="Ej: Mi top seinen, Favoritos, Pendientes..." style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:rgb(var(--k-ink) / 0.04);color:var(--text-primary);font-size:14px;font-family:var(--font-body);outline:none;box-sizing:border-box;transition:border-color .15s;" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'">
         </div>
         <div style="margin-bottom:16px;">
           <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Visibilidad</div>
           <div style="display:flex;gap:10px;">
-            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgba(255,255,255,0.03);" id="list-vis-opt-public" onclick="selectListVis('public')">
+            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgb(var(--k-ink) / 0.03);" id="list-vis-opt-public" onclick="selectListVis('public')">
               <input type="radio" name="list-vis" value="public" checked style="accent-color:var(--accent);">
               <div><div style="font-size:13px;font-weight:600;">🌍 Pública</div><div style="font-size:10px;color:var(--text-muted);">Visible para todos</div></div>
             </label>
-            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgba(255,255,255,0.03);" id="list-vis-opt-private" onclick="selectListVis('private')">
+            <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .12s;background:rgb(var(--k-ink) / 0.03);" id="list-vis-opt-private" onclick="selectListVis('private')">
               <input type="radio" name="list-vis" value="private" style="accent-color:var(--accent);">
               <div><div style="font-size:13px;font-weight:600;">🔒 Privada</div><div style="font-size:10px;color:var(--text-muted);">Solo tú</div></div>
             </label>
@@ -3005,8 +3006,8 @@
       <div style="font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-bottom:4px;">CONFIRMAR</div>
       <div class="confirm-msg" style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.5;"></div>
       <div style="display:flex;gap:10px;">
-        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
-        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
+        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color: var(--k-text);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
+        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgb(var(--k-ink) / 0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgb(var(--k-ink) / 0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
       </div>
     </div>
   </div>

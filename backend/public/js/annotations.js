@@ -30,7 +30,7 @@ var kamiAnnotations = (function() {
 
     popover = document.createElement('div');
     popover.id = 'kami-annotations-popover';
-    popover.style.cssText = 'display:none;position:absolute;z-index:20;background:#14141f;border:1px solid rgba(255,255,255,0.13);border-radius:12px;padding:12px;min-width:220px;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,0.6);';
+    popover.style.cssText = 'display:none;position:absolute;z-index:20;background:var(--k-surface-1);border:1px solid rgb(var(--k-ink) / 0.13);border-radius:12px;padding:12px;min-width:220px;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,0.6);';
     container.appendChild(popover);
 
     overlay.addEventListener('mousedown', onMouseDown);
@@ -93,10 +93,10 @@ var kamiAnnotations = (function() {
     var py = (region.y / 100) * rect.height + region.height / 2 * rect.height / 100;
 
     popover.innerHTML = `
-      <textarea id="kami-note-input" placeholder="Escribe una nota..." style="width:100%;min-height:60px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px;color:#e0e0e0;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;resize:none;outline:none;"></textarea>
+      <textarea id="kami-note-input" placeholder="Escribe una nota..." style="width:100%;min-height:60px;background:rgb(var(--k-ink) / 0.05);border:1px solid rgb(var(--k-ink) / 0.08);border-radius:8px;padding:8px;color:var(--k-text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;resize:none;outline:none;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end;">
-        <button onclick="kamiAnnotations.cancelCreate()" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#8888a0;cursor:pointer;font-size:12px;">Cancelar</button>
-        <button onclick="kamiAnnotations.saveNote(${JSON.stringify(region).replace(/"/g, "'")})" style="padding:6px 14px;border-radius:6px;border:none;background:#e8344a;color:#fff;cursor:pointer;font-size:12px;">Guardar</button>
+        <button onclick="kamiAnnotations.cancelCreate()" style="padding:6px 14px;border-radius:6px;border:1px solid rgb(var(--k-ink) / 0.08);background:transparent;color:var(--k-text-3);cursor:pointer;font-size:12px;">Cancelar</button>
+        <button onclick="kamiAnnotations.saveNote(${JSON.stringify(region).replace(/"/g, "'")})" style="padding:6px 14px;border-radius:6px;border:none;background:var(--k-accent);color: var(--k-text);cursor:pointer;font-size:12px;">Guardar</button>
       </div>
     `;
     popover.style.display = 'block';
@@ -142,7 +142,7 @@ var kamiAnnotations = (function() {
     var username = marker.dataset.username;
     var noteId = marker.dataset.id;
     var userId = marker.dataset.userid;
-    var color = marker.dataset.color || '#f5c842';
+    var color = marker.dataset.color || 'var(--k-gold)';
     var yPct = parseFloat(marker.dataset.y);
 
     var isOwner = currentUser && (currentUser.id === userId || currentUser.userId === userId);
@@ -152,10 +152,10 @@ var kamiAnnotations = (function() {
     popover.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <div style="width:24px;height:24px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;flex-shrink:0;">${getInitials(username)}</div>
-        <div style="font-size:12px;font-weight:600;color:#e0e0e0;">${escHtml(username)}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--k-text);">${escHtml(username)}</div>
       </div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.5;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;">${escHtml(text)}</div>
-      ${isOwner ? '<div style="margin-top:8px;text-align:right;"><button onclick="kamiAnnotations.deleteNote(' + noteId + ')" style="padding:4px 10px;border-radius:4px;border:1px solid rgba(232,51,74,0.3);background:transparent;color:#e8344a;cursor:pointer;font-size:11px;">Eliminar</button></div>' : ''}
+      <div style="font-size:13px;color:rgb(var(--k-ink) / 0.7);line-height:1.5;padding:8px 10px;background:rgb(var(--k-ink) / 0.04);border-radius:8px;">${escHtml(text)}</div>
+      ${isOwner ? '<div style="margin-top:8px;text-align:right;"><button onclick="kamiAnnotations.deleteNote(' + noteId + ')" style="padding:4px 10px;border-radius:4px;border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent);background:transparent;color:var(--k-accent);cursor:pointer;font-size:11px;">Eliminar</button></div>' : ''}
     `;
     popover.style.display = 'block';
     popover.style.left = (rect.width - 240) + 'px';
@@ -195,10 +195,10 @@ var kamiAnnotations = (function() {
       dot.dataset.userid = a.user_id;
       dot.dataset.text = a.note_text;
       dot.dataset.username = a.username || 'Anónimo';
-      dot.dataset.color = a.color || '#f5c842';
+      dot.dataset.color = a.color || 'var(--k-gold)';
       dot.dataset.y = yCenter;
       dot.style.cssText = 'position:absolute;right:8px;z-index:7;width:20px;height:20px;border-radius:50%;' +
-        'background:' + (a.color || '#f5c842') + ';border:2px solid rgba(0,0,0,0.3);' +
+        'background:' + (a.color || 'var(--k-gold)') + ';border:2px solid rgba(0,0,0,0.3);' +
         'display:flex;align-items:center;justify-content:center;' +
         'font-size:8px;font-weight:800;color:#000;cursor:pointer;' +
         'transition:transform .15s;box-shadow:0 2px 6px rgba(0,0,0,0.3);';

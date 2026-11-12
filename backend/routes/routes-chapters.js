@@ -11,6 +11,7 @@ const { pool } = require('../db');
 const { upload, MANGA_ASSETS_DIR } = require('../upload-config');
 const { processChapterImages } = require('../image-processor');
 const { verifyToken } = require('../config');
+const { requireAuth, requireMangaEditor } = require('../middleware/auth');
 const { signURL } = require('../url-signer');
 
 const CHAPTERS_PER_PAGE = 50;
@@ -187,12 +188,8 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
 });
 
 // POST /api/chapters/:mangaId - crear capítulo con subida de páginas (solo auth)
-router.post('/:mangaId', async (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Se requiere autenticación' });
-    try { req.user = await verifyToken(token); next(); }
-    catch { return res.status(401).json({ error: 'Token inválido' }); }
-}, upload.array('pages', 200), async (req, res) => {
+// Permiso comprobado antes de multer: si no es el autor, no se guarda ningún archivo
+router.post('/:mangaId', requireAuth, requireMangaEditor, upload.array('pages', 200), async (req, res) => {
     try {
         const { mangaId } = req.params;
         const { chapterNumber, title, scanGroup } = req.body;
@@ -268,7 +265,7 @@ router.post('/:mangaId', async (req, res, next) => {
 });
 
 // PUT /api/chapters/:mangaId/:chapterNum - actualizar metadatos del capítulo
-router.put('/:mangaId/:chapterNum', async (req, res) => {
+router.put('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, async (req, res) => {
     try {
         const { mangaId, chapterNum } = req.params;
         const { title, scanGroup } = req.body;
@@ -300,7 +297,7 @@ router.put('/:mangaId/:chapterNum', async (req, res) => {
 });
 
 // DELETE /api/chapters/:mangaId/:chapterNum - eliminar capítulo y sus archivos
-router.delete('/:mangaId/:chapterNum', async (req, res) => {
+router.delete('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, async (req, res) => {
     try {
         const { mangaId, chapterNum } = req.params;
         const num = parseInt(chapterNum);

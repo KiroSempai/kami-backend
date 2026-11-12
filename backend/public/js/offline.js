@@ -112,19 +112,19 @@ const kamiOffline = {
 
 window.kamiDefaultCover = function(type) {
   var map = {
-    manga: { emoji: '📘', bg: 'linear-gradient(145deg,#1a1a2e,#16213e)' },
+    manga: { emoji: '📘', bg: 'linear-gradient(145deg,var(--k-surface-2),var(--k-surface-2))' },
     manhwa: { emoji: '📗', bg: 'linear-gradient(145deg,#0f3460,#1a3a2a)' },
     manhua: { emoji: '📙', bg: 'linear-gradient(145deg,#4a0e0e,#2d1a0e)' },
     oneshot: { emoji: '📕', bg: 'linear-gradient(145deg,#2d1a3a,#1a0e2e)' },
   };
-  var d = map[type] || { emoji: '📖', bg: 'linear-gradient(145deg,#14141f,#1a1a2e)' };
+  var d = map[type] || { emoji: '📖', bg: 'linear-gradient(145deg,var(--k-surface-1),var(--k-surface-2))' };
   return '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:' + d.bg + ';">' + d.emoji + '</div>';
 };
 
 window.kamiDefaultCover = function(type) {
   var t = type || '';
   var de = t === 'manhwa' ? '📗' : t === 'manhua' ? '📙' : t === 'oneshot' ? '📕' : t === 'manga' ? '📘' : '📖';
-  var db = t === 'manhwa' ? 'linear-gradient(145deg,#0f3460,#1a3a2a)' : t === 'manhua' ? 'linear-gradient(145deg,#4a0e0e,#2d1a0e)' : t === 'oneshot' ? 'linear-gradient(145deg,#2d1a3a,#1a0e2e)' : 'linear-gradient(145deg,#1a1a2e,#16213e)';
+  var db = t === 'manhwa' ? 'linear-gradient(145deg,#0f3460,#1a3a2a)' : t === 'manhua' ? 'linear-gradient(145deg,#4a0e0e,#2d1a0e)' : t === 'oneshot' ? 'linear-gradient(145deg,#2d1a3a,#1a0e2e)' : 'linear-gradient(145deg,var(--k-surface-2),var(--k-surface-2))';
   return '<div class="kmi-cover-fallback" style="background:' + db + ';">' + de + '</div>';
 };
 

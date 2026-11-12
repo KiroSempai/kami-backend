@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="/css/common.css?v=9">
   <link rel="stylesheet" href="/css/login.css">
   <script src="/js/offline.js?v=2"></script>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 
 <body>
-  <script src="/js/menu-global.js"></script>
 <!-- ═══════════ CONTAINER ═══════════ -->
   <div class="login-container">
 
@@ -57,11 +58,11 @@
         <p class="login-form-subtitle">Crea tu cuenta gratuita en KAMI</p>
 
         <!-- Alertas -->
-        <div class="alert" id="form-error" style="display:none; background:rgba(232,51,74,0.15); border:1px solid rgba(232,51,74,0.3); color:var(--accent); padding:12px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; align-items:center; gap:8px;">
+        <div class="alert" id="form-error" style="display:none; background:color-mix(in srgb, var(--k-accent) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); padding:12px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; align-items:center; gap:8px;">
           <span>⚠</span>
           <span id="form-error-text"></span>
         </div>
-        <div class="alert" id="form-success" style="display:none; background:rgba(45,202,122,0.15); border:1px solid rgba(45,202,122,0.3); color:var(--green); padding:14px 16px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; flex-direction:column; gap:4px;">
+        <div class="alert" id="form-success" style="display:none; background:color-mix(in srgb, var(--k-ok) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color:var(--green); padding:14px 16px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; flex-direction:column; gap:4px;">
           <strong>✓ ¡Cuenta creada!</strong>
           <span id="form-success-text">Redirigiendo a tu perfil...</span>
         </div>
@@ -87,10 +88,10 @@
             <label class="form-label" for="password">Contraseña</label>
             <input type="password" id="password" class="form-input" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
             <div class="pw-strength" style="display:flex; gap:4px; margin-top:8px;">
-              <div class="pw-bar" id="bar1" style="flex:1; height:3px; border-radius:10px; background:rgba(255,255,255,0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar2" style="flex:1; height:3px; border-radius:10px; background:rgba(255,255,255,0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar3" style="flex:1; height:3px; border-radius:10px; background:rgba(255,255,255,0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar4" style="flex:1; height:3px; border-radius:10px; background:rgba(255,255,255,0.08); transition:background 0.3s;"></div>
+              <div class="pw-bar" id="bar1" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
+              <div class="pw-bar" id="bar2" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
+              <div class="pw-bar" id="bar3" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
+              <div class="pw-bar" id="bar4" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
             </div>
             <div class="pw-label" id="pw-label" style="font-size:10px; color:var(--text-muted); margin-top:4px; text-align:right;"></div>
           </div>
@@ -190,7 +191,7 @@
       if (/[0-9]/.test(pw)) score++;
       if (/[^a-zA-Z0-9]/.test(pw)) score++;
       if (score <= 1) return { level: 1, label: 'Débil', color: 'var(--accent)' };
-      if (score <= 2) return { level: 2, label: 'Regular', color: '#f5c842' };
+      if (score <= 2) return { level: 2, label: 'Regular', color: 'var(--k-gold)' };
       if (score <= 3) return { level: 3, label: 'Buena', color: 'var(--green)' };
       return { level: 4, label: 'Muy fuerte', color: 'var(--green)' };
     }
@@ -200,7 +201,7 @@
       const bars = [document.getElementById('bar1'), document.getElementById('bar2'),
                     document.getElementById('bar3'), document.getElementById('bar4')];
       const label = document.getElementById('pw-label');
-      bars.forEach(b => { b.style.background = 'rgba(255,255,255,0.08)'; });
+      bars.forEach(b => { b.style.background = 'rgb(var(--k-ink) / 0.08)'; });
       if (val.length === 0) { label.textContent = ''; return; }
       const s = getStrength(val);
       for (let i = 0; i < s.level; i++) bars[i].style.background = s.color;

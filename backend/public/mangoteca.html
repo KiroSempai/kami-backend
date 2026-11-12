@@ -12,12 +12,12 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body { background: #0e0e1e; color: #f2f2fa; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; }
+    body { background: var(--k-bg); color: var(--k-text); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; flex-direction: column; }
     .mangoteca-layout { display: flex; flex: 1; padding-top: 64px; }
-    .mangoteca-sidebar { width: 220px; flex-shrink: 0; background: rgba(18,18,36,0.6); border-right: 1px solid rgba(255,255,255,0.10); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
-    .mangoteca-sidebar .sb-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgba(255,255,255,0.30); margin-bottom: 12px; padding: 0 8px; }
-    .mangoteca-sidebar .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #a0a0b8; cursor: pointer; transition: 0.15s; border: none; background: none; font-family: inherit; width: 100%; text-align: left; }
-    .mangoteca-content { flex: 1; overflow-y: auto; padding: 0; background: #0e0e1e; min-height: 100%; }
+    .mangoteca-sidebar { width: 220px; flex-shrink: 0; background: color-mix(in srgb, var(--k-surface-1) 60%, transparent); border-right: 1px solid rgb(var(--k-ink) / 0.10); padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+    .mangoteca-sidebar .sb-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: rgb(var(--k-ink) / 0.30); margin-bottom: 12px; padding: 0 8px; }
+    .mangoteca-sidebar .sb-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--k-text-2); cursor: pointer; transition: 0.15s; border: none; background: none; font-family: inherit; width: 100%; text-align: left; }
+    .mangoteca-content { flex: 1; overflow-y: auto; padding: 0; background: var(--k-bg); min-height: 100%; }
     .mangoteca-content iframe { width: 100%; height: 100%; border: none; display: block; }
     @media(max-width:768px) {
       .mangoteca-sidebar { width: 60px; padding: 24px 8px; }
@@ -25,9 +25,10 @@
       .mangoteca-sidebar .sb-item span { display: none; }
     }
   </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 <body>
-  <script src="/js/menu-global.js"></script>
 
   <div class="mangoteca-layout">
     <aside class="mangoteca-sidebar" id="mangoteca-sidebar">

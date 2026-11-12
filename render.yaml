@@ -1,3 +1,5 @@
+# Los valores se configuran en el panel de Render (Environment). Nunca escribas secretos aquí:
+# el repositorio es público. Copia local de la versión anterior: E:KAMI_backupsender.yaml.con-secretos
 services:
   - type: web
     name: kami-manga
@@ -6,26 +8,26 @@ services:
     startCommand: cd backend && node server.js
     envVars:
       - key: DB_USER
-        value: postgres.bojubfastavgvqkogjnj
+        sync: false
       - key: DB_PASSWORD
-        value: R04022005ramiez
+        sync: false
       - key: DB_HOST
-        value: aws-0-eu-west-1.pooler.supabase.com
+        sync: false
       - key: DB_PORT
-        value: "5432"
+        sync: false
       - key: DB_NAME
-        value: postgres
+        sync: false
       - key: DB_SSL
-        value: "true"
+        sync: false
       - key: JWT_SECRET
-        value: KamiManga2026_ClaveSecreta_#123
+        sync: false
       - key: GOOGLE_CLIENT_ID
-        value: 511044284706-a6f4ulqh24pf1o16v69k4iutj1o1o21b.apps.googleusercontent.com
+        sync: false
       - key: GOOGLE_CLIENT_SECRET
-        value: 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
+        sync: false
       - key: GIPHY_API_KEY
-        value: nxYKvgaFkoDDFcTcwLDpBCjz52NPxeKM
+        sync: false
       - key: SUPABASE_URL
-        value: https://bojubfastavgvqkogjnj.supabase.co
+        sync: false
       - key: SUPABASE_SERVICE_KEY
-        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvanViZmFzdGF2Z3Zxa29nam5qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODg3MzQyMSwiZXhwIjoyMDk0NDQ5NDIxfQ.zk3HoIXv6fcA-ZdXIipbeBjWPicImHXqjlW1A5e5niQ"
+        sync: false

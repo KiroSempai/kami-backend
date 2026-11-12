@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="/css/kmi-card.css">
     <style>
         :root {
-            --bg: #0d0d14;
-            --surface: #13131e;
-            --surface2: #1a1a28;
-            --border: rgba(255,255,255,0.07);
-            --accent: #e8334a;
-            --accent-gold: #f5c842;
-            --blue: #4c9df5;
-            --green: #2dca7a;
-            --text-primary: #f2f2fa;
-            --text-muted: #6b6b8a;
+            --bg: var(--k-bg);
+            --surface: var(--k-surface-1);
+            --surface2: var(--k-surface-2);
+            --border: rgb(var(--k-ink) / 0.07);
+            --accent: var(--k-accent);
+            --accent-gold: var(--k-gold);
+            --blue: var(--k-info);
+            --green: var(--k-ok);
+            --text-primary: var(--k-text);
+            --text-muted: var(--k-text-3);
             --radius: 12px;
             --font-display: 'Bebas Neue', sans-serif;
             --font-body: 'Plus Jakarta Sans', sans-serif;
@@ -31,7 +31,7 @@
         /* BANNER */
         .manga-banner { position: relative; min-height: 320px; display: flex; align-items: center; padding: 48px 32px; overflow: hidden; }
         .manga-banner-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(40px) brightness(0.25); transform: scale(1.1); z-index: 0; }
-        .manga-banner-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,13,20,0.85) 0%, rgba(13,13,20,0.6) 50%, rgba(13,13,20,0.85) 100%); z-index: 1; }
+        .manga-banner-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--k-bg) 85%, transparent) 0%, color-mix(in srgb, var(--k-bg) 60%, transparent) 50%, color-mix(in srgb, var(--k-bg) 85%, transparent) 100%); z-index: 1; }
         .manga-banner-content { position: relative; z-index: 2; display: flex; gap: 36px; max-width: 1100px; margin: 0 auto; width: 100%; align-items: flex-start; }
 
         .manga-cover { width: 220px; min-width: 220px; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5); background: var(--surface2); position: relative; cursor: pointer; }
@@ -43,21 +43,21 @@
         .manga-info { flex: 1; min-width: 0; }
         .manga-title { font-family: var(--font-display); font-size: 36px; letter-spacing: 2px; margin-bottom: 8px; line-height: 1.1; }
         .manga-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
-        .manga-rating { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.25); border-radius: 20px; font-size: 14px; font-weight: 700; color: var(--accent-gold); margin-bottom: 16px; }
+        .manga-rating { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; background: color-mix(in srgb, var(--k-gold) 12%, transparent); border: 1px solid color-mix(in srgb, var(--k-gold) 25%, transparent); border-radius: 20px; font-size: 14px; font-weight: 700; color: var(--accent-gold); margin-bottom: 16px; }
 
         .desc-wrap { position: relative; }
         .desc-text { font-size: 14px; line-height: 1.8; color: rgba(242,242,250,0.8); max-width: 600px; margin-bottom: 16px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background .2s; }
-        .desc-text:hover { background: rgba(255,255,255,0.04); }
+        .desc-text:hover { background: rgb(var(--k-ink) / 0.04); }
         .desc-edit-icon { position: absolute; top: 0; right: 0; font-size: 14px; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; transition: all .2s; display: none; }
         .desc-wrap:hover .desc-edit-icon { display: block; }
-        .desc-edit-icon:hover { color: var(--accent); background: rgba(232,51,74,0.1); }
-        .desc-textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; line-height: 1.8; resize: vertical; min-height: 100px; outline: none; margin-bottom: 8px; }
+        .desc-edit-icon:hover { color: var(--accent); background: color-mix(in srgb, var(--k-accent) 10%, transparent); }
+        .desc-textarea { width: 100%; padding: 10px 14px; background: rgb(var(--k-ink) / 0.04); border: 1px solid var(--accent); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; line-height: 1.8; resize: vertical; min-height: 100px; outline: none; margin-bottom: 8px; }
         .desc-actions { display: flex; gap: 8px; margin-bottom: 16px; }
-        .btn-save { padding: 6px 16px; background: var(--accent); border: none; border-radius: 6px; color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; }
-        .btn-cancel { padding: 6px 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; }
+        .btn-save { padding: 6px 16px; background: var(--accent); border: none; border-radius: 6px; color: var(--k-text); font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-cancel { padding: 6px 16px; background: rgb(var(--k-ink) / 0.06); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-family: var(--font-body); font-size: 12px; cursor: pointer; }
 
         .manga-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .manga-tag { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-muted); }
+        .manga-tag { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: rgb(var(--k-ink) / 0.06); border: 1px solid var(--border); color: var(--text-muted); }
 
         /* CHAPTERS */
         .chapters-section { max-width: 1100px; margin: 0 auto; padding: 32px; }
@@ -65,28 +65,28 @@
         .chapters-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; }
         .chapters-count { font-size: 13px; color: var(--text-muted); }
         .chapters-actions { display: flex; gap: 8px; }
-        .btn-add-chapter { padding: 8px 18px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .btn-add-chapter { padding: 8px 18px; background: var(--accent); border: none; border-radius: 8px; color: var(--k-text); font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
         .btn-add-chapter:hover { opacity: .9; transform: translateY(-1px); }
 
         .chapter-list { display: flex; flex-direction: column; gap: 6px; }
         .chapter-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; transition: all .18s; }
-        .chapter-item:hover { border-color: rgba(255,255,255,0.15); }
+        .chapter-item:hover { border-color: rgb(var(--k-ink) / 0.15); }
         .chapter-info { flex: 1; }
         .chapter-num { font-weight: 600; font-size: 14px; }
         .chapter-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
         .chapter-actions { display: flex; gap: 6px; }
-        .btn-icon { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all .18s; }
-        .btn-icon:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
-        .btn-icon.edit:hover { border-color: var(--blue); color: var(--blue); background: rgba(76,157,245,0.1); }
-        .btn-icon.delete:hover { border-color: var(--accent); color: var(--accent); background: rgba(232,51,74,0.1); }
+        .btn-icon { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: rgb(var(--k-ink) / 0.04); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all .18s; }
+        .btn-icon:hover { background: rgb(var(--k-ink) / 0.08); color: var(--text-primary); }
+        .btn-icon.edit:hover { border-color: var(--blue); color: var(--blue); background: color-mix(in srgb, var(--k-info) 10%, transparent); }
+        .btn-icon.delete:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--k-accent) 10%, transparent); }
 
         .chapter-empty { text-align: center; padding: 48px; color: var(--text-muted); font-size: 14px; }
 
         /* TOAST */
         .toast { position: fixed; bottom: 32px; right: 32px; padding: 14px 24px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 9999; display: none; animation: slideUp .3s ease; }
         .toast.show { display: block; }
-        .toast.success { background: rgba(45,202,122,0.15); border: 1px solid rgba(45,202,122,0.3); color: var(--green); }
-        .toast.error { background: rgba(232,51,74,0.15); border: 1px solid rgba(232,51,74,0.3); color: var(--accent); }
+        .toast.success { background: color-mix(in srgb, var(--k-ok) 15%, transparent); border: 1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color: var(--green); }
+        .toast.error { background: color-mix(in srgb, var(--k-accent) 15%, transparent); border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color: var(--accent); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* MODAL */
@@ -96,16 +96,16 @@
         .modal-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; margin-bottom: 20px; }
         .modal-field { margin-bottom: 16px; }
         .modal-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
-        .modal-field input, .modal-field textarea, .modal-field select { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none; }
+        .modal-field input, .modal-field textarea, .modal-field select { width: 100%; padding: 10px 14px; background: rgb(var(--k-ink) / 0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none; }
         .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent); }
-        .modal-field input[type="file"] { padding: 8px; background: rgba(255,255,255,0.02); }
+        .modal-field input[type="file"] { padding: 8px; background: rgb(var(--k-ink) / 0.02); }
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
         .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
-        .modal-btn.primary { background: var(--accent); color: #fff; }
+        .modal-btn.primary { background: var(--accent); color: var(--k-text); }
         .modal-btn.primary:hover { opacity: .9; }
         .modal-btn.primary:disabled { opacity: .5; cursor: not-allowed; }
-        .modal-btn.secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-muted); }
-        .modal-btn.secondary:hover { color: var(--text-primary); background: rgba(255,255,255,0.1); }
+        .modal-btn.secondary { background: rgb(var(--k-ink) / 0.06); border: 1px solid var(--border); color: var(--text-muted); }
+        .modal-btn.secondary:hover { color: var(--text-primary); background: rgb(var(--k-ink) / 0.1); }
 
         /* ── GENRE CHECKBOXES (from biblioteca) ── */
         .adv-section { margin-bottom: 20px; }
@@ -113,34 +113,34 @@
         .genre-group-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
         .genre-group-list { display: flex; flex-direction: column; gap: 2px; }
         .genre-check { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: all .15s; user-select: none; }
-        .genre-check:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+        .genre-check:hover { background: rgb(var(--k-ink) / 0.04); color: var(--text-primary); }
         .genre-check input[type="checkbox"] { appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; background: transparent; cursor: pointer; position: relative; flex-shrink: 0; transition: all .15s; }
         .genre-check input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
-        .genre-check input[type="checkbox"]:checked::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 700; }
+        .genre-check input[type="checkbox"]:checked::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--k-text); font-size: 10px; font-weight: 700; }
 
         .loading { text-align: center; padding: 80px; color: var(--text-muted); font-size: 16px; }
         .error-page { text-align: center; padding: 80px; }
         .error-page h2 { font-family: var(--font-display); font-size: 28px; margin-bottom: 8px; }
         .error-page p { color: var(--text-muted); }
-        .error-page .btn-back { display: inline-block; margin-top: 16px; padding: 10px 24px; background: var(--accent); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; }
+        .error-page .btn-back { display: inline-block; margin-top: 16px; padding: 10px 24px; background: var(--accent); color: var(--k-text); border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; }
 
         /* ── EDIT INFO BUTTON ── */
-        .btn-edit-info { padding: 8px 18px; background: rgba(76,157,245,0.15); border: 1px solid rgba(76,157,245,0.3); border-radius: 8px; color: var(--blue); font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
-        .btn-edit-info:hover { background: rgba(76,157,245,0.25); transform: translateY(-1px); }
+        .btn-edit-info { padding: 8px 18px; background: color-mix(in srgb, var(--k-info) 15%, transparent); border: 1px solid color-mix(in srgb, var(--k-info) 30%, transparent); border-radius: 8px; color: var(--blue); font-family: var(--font-body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .btn-edit-info:hover { background: color-mix(in srgb, var(--k-info) 25%, transparent); transform: translateY(-1px); }
 
         /* ── GENRE CHIPS IN MODAL ── */
         .modal-genre-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-        .modal-genre-chip { padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text-muted); cursor: pointer; transition: all .18s; user-select: none; }
-        .modal-genre-chip.active { background: rgba(232,51,74,0.18); border-color: var(--accent); color: var(--accent); }
-        .modal-genre-chip:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--text-primary); }
+        .modal-genre-chip { padding: 4px 10px; border-radius: 16px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: rgb(var(--k-ink) / 0.04); color: var(--text-muted); cursor: pointer; transition: all .18s; user-select: none; }
+        .modal-genre-chip.active { background: color-mix(in srgb, var(--k-accent) 18%, transparent); border-color: var(--accent); color: var(--accent); }
+        .modal-genre-chip:hover:not(.active) { border-color: rgb(var(--k-ink) / 0.2); color: var(--text-primary); }
 
         .modal-alt-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
         .modal-alt-item { display: flex; gap: 4px; align-items: center; }
         .modal-alt-item input { flex: 1; }
-        .modal-btn-rm { background: rgba(232,51,74,0.15); border: 1px solid rgba(232,51,74,0.3); color: var(--accent); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: all .18s; }
-        .modal-btn-rm:hover { background: rgba(232,51,74,0.3); }
-        .modal-btn-add-alt { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 6px 12px; font-size: 11px; font-family: var(--font-body); cursor: pointer; transition: all .2s; width: 100%; margin-top: 2px; }
-        .modal-btn-add-alt:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+        .modal-btn-rm { background: color-mix(in srgb, var(--k-accent) 15%, transparent); border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color: var(--accent); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; transition: all .18s; }
+        .modal-btn-rm:hover { background: color-mix(in srgb, var(--k-accent) 30%, transparent); }
+        .modal-btn-add-alt { background: rgb(var(--k-ink) / 0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 6px 12px; font-size: 11px; font-family: var(--font-body); cursor: pointer; transition: all .2s; width: 100%; margin-top: 2px; }
+        .modal-btn-add-alt:hover { color: var(--text-primary); border-color: rgb(var(--k-ink) / 0.2); }
 
         .modal-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -149,10 +149,11 @@
         .social-field .social-icon { font-size: 16px; width: 20px; text-align: center; }
         .social-field input { flex: 1; }
     </style>
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
 </head>
 
 <body>
-  <script src="/js/menu-global.js"></script>
 <div id="loading" class="loading">Cargando manga…</div>
     <div id="error-page" class="error-page" style="display:none;">
         <h2>Manga no encontrado</h2>

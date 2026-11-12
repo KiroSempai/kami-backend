@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const express = require('express');
+const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
@@ -26,7 +27,7 @@ router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'preview.html'));
 });
 
-router.post('/process', upload.single('image'), async (req, res) => {
+router.post('/process', requireAuth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Selecciona una imagen' });
 
@@ -64,7 +65,7 @@ setInterval(() => {
 // 👤 Permiso: auth (token)
 // 📥 Body: multipart (field: 'image')
 // 📤 Respuesta: { success, url, previewUrl }
-router.post('/image', upload.single('image'), async (req, res) => {
+router.post('/image', requireAuth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file' });
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)

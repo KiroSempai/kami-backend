@@ -19,7 +19,7 @@ async function adminAuth(req, res, next) {
 }
 
 // POST /api/admin/set-role — Cambiar rol de un usuario
-router.post('/set-role', adminAuth, async (req, res) => {
+router.post('/set-role', adminAuth, require('../middleware/auth').protectOwnerTarget('user_id'), async (req, res) => {
   try {
     const { user_id, role } = req.body;
     if (!user_id || !role) return res.status(400).json({ error: 'user_id y role requeridos' });

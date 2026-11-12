@@ -448,6 +448,7 @@
     return;
   }
   var u = user(); if (u && u.username) $('st-who').textContent = '@' + u.username;
+  load('works', '/api/studio/works').then(function (r) { if (r.isOwner) $('st-who').innerHTML = esc('@' + ((u && u.username) || '')) + ' · <span class="k-badge k-badge--gold">Propietario</span>'; else if (r.isAdmin) $('st-who').innerHTML = esc('@' + ((u && u.username) || '')) + ' · <span class="k-badge k-badge--accent">Admin</span>'; }).catch(function () {});
   window.addEventListener('hashchange', route);
   route(); paintUnread();
 })();

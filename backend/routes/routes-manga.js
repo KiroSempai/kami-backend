@@ -67,6 +67,12 @@ function mapRow(row) {
         totalReads: row.total_reads || 0,
         chapters: row.chapters || [],
         socialLinks: row.social_links || {},
+        publisher: row.publisher || '',
+        language: row.language || 'es',
+        lead: row.lead || '',
+        contentRating: row.content_rating || 'todos',
+        origin: row.origin || 'original',
+        tags: row.tags || [],
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -354,6 +360,14 @@ router.post('/', requireAuth, requireNotBanned, upload.single('coverImage'), asy
 
         const newManga = result.rows[0];
         await saveMeta(newManga.id, req.body).catch(e => console.warn('[manga] ficha ampliada:', e.message));
+        // Editorial: las obras de administradores o sin autor se publican como KamiTales
+        if (await hasColumn('mangas', 'publisher')) {
+            const official = req.user.role === 'admin' || !String(author || '').trim();
+            await pool.query(
+                `UPDATE mangas SET publisher = $2, author = CASE WHEN COALESCE(TRIM(author), '') = '' THEN 'KamiTales' ELSE author END WHERE id = $1`,
+                [newManga.id, official ? 'KamiTales' : '']
+            ).catch(e => console.warn('[manga] editorial:', e.message));
+        }
 
         // Auto-crear comunidad para el nuevo manga
         try {

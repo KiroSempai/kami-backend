@@ -122,6 +122,7 @@
             <div class="info-section">
               <div class="info-row"><span class="info-label">Autor</span><span class="info-value" id="info-author">—</span></div>
               <div class="info-row"><span class="info-label">Arte</span><span class="info-value" id="info-artist">—</span></div>
+              <div class="info-row" id="info-publisher-row" hidden><span class="info-label">Editorial</span><span class="info-value" id="info-publisher">—</span></div>
             </div>
 
             <div class="rpm-row" id="manga-stats" style="display:none;">
@@ -617,6 +618,7 @@
 
             setText('info-author', manga.author || '—');
             setText('info-artist', manga.artist || '—');
+            if (manga.publisher) { setText('info-publisher', manga.publisher); document.getElementById('info-publisher-row').hidden = false; }
 
             if (stats) {
                 setText('stat-reads', (stats.totalReads || 0).toLocaleString());

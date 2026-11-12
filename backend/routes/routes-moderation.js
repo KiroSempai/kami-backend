@@ -5,6 +5,9 @@
 
 const express = require('express');
 const router = express.Router();
+const { protectOwnerTarget } = require('../middleware/auth');
+// La cuenta propietaria no se puede banear, sancionar, silenciar ni avisar
+router.use(protectOwnerTarget('targetUserId'));
 const { pool } = require('../db');
 const getRole = require('../getRole');
 const { verifyToken } = require('../config');

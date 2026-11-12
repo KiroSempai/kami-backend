@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const router = express.Router();
 const { pool } = require('../db');
-const { requireAuth, getRole } = require('../middleware/auth');
+const { requireAuth, getRole, isOwner } = require('../middleware/auth');
 const { hasColumn } = require('../schema');
 
 router.use(requireAuth);
@@ -48,6 +48,7 @@ router.get('/works', async (req, res) => {
     );
     res.json({
       isAdmin: scope.admin,
+      isOwner: await isOwner(req.user.userId),
       works: r.rows.map(w => ({
         id: w.id, title: w.title, type: w.type, format: w.type === 'novel' ? 'novel' : 'comic', status: w.status, cover: w.cover,
         genres: w.genres || [], rating: parseFloat(w.rating) || 0, ratings: w.total_ratings || 0, reads: w.total_reads || 0,

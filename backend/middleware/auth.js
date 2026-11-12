@@ -83,4 +83,28 @@ async function requireNotBanned(req, res, next) {
   }
 }
 
-module.exports = { requireAuth, requireMangaEditor, requireNotBanned, canEditManga, getRole, hasOwnershipColumn };
+// ── Cuenta propietaria (users.is_owner, migrate-owner-publisher.sql) ──────────
+const { hasColumn } = require('../schema');
+async function isOwner(userId) {
+  if (!userId || !(await hasColumn('users', 'is_owner'))) return false;
+  const r = await pool.query('SELECT is_owner FROM users WHERE id = $1', [userId]);
+  return !!r.rows[0]?.is_owner;
+}
+// Nadie salvo la propia cuenta propietaria puede actuar sobre ella (banear, sancionar, cambiar rol…).
+// field: nombre del campo del cuerpo con el id del usuario afectado.
+function protectOwnerTarget(field) {
+  return async (req, res, next) => {
+    try {
+      const target = req.body && req.body[field];
+      if (target && await isOwner(target) && target !== req.user?.userId) {
+        return res.status(403).json({ error: 'No se puede actuar sobre la cuenta propietaria de KamiTales.' });
+      }
+      next();
+    } catch (e) {
+      console.error('[auth] protectOwnerTarget:', e.message);
+      return res.status(500).json({ error: 'No se pudo comprobar la cuenta afectada.' });
+    }
+  };
+}
+
+module.exports = { requireAuth, requireMangaEditor, requireNotBanned, canEditManga, getRole, hasOwnershipColumn, isOwner, protectOwnerTarget };

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrarse-KAMImanga</title>
+  <title>Crear cuenta · KamiTales</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
     <div class="login-left">
       <div class="login-hero">
         <div class="login-hero-icon">✨</div>
-        <h1 class="login-hero-title">KAMI</h1>
+        <h1 class="login-hero-title">KamiTales</h1>
         <p class="login-hero-desc">Únete a la comunidad de lectura de manga más moderna en español</p>
 
         <div class="login-hero-features">
@@ -55,7 +55,7 @@
     <div class="login-right">
       <div class="login-form">
         <h2 class="login-form-title">CREAR CUENTA</h2>
-        <p class="login-form-subtitle">Crea tu cuenta gratuita en KAMI</p>
+        <p class="login-form-subtitle">Crea tu cuenta gratuita en KamiTales</p>
 
         <!-- Alertas -->
         <div class="alert" id="form-error" style="display:none; background:color-mix(in srgb, var(--k-accent) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); padding:12px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; align-items:center; gap:8px;">
@@ -110,7 +110,7 @@
         </a>
 
         <div class="form-footer">
-          ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
+          ¿Ya tienes cuenta? <a href="/acceder">Inicia sesión</a>
         </div>
       </div>
     </div>
@@ -233,7 +233,7 @@
         localStorage.setItem('kami_token', data.token);
         localStorage.setItem('kami_user', JSON.stringify(data.user));
         showSuccess(data.user.username);
-        setTimeout(() => { window.location.href = data.redirect || `/profile/${data.user.username}`; }, 1500);
+        setTimeout(() => { window.location.href = data.redirect || `/perfil/${data.user.username}`; }, 1500);
       } catch (err) {
         showError('No se pudo conectar con el servidor.');
         setLoading(false);

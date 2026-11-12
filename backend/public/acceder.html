@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceder-KAMImanga</title>
+    <title>Acceder · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -25,7 +25,7 @@
         <div class="login-left">
             <div class="login-hero">
                 <div class="login-hero-icon">📚</div>
-                <h1 class="login-hero-title">KAMI</h1>
+                <h1 class="login-hero-title">KamiTales</h1>
                 <p class="login-hero-desc">La plataforma de lectura de manga más moderna en español</p>
 
                 <div class="login-hero-features">
@@ -96,7 +96,7 @@
                 </a>
 
                 <div class="form-footer">
-                    ¿No tienes cuenta? <a href="/register">Registrarse</a>
+                    ¿No tienes cuenta? <a href="/registro">Registrarse</a>
                 </div>
             </div>
         </div>
@@ -116,7 +116,7 @@
                     const user = JSON.parse(decodeURIComponent(userData));
                     localStorage.setItem('kami_token', token);
                     localStorage.setItem('kami_user', JSON.stringify(user));
-                    window.location.href = `/profile/${user.username}`;
+                    window.location.href = `/perfil/${user.username}`;
                 } catch(e) {
                     console.error('Error procesando Google callback:', e);
                 }
@@ -169,7 +169,7 @@
 
                 // Redirigir al perfil
                 setTimeout(() => {
-                    window.location.href = data.redirect || `/profile/${data.user.username}`;
+                    window.location.href = data.redirect || `/perfil/${data.user.username}`;
                 }, 1500);
 
             } catch (err) {
@@ -196,7 +196,7 @@
                 try {
                     const userData = JSON.parse(user);
                     // Ya estás logueado, redirigir
-                    window.location.href = `/profile/${userData.username}`;
+                    window.location.href = `/perfil/${userData.username}`;
                 } catch (err) {
                     console.error('Error parsing user:', err);
                 }

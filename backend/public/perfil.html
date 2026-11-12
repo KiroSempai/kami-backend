@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil-KAMImanga</title>
+    <title>Perfil · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -147,7 +147,7 @@
     </svg>
     Compartir perfil
 </button>
-                    <a class="btn btn-ghost" id="btn-edit-profile" href="/perfil-editor/">
+                    <a class="btn btn-ghost" id="btn-edit-profile" href="/perfil-editar/">
                         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
                             viewBox="0 0 24 24">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -867,7 +867,7 @@
         function closeDotsMenu() { var m = document.getElementById('dots-menu'); if (m) m.remove(); }
 
         function openReply(postId) {
-            window.location.href = '/?reply=' + postId;
+            window.location.href = '/comunidad?reply=' + postId;
         }
 
         /* ─── Tabs ─── */
@@ -961,15 +961,15 @@
                     '<div class="feed-post' + spoilerClass + '" data-post-id="' + p.id + '">' +
                     _repostBanner +
                     spoilerOverlay +
-                    '<a href="/profile/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + '">' + avatarContent + '</a>' +
+                    '<a href="/perfil/' + p.user + '" class="feed-post-avatar" style="' + avatarStyle + '">' + avatarContent + '</a>' +
                     '<div class="feed-post-body">' +
                     '<div class="feed-post-header">' +
-                    '<a href="/profile/' + p.user + '" class="feed-post-user">' + p.user +
+                    '<a href="/perfil/' + p.user + '" class="feed-post-user">' + p.user +
                     (p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
                     p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
                     p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : '') +
                     '</a>' +
-                    '<a href="/profile/' + p.user + '" class="feed-post-handle">' + p.handle + '</a>' +
+                    '<a href="/perfil/' + p.user + '" class="feed-post-handle">' + p.handle + '</a>' +
                     '<span class="feed-post-time">' + timeAgo(p.created_at) + (p.views_count !== undefined ? ' · ' + p.views_count + ' vistas' : '') + '</span>' +
                     '</div>' +
                     '<div class="feed-post-text">' + (p.text || '').replace(/\n/g, '<br>') + '</div>' +
@@ -1025,20 +1025,20 @@
           }
 
           var html = '';
-          html += '<div class="actividad-expanded-card" data-post-id="' + p.id + '" onclick="window.location.href=\'/#post/' + p.id + '\'">';
+          html += '<div class="actividad-expanded-card" data-post-id="' + p.id + '" onclick="window.location.href=\'/comunidad#post/' + p.id + '\'">';
           html += _bannerHTML;
           html += '  <div class="post-detail-author-row" style="display:flex;align-items:center;gap:12px;padding:12px 16px 8px 16px;width:100%;box-sizing:border-box;">';
-          html += '    <a href="/profile/' + p.user + '" onclick="event.stopPropagation();">' + avatarContent + '</a>';
+          html += '    <a href="/perfil/' + p.user + '" onclick="event.stopPropagation();">' + avatarContent + '</a>';
           html += '    <div style="display:flex;flex-direction:column;">';
           html += '      <div style="display:flex;align-items:center;gap:4px;">';
-          html += '        <a href="/profile/' + p.user + '" onclick="event.stopPropagation();" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">' + p.user + '</a>';
+          html += '        <a href="/perfil/' + p.user + '" onclick="event.stopPropagation();" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">' + p.user + '</a>';
           html +=        roleBadgeHtml;
           html += '      </div>';
           html += '      <div style="font-size:13px;color:var(--text-muted);">' + (p.handle || '@' + p.user.toLowerCase()) + '</div>';
           html += '    </div>';
           html += '  </div>';
           if (p.parent_id && p.replyToUser) {
-            html += '  <div class="reply-context" style="padding:0 16px 6px 16px;font-size:12px;color:var(--text-muted);"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/' + p.replyToUser + '" onclick="event.stopPropagation();" style="color:var(--accent);text-decoration:none;">@' + p.replyToUser + '</a></div>';
+            html += '  <div class="reply-context" style="padding:0 16px 6px 16px;font-size:12px;color:var(--text-muted);"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/perfil/' + p.replyToUser + '" onclick="event.stopPropagation();" style="color:var(--accent);text-decoration:none;">@' + p.replyToUser + '</a></div>';
           }
           html += '  <div class="post-detail-text" style="width:100%;text-align:left;font-size:15px;color:var(--text-primary);line-height:1.5;word-break:break-word;padding:0 16px 12px 16px;box-sizing:border-box;">' + (p.text || p.content || '') + '</div>';
           if (p.media_url) {
@@ -1055,7 +1055,7 @@
           html += '    <div class="post-detail-action ' + rpClass + '" onclick="event.stopPropagation();openRepostMenu(this,' + p.id + ')"><i class="ti ti-repeat"></i><span class="action-cnt">' + rpText + '</span></div>';
           html += '    <div class="post-detail-action ' + lClass + '" onclick="event.stopPropagation();likePost(this);feedInteract(' + p.id + ',\'like\')"><i class="ti ' + lIcon + '"></i><span class="action-cnt">' + lText + '</span></div>';
           html += '    <div class="post-detail-action ' + bClass + '" onclick="event.stopPropagation();feedInteract(' + p.id + ',\'bookmark\')"><i class="ti ' + bIcon + '"></i></div>';
-          html += '    <div class="post-detail-action" onclick="event.stopPropagation();if(navigator.share)navigator.share({url:window.location.origin+\'/#post/\'+' + p.id + '})"><i class="ti ti-share"></i></div>';
+          html += '    <div class="post-detail-action" onclick="event.stopPropagation();if(navigator.share)navigator.share({url:window.location.origin+\'/comunidad#post/\'+' + p.id + '})"><i class="ti ti-share"></i></div>';
           html += '  </div>';
           html += '</div>';
           return html;
@@ -2058,7 +2058,7 @@
       function compartirPerfilActual() {
         var url = window.location.href;
         if (navigator.share && navigator.canShare && navigator.canShare({ url: url })) {
-          navigator.share({ title: 'Perfil en KAMI', text: 'Echa un vistazo a este perfil en KAMI!', url: url }).catch(function(){});
+          navigator.share({ title: 'Perfil en KamiTales', text: 'Echa un vistazo a este perfil en KamiTales!', url: url }).catch(function(){});
         } else {
           navigator.clipboard.writeText(url);
           showToast('success', 'Enlace copiado al portapapeles');
@@ -2280,7 +2280,7 @@
           var isCompleted = m.totalChapters > 0 && m.progress >= m.totalChapters;
           var btnText = isCompleted ? 'Completado' : (statusKey === 'completed' ? 'Completado' : statusKey === 'planned' ? 'Empezar' : statusKey === 'dropped' ? 'Abandonado' : 'Cap. ' + nextChapter);
           if (!isCompleted && (statusKey === 'reading' || statusKey === 'rereading' || statusKey === 'continuing' || statusKey === 'planned')) {
-            overlay += '<div onclick="window.location.href=\'/reader/' + m.mangaId + '/' + nextChapter + '\';return false;" style="font-size:11px;font-weight:600;color: var(--k-text);background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
+            overlay += '<div onclick="window.location.href=\'/leer/' + m.mangaId + '/' + nextChapter + '\';return false;" style="font-size:11px;font-weight:600;color: var(--k-text);background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           } else {
             overlay += '<div style="font-size:11px;font-weight:600;color: var(--k-text);background:' + statusColor + ';text-align:center;padding:4px 0;border-radius:4px;cursor:pointer;">' + btnText + '</div>';
           }
@@ -2579,7 +2579,7 @@
       const editBtn = document.getElementById('btn-edit-profile');
       const storedUser = JSON.parse(localStorage.getItem('kami_user') || '{}');
       if (editBtn && storedUser.username) {
-        editBtn.href = '/perfil-editor/' + encodeURIComponent(storedUser.username);
+        editBtn.href = '/perfil-editar/' + encodeURIComponent(storedUser.username);
       }
 
       // ═══════════════════════════════════════
@@ -2740,7 +2740,7 @@
                     </div>
                   </div>` : ''}
 
-                  ${isMod ? `<div class="mod-action-item" onclick="window.location.href='/messages'">
+                  ${isMod ? `<div class="mod-action-item" onclick="window.location.href='/mensajes'">
                     <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.04)'" onmouseout="this.style.background='transparent'">
                       <span style="font-size:16px;width:20px;text-align:center;">💬</span>
                       <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:var(--text-secondary);;">Ir a mensajes</div><div style="font-size:10px;color:var(--text-muted);">Ver todas las conversaciones y apelaciones</div></div>

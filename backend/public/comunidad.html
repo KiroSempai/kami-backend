@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comunidad · KAMI</title>
+  <title>Comunidad · KamiTales</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -460,8 +460,8 @@
     <!-- Sidebar estilo X -->
     <aside class="com-sidebar">
       <a href="/" class="com-logo">
-        <img src="/assets/logo-kami.png" alt="KAMI">
-        <span class="com-logo-text">KAMI</span>
+        <img src="/assets/logo-kami.png" alt="KamiTales">
+        <span class="com-logo-text">KamiTales</span>
       </a>
 
       <button class="com-nav-item active" data-section="inicio" onclick="goToSection('inicio')">
@@ -628,7 +628,7 @@
       <!-- 🚨 CABECERA SUPERIOR MÓVIL (avatar para abrir drawer) -->
       <div class="mobile-top-header">
         <img onclick="toggleMobileDrawer(true)" src="/img/default-avatar.png" id="mobile-top-avatar-btn" style="width:32px;height:32px;border-radius:50%;object-fit:cover;cursor:pointer;">
-        <span style="font-weight:800;font-size:16px;color:white;">KAMI</span>
+        <span style="font-weight:800;font-size:16px;color:white;">KamiTales</span>
         <div style="width:32px;"></div>
       </div>
       <div class="section-content active" id="section-inicio">
@@ -889,7 +889,7 @@
         <div class="cr-card-title">Qué está pasando</div>
         <div class="cr-trend-item">
           <div>
-            <div class="cr-trend-cat">Tendencia en KAMI</div>
+            <div class="cr-trend-cat">Tendencia en KamiTales</div>
             <div class="cr-trend-name">#NuevosLanzamientos</div>
             <div class="cr-trend-posts">12.5 mil posts</div>
           </div>
@@ -926,7 +926,7 @@
       <div class="cr-card">
         <div class="cr-card-title">A quién seguir</div>
         <div class="cr-follow-item">
-          <a href="/profile/PaniniManga" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <a href="/perfil/PaniniManga" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
             <div class="cr-follow-avatar" style="background:linear-gradient(135deg,var(--k-accent),var(--k-gold));">PA</div>
             <div class="cr-follow-info">
               <div class="cr-follow-name">PaniniManga</div>
@@ -936,7 +936,7 @@
           <button class="cr-follow-btn" onclick="toggleSidebarFollow('dfff7e62-dcad-4313-9c33-cde71e08e121', this)">Seguir</button>
         </div>
         <div class="cr-follow-item">
-          <a href="/profile/MangaReviewer" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <a href="/perfil/MangaReviewer" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
             <div class="cr-follow-avatar" style="background:var(--k-violet);">MR</div>
             <div class="cr-follow-info">
               <div class="cr-follow-name">MangaReviewer</div>
@@ -946,7 +946,7 @@
           <button class="cr-follow-btn" onclick="toggleSidebarFollow('99dec202-b6ad-448d-b6a7-e8fa1784cdf8', this)">Seguir</button>
         </div>
         <div class="cr-follow-item">
-          <a href="/profile/Kiro" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <a href="/perfil/Kiro" style="text-decoration:none;display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
             <div class="cr-follow-avatar" style="background:var(--k-accent);">KI</div>
             <div class="cr-follow-info">
               <div class="cr-follow-name">Kiro</div>
@@ -1144,7 +1144,7 @@
             channelData.channels.forEach(function(ch) {
               let isAdmin = ch.entity_role === 'admin';
               let isCreator = ch.entity_role === 'creator';
-              let title = isAdmin ? '📢 Noticias KAMI' : isCreator ? '✍️ Canal de ' + ch.entity_name : '🏢 ' + ch.entity_name;
+              let title = isAdmin ? '📢 Noticias KamiTales' : isCreator ? '✍️ Canal de ' + ch.entity_name : '🏢 ' + ch.entity_name;
               let subtitle = isAdmin ? 'Actualizaciones oficiales del sitio'
                 : isCreator ? 'Espacio de creador de contenido - ' + (ch.posts_this_week||0) + ' posts esta semana'
                 : (ch.posts_this_week||0) + ' publicaciones esta semana';
@@ -1245,7 +1245,7 @@
       scrollPositionAntesDeEntrar = window.scrollY;
       document.getElementById('explorer-main-view').style.display = 'none';
       document.getElementById('explorer-channel-view').style.display = 'block';
-      document.getElementById('news-channel-title').innerHTML = '<a href="/profile/' + (entityName || '') + '" style="color:var(--text-primary);text-decoration:none;">' + title + '</a>';
+      document.getElementById('news-channel-title').innerHTML = '<a href="/perfil/' + (entityName || '') + '" style="color:var(--text-primary);text-decoration:none;">' + title + '</a>';
       document.getElementById('news-channel-body').innerHTML = '<div class="notif-loading">Cargando...</div>';
       window.scrollTo(0, 0);
       let token = localStorage.getItem('kami_token');
@@ -1573,7 +1573,7 @@
         document.getElementById('dm-chat-username').textContent = uname;
         document.getElementById('dm-chat-header').onclick = function(e) {
           if (e.target.tagName !== 'I' && e.target.tagName !== 'BUTTON' && data.other && data.other.username) {
-            window.location.href = '/profile/' + data.other.username;
+            window.location.href = '/perfil/' + data.other.username;
           }
         };
         document.getElementById('dm-chat-username').style.cursor = data.other ? 'pointer' : 'default';
@@ -1598,7 +1598,7 @@
             '<div style="font-size:17px;font-weight:800;color:var(--k-text);">' + data.other.username + '</div>' +
             '<div style="font-size:13px;color:var(--k-text-3);">@' + data.other.username.toLowerCase() + '</div>' +
             (joinedDate ? '<div style="font-size:13px;color:var(--k-text-3);">' + joinedDate + '</div>' : '') +
-            '<a href="/profile/' + data.other.username + '" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600;">View Profile</a>' +
+            '<a href="/perfil/' + data.other.username + '" style="font-size:13px;color:var(--accent);text-decoration:none;font-weight:600;">View Profile</a>' +
             '</div>';
         }
 
@@ -1979,7 +1979,7 @@
         }
         let replyContext = '';
         if ((isReplyMode || p.parent_id) && p.parent_id) {
-          replyContext = `<div class="reply-context"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/profile/${p.replyToUser || 'usuario'}">@${p.replyToUser || 'usuario'}</a></div>`;
+          replyContext = `<div class="reply-context"><i class="ti ti-corner-up-right"></i> Respondiendo a <a href="/perfil/${p.replyToUser || 'usuario'}">@${p.replyToUser || 'usuario'}</a></div>`;
         }
         let onClickAttr = ` onclick="abrirHiloPost(${p.id}, event)"`;
         let postClass = (isReplyMode || p.parent_id) ? ' feed-post-reply' : '';
@@ -1991,16 +1991,16 @@
           `<div class="feed-post${spoilerClass}${postClass}" id="post-id-${p.id}" data-post-id="${p.id}"${onClickAttr}>
             ${repostBanner}
             ${spoilerOverlay}
-            <a href="/profile/${p.user}" class="feed-post-avatar" style="${avatarStyle}width:${avatarSize};height:${avatarSize};min-width:${avatarSize};">${avatarContent}</a>
+            <a href="/perfil/${p.user}" class="feed-post-avatar" style="${avatarStyle}width:${avatarSize};height:${avatarSize};min-width:${avatarSize};">${avatarContent}</a>
             <div class="feed-post-body">
               <div class="feed-post-header">
-                <a href="/profile/${p.user}" class="feed-post-user">${p.user}
+                <a href="/perfil/${p.user}" class="feed-post-user">${p.user}
                   ${p.author_role === 'admin' ? '<span class="role-badge-admin">⚡ADMIN</span>' :
                     p.author_role === 'golden' ? '<span class="role-badge-golden">👑GOLDEN</span>' :
                     p.author_role === 'silver' ? '<span class="role-badge-silver">⭐SILVER</span>' : ''}
                   ${getRoleBadge(p.local_role)}
                 </a>
-                <a href="/profile/${p.user}" class="feed-post-handle">${p.handle}</a>
+                <a href="/perfil/${p.user}" class="feed-post-handle">${p.handle}</a>
                 <span class="feed-post-time">${timeAgo(p.created_at)}${p.views_count !== undefined ? ` · ${p.views_count} vistas` : ''}</span>
               </div>
               ${replyContext}
@@ -2319,7 +2319,7 @@
         } else {
           av = '<span style="font-size:14px;font-weight:700;color: var(--k-text);">' + (m.username||'?').charAt(0).toUpperCase() + '</span>';
         }
-        let nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/profile/" + m.username + "'";
+        let nav = "document.getElementById('members-panel').style.display='none'; window.location.href='/perfil/" + m.username + "'";
         let canAscend = (myRole === 'creator' || globalAdmin) && m.role === 'member' && !isSelf;
         let canCreator = globalAdmin && m.role !== 'creator' && !isSelf;
         let canDescend = !isSelf && (globalAdmin ? m.role !== 'member' : (myRole === 'creator' && m.role === 'moderator'));
@@ -2558,10 +2558,10 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
 
       html += `<div class="post-detail-main">
         <div class="post-detail-author-row">
-          <a href="/profile/${post.user}" class="post-detail-avatar" style="${aStyle}">${aContent}</a>
+          <a href="/perfil/${post.user}" class="post-detail-avatar" style="${aStyle}">${aContent}</a>
           <div class="flex-col">
             <div class="flex-center-g4">
-              <a href="/profile/${post.user}" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">${post.user}</a>
+              <a href="/perfil/${post.user}" style="font-size:15px;font-weight:700;color:var(--text-primary);text-decoration:none;">${post.user}</a>
               ${roleBadge}
             </div>
             <div style="font-size:13px;color:var(--text-muted);">${post.handle || '@anon'}</div>
@@ -3280,7 +3280,7 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
     restoreSession();
 
     let mockUsers = [
-      { name:'KAMI Manga', handle:'@kamimanga', color:'linear-gradient(135deg,var(--k-accent),var(--k-gold))' },
+      { name:'KamiTales', handle:'@kamitales', color:'linear-gradient(135deg,var(--k-accent),var(--k-gold))' },
       { name:'Shonen Weekly', handle:'@shonenweek', color:'var(--k-info)' },
       { name:'Manga Plus', handle:'@mangaplus', color:'var(--k-ok)' },
       { name:'Anime News', handle:'@animenews', color:'var(--k-violet)' },
@@ -3982,13 +3982,13 @@ if (d.success) { _loadMembers(); } else { showToast('error', d.error); }
       <span style="font-weight:800;font-size:15px;" id="drawer-user-name">@Usuario</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:22px;margin-top:8px;">
-      <div onclick="var u=JSON.parse(localStorage.getItem('kami_user'));if(u)window.location.href='/profile/'+u.username;" style="cursor:pointer;color:white;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;">
+      <div onclick="var u=JSON.parse(localStorage.getItem('kami_user'));if(u)window.location.href='/perfil/'+u.username;" style="cursor:pointer;color:white;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;">
         👤 Mi Perfil
       </div>
       <div onclick="goToSection('marcadores');toggleMobileDrawer(false);" style="cursor:pointer;color:white;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;">
         🔖 Marcadores
       </div>
-      <div onclick="window.location.href='/settings';" style="cursor:pointer;color:white;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;">
+      <div onclick="window.location.href='/ajustes';" style="cursor:pointer;color:white;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;">
         ⚙️ Configuración
       </div>
       <div onclick="localStorage.clear();window.location.href='/';" style="cursor:pointer;color:#ef4444;font-weight:700;display:flex;align-items:center;gap:12px;font-size:14px;margin-top:30px;">

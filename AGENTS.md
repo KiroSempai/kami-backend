@@ -1,4 +1,4 @@
-# KAMI — Estado del proyecto (Mayo 2026)
+# KamiTales — Estado del proyecto (Mayo 2026)
 
 ## Goal
 Red social de manga estilo X.com con feed algorítmico, composer profesional, interacciones con toggle, WebSocket en tiempo real, comunidades auto-creadas y perfiles con actividad.
@@ -68,7 +68,7 @@ Red social de manga estilo X.com con feed algorítmico, composer profesional, in
 ## Archivos clave
 | Archivo | Rol |
 |---------|-----|
-| `backend/public/index.html` | Comunidad: feed, composer, explorer, sidebar, notificaciones |
+| `backend/public/comunidad.html` | Comunidad: feed, composer, explorer, sidebar, notificaciones |
 | `backend/public/perfil.html` | Perfil: biblioteca, actividad, privacidad, renderFeedPosts |
 | `backend/public/js/feed-tracker.js` | Helpers de interacción |
 | `backend/public/css/common.css` | Nav, variables, scrollbar |
@@ -90,3 +90,21 @@ Red social de manga estilo X.com con feed algorítmico, composer profesional, in
 2. Hacer que "Mis Comunidades" filtre por comunidades del usuario
 3. Mejorar UI del chat comunitario
 4. Sistema de mensajes directos
+
+## KamiTales (noviembre 2026)
+- Marca: **KamiTales** (antes KAMI). Identificadores internos sin cambiar: `kami_token`, `kami_user`, `window.KAMI`, IDs `KMI-`.
+- Sistema de diseño: `backend/public/css/kami.css` + `backend/public/js/kami-shell.js` (nav, barra móvil, apariencia). Referencia en `/design`.
+- Páginas y rutas (las URL antiguas redirigen con 301 desde `server.js`):
+
+| Ruta | Archivo |
+|------|---------|
+| `/`, `/explorar` | `explorar.html` (cómics y novelas) |
+| `/comunidad` | `comunidad.html` |
+| `/obra/:id` · `/obra/:id/editar` · `/obra/:id/nuevo-capitulo` | `obra.html` · `obra-editar.html` · `capitulo-nuevo.html` |
+| `/leer/:id/:cap` | `lector.html` |
+| `/estudio` · `/estudio/nueva` | `estudio.html` · `obra-nueva.html` |
+| `/acceder` · `/registro` · `/ajustes` · `/mensajes` | `acceder.html` · `registro.html` · `ajustes.html` · `mensajes.html` |
+| `/perfil`, `/perfil/:usuario` · `/perfil-editar/:usuario` | `perfil.html` · `perfil-editar.html` |
+| `/premium` · `/premium/exito` · `/admin/analiticas` | `premium.html` · `premium-exito.html` · `admin-analiticas.html` |
+
+- Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` (aplicada), `migrate-novels.sql` (tipo `novel`).

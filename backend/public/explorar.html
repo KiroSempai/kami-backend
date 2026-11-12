@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>KamiTales · Cómics y novelas de autores</title>
+  <meta name="description" content="Lee cómics y novelas publicados por sus autores. Comunidad por obra, capítulos adelantados con fecha de liberación y condiciones justas para quien crea.">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Explorar: solo maquetación propia. Componentes y color salen de kami.css. */
+    .ex { display: grid; gap: var(--k-12); padding-top: var(--k-4); }
+    .ex-sec { display: grid; gap: var(--k-4); min-width: 0; }
+    .ex-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--k-3); flex-wrap: wrap; }
+    .ex-head > div { display: grid; gap: 4px; min-width: 0; }
+    .ex-head p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); }
+
+    /* Selector de formato, fijo bajo la nav */
+    .ex-format { position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: var(--k-3); flex-wrap: wrap; padding-block: var(--k-3); background: color-mix(in srgb, var(--k-bg) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .ex-format .k-segmented button { min-height: 36px; padding: 0 var(--k-4); font-size: var(--k-fs-sm); gap: 6px; display: inline-flex; align-items: center; }
+    .ex-count { font-size: var(--k-fs-sm); color: var(--k-text-3); }
+
+    /* Hero: obra destacada + top de la semana */
+    .ex-hero { display: grid; gap: var(--k-4); grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 1024px) { .ex-hero { grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr); } }
+    .ex-feature { position: relative; overflow: hidden; border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); min-height: 360px; display: grid; isolation: isolate; }
+    .ex-feature__bg { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(38px) saturate(1.4); opacity: .45; z-index: -2; transform: scale(1.1); }
+    .ex-feature::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--k-surface-1) 30%, color-mix(in srgb, var(--k-surface-1) 40%, transparent) 75%, transparent), radial-gradient(60% 80% at 85% 20%, var(--k-accent-soft), transparent 70%); }
+    .ex-feature__in { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--k-6); align-items: end; padding: var(--k-8); }
+    .ex-feature__text { display: grid; gap: var(--k-3); align-content: end; min-width: 0; }
+    .ex-feature__title { font: 900 clamp(2.4rem, 5.5vw, 4.4rem)/.9 var(--k-font-display); text-transform: uppercase; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+    .ex-feature__meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ex-feature__desc { margin: 0; color: var(--k-text-2); max-width: 52ch; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .ex-feature__cover { width: clamp(130px, 18vw, 210px); aspect-ratio: 2/3; border-radius: var(--k-r-md); overflow: hidden; border: 1px solid var(--k-line-2); box-shadow: 0 0 0 1px var(--k-accent-line), 0 24px 60px -18px color-mix(in srgb, var(--k-accent) 60%, transparent); transform: rotate(2deg); background: var(--k-surface-2); }
+    .ex-feature__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @media (max-width: 640px) {
+      .ex-feature { min-height: 0; }
+      .ex-feature__in { grid-template-columns: 1fr; padding: var(--k-5); }
+      .ex-feature__cover { grid-row: 1; width: 120px; transform: none; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .ex-feature__cover { transition: transform .5s var(--k-ease); }
+      .ex-feature:hover .ex-feature__cover { transform: rotate(0deg) translateY(-4px); }
+    }
+
+    .ex-top { display: grid; gap: var(--k-2); align-content: start; }
+    .ex-rank { display: grid; grid-template-columns: 34px 44px minmax(0, 1fr) auto; gap: var(--k-3); align-items: center; padding: var(--k-2); border-radius: var(--k-r-md); text-decoration: none; color: inherit; transition: background var(--k-t-fast); }
+    .ex-rank:hover, .ex-rank:focus-visible { background: rgb(var(--k-ink) / .05); }
+    .ex-rank__n { font: 900 28px/1 var(--k-font-display); color: var(--k-text-3); text-align: center; }
+    .ex-rank:nth-child(-n+3) .ex-rank__n { color: var(--k-accent); text-shadow: var(--k-glow-text); }
+    .ex-rank__img { width: 44px; aspect-ratio: 2/3; border-radius: 6px; overflow: hidden; background: var(--k-surface-2); }
+    .ex-rank__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ex-rank__t { min-width: 0; display: grid; gap: 2px; }
+    .ex-rank__t b { font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ex-rank__t span { font-size: var(--k-fs-xs); color: var(--k-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ex-rank__s { font: 600 var(--k-fs-xs) var(--k-font-mono); color: var(--k-text-2); }
+
+    /* Carril horizontal de portadas */
+    .ex-rail { display: grid; grid-auto-flow: column; grid-auto-columns: clamp(132px, 15vw, 172px); gap: var(--k-4); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: var(--k-2); scrollbar-width: thin; overscroll-behavior-x: contain; }
+    .ex-rail > * { scroll-snap-align: start; }
+    .ex-rail.is-empty { display: block; }
+    .ex-rail-wrap { position: relative; min-width: 0; }
+
+    /* Rankings en tres columnas */
+    .ex-ranks { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+    .ex-ranks .k-card { display: grid; gap: var(--k-2); align-content: start; }
+    .ex-ranks .k-card h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 var(--k-1); font-size: var(--k-fs-md); }
+    .ex-ranks .k-card h3 i { color: var(--k-accent); font-size: 18px; }
+
+    /* Continuar leyendo */
+    .ex-continue { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+    .ex-cont { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: var(--k-3); align-items: center; padding: var(--k-3); text-decoration: none; color: inherit; }
+    .ex-cont img, .ex-cont .ex-ph { width: 56px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; }
+    .ex-cont b { display: block; font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ex-bar { height: 4px; border-radius: 4px; background: rgb(var(--k-ink) / .1); overflow: hidden; margin-top: 6px; }
+    .ex-bar i { display: block; height: 100%; background: var(--k-accent); box-shadow: 0 0 10px var(--k-accent); }
+
+    /* Géneros */
+    .ex-genres { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr)); }
+    .ex-genre { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: var(--k-2); min-height: 92px; padding: var(--k-4); border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: linear-gradient(135deg, color-mix(in srgb, var(--_g) 26%, var(--k-surface-1)), var(--k-surface-1) 70%); text-decoration: none; color: var(--k-text); overflow: hidden; transition: border-color var(--k-t-fast), transform var(--k-t) var(--k-ease); }
+    .ex-genre:hover, .ex-genre:focus-visible { border-color: color-mix(in srgb, var(--_g) 60%, transparent); transform: translateY(-2px); }
+    .ex-genre b { font: 800 var(--k-fs-xl)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .02em; }
+    .ex-genre span { font: 600 var(--k-fs-xs) var(--k-font-mono); color: var(--k-text-2); }
+
+    /* Por qué KamiTales: dos columnas, lectores y autores */
+    .ex-why { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+    .ex-why .k-card { display: grid; gap: var(--k-4); align-content: start; padding: var(--k-6); }
+    .ex-why h3 { margin: 0; font: 800 var(--k-fs-2xl)/1 var(--k-font-display); text-transform: uppercase; }
+    .ex-why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--k-4); }
+    .ex-why li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--k-3); align-items: start; }
+    .ex-why li > i { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--k-accent-soft); color: var(--k-accent); font-size: 18px; }
+    .ex-why li b { display: block; font-size: var(--k-fs-md); margin-bottom: 2px; }
+    .ex-why li span { color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.5; }
+    .ex-why .is-authors { background: linear-gradient(160deg, color-mix(in srgb, var(--k-accent) 10%, var(--k-surface-1)), var(--k-surface-1) 60%); border-color: var(--k-accent-line); }
+
+    /* Comparativa */
+    .ex-compare { overflow-x: auto; border: 1px solid var(--k-line); border-radius: var(--k-r-lg); background: var(--k-surface-1); }
+    .ex-compare table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: var(--k-fs-sm); }
+    .ex-compare th, .ex-compare td { text-align: left; padding: var(--k-3) var(--k-4); border-bottom: 1px solid var(--k-line); vertical-align: top; }
+    .ex-compare tr:last-child td { border-bottom: 0; }
+    .ex-compare th { font: 700 var(--k-fs-xs) var(--k-font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--k-text-3); }
+    .ex-compare th.us, .ex-compare td.us { background: color-mix(in srgb, var(--k-accent) 7%, transparent); }
+    .ex-compare td:first-child { font-weight: 700; white-space: nowrap; }
+    .ex-compare td.them { color: var(--k-text-2); }
+    .ex-compare td.us i { color: var(--k-ok); margin-right: 6px; }
+
+    /* Cómo funciona para autores (secuencia real: el número informa) */
+    .ex-steps { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); counter-reset: paso; }
+    .ex-step { position: relative; padding: var(--k-6) var(--k-5) var(--k-5); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); display: grid; gap: var(--k-2); }
+    .ex-step::before { counter-increment: paso; content: counter(paso); font: 900 56px/1 var(--k-font-display); color: transparent; -webkit-text-stroke: 1.5px var(--k-accent); text-shadow: var(--k-glow-text); }
+    .ex-step b { font-size: var(--k-fs-lg); }
+    .ex-step span { color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.55; }
+
+    /* Preguntas */
+    .ex-faq { display: grid; gap: var(--k-2); }
+    .ex-faq details { border: 1px solid var(--k-line); border-radius: var(--k-r-md); background: var(--k-surface-1); }
+    .ex-faq summary { cursor: pointer; list-style: none; padding: var(--k-4) var(--k-5); font-weight: 700; display: flex; justify-content: space-between; gap: var(--k-3); align-items: center; }
+    .ex-faq summary::-webkit-details-marker { display: none; }
+    .ex-faq summary::after { content: "+"; font: 400 24px/1 var(--k-font-body); color: var(--k-accent); transition: transform var(--k-t) var(--k-ease); }
+    .ex-faq details[open] summary::after { transform: rotate(45deg); }
+    .ex-faq details p { margin: 0; padding: 0 var(--k-5) var(--k-5); color: var(--k-text-2); line-height: 1.6; max-width: 72ch; }
+
+    /* Llamada final a autores */
+    .ex-cta { position: relative; overflow: hidden; border-radius: var(--k-r-lg); padding: clamp(28px, 5vw, 56px); border: 1px solid var(--k-accent-line); background: radial-gradient(80% 140% at 100% 0%, color-mix(in srgb, var(--k-accent) 28%, transparent), transparent 60%), var(--k-surface-1); display: grid; gap: var(--k-4); justify-items: start; }
+    .ex-cta h2 { margin: 0; font: 900 clamp(2rem, 5vw, 3.6rem)/.92 var(--k-font-display); text-transform: uppercase; text-wrap: balance; max-width: 18ch; }
+    .ex-cta p { margin: 0; color: var(--k-text-2); max-width: 56ch; line-height: 1.6; }
+    .ex-cta::after { content: "紙"; position: absolute; right: -0.05em; bottom: -0.25em; font: 700 clamp(160px, 26vw, 300px)/1 var(--k-font-jp); color: rgb(var(--k-ink) / .04); pointer-events: none; }
+
+    /* Pie */
+    .ex-foot { border-top: 1px solid var(--k-line); padding-top: var(--k-8); display: grid; gap: var(--k-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); color: var(--k-text-2); font-size: var(--k-fs-sm); }
+    .ex-foot h4 { margin: 0 0 var(--k-2); color: var(--k-text); font-size: var(--k-fs-sm); }
+    .ex-foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .ex-foot a { color: inherit; text-decoration: none; }
+    .ex-foot a:hover { color: var(--k-accent); }
+    .ex-foot small { grid-column: 1 / -1; color: var(--k-text-3); }
+
+    .ex-ph { display: grid; place-items: center; width: 100%; height: 100%; background: linear-gradient(135deg, color-mix(in srgb, var(--k-accent) 30%, var(--k-surface-2)), var(--k-surface-3)); font: 900 28px/1 var(--k-font-display); color: rgb(var(--k-ink) / .7); text-transform: uppercase; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main class="k-page ex" id="k-main">
+
+  <!-- Formato: afecta a todas las secciones de la página -->
+  <div class="ex-format">
+    <div class="k-segmented" role="group" aria-label="Formato" id="ex-format">
+      <button type="button" value="all" aria-pressed="true"><i class="ti ti-layout-grid" aria-hidden="true"></i>Todo</button>
+      <button type="button" value="comic" aria-pressed="false"><i class="ti ti-brush" aria-hidden="true"></i>Cómics</button>
+      <button type="button" value="novel" aria-pressed="false"><i class="ti ti-book-2" aria-hidden="true"></i>Novelas</button>
+    </div>
+    <span class="ex-count" id="ex-count" aria-live="polite"></span>
+  </div>
+
+  <!-- Destacada + top de la semana -->
+  <section class="ex-hero" aria-label="Destacado">
+    <article class="ex-feature" id="ex-feature">
+      <div class="ex-feature__bg" id="ex-feature-bg"></div>
+      <div class="ex-feature__in">
+        <div class="ex-feature__text">
+          <span class="k-eyebrow">Destacada de la semana</span>
+          <h1 class="ex-feature__title" id="ex-feature-title"><span class="k-skeleton" style="display:block;height:64px;width:70%"></span></h1>
+          <div class="ex-feature__meta" id="ex-feature-meta"></div>
+          <p class="ex-feature__desc" id="ex-feature-desc">Cómics y novelas publicados por quienes los crean.</p>
+          <div class="k-row">
+            <a class="k-btn k-btn--primary k-btn--lg" id="ex-feature-read" href="#"><i class="ti ti-player-play" aria-hidden="true"></i>Empezar a leer</a>
+            <a class="k-btn k-btn--secondary k-btn--lg" id="ex-feature-info" href="#">Ver ficha</a>
+          </div>
+        </div>
+        <div class="ex-feature__cover" id="ex-feature-cover"></div>
+      </div>
+    </article>
+    <aside class="k-card ex-top" aria-labelledby="ex-top-t">
+      <div class="ex-head"><div><h2 class="k-h3" id="ex-top-t">Top de la semana</h2><p>Lo más leído en los últimos días.</p></div></div>
+      <div id="ex-top"></div>
+    </aside>
+  </section>
+
+  <!-- Continuar leyendo (solo con sesión y progreso) -->
+  <section class="ex-sec" id="ex-continue-sec" hidden>
+    <div class="ex-head"><div><h2 class="k-h2">Sigue leyendo</h2><p>Donde lo dejaste, en cualquier dispositivo.</p></div><a class="k-btn k-btn--quiet" href="/biblioteca">Tu biblioteca <i class="ti ti-arrow-right" aria-hidden="true"></i></a></div>
+    <div class="ex-continue" id="ex-continue"></div>
+  </section>
+
+  <!-- Tendencias -->
+  <section class="ex-sec">
+    <div class="ex-head"><div><h2 class="k-h2">Tendencias</h2><p>Lo que está leyendo la comunidad ahora mismo.</p></div><a class="k-btn k-btn--quiet" href="/buscar">Ver todo <i class="ti ti-arrow-right" aria-hidden="true"></i></a></div>
+    <div class="ex-rail-wrap"><div class="ex-rail" id="ex-trending"></div></div>
+  </section>
+
+  <!-- Rankings -->
+  <section class="ex-sec">
+    <div class="ex-head"><div><h2 class="k-h2">Rankings</h2><p>Públicos y explicados: nadie paga por subir puestos.</p></div></div>
+    <div class="ex-ranks">
+      <div class="k-card"><h3><i class="ti ti-flame" aria-hidden="true"></i>En alza</h3><div id="ex-r-rising"></div></div>
+      <div class="k-card"><h3><i class="ti ti-star" aria-hidden="true"></i>Mejor valoradas</h3><div id="ex-r-rated"></div></div>
+      <div class="k-card"><h3><i class="ti ti-refresh" aria-hidden="true"></i>Recién actualizadas</h3><div id="ex-r-latest"></div></div>
+    </div>
+  </section>
+
+  <!-- Novelas -->
+  <section class="ex-sec" id="ex-novels-sec">
+    <div class="ex-head"><div><h2 class="k-h2">Novelas</h2><p>Historias por capítulos, con lector de texto ajustable y comentarios por párrafo.</p></div></div>
+    <div class="ex-rail-wrap"><div class="ex-rail" id="ex-novels"></div></div>
+  </section>
+
+  <!-- Cómics -->
+  <section class="ex-sec" id="ex-comics-sec">
+    <div class="ex-head"><div><h2 class="k-h2">Cómics</h2><p>Manga, manhwa, manhua y one-shots, en lectura vertical o por páginas.</p></div></div>
+    <div class="ex-rail-wrap"><div class="ex-rail" id="ex-comics"></div></div>
+  </section>
+
+  <!-- Géneros -->
+  <section class="ex-sec">
+    <div class="ex-head"><div><h2 class="k-h2">Explora por género</h2><p>Del romance a la fantasía oscura.</p></div><a class="k-btn k-btn--quiet" href="/generos">Todos los géneros <i class="ti ti-arrow-right" aria-hidden="true"></i></a></div>
+    <div class="ex-genres" id="ex-genres"></div>
+  </section>
+
+  <!-- Por qué KamiTales -->
+  <section class="ex-sec" aria-labelledby="ex-why-t">
+    <div class="ex-head"><div><span class="k-eyebrow">Por qué KamiTales</span><h2 class="k-h2" id="ex-why-t">Justo para quien lee y para quien crea</h2></div></div>
+    <div class="ex-why">
+      <div class="k-card">
+        <h3>Para lectores</h3>
+        <ul>
+          <li><i class="ti ti-calendar-time" aria-hidden="true"></i><div><b>Adelantos con fecha</b><span>Cada capítulo de pago muestra cuándo se libera gratis. Tú decides si pagas o esperas.</span></div></li>
+          <li><i class="ti ti-message-circle-2" aria-hidden="true"></i><div><b>Comunidad dentro de la obra</b><span>Cada obra tiene su comunidad, su chat y comentarios por página o por párrafo.</span></div></li>
+          <li><i class="ti ti-shield-check" aria-hidden="true"></i><div><b>Tu saldo está protegido</b><span>Precios en euros y saldo reembolsable si la plataforma cerrase. Nada de monedas que se pierden.</span></div></li>
+          <li><i class="ti ti-adjustments" aria-hidden="true"></i><div><b>La lectura a tu manera</b><span>Tema, color, tamaño de letra y modo de alta legibilidad en toda la web.</span></div></li>
+        </ul>
+      </div>
+      <div class="k-card is-authors">
+        <h3>Para autores</h3>
+        <ul>
+          <li><i class="ti ti-lock-open" aria-hidden="true"></i><div><b>No exclusivo por defecto</b><span>Publica aquí y donde quieras. La exclusiva es opcional, dura 2 años y los derechos vuelven a ti.</span></div></li>
+          <li><i class="ti ti-coin-euro" aria-hidden="true"></i><div><b>Reparto publicado</b><span>Hasta el 80 % de las ventas directas y de las suscripciones a tu obra, con cada céntimo visible en tu panel.</span></div></li>
+          <li><i class="ti ti-link" aria-hidden="true"></i><div><b>Enlaces externos sin comisión</b><span>Patreon, Ko-fi, tu tienda o tus libros: enlázalos en tu obra y en tu perfil.</span></div></li>
+          <li><i class="ti ti-robot-off" aria-hidden="true"></i><div><b>Tu obra no entrena IA</b><span>Por contrato: ni KamiTales ni terceros usan tu trabajo para entrenar modelos.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparativa -->
+  <section class="ex-sec" aria-labelledby="ex-cmp-t">
+    <div class="ex-head"><div><h2 class="k-h2" id="ex-cmp-t">Lo habitual frente a KamiTales</h2><p>Lo que más critican los autores de las grandes plataformas, y lo que hacemos distinto.</p></div></div>
+    <div class="ex-compare">
+      <table>
+        <thead><tr><th scope="col">Tema</th><th scope="col">Lo habitual</th><th scope="col" class="us">KamiTales</th></tr></thead>
+        <tbody>
+          <tr><td>Exclusividad</td><td class="them">Toda la vida del copyright, casi sin salida</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Opcional, 2 años y salida con 90 días de aviso</td></tr>
+          <tr><td>Adaptaciones</td><td class="them">Derivadas sin aprobación del autor</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Cada derecho se negocia aparte y puedes vetarlo</td></tr>
+          <tr><td>Ritmo</td><td class="them">El algoritmo te hunde si no publicas a diario</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Las pausas anunciadas no te penalizan</td></tr>
+          <tr><td>Dinero del lector</td><td class="them">Monedas que no se devuelven</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Euros y saldo reembolsable si cerramos</td></tr>
+          <tr><td>Enlaces fuera</td><td class="them">Prohibidos o con comisión</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Permitidos y sin comisión</td></tr>
+          <tr><td>Tus lectores</td><td class="them">Pertenecen a la plataforma</td><td class="us"><i class="ti ti-check" aria-hidden="true"></i>Exportas tu obra, tus datos y, con permiso, tus mecenas</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Cómo funciona para autores -->
+  <section class="ex-sec" aria-labelledby="ex-steps-t">
+    <div class="ex-head"><div><h2 class="k-h2" id="ex-steps-t">Publicar en KamiTales</h2><p>De tu primer capítulo a cobrar por tu obra.</p></div><a class="k-btn k-btn--secondary" href="/estudio">Abrir el Estudio</a></div>
+    <div class="ex-steps">
+      <div class="ex-step"><b>Sube tu obra</b><span>Cómic en imágenes o novela en texto. Borradores, volúmenes y publicación programada.</span></div>
+      <div class="ex-step"><b>Crece con tu comunidad</b><span>Tu obra estrena comunidad, canal de noticias y comentarios por capítulo desde el primer día.</span></div>
+      <div class="ex-step"><b>Cobra a tu manera</b><span>Capítulos adelantados, suscripción a tu obra, propinas y tus enlaces externos.</span></div>
+    </div>
+  </section>
+
+  <!-- Preguntas -->
+  <section class="ex-sec" aria-labelledby="ex-faq-t">
+    <div class="ex-head"><div><h2 class="k-h2" id="ex-faq-t">Preguntas frecuentes</h2></div></div>
+    <div class="ex-faq">
+      <details><summary>¿Leer en KamiTales es gratis?</summary><p>Sí. Puedes leer gratis todo lo que los autores publican en abierto. Algunos capítulos salen antes para quien paga, y cada uno indica la fecha en la que se libera gratis para todos.</p></details>
+      <details><summary>¿Cómo cobran los autores?</summary><p>Con capítulos adelantados, suscripciones a su obra, propinas y una parte de la suscripción Premium según el tiempo de lectura. El reparto es público y cada autor lo ve en su panel.</p></details>
+      <details><summary>¿Tengo que firmar en exclusiva?</summary><p>No. Por defecto publicas sin exclusividad y puedes llevar tu obra a otros sitios. El contrato exclusivo es opcional, tiene más promoción y dura 2 años, renovables solo si las dos partes quieren.</p></details>
+      <details><summary>¿Qué pasa con mi saldo si cambio de opinión?</summary><p>Los precios están en euros. El saldo que no hayas gastado se devuelve si KamiTales cerrase; para eso hay un fondo reservado.</p></details>
+      <details><summary>¿Usáis las obras para entrenar inteligencia artificial?</summary><p>No. Está en el contrato: ni KamiTales ni terceros pueden usar las obras para entrenar modelos de IA.</p></details>
+    </div>
+  </section>
+
+  <!-- Llamada a autores -->
+  <section class="ex-cta" aria-labelledby="ex-cta-t">
+    <span class="k-eyebrow">¿Tienes una historia?</span>
+    <h2 id="ex-cta-t">Publícala donde tus derechos son tuyos</h2>
+    <p>Cómic o novela, por capítulos o completa. Empieza gratis, sin exclusividad y con tu comunidad desde el primer capítulo.</p>
+    <div class="k-row">
+      <a class="k-btn k-btn--primary k-btn--lg" href="/estudio/nueva"><i class="ti ti-pencil-plus" aria-hidden="true"></i>Publicar mi obra</a>
+      <a class="k-btn k-btn--quiet k-btn--lg" href="/comunidad">Conocer la comunidad</a>
+    </div>
+  </section>
+
+  <footer class="ex-foot">
+    <div><h4>KamiTales</h4><ul><li><a href="/">Explorar</a></li><li><a href="/comunidad">Comunidad</a></li><li><a href="/generos">Géneros</a></li><li><a href="/premium">Premium</a></li></ul></div>
+    <div><h4>Autores</h4><ul><li><a href="/estudio">Estudio</a></li><li><a href="/estudio/nueva">Publicar una obra</a></li><li><a href="#ex-cmp-t">Condiciones</a></li></ul></div>
+    <div><h4>Cuenta</h4><ul><li><a href="/biblioteca">Biblioteca</a></li><li><a href="/ajustes">Ajustes</a></li><li><button type="button" class="k-btn k-btn--quiet k-btn--sm" data-k-appearance style="padding:0;min-height:0">Apariencia</button></li></ul></div>
+    <small>© 2026 KamiTales · Cómics y novelas de autores.</small>
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var TYPE = { manga: 'Manga', manhwa: 'Manhwa', manhua: 'Manhua', oneshot: 'One-shot', novel: 'Novela' };
+  var STATUS = { ongoing: 'En curso', completed: 'Completa', hiatus: 'En pausa', cancelled: 'Cancelada' };
+  var GENRE_COLORS = ['#ff3b6b', '#9d7bff', '#22d3ee', '#f5b83d', '#3ee08f', '#ff5fbf', '#60a5fa', '#fb923c'];
+  var format = 'all';
+  try { var q = new URLSearchParams(location.search).get('formato'); if (q === 'comic' || q === 'novel') format = q; } catch (e) {}
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function getJSON(url) { return fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+  function isNovel(m) { return m.type === 'novel'; }
+  function inFormat(m) { return format === 'all' || (format === 'novel' ? isNovel(m) : !isNovel(m)); }
+  function fmtParam() { return format === 'all' ? '' : '&format=' + format; }
+  function href(m) { return '/obra/' + encodeURIComponent(m.id || m.mangaId); }
+  function art(m) {
+    return m.cover
+      ? '<img src="' + esc(m.cover) + '" alt="" loading="lazy" width="300" height="450">'
+      : '<span class="ex-ph" aria-hidden="true">' + esc((m.title || '?').slice(0, 2)) + '</span>';
+  }
+  function rating(m) { var r = parseFloat(m.rating); return r ? r.toFixed(1).replace('.', ',') + ' ★' : ''; }
+
+  function cover(m, badge) {
+    return '<a class="k-cover" href="' + href(m) + '"><div class="k-cover__art">' + art(m) +
+      '<div class="k-cover__badges">' + (badge || '') + (isNovel(m) ? '<span class="k-badge k-badge--info">Novela</span>' : '') + '</div></div>' +
+      '<div class="k-cover__title">' + esc(m.title) + '</div>' +
+      '<div class="k-cover__meta"><span>' + esc(TYPE[m.type] || m.type || '') + '</span>' + (rating(m) ? '<span>·</span><span class="k-num">' + rating(m) + '</span>' : '') + '</div></a>';
+  }
+  function rankRow(m, i, extra) {
+    return '<a class="ex-rank" href="' + href(m) + '"><span class="ex-rank__n">' + (i + 1) + '</span><span class="ex-rank__img">' + art(m) + '</span>' +
+      '<span class="ex-rank__t"><b>' + esc(m.title) + '</b><span>' + esc([TYPE[m.type], (m.genres || []).slice(0, 2).join(', ')].filter(Boolean).join(' · ')) + '</span></span>' +
+      '<span class="ex-rank__s">' + (extra || rating(m)) + '</span></a>';
+  }
+  function empty(icon, title, text, cta) {
+    return '<div class="k-card" style="grid-column:1/-1;width:min(100%,560px)"><div class="k-empty" style="padding:var(--k-8) var(--k-4)"><i class="ti ' + icon + '" aria-hidden="true"></i><h3>' + title + '</h3><p>' + text + '</p>' + (cta || '') + '</div></div>';
+  }
+  function skeletonRail(el, n) { el.innerHTML = Array.from({ length: n }).map(function () { return '<div class="k-cover" aria-hidden="true"><div class="k-cover__art k-skeleton"></div><div class="k-skeleton" style="height:12px;width:80%"></div></div>'; }).join(''); }
+
+  /* ── Secciones ──────────────────────────────────────────────── */
+  function renderFeature(list) {
+    var m = list[0];
+    var t = document.getElementById('ex-feature-title');
+    var read = document.getElementById('ex-feature-read'), info = document.getElementById('ex-feature-info');
+    if (!m) {
+      t.textContent = format === 'novel' ? 'Las primeras novelas' : 'Tu próxima historia';
+      document.getElementById('ex-feature-meta').innerHTML = '';
+      document.getElementById('ex-feature-desc').textContent = 'Todavía no hay obras en este formato. Si escribes o dibujas, la tuya puede ser la primera destacada.';
+      document.getElementById('ex-feature-cover').innerHTML = '<span class="ex-ph">紙</span>';
+      document.getElementById('ex-feature-bg').style.backgroundImage = 'none';
+      read.href = '/estudio/nueva'; read.innerHTML = '<i class="ti ti-pencil-plus" aria-hidden="true"></i>Publicar mi obra';
+      info.hidden = true;
+      return;
+    }
+    t.textContent = m.title;
+    document.getElementById('ex-feature-meta').innerHTML =
+      '<span class="k-badge k-badge--accent">' + esc(TYPE[m.type] || m.type) + '</span>' +
+      (STATUS[m.status] ? '<span class="k-badge">' + STATUS[m.status] + '</span>' : '') +
+      (rating(m) ? '<span class="k-badge k-badge--gold">' + rating(m) + '</span>' : '') +
+      (m.genres || []).slice(0, 3).map(function (g) { return '<span class="k-badge">' + esc(g) + '</span>'; }).join('');
+    document.getElementById('ex-feature-desc').textContent = m.description || ((m.genres || []).slice(0, 3).join(' · ') || 'Una de las obras más leídas esta semana.');
+    document.getElementById('ex-feature-cover').innerHTML = art(m);
+    document.getElementById('ex-feature-bg').style.backgroundImage = m.cover ? 'url("' + m.cover.replace(/"/g, '') + '")' : 'none';
+    read.href = '/leer/' + encodeURIComponent(m.id) + '/1'; read.innerHTML = '<i class="ti ti-player-play" aria-hidden="true"></i>Empezar a leer';
+    info.href = href(m); info.hidden = false;
+  }
+
+  function loadTrending() {
+    var rail = document.getElementById('ex-trending'), top = document.getElementById('ex-top'), rising = document.getElementById('ex-r-rising');
+    skeletonRail(rail, 6);
+    return getJSON('/api/manga/trending?limit=20').then(function (d) {
+      var list = (d.trending || []).filter(inFormat);
+      renderFeature(list);
+      top.innerHTML = list.length ? list.slice(0, 5).map(function (m, i) { return rankRow(m, i); }).join('') : '<p class="k-muted" style="margin:0;font-size:14px">Aún no hay lecturas suficientes para un top.</p>';
+      rising.innerHTML = list.length ? list.slice(0, 5).map(function (m, i) { return rankRow(m, i, m.totalReads ? '<span class="k-num">' + new Intl.NumberFormat('es').format(m.totalReads) + '</span>' : ''); }).join('') : '<p class="k-faint" style="margin:0;font-size:13px">Sin datos todavía.</p>';
+      rail.classList.toggle('is-empty', !list.length);
+      rail.innerHTML = list.length ? list.slice(0, 12).map(function (m, i) { return cover(m, i < 3 ? '<span class="k-badge k-badge--solid">#' + (i + 1) + '</span>' : ''); }).join('')
+        : empty('ti-flame', 'Sin tendencias', 'Cuando la comunidad empiece a leer en este formato, aparecerá aquí.');
+    }).catch(function () { rail.innerHTML = empty('ti-wifi-off', 'No se pudieron cargar', 'Comprueba tu conexión y recarga la página.'); top.innerHTML = ''; });
+  }
+
+  function loadRank(sort, elId) {
+    var el = document.getElementById(elId);
+    var day = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+    return getJSON('/api/manga?limit=5&sort=' + sort + fmtParam()).then(function (d) {
+      var list = d.mangas || [];
+      el.innerHTML = list.length ? list.map(function (m, i) { return rankRow(m, i, sort === 'latest' && m.updatedAt ? day.format(new Date(m.updatedAt)) : ''); }).join('') : '<p class="k-faint" style="margin:0;font-size:13px">Sin obras todavía.</p>';
+    }).catch(function () { el.innerHTML = '<p class="k-faint" style="margin:0;font-size:13px">No disponible.</p>'; });
+  }
+
+  function loadRail(fmt, elId, secId) {
+    var el = document.getElementById(elId), sec = document.getElementById(secId);
+    sec.hidden = !(format === 'all' || format === fmt);
+    if (sec.hidden) return Promise.resolve();
+    skeletonRail(el, 6);
+    return getJSON('/api/manga?limit=16&sort=latest&format=' + fmt).then(function (d) {
+      var list = d.mangas || [];
+      el.classList.toggle('is-empty', !list.length);
+      el.innerHTML = list.length ? list.map(function (m) { return cover(m); }).join('') :
+        (fmt === 'novel'
+          ? empty('ti-book-2', 'Las primeras novelas están llegando', 'KamiTales acaba de abrir las novelas por capítulos. Si escribes, publica la tuya y estrénala con su propia comunidad.', '<a class="k-btn k-btn--primary" href="/estudio/nueva">Publicar una novela</a>')
+          : empty('ti-brush', 'Aún no hay cómics', 'Los cómics que publiquen los autores aparecerán aquí.', '<a class="k-btn k-btn--primary" href="/estudio/nueva">Publicar un cómic</a>'));
+    }).catch(function () { el.innerHTML = empty('ti-wifi-off', 'No se pudieron cargar', 'Recarga la página en unos segundos.'); });
+  }
+
+  function loadGenres() {
+    var el = document.getElementById('ex-genres');
+    return getJSON('/api/manga/genres').then(function (d) {
+      var g = (d.genres || []).slice(0, 12);
+      el.innerHTML = g.length ? g.map(function (x, i) {
+        var n = parseInt(x.count, 10) || 0;
+        return '<a class="ex-genre" style="--_g:' + GENRE_COLORS[i % GENRE_COLORS.length] + '" href="/generos?g=' + encodeURIComponent(x.name) + '"><b>' + esc(x.name) + '</b><span>' + n + (n === 1 ? ' obra' : ' obras') + '</span></a>';
+      }).join('') : '<p class="k-muted">Los géneros aparecerán cuando haya obras publicadas.</p>';
+    }).catch(function () { el.innerHTML = ''; });
+  }
+
+  function loadContinue() {
+    var token = null; try { token = localStorage.getItem('kami_token'); } catch (e) {}
+    var sec = document.getElementById('ex-continue-sec');
+    if (!token) { sec.hidden = true; return; }
+    getJSON('/api/library/continue').then(function (d) {
+      var list = (d.continuing || []).filter(inFormat);
+      if (!list.length) { sec.hidden = true; return; }
+      document.getElementById('ex-continue').innerHTML = list.map(function (m) {
+        var pct = m.totalChapters ? Math.min(100, Math.round((m.progress || 0) / m.totalChapters * 100)) : 0;
+        return '<a class="k-card k-card--interactive ex-cont" href="/leer/' + encodeURIComponent(m.mangaId) + '/' + (m.nextChapter || 1) + '">' + art(m) +
+          '<div style="min-width:0"><b>' + esc(m.title) + '</b><span class="k-faint" style="font-size:12px">Capítulo ' + (m.nextChapter || 1) + (m.totalChapters ? ' de ' + m.totalChapters : '') + '</span><div class="ex-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso"><i style="width:' + pct + '%"></i></div></div>' +
+          '<i class="ti ti-player-play" style="color:var(--k-accent);font-size:20px" aria-hidden="true"></i></a>';
+      }).join('');
+      sec.hidden = false;
+    }).catch(function () { sec.hidden = true; });
+  }
+
+  function loadCount() {
+    getJSON('/api/manga?limit=1' + fmtParam()).then(function (d) {
+      var n = d.pagination ? d.pagination.total : 0;
+      var label = format === 'novel' ? (n === 1 ? 'novela publicada' : 'novelas publicadas') : format === 'comic' ? (n === 1 ? 'cómic publicado' : 'cómics publicados') : (n === 1 ? 'obra publicada' : 'obras publicadas');
+      document.getElementById('ex-count').textContent = new Intl.NumberFormat('es').format(n) + ' ' + label;
+    }).catch(function () {});
+  }
+
+  function loadAll() {
+    loadCount(); loadTrending(); loadContinue();
+    loadRank('rating', 'ex-r-rated'); loadRank('latest', 'ex-r-latest');
+    loadRail('novel', 'ex-novels', 'ex-novels-sec'); loadRail('comic', 'ex-comics', 'ex-comics-sec');
+    loadGenres();
+  }
+
+  // Selector de formato (se guarda en la URL para poder compartirlo)
+  var seg = document.getElementById('ex-format');
+  seg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.value === format)); });
+  seg.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || b.value === format) return;
+    format = b.value;
+    seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    try { var u = new URL(location.href); if (format === 'all') u.searchParams.delete('formato'); else u.searchParams.set('formato', format); history.replaceState(null, '', u); } catch (e2) {}
+    loadAll();
+  });
+
+  loadAll();
+})();
+</script>
+</body>
+</html>

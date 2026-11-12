@@ -63,6 +63,9 @@ router.get('/', async (req, res) => {
         let idx = 1;
 
         if (type) { sql += ` AND type = $${idx++}`; params.push(type); }
+        // format=comic | novel: agrupa los tipos para Explorar
+        if (req.query.format === 'novel') sql += ` AND type = 'novel'`;
+        else if (req.query.format === 'comic') sql += ` AND type <> 'novel'`;
         if (status) { sql += ` AND status = $${idx++}`; params.push(status); }
         if (genre) { sql += ` AND $${idx++} = ANY(genres)`; params.push(genre); }
         if (q) { sql += ` AND (title ILIKE $${idx} OR EXISTS(SELECT 1 FROM unnest(alternative_titles) t WHERE t ILIKE $${idx}))`; params.push(`%${q}%`); idx++; }
@@ -279,8 +282,8 @@ router.post('/', requireAuth, requireNotBanned, upload.single('coverImage'), asy
         } = req.body;
 
         if (!title || !title.trim()) return res.status(400).json({ error: 'El título es obligatorio' });
-        if (!['manga', 'manhwa', 'manhua', 'oneshot'].includes(type)) {
-            return res.status(400).json({ error: 'Tipo inválido. Usa: manga, manhwa, manhua, oneshot' });
+        if (!['manga', 'manhwa', 'manhua', 'oneshot', 'novel'].includes(type)) {
+            return res.status(400).json({ error: 'Tipo inválido. Usa: manga, manhwa, manhua, oneshot o novel' });
         }
         if (!['ongoing', 'completed', 'hiatus', 'cancelled'].includes(status)) {
             return res.status(400).json({ error: 'Estado inválido. Usa: ongoing, completed, hiatus, cancelled' });

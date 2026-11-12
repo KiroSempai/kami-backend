@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════
- *  KAMI — login-demo.js
+ *  KamiTales — login-demo.js
  *  Gestión de autenticación LOCAL (sin backend real)
  *
  *  Simula el flujo completo de login y registro
@@ -287,7 +287,7 @@
             window.handleLogin = handleLogin;
 
             // Asegurarse de que el enlace "Registrarse" usa la ruta correcta
-            document.querySelectorAll('a[href="/register"]').forEach(a => {
+            document.querySelectorAll('a[href="/registro"]').forEach(a => {
                 a.setAttribute('href', path('register'));
             });
 
@@ -315,7 +315,7 @@
             }
 
             // Arreglar enlace "Inicia sesión"
-            document.querySelectorAll('a[href="/login"]').forEach(a => {
+            document.querySelectorAll('a[href="/acceder"]').forEach(a => {
                 a.setAttribute('href', path('login'));
             });
         }

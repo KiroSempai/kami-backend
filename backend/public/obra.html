@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargando…-KAMImanga</title>
+    <title>Obra · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +36,7 @@
 <body>
   <div class="kmi-topbar">
     <div style="display:flex;align-items:center;gap:16px;">
-      <img src="/assets/logo-kami.png" alt="KAMI" style="height:22px;width:auto;">
+      <img src="/assets/logo-kami.png" alt="KamiTales" style="height:22px;width:auto;">
       <a href="javascript:void(0)" onclick="kmiVolver()" class="kmi-volver-btn">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         Volver
@@ -46,8 +46,8 @@
   <script>
   function kmiVolver() {
     var ref = document.referrer || '';
-    if (!ref || ref.indexOf('/reader/') >= 0 || ref.indexOf('/manga/') >= 0) {
-      window.location.href = '/inicio-mangoteca';
+    if (!ref || ref.indexOf('/leer/') >= 0 || ref.indexOf('/obra/') >= 0) {
+      window.location.href = '/explorar';
     } else {
       history.back();
     }
@@ -420,7 +420,7 @@
             const token = localStorage.getItem('kami_token');
             if (!token) {
                 if (confirm('Debes iniciar sesi\u00f3n para usar la biblioteca. \u00bfIr al login?')) {
-                    window.location.href = '/login?return=' + encodeURIComponent(window.location.pathname);
+                    window.location.href = '/acceder?return=' + encodeURIComponent(window.location.pathname);
                 }
                 return;
             }
@@ -507,7 +507,7 @@
             var contentEl = document.getElementById('manga-content');
             if (contentEl) contentEl.style.display = 'block';
 
-            document.title = `${manga.title}-KAMImanga`;
+            document.title = `${manga.title} · KamiTales`;
 
             function setText(id, val) {
                 var el = document.getElementById(id);
@@ -681,7 +681,7 @@
           var date = ch.createdAt ? new Date(ch.createdAt).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }) : (ch.releaseDate || '');
           var numStr = String(ch.number).padStart(3, '0');
           var readClass = _userProgress > 0 && ch.number <= _userProgress ? ' chapter-read' : '';
-          return '<div class="chapter-row' + readClass + '" onclick="window.location.href=\'/reader/' + mangaId + '/' + ch.number + '\'">' +
+          return '<div class="chapter-row' + readClass + '" onclick="window.location.href=\'/leer/' + mangaId + '/' + ch.number + '\'">' +
             '<div class="chapter-thumb">#' + numStr + '</div>' +
             '<div class="chapter-info">' +
               '<div class="chapter-num-line">' +
@@ -884,7 +884,7 @@
                   var coverHtml = cover
                     ? '<img src="' + cover + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'rec-card-fallback\')">'
                     : '<span class="rec-card-fallback">' + initial + '</span>';
-                  return '<a href="/manga/' + m.id + '" class="rec-card">' +
+                  return '<a href="/obra/' + m.id + '" class="rec-card">' +
                     '<div class="rec-card-cover">' + coverHtml + '</div>' +
                     '<div class="rec-card-title">' + (m.title || '') + '</div>' +
                     (rating ? '<div class="rec-card-rating">' + rating + '</div>' : '') +

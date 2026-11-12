@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Añadir manga-KAMImanga</title>
+    <title>Nueva obra · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -177,6 +177,7 @@
                             <option value="manhwa">Manhwa 🇰🇷</option>
                             <option value="manhua">Manhua 🇨🇳</option>
                             <option value="oneshot">One-shot</option>
+                            <option value="novel">Novela</option>
                         </select>
                     </div>
                     <div class="field">
@@ -563,7 +564,7 @@ async function executeSubmit(formData, btn) {
 
         showStatus('success', `✅ ${data.message}`, data.manga.id);
         setTimeout(() => {
-            window.location.href = `/manga/${data.manga.id}/edit`;
+            window.location.href = `/obra/${data.manga.id}/edit`;
         }, 1500);
     } catch (err) {
         showStatus('error', `❌ ${err.message}`);

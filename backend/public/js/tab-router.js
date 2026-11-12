@@ -1,5 +1,5 @@
 /**
- * KAMI — tab-router.js
+ * KamiTales — tab-router.js
  * Incluir al final del <body> de perfil.html
  *
  * Lee el parámetro ?tab= de la URL y activa el tab correspondiente.

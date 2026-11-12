@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca-KAMImanga</title>
+    <title>Biblioteca · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -30,7 +30,7 @@
 
         <div class="page-header">
             <h1 class="page-title">BIBLIOTECA</h1>
-            <p class="page-subtitle">Explora todos los mangas disponibles en KAMI</p>
+            <p class="page-subtitle">Explora todos los mangas disponibles en KamiTales</p>
         </div>
 
         <!-- BUSCADOR -->
@@ -294,7 +294,7 @@
             <div class="empty-icon">📚</div>
             <h2 class="empty-title">Aún no hay obras disponibles</h2>
             <p class="empty-desc">
-                Pronto encontrarás aquí todas las obras de manga, manhwa y manhua publicadas en KAMI.
+                Pronto encontrarás aquí todas las obras de manga, manhwa y manhua publicadas en KamiTales.
                 ¡Estamos preparando el catálogo!
             </p>
             <a href="/">
@@ -474,7 +474,7 @@
             const token = localStorage.getItem('kami_token');
             if (!token) {
                 if (confirm('Debes iniciar sesión para añadir mangas. ¿Ir al login?')) {
-                    window.location.href = '/login?return=' + encodeURIComponent('/biblioteca');
+                    window.location.href = '/acceder?return=' + encodeURIComponent('/biblioteca');
                 }
                 return;
             }
@@ -520,7 +520,7 @@
         // Set dynamic title with username
         try {
           const u = JSON.parse(localStorage.getItem('kami_user') || '{}');
-          document.title = `Biblioteca-KAMImanga`;
+          document.title = `Biblioteca · KamiTales`;
         } catch {}
 
         async function initPage() {

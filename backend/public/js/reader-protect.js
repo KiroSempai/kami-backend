@@ -128,7 +128,7 @@
           ctx.fillStyle = 'rgba(255,255,255,0.12)';
           ctx.textAlign = 'right';
           ctx.textBaseline = 'bottom';
-          ctx.fillText(username + ' · KAMI', canvas.width - 16, canvas.height - 16);
+          ctx.fillText(username + ' · KamiTales', canvas.width - 16, canvas.height - 16);
           ctx.restore();
 
           // Antishot pattern (puntos de 1px en grid cada 8px, casi invisibles)

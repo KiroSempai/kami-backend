@@ -144,7 +144,7 @@ window.kamiMangaCard = function(m, opts) {
   var genreStr = (m.genres && m.genres.length ? m.genres.slice(0,2).join(', ') : '') || m.type || 'manga';
   var overlay = opts.extraOverlay || '';
   var footer = opts.extraFooter || '';
-  var link = opts.link || '/manga/' + (m.mangaId || m.id || '');
+  var link = opts.link || '/obra/' + (m.mangaId || m.id || '');
   return '<div class="kmi-card" onclick="window.location.href=\'' + link + '\'">' +
     '<div class="kmi-cover-wrap">' + coverHtml + badges + overlay + '</div>' +
     '<div class="kmi-info">' +

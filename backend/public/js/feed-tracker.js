@@ -1,4 +1,4 @@
-// KAMI — feed-tracker.js
+// KamiTales — feed-tracker.js
 // Recolección de señales de interacción para el algoritmo Manga Mixer
 
 (function () {

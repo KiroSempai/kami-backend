@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   KAMI — Shell común (kami-shell.js)
+   KamiTales — Shell común (kami-shell.js)
    Sustituye a menu-global.js. Cárgalo en <head>, sin defer:
 
      <link rel="stylesheet" href="/css/kami.css">
@@ -120,27 +120,26 @@
   function isLogged() { return !!(getUser() && getToken()); }
 
   var ROUTES = {
-    explore: '/inicio-mangoteca', community: '/', library: '/biblioteca', genres: '/generos',
-    studio: '/menu-edit', profile: '/perfil', messages: '/messages', premium: '/premium',
-    settings: '/settings', login: '/login', register: '/register', search: '/buscar', design: '/design',
+    home: '/', explore: '/', community: '/comunidad', library: '/biblioteca', genres: '/generos',
+    studio: '/estudio', profile: '/perfil', messages: '/mensajes', premium: '/premium',
+    settings: '/ajustes', login: '/acceder', register: '/registro', search: '/buscar', design: '/design',
   };
   var LINKS = [
-    { key: 'explore', label: 'Explorar', icon: 'ti-compass', match: ['/inicio-mangoteca', '/mangoteca', '/manga/', '/generos', '/buscar'] },
-    { key: 'community', label: 'Comunidad', icon: 'ti-messages', match: ['/', '/index.html'] },
-    { key: 'library', label: 'Biblioteca', icon: 'ti-books', match: ['/biblioteca'] },
-    { key: 'studio', label: 'Estudio', icon: 'ti-pencil-plus', match: ['/menu-edit', '/add-manga', '/upload-chapter', '/edit'] },
+    { key: 'explore', label: 'Explorar', icon: 'ti-compass' },
+    { key: 'community', label: 'Comunidad', icon: 'ti-messages' },
+    { key: 'library', label: 'Biblioteca', icon: 'ti-books' },
+    { key: 'studio', label: 'Estudio', icon: 'ti-pencil-plus' },
   ];
 
+  // Sección activa según la URL
   function activeKey() {
-    var path = location.pathname;
-    var best = null, bestLen = -1;
-    LINKS.concat([{ key: 'profile', match: ['/perfil', '/profile/'] }]).forEach(function (l) {
-      l.match.forEach(function (m) {
-        var hit = (m === '/' || m === '/index.html') ? (path === m) : path.indexOf(m) === 0 || (m === '/edit' && /\/manga\/[^/]+\/edit/.test(path)) || (m === '/upload-chapter' && /upload-chapter/.test(path));
-        if (hit && m.length > bestLen) { best = l.key; bestLen = m.length; }
-      });
-    });
-    return best;
+    var p = location.pathname;
+    if (p === '/' || p === '/explorar' || /^\/(obra\/[^/]+$|generos|buscar|leer\/)/.test(p)) return 'explore';
+    if (/^\/comunidad/.test(p)) return 'community';
+    if (/^\/biblioteca/.test(p)) return 'library';
+    if (/^\/estudio|^\/obra\/[^/]+\/(editar|nuevo-capitulo)/.test(p)) return 'studio';
+    if (/^\/perfil/.test(p)) return 'profile';
+    return null;
   }
 
   /* ── 2. Nav ────────────────────────────────────────────────────── */
@@ -200,7 +199,7 @@
 
     nav.innerHTML =
       '<a class="k-skip" href="#k-main">Saltar al contenido</a>' + back +
-      '<a class="k-nav__brand" href="' + ROUTES.explore + '" aria-label="KAMI, inicio"><span class="k-nav__mark" aria-hidden="true">神</span><span class="k-nav__word" translate="no">KAMI</span></a>' +
+      '<a class="k-nav__brand" href="' + ROUTES.explore + '" aria-label="KamiTales, inicio"><span class="k-nav__mark" aria-hidden="true">神</span><span class="k-nav__word" translate="no">Kami<b>Tales</b></span></a>' +
       (mode === 'minimal' ? '' : '<ul class="k-nav__links">' + links + '</ul>') +
       (mode === 'minimal' ? '' : '<form class="k-nav__search" role="search" action="' + ROUTES.search + '"><label class="k-visually-hidden" for="k-nav-q">Buscar obras, autores y comunidades</label><div class="k-input-group"><i class="ti ti-search" aria-hidden="true"></i><input class="k-input" id="k-nav-q" name="q" type="search" placeholder="Buscar obras, autores…" autocomplete="off"></div></form>') +
       '<div class="k-nav__actions">' + actions + '</div>';
@@ -239,7 +238,7 @@
       '<div class="k-sheet__scrim" data-k-close></div>' +
       '<section class="k-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="k-ap-title">' +
         '<div class="k-row k-row--between"><h2 class="k-h2" id="k-ap-title">Apariencia</h2><button type="button" class="k-btn k-btn--quiet k-btn--icon" data-k-close aria-label="Cerrar"><i class="ti ti-x"></i></button></div>' +
-        '<p class="k-muted" style="margin:-12px 0 0;font-size:14px">Se guarda en este navegador y se aplica a todo KAMI.</p>' +
+        '<p class="k-muted" style="margin:-12px 0 0;font-size:14px">Se guarda en este navegador y se aplica a todo KamiTales.</p>' +
         '<div class="k-sheet__group"><h3>Tema</h3>' + seg('theme', p.theme, [['dark', 'Noche'], ['light', 'Washi'], ['system', 'Sistema']]) + '</div>' +
         '<div class="k-sheet__group"><h3>Color de acento</h3><div class="k-swatches" data-k-accents>' +
           ACCENTS.map(function (a) { return '<button type="button" class="k-swatch" style="--_c:' + a.color + '" value="' + a.id + '" aria-label="' + a.name + '" title="' + a.name + '" aria-pressed="' + (p.accent === a.id) + '"></button>'; }).join('') +
@@ -247,7 +246,7 @@
         '</div></div>' +
         '<div class="k-sheet__group"><h3>Tamaño del texto</h3>' + seg('text', p.text, [['sm', 'S'], ['md', 'M'], ['lg', 'L'], ['xl', 'XL']]) + '</div>' +
         '<div class="k-sheet__group"><h3>Densidad</h3>' + seg('density', p.density, [['comfy', 'Cómoda'], ['compact', 'Compacta']]) + '</div>' +
-        '<div class="k-sheet__group"><h3>Letra</h3>' + seg('font', p.font, [['jakarta', 'KAMI'], ['legible', 'Alta legibilidad']]) + '</div>' +
+        '<div class="k-sheet__group"><h3>Letra</h3>' + seg('font', p.font, [['jakarta', 'KamiTales'], ['legible', 'Alta legibilidad']]) + '</div>' +
         '<div class="k-sheet__group"><h3>Efectos</h3>' +
           '<label class="k-switch"><input type="checkbox" id="k-pref-glow"' + (p.glow === 'on' ? ' checked' : '') + '>Brillo neón</label>' +
           '<label class="k-switch"><input type="checkbox" id="k-pref-motion"' + (p.motion === 'reduce' ? ' checked' : '') + '>Reducir animaciones</label>' +

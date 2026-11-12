@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Lector · KAMI</title>
+  <title>Lector · KamiTales</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -481,7 +481,7 @@
   ═══════════════════════════════════════════ -->
   <header id="reader-topbar">
     <div class="left">
-      <span class="logo-mark">神</span><span class="logo-text">KAMI</span>
+      <span class="logo-mark">神</span><span class="logo-text">KamiTales</span>
       <a class="manga-title" id="manga-title-link" title="Volver a la cartelera">Cargando...</a>
       <select class="chapter-select" id="chapter-select" onchange="jumpToChapter(this.value)">
         <option value="">#001</option>
@@ -710,7 +710,7 @@
         MANIFEST = await res.json();
 
         document.getElementById('manga-title-link').textContent = MANIFEST.manga.title;
-        document.getElementById('manga-title-link').href = '/manga/' + MANIFEST.manga.id;
+        document.getElementById('manga-title-link').href = '/obra/' + MANIFEST.manga.id;
         document.title = chapterNum + ' · ' + MANIFEST.manga.title;
 
         totalPages = MANIFEST.chapter.pages;
@@ -895,11 +895,11 @@
     // ── Navegación ──
     function jumpToChapter(num) {
       if (!num) return;
-      window.location.href = '/reader/' + mangaId + '/' + num;
+      window.location.href = '/leer/' + mangaId + '/' + num;
     }
 
     function goToChapter(num) {
-      window.location.href = '/reader/' + mangaId + '/' + num;
+      window.location.href = '/leer/' + mangaId + '/' + num;
     }
 
     // ── Teclado ──
@@ -1388,7 +1388,7 @@
         if (userLink) {
           userLink.addEventListener('click', function(e) {
             e.stopPropagation();
-            window.location.href = '/profile/' + this.dataset.username;
+            window.location.href = '/perfil/' + this.dataset.username;
           });
         }
 

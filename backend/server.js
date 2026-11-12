@@ -295,16 +295,69 @@ app.use((req, res, next) => {
   };
 })();
 
-// ─── Ruta raíz (antes de static para evitar que express.static sirva index.html) ──
-app.get('/', (req, res) => {
-  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
-  const file = 'index.html';
-  res.sendFile(path.join(__dirname, 'public', file));
-});
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📄 Rutas de páginas HTML (KamiTales)
+// Una página responsive por pantalla. Las URL antiguas redirigen (301) a las
+// nuevas conservando la query, para no romper enlaces ni marcadores.
+// ═══════════════════════════════════════════════════════════════════════════════
+const PUB = path.join(__dirname, 'public');
+const page = (file) => (req, res) => res.sendFile(path.join(PUB, file));
+function noCache(req, res, next) {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  next();
+}
+const qs = (req) => { const i = req.originalUrl.indexOf('?'); return i >= 0 ? req.originalUrl.slice(i) : ''; };
+const moved = (to) => (req, res) => res.redirect(301, (typeof to === 'function' ? to(req) : to) + qs(req));
+
+// Redirecciones de las URL y archivos antiguos (antes de express.static)
+const OLD = {
+  '/inicio-mangoteca': '/', '/mangoteca': '/', '/index.html': '/comunidad', '/inicio-mangoteca.html': '/',
+  '/login': '/acceder', '/login.html': '/acceder', '/register': '/registro', '/register.html': '/registro',
+  '/settings': '/ajustes', '/account': '/ajustes', '/settings.html': '/ajustes',
+  '/messages': '/mensajes', '/messages.html': '/mensajes',
+  '/add-manga': '/estudio/nueva', '/add-manga.html': '/estudio/nueva',
+  '/menu-edit': '/estudio', '/menu-edit.html': '/estudio',
+  '/premium/success': '/premium/exito', '/admin/analytics': '/admin/analiticas',
+  '/manga-view.html': '/', '/reader.html': '/',
+};
+for (const [from, to] of Object.entries(OLD)) app.get(from, moved(to));
+app.get('/manga/:id/upload-chapter', moved(r => `/obra/${encodeURIComponent(r.params.id)}/nuevo-capitulo`));
+app.get('/manga/:id/edit', moved(r => `/obra/${encodeURIComponent(r.params.id)}/editar`));
+app.get('/manga/:id', moved(r => `/obra/${encodeURIComponent(r.params.id)}`));
+app.get('/reader/:id/:cap', moved(r => `/leer/${encodeURIComponent(r.params.id)}/${encodeURIComponent(r.params.cap)}`));
+app.get('/profile/:username', moved(r => `/perfil/${encodeURIComponent(r.params.username)}`));
+app.get('/perfil-editor/:username', moved(r => `/perfil-editar/${encodeURIComponent(r.params.username)}`));
+
+// Páginas
+app.get('/',                         page('explorar.html'));
+app.get('/explorar',                 page('explorar.html'));
+app.get('/comunidad',                page('comunidad.html'));
+app.get('/acceder',                  page('acceder.html'));
+app.get('/registro',                 page('registro.html'));
+app.get('/perfil',                   noCache, page('perfil.html'));
+app.get('/perfil/:username',         noCache, page('perfil.html'));
+app.get('/perfil-editar/:username',  page('perfil-editar.html'));
+app.get('/ajustes',                  page('ajustes.html'));
+app.get('/biblioteca',               page('biblioteca.html'));
+app.get('/generos',                  page('generos.html'));
+app.get('/buscar',                   page('buscar.html'));
+app.get('/estudio',                  page('estudio.html'));
+app.get('/estudio/nueva',            page('obra-nueva.html'));
+app.get('/obra/:id',                 page('obra.html'));
+app.get('/obra/:id/editar',          page('obra-editar.html'));
+app.get('/obra/:id/nuevo-capitulo',  page('capitulo-nuevo.html'));
+app.get('/leer/:id/:cap',            page('lector.html'));
+app.get('/premium',                  page('premium.html'));
+app.get('/premium/exito',            page('premium-exito.html'));
+app.get('/mensajes',                 page('mensajes.html'));
+app.get('/admin/analiticas',         page('admin-analiticas.html'));
+app.get('/design',                   page('design.html'));
+app.get('/preview',                  page('preview.html'));
 
 // ─── Archivos estáticos ──────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, 'public'), {
+app.use(express.static(PUB, {
   maxAge: '7d',
+  index: false,
   setHeaders(res, filePath) {
     if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -313,52 +366,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   },
 }));
-app.use('/assets', express.static(path.join(__dirname, 'public', 'assets'), { maxAge: '365d', immutable: true }));
-
-// ─── Helper: no-cache para rutas HTML dinámicas ─────────────────────────────
-function noCache(req, res, next) {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  next();
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📄 Rutas de páginas HTML
-// ═══════════════════════════════════════════════════════════════════════════════
-
-app.get('/inicio-mangoteca', (req, res) => {
-  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
-  const file = 'inicio-mangoteca.html';
-  res.sendFile(path.join(__dirname, 'public', file));
-});
-app.get('/mangoteca',     (req, res) => res.redirect('/inicio-mangoteca'));
-app.get('/register',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'register.html')));
-app.get('/login',         (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/perfil',        noCache, (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil.html')));
-app.get('/profile/:username', noCache, (req, res) => {
-  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
-  const file = 'perfil.html';
-  res.sendFile(path.join(__dirname, 'public', file));
-});
-app.get('/perfil-editor/:username', (req, res) => res.sendFile(path.join(__dirname, 'public', 'perfil-editor.html')));
-app.get('/account',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
-app.get('/settings',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
-app.get('/biblioteca',    (req, res) => res.sendFile(path.join(__dirname, 'public', 'biblioteca.html')));
-app.get('/generos',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'generos.html')));
-app.get('/buscar',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'buscar.html')));
-app.get('/add-manga',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'add-manga.html')));
-app.get('/menu-edit',     (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu-edit.html')));
-app.get('/manga/:id/upload-chapter', (req, res) => res.sendFile(path.join(__dirname, 'public', 'upload-chapter.html')));
-app.get('/manga/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public', 'manga-edit.html')));
-app.get('/manga/:id', (req, res) => {
-  // Una sola página responsive para todos los tamaños (antes había una versión -mobile por user-agent)
-  const file = 'manga-view.html';
-  res.sendFile(path.join(__dirname, 'public', file));
-});
-app.get('/premium',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium.html')));
-app.get('/premium/success', (req, res) => res.sendFile(path.join(__dirname, 'public', 'premium-success.html')));
-app.get('/messages',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'messages.html')));
-app.get('/admin/analytics', (req, res) => res.sendFile(path.join(__dirname, 'public', 'analytics.html')));
-app.get('/design',        (req, res) => res.sendFile(path.join(__dirname, 'public', 'design.html')));
+app.use('/assets', express.static(path.join(PUB, 'assets'), { maxAge: '365d', immutable: true }));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🌐 Rutas API
@@ -390,8 +398,6 @@ app.use('/api/dms',          dmRoutes);
 app.use('/api/admin',        adminRoutes);
 
 // Rutas sueltas que no encajan en los groups anteriores
-app.get('/preview', (req, res) => res.sendFile(path.join(__dirname, 'public', 'preview.html')));
-app.get('/reader/:mangaId/:chapterNum', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reader.html')));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 404 — Fallback
@@ -448,7 +454,7 @@ global.io.on('connection', (socket) => {
 server.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════╗
-║   KAMI — servidor en marcha              ║
+║   KamiTales — servidor en marcha          ║
 ║   http://localhost:${PORT}               ║
 ╠══════════════════════════════════════════╣
 ║  GET /              → index.html         ║

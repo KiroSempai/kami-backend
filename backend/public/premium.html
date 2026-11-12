@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium-KAMImanga</title>
+    <title>Premium · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@
         <div class="prem-benefits">
             <div class="prem-benefit"><div class="prem-benefit-icon">🚫</div><div class="prem-benefit-title">Sin anuncios</div><div class="prem-benefit-desc">Lectura sin interrupciones publicitarias en toda la plataforma.</div></div>
             <div class="prem-benefit"><div class="prem-benefit-icon">📊</div><div class="prem-benefit-title">Estadísticas avanzadas</div><div class="prem-benefit-desc">Gráficos detallados de tu lectura, heatmaps, informes semanales.</div></div>
-            <div class="prem-benefit"><div class="prem-benefit-icon" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</div><div class="prem-benefit-title">Badge exclusivo</div><div class="prem-benefit-desc">Silver o Gold con el logo de KAMI en tu perfil y en toda la plataforma.</div></div>
+            <div class="prem-benefit"><div class="prem-benefit-icon" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</div><div class="prem-benefit-title">Badge exclusivo</div><div class="prem-benefit-desc">Silver o Gold con el logo de KamiTales en tu perfil y en toda la plataforma.</div></div>
             <div class="prem-benefit"><div class="prem-benefit-icon">💰</div><div class="prem-benefit-title">Descuento en capítulos</div><div class="prem-benefit-desc">Gold obtiene 20% de descuento en compra de capítulos sueltos y packs.</div></div>
         </div>
 
@@ -125,7 +125,7 @@
 
         async function checkout(plan) {
             const token = localStorage.getItem('kami_token');
-            if (!token) { window.location.href = '/login?return=/premium'; return; }
+            if (!token) { window.location.href = '/acceder?return=/premium'; return; }
             try {
                 const r = await fetch('/api/premium/create-checkout', {
                     method: 'POST',

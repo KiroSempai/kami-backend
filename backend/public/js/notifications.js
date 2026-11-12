@@ -1,4 +1,4 @@
-// Notificaciones y Mensajes - KAMI
+// Notificaciones y Mensajes - KamiTales
 let notifTab = 'notifs';
 
 window.toggleNotifPanel = function(e) {
@@ -82,13 +82,13 @@ function renderMsgThreads(threads) {
   const content = document.getElementById('notif-panel-content');
   if (!content) return;
   if (threads.length === 0) {
-    content.innerHTML = '<div style="padding:30px 20px;text-align:center;color:var(--k-text-3);font-size:13px;">💬 Sin conversaciones</div><div style="padding:0 12px 12px;text-align:center;"><a href="/messages" style="font-size:11px;color:var(--k-info);">Ir al centro de mensajes →</a></div>';
+    content.innerHTML = '<div style="padding:30px 20px;text-align:center;color:var(--k-text-3);font-size:13px;">💬 Sin conversaciones</div><div style="padding:0 12px 12px;text-align:center;"><a href="/mensajes" style="font-size:11px;color:var(--k-info);">Ir al centro de mensajes →</a></div>';
     return;
   }
   const statusIcons = { open:'🟢', pending:'🟡', resolved:'🔵', closed:'⚪' };
   let html = '';
   for (const t of threads) {
-    html += '<div style="padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .12s;" onclick="window.location.href=\'/messages?thread=' + t.id + '\'" onmouseover="this.style.background=\'rgb(var(--k-ink) / 0.06)\'" onmouseout="this.style.background=\'transparent\'">';
+    html += '<div style="padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .12s;" onclick="window.location.href=\'/mensajes?thread=' + t.id + '\'" onmouseover="this.style.background=\'rgb(var(--k-ink) / 0.06)\'" onmouseout="this.style.background=\'transparent\'">';
     html += '<div style="display:flex;gap:8px;align-items:flex-start;">';
     html += '<div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color: var(--k-text);font-size:13px;font-weight:700;flex-shrink:0;">' + (t.user_name || '?')[0].toUpperCase() + '</div>';
     html += '<div style="flex:1;min-width:0;">';
@@ -98,7 +98,7 @@ function renderMsgThreads(threads) {
     if (t.unread > 0) html += '<div style="background:var(--accent);color: var(--k-text);font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;min-width:18px;text-align:center;">' + t.unread + '</div>';
     html += '</div></div>';
   }
-  html += '<div style="padding:8px 12px;border-top:1px solid rgb(var(--k-ink) / 0.07);text-align:center;"><a href="/messages" style="font-size:11px;color:var(--k-info);text-decoration:none;">Ver todos los mensajes →</a></div>';
+  html += '<div style="padding:8px 12px;border-top:1px solid rgb(var(--k-ink) / 0.07);text-align:center;"><a href="/mensajes" style="font-size:11px;color:var(--k-info);text-decoration:none;">Ver todos los mensajes →</a></div>';
   content.innerHTML = html;
 }
 

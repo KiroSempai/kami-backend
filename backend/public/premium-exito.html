@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suscripción-KAMImanga</title>
+    <title>Suscripción activada · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,8 +24,8 @@
 <div class="success-page">
         <div class="success-icon">🌟</div>
         <div class="success-title" style="display:flex;align-items:center;justify-content:center;gap:10px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--accent);border-radius:8px;color: var(--k-text);font-size:22px;">神</span> SUSCRIPCIÓN ACTIVADA</div>
-        <div class="success-sub">Gracias por confiar en KAMI. Tu badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin:0 2px;">神</span> ya está activo en tu perfil.</div>
-        <a href="/profile/" class="success-btn" id="success-profile-btn">Ir a mi perfil</a>
+        <div class="success-sub">Gracias por confiar en KamiTales. Tu badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin:0 2px;">神</span> ya está activo en tu perfil.</div>
+        <a href="/perfil/" class="success-btn" id="success-profile-btn">Ir a mi perfil</a>
         <div class="success-note">Si no ves el cambio, prueba a recargar la página.</div>
     </div>
 
@@ -33,7 +33,7 @@
         const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
         const profileBtn = document.getElementById('success-profile-btn');
         if (stored.username) {
-            profileBtn.href = '/profile/' + encodeURIComponent(stored.username);
+            profileBtn.href = '/perfil/' + encodeURIComponent(stored.username);
         }
 
         // Refrescar datos del usuario para que recoja el nuevo role

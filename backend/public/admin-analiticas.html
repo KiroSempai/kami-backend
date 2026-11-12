@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics · KAMI Admin</title>
+    <title>Analíticas · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -150,7 +150,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <div class="logo"><span class="logo-mark">神</span>KAMI</div>
+            <div class="logo"><span class="logo-mark">神</span>KamiTales</div>
             <div class="logo-sub">Analytics Dashboard</div>
         </div>
         <nav class="sidebar-nav">
@@ -194,7 +194,7 @@
 
 <script>
     const TOKEN = localStorage.getItem('kami_token');
-    if (!TOKEN) { window.location.href = '/login?return=/admin/analytics'; }
+    if (!TOKEN) { window.location.href = '/acceder?return=/admin/analiticas'; }
 
     // Verificar rol admin
     (async function checkAdmin() {
@@ -826,7 +826,7 @@
             </div>
             <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid rgb(var(--k-ink) / 0.04);">
                 <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgb(var(--k-ink) / 0.03);border:1px solid rgb(var(--k-ink) / 0.06);border-radius:8px;color:rgb(var(--k-ink) / 0.4);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;" onmouseover="this.style.borderColor='rgb(var(--k-ink) / 0.15)';this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.borderColor='rgb(var(--k-ink) / 0.06)';this.style.color='rgba(255,255,255,0.4)'">
-                    ← Volver a KAMI
+                    ← Volver a KamiTales
                 </a>
             </div>
         `;

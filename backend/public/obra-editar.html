@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar manga-KAMImanga</title>
+    <title>Editar obra · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -158,7 +158,7 @@
     <div id="error-page" class="error-page" style="display:none;">
         <h2>Manga no encontrado</h2>
         <p>El manga que buscas no existe o ha sido eliminado.</p>
-        <a href="/menu-edit" class="btn-back">← Volver al panel</a>
+        <a href="/estudio" class="btn-back">← Volver al panel</a>
     </div>
 
     <div id="manga-content" style="display:none;">
@@ -198,7 +198,7 @@
                 <div class="chapters-actions">
                     <span class="chapters-count" id="chapters-count"></span>
                     <button class="btn-edit-info" onclick="openEditInfoModal()">✎ Editar info</button>
-                    <button class="btn-add-chapter" onclick="window.location.href='/manga/' + mangaId + '/upload-chapter'">+ Añadir capítulo</button>
+                    <button class="btn-add-chapter" onclick="window.location.href='/obra/' + mangaId + '/nuevo-capitulo'">+ Añadir capítulo</button>
                 </div>
             </div>
             <div class="chapter-list" id="chapter-list"></div>
@@ -230,6 +230,7 @@
                             <option value="manhwa">Manhwa</option>
                             <option value="manhua">Manhua</option>
                             <option value="oneshot">One-shot</option>
+                            <option value="novel">Novela</option>
                         </select>
                     </div>
                     <div class="modal-field">
@@ -383,7 +384,7 @@
                 </div>
                 <div class="modal-field">
                     <label>Scan group (opcional)</label>
-                    <input type="text" id="ch-scan" placeholder="Ej: KAMI Scans">
+                    <input type="text" id="ch-scan" placeholder="Ej: Estudio Sakura">
                 </div>
                 <div class="modal-field">
                     <label>Páginas del capítulo <span style="color:var(--accent)">*</span></label>
@@ -429,7 +430,7 @@
         function renderManga(manga, chapters) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('manga-content').style.display = 'block';
-            document.title = `Editar: ${manga.title} — KAMI`;
+            document.title = `Editar: ${manga.title} — KamiTales`;
 
             document.getElementById('manga-title').textContent = manga.title;
 
@@ -484,7 +485,7 @@
                             '</div>' +
                         '</div>' +
                         '<div style="display:flex;gap:6px;">' +
-                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="window.location.href=\'/manga/' + mangaId + '/upload-chapter\'" title="Subir versi\u00f3n">⬆</button>' +
+                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="window.location.href=\'/obra/' + mangaId + '/nuevo-capitulo\'" title="Subir versi\u00f3n">⬆</button>' +
                             '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="openEditChapterModal(' + ch.number + ',\'' + (ch.title||'').replace(/\'/g,"\\'") + '\',\'' + (ch.scanGroup||'').replace(/\'/g,"\\'") + '\')" title="Editar">\u270e</button>' +
                             '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);transition:all .12s;" onclick="deleteChapter(' + ch.number + ')" title="Eliminar">\u2716</button>' +
                         '</div>' +

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de edición-KAMImanga</title>
+    <title>Estudio · KamiTales</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -84,7 +84,7 @@
                 <div class="page-title">PANEL DE EDICIÓN</div>
                 <div class="page-subtitle">Busca mangas existentes para editar o añade uno nuevo al catálogo</div>
             </div>
-            <a href="/add-manga" class="btn-add">+ AÑADIR MANGA</a>
+            <a href="/estudio/nueva" class="btn-add">+ AÑADIR MANGA</a>
         </div>
 
         <div class="search-section">
@@ -178,7 +178,7 @@
 
                 resultsCount.textContent = results.length + ' manga' + (results.length !== 1 ? 's' : '') + ' encontrado' + (results.length !== 1 ? 's' : '');
                 mangaGrid.innerHTML = results.map(function(m) {
-                    return window.kamiMangaCard(m, { link: '/manga/' + m.id + '/edit' });
+                    return window.kamiMangaCard(m, { link: '/obra/' + m.id + '/editar' });
                 }).join('');
                 resultsContent.style.display = 'block';
             } catch (err) {

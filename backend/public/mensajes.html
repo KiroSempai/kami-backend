@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mensajes-KAMImanga</title>
+  <title>Mensajes · KamiTales</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/common.css">
@@ -80,7 +80,7 @@
       <div id="kami-bubble" style="display:none;flex:1;align-items:center;justify-content:center;padding:24px;">
         <div style="display:inline-flex;flex-direction:column;align-items:center;gap:10px;padding:24px 32px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;max-width:300px;">
           <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:var(--accent);border-radius:14px;color: var(--k-text);font-size:22px;">神</div>
-          <div style="font-size:16px;font-weight:700;font-family:var(--font-display);letter-spacing:1px;">KAMImanga</div>
+          <div style="font-size:16px;font-weight:700;font-family:var(--font-display);letter-spacing:1px;"> · KamiTales</div>
           <div id="bubble-unread" style="font-size:12px;color:var(--text-muted);"></div>
           <div id="bubble-last" style="font-size:11px;color:var(--text-muted);text-align:center;"></div>
           <button class="msg-header-btn" onclick="document.querySelector('.msg-thread')?.click()">Ver mensajes</button>
@@ -139,7 +139,7 @@
       }
       const si = { open:'🟢', pending:'🟡', resolved:'🔵', closed:'⚪' };
       const isSys = (s) => s && (s.toLowerCase().includes('sistema') || s.toLowerCase().includes('habilitado'));
-      el.innerHTML = threads.map(t => '<div class="msg-thread ' + (currentThreadId == t.id ? 'active' : '') + '" onclick="openThread(' + t.id + ')"><div class="msg-thread-avatar" style="background:' + (isSys(t.subject) ? 'var(--accent)' : 'var(--text-muted)') + ';">' + (isSys(t.subject) ? '神' : (t.user_name || '?')[0].toUpperCase()) + '</div><div class="msg-thread-info"><div class="msg-thread-subject">' + (isSys(t.subject) ? '📢 ' : '') + escHtml(t.subject) + '</div><div class="msg-thread-meta"><span class="msg-status ' + t.status + '">' + (si[t.status]||'') + ' ' + t.status + '</span><span>' + (isSys(t.subject) ? 'KAMImanga' : (t.user_name||'?')) + '</span></div></div>' + (t.unread > 0 ? '<div class="msg-thread-badge">' + t.unread + '</div>' : '') + '</div>').join('');
+      el.innerHTML = threads.map(t => '<div class="msg-thread ' + (currentThreadId == t.id ? 'active' : '') + '" onclick="openThread(' + t.id + ')"><div class="msg-thread-avatar" style="background:' + (isSys(t.subject) ? 'var(--accent)' : 'var(--text-muted)') + ';">' + (isSys(t.subject) ? '神' : (t.user_name || '?')[0].toUpperCase()) + '</div><div class="msg-thread-info"><div class="msg-thread-subject">' + (isSys(t.subject) ? '📢 ' : '') + escHtml(t.subject) + '</div><div class="msg-thread-meta"><span class="msg-status ' + t.status + '">' + (si[t.status]||'') + ' ' + t.status + '</span><span>' + (isSys(t.subject) ? ' · KamiTales' : (t.user_name||'?')) + '</span></div></div>' + (t.unread > 0 ? '<div class="msg-thread-badge">' + t.unread + '</div>' : '') + '</div>').join('');
     }
 
     async function openThread(threadId) {

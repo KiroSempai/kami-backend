@@ -181,6 +181,7 @@ const communityRoutes    = require('./routes/routes-communities');
 const adminRoutes        = require('./routes/routes-admin');
 const novelRoutes        = require('./routes/routes-novel');
 const studioRoutes       = require('./routes/routes-studio');
+const passwordRoutes     = require('./routes/routes-password');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 App Express
@@ -336,6 +337,8 @@ app.get('/explorar',                 page('explorar.html'));
 app.get('/comunidad',                page('comunidad.html'));
 app.get('/acceder',                  page('acceder.html'));
 app.get('/registro',                 page('registro.html'));
+app.get('/recuperar',                page('recuperar.html'));
+app.get('/restablecer',              page('restablecer.html'));
 app.get('/perfil',                   noCache, page('perfil.html'));
 app.get('/perfil/:username',         noCache, page('perfil.html'));
 app.get('/perfil-editar/:username',  page('perfil-editar.html'));
@@ -385,6 +388,7 @@ app.use('/assets', express.static(path.join(PUB, 'assets'), { maxAge: '365d', im
 // ═══════════════════════════════════════════════════════════════════════════════
 
 app.use('/api/auth',         authRoutes);
+app.use('/api/auth',         passwordRoutes);
 app.use('/api/profile',      profileRoutes);
 app.use('/api/library',      libraryRoutes);
 app.use('/api/manga',        mangaRoutes);

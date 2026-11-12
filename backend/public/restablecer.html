@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <title>Nueva contraseña · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    .pw { min-height: calc(100dvh - var(--k-nav-h) - 80px); display: grid; place-items: center; }
+    .pw-card { width: min(440px, 100%); display: grid; gap: var(--k-5); padding: var(--k-8); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pw-card h1 { margin: 0; font: 800 clamp(1.8rem, 5vw, 2.4rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .pw-card p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.6; }
+    .pw-icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; background: var(--k-accent-soft); color: var(--k-accent); }
+    .pw-eye { position: relative; }
+    .pw-eye .k-input { padding-right: 46px; }
+    .pw-eye button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
+    .pw-meter { height: 6px; border-radius: 4px; background: rgb(var(--k-ink) / .08); overflow: hidden; }
+    .pw-meter i { display: block; height: 100%; width: 0; transition: width .2s, background .2s; }
+    .pw-tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .pw-tips li.ok { color: var(--k-ok); }
+    .pw-tips li::before { content: "○ "; } .pw-tips li.ok::before { content: "✓ "; }
+    @media (max-width: 480px) { .pw-card { padding: var(--k-6) var(--k-5); } }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main class="k-page pw" id="k-main">
+  <section class="pw-card" aria-labelledby="pw-t">
+    <span class="pw-icon" aria-hidden="true"><i class="ti ti-lock-password"></i></span>
+    <div class="k-stack--sm k-stack">
+      <h1 id="pw-t">Nueva contraseña</h1>
+      <p id="pw-who">Comprobando el enlace…</p>
+    </div>
+
+    <form id="pw-form" class="k-stack" novalidate hidden>
+      <input type="text" name="username" id="pw-user" autocomplete="username" hidden>
+      <div class="k-field">
+        <label class="k-label" for="pw-new">Contraseña nueva</label>
+        <div class="pw-eye"><input class="k-input" id="pw-new" type="password" autocomplete="new-password" minlength="8" maxlength="200" required aria-describedby="pw-tips"><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-eye="pw-new" aria-label="Mostrar contraseña"><i class="ti ti-eye" aria-hidden="true"></i></button></div>
+        <div class="pw-meter" aria-hidden="true"><i id="pw-meter"></i></div>
+        <ul class="pw-tips" id="pw-tips"><li data-r="len">Al menos 8 caracteres</li><li data-r="mix">Mayúsculas y minúsculas</li><li data-r="num">Algún número o símbolo</li></ul>
+      </div>
+      <div class="k-field">
+        <label class="k-label" for="pw-rep">Repite la contraseña</label>
+        <div class="pw-eye"><input class="k-input" id="pw-rep" type="password" autocomplete="new-password" maxlength="200" required><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-eye="pw-rep" aria-label="Mostrar contraseña"><i class="ti ti-eye" aria-hidden="true"></i></button></div>
+      </div>
+      <span class="k-error" id="pw-err" role="alert"></span>
+      <button class="k-btn k-btn--primary k-btn--lg k-btn--block" type="submit" id="pw-btn">Guardar contraseña</button>
+    </form>
+
+    <div id="pw-done" class="k-stack" hidden>
+      <div class="k-alert k-alert--ok" role="status"><i class="ti ti-circle-check" aria-hidden="true"></i><div>Contraseña cambiada. Ya puedes iniciar sesión con ella.</div></div>
+      <a class="k-btn k-btn--primary k-btn--lg k-btn--block" href="/acceder">Iniciar sesión</a>
+    </div>
+    <div id="pw-bad" class="k-stack" hidden>
+      <div class="k-alert k-alert--bad"><i class="ti ti-link-off" aria-hidden="true"></i><div id="pw-bad-t">Este enlace ha caducado o ya se ha usado.</div></div>
+      <a class="k-btn k-btn--primary k-btn--block" href="/recuperar">Pedir un enlace nuevo</a>
+    </div>
+    <a href="/acceder" class="k-btn k-btn--quiet k-btn--sm" style="justify-self:start"><i class="ti ti-arrow-left" aria-hidden="true"></i>Volver a acceder</a>
+  </section>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var token = new URLSearchParams(location.search).get('token') || '';
+  // El token no se queda en el historial ni en la barra de direcciones
+  if (token) history.replaceState(null, '', '/restablecer');
+  function post(url, body) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); throw e; } return d; }); });
+  }
+  function bad(msg) { $('pw-who').textContent = 'No podemos cambiar la contraseña con este enlace.'; $('pw-bad-t').textContent = msg; $('pw-bad').hidden = false; $('pw-form').hidden = true; }
+
+  document.querySelectorAll('[data-eye]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var i = $(b.dataset.eye), show = i.type === 'password';
+      i.type = show ? 'text' : 'password';
+      b.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      b.innerHTML = '<i class="ti ti-eye' + (show ? '-off' : '') + '" aria-hidden="true"></i>';
+    });
+  });
+  $('pw-new').addEventListener('input', function () {
+    var v = this.value, rules = { len: v.length >= 8, mix: /[a-z]/.test(v) && /[A-Z]/.test(v), num: /[\d\W_]/.test(v) };
+    var score = (rules.len ? 1 : 0) + (rules.mix ? 1 : 0) + (rules.num ? 1 : 0) + (v.length >= 14 ? 1 : 0);
+    document.querySelectorAll('#pw-tips li').forEach(function (li) { li.classList.toggle('ok', rules[li.dataset.r]); });
+    var m = $('pw-meter'); m.style.width = (score * 25) + '%';
+    m.style.background = score <= 1 ? 'var(--k-bad)' : score === 2 ? 'var(--k-warn)' : 'var(--k-ok)';
+  });
+  $('pw-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var a = $('pw-new').value, b = $('pw-rep').value;
+    $('pw-err').textContent = '';
+    if (a.length < 8) { $('pw-err').textContent = 'La contraseña debe tener al menos 8 caracteres.'; $('pw-new').focus(); return; }
+    if (a !== b) { $('pw-err').textContent = 'Las dos contraseñas no coinciden.'; $('pw-rep').focus(); return; }
+    var btn = $('pw-btn'); btn.disabled = true; btn.textContent = 'Guardando…';
+    post('/api/auth/reset-password', { token: token, password: a })
+      .then(function () { $('pw-form').hidden = true; $('pw-done').hidden = false; $('pw-who').textContent = 'Listo.'; })
+      .catch(function (er) { if (/caducado|usado/.test(er.message)) bad(er.message); else $('pw-err').textContent = er.message; })
+      .then(function () { btn.disabled = false; btn.textContent = 'Guardar contraseña'; });
+  });
+
+  if (!token) { bad('Falta el enlace. Ábrelo desde el correo o pide uno nuevo.'); return; }
+  post('/api/auth/reset-password/check', { token: token })
+    .then(function (d) { $('pw-who').textContent = 'Elige una contraseña nueva para la cuenta ' + (d.username ? '@' + d.username + ' · ' : '') + d.email + '.'; $('pw-user').value = d.username || ''; $('pw-form').hidden = false; $('pw-new').focus(); })
+    .catch(function (er) { bad(er.message); });
+})();
+</script>
+</body>
+</html>

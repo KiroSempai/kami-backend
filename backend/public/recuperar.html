@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Recuperar contraseña · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    .pw { min-height: calc(100dvh - var(--k-nav-h) - 80px); display: grid; place-items: center; }
+    .pw-card { width: min(440px, 100%); display: grid; gap: var(--k-5); padding: var(--k-8); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pw-card h1 { margin: 0; font: 800 clamp(1.8rem, 5vw, 2.4rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .pw-card p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.6; }
+    .pw-icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 26px; background: var(--k-accent-soft); color: var(--k-accent); }
+    @media (max-width: 480px) { .pw-card { padding: var(--k-6) var(--k-5); } }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main class="k-page pw" id="k-main">
+  <section class="pw-card" aria-labelledby="pw-t">
+    <span class="pw-icon" aria-hidden="true"><i class="ti ti-key"></i></span>
+    <div class="k-stack--sm k-stack">
+      <h1 id="pw-t">Recuperar contraseña</h1>
+      <p>Escribe el correo de tu cuenta y te enviaremos un enlace para elegir una contraseña nueva. Caduca en 1 hora.</p>
+    </div>
+    <form id="pw-form" class="k-stack" novalidate>
+      <div class="k-field">
+        <label class="k-label" for="pw-email">Correo de tu cuenta</label>
+        <input class="k-input" id="pw-email" name="email" type="email" autocomplete="email" spellcheck="false" inputmode="email" placeholder="nombre@correo.com" required>
+        <span class="k-error" id="pw-err" role="alert"></span>
+      </div>
+      <button class="k-btn k-btn--primary k-btn--lg k-btn--block" type="submit" id="pw-btn">Enviar enlace</button>
+    </form>
+    <div class="k-alert k-alert--ok" id="pw-ok" role="status" hidden><i class="ti ti-mail-check" aria-hidden="true"></i><div id="pw-ok-t"></div></div>
+    <div class="k-row k-row--between" style="font-size:14px">
+      <a href="/acceder" class="k-btn k-btn--quiet k-btn--sm"><i class="ti ti-arrow-left" aria-hidden="true"></i>Volver a acceder</a>
+      <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="pw-again" hidden>Enviar otro enlace</button>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var q = new URLSearchParams(location.search).get('email'); if (q) $('pw-email').value = q;
+  $('pw-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = $('pw-email').value.trim();
+    $('pw-err').textContent = '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('pw-err').textContent = 'Escribe un correo válido, por ejemplo nombre@correo.com.'; $('pw-email').setAttribute('aria-invalid', 'true'); $('pw-email').focus(); return; }
+    $('pw-email').removeAttribute('aria-invalid');
+    var btn = $('pw-btn'); btn.disabled = true; btn.textContent = 'Enviando…';
+    fetch('/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo enviar.'); return d; }); })
+      .then(function (d) { $('pw-ok-t').textContent = d.message; $('pw-ok').hidden = false; $('pw-form').hidden = true; $('pw-again').hidden = false; })
+      .catch(function (er) { $('pw-err').textContent = er.message; })
+      .then(function () { btn.disabled = false; btn.textContent = 'Enviar enlace'; });
+  });
+  $('pw-again').addEventListener('click', function () { $('pw-ok').hidden = true; $('pw-form').hidden = false; this.hidden = true; $('pw-email').focus(); });
+})();
+</script>
+</body>
+</html>

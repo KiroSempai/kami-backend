@@ -1,1247 +1,537 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obra · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <link rel="stylesheet" href="/css/perfil.css">
-    <link rel="stylesheet" href="/css/kmi-detail.css?v=42">
-    <link rel="stylesheet" href="/css/kmi-card.css">
-    <script src="/js/offline.js?v=2"></script>
-    <script>
-    // Lazy loader para el lector — no bloquea la carga de la página
-    window.kamiOpenReader = (function() {
-      var loaded = false;
-      return function(mangaId, chapterNum) {
-        if (!loaded) {
-          loaded = true;
-          var s = document.createElement('script');
-          s.src = '/js/reader-protect.js?v=' + Date.now();
-          s.onload = function() { window.kamiOpenReader(mangaId, chapterNum); };
-          document.body.appendChild(s);
-        } else {
-          window.kamiOpenReader(mangaId, chapterNum);
-        }
-      };
-    })();
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Obra · KamiTales</title>
+  <meta name="description" content="Lee cómics y novelas en KamiTales.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    [hidden] { display: none !important; }
+    /* ── Cabecera ─────────────────────────────────────────── */
+    .ob-hero { position: relative; overflow: hidden; isolation: isolate; }
+    .ob-hero::before { content: ""; position: absolute; inset: -40px; z-index: -2; background: var(--_cover) center 30% / cover; filter: blur(42px) saturate(1.5); opacity: .45; transform: scale(1.1); }
+    .ob-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, color-mix(in srgb, var(--k-bg) 35%, transparent), var(--k-bg) 92%), radial-gradient(60% 80% at 15% 30%, transparent, var(--k-bg)); }
+    .ob-top { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--k-8); align-items: end; padding-block: var(--k-10) var(--k-8); }
+    .ob-cover { position: relative; aspect-ratio: 2 / 3; border-radius: var(--k-r-lg); overflow: hidden; background: var(--k-surface-2); border: 1px solid var(--k-line-2); box-shadow: 0 30px 60px -20px rgb(0 0 0 / .8), 0 0 0 1px rgb(255 255 255 / .04), 0 0 60px -20px var(--k-work-accent); }
+    .ob-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ob-info { display: grid; gap: var(--k-4); min-width: 0; }
+    .ob-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ob-title { margin: 0; font: 900 clamp(2.2rem, 5.5vw, 4rem)/.92 var(--k-font-display); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; text-wrap: balance; }
+    .ob-alt { margin: -6px 0 0; color: var(--k-text-3); font-size: var(--k-fs-sm); }
+    .ob-by { display: flex; flex-wrap: wrap; gap: var(--k-2) var(--k-5); font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .ob-by span { display: inline-flex; align-items: center; gap: 6px; }
+    .ob-by b { color: var(--k-text); font-weight: 700; }
+    .ob-by a { color: var(--k-text); font-weight: 700; text-decoration: none; }
+    .ob-by a:hover { color: var(--k-accent); }
+    .ob-stats { display: flex; flex-wrap: wrap; gap: var(--k-2) var(--k-6); }
+    .ob-stat { display: grid; gap: 2px; }
+    .ob-stat b { font: 800 var(--k-fs-xl)/1 var(--k-font-display); letter-spacing: .02em; display: inline-flex; align-items: center; gap: 6px; }
+    .ob-stat span { font-size: var(--k-fs-xs); color: var(--k-text-3); text-transform: uppercase; letter-spacing: .1em; }
+    .ob-actions { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; position: relative; }
+    .ob-actions .k-menu { left: 0; top: calc(100% + 6px); }
+    .ob-cta small { display: block; font-weight: 500; font-size: 11px; opacity: .8; }
+    .ob-fav[aria-pressed="true"] { color: var(--k-accent); border-color: var(--k-accent-line); }
+    .ob-owner { display: flex; flex-wrap: wrap; gap: var(--k-2); padding: var(--k-3) var(--k-4); border-radius: var(--k-r-md); border: 1px dashed var(--k-line-2); background: rgb(var(--k-ink) / .03); align-items: center; font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .ob-owner > span { margin-right: auto; display: inline-flex; gap: 6px; align-items: center; }
+
+    /* ── Cuerpo ───────────────────────────────────────────── */
+    .ob-body { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--k-8); align-items: start; }
+    .ob-tabs { position: sticky; top: var(--k-nav-h); z-index: 5; background: color-mix(in srgb, var(--k-bg) 88%, transparent); backdrop-filter: blur(10px); }
+    .ob-tabs .k-num { margin-left: 6px; font-size: 11px; color: var(--k-text-3); }
+    .ob-panel { padding-top: var(--k-5); }
+    .ob-bar { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; margin-bottom: var(--k-4); }
+    .ob-bar .k-input-group { flex: 1; min-width: 180px; }
+
+    /* Capítulos */
+    .ob-chs { display: grid; gap: 2px; }
+    .ob-ch { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: var(--k-4); align-items: center; padding: var(--k-3) var(--k-3); border-radius: var(--k-r-md); color: inherit; text-decoration: none; transition: background var(--k-t-fast); position: relative; }
+    .ob-ch:hover, .ob-ch:focus-visible { background: rgb(var(--k-ink) / .05); }
+    .ob-ch .n { font: 800 var(--k-fs-lg)/1 var(--k-font-display); color: var(--k-text-3); text-align: center; font-variant-numeric: tabular-nums; }
+    .ob-ch b { display: block; font-size: var(--k-fs-sm); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ob-ch small { display: flex; flex-wrap: wrap; gap: 4px var(--k-3); color: var(--k-text-3); font-size: var(--k-fs-xs); margin-top: 3px; align-items: center; }
+    .ob-ch .r { display: flex; align-items: center; gap: var(--k-2); color: var(--k-text-3); font-size: var(--k-fs-xs); white-space: nowrap; }
+    .ob-ch.is-read b { color: var(--k-text-3); font-weight: 500; }
+    .ob-ch.is-read .n { opacity: .5; }
+    .ob-ch.is-next { background: var(--k-accent-soft); box-shadow: inset 3px 0 0 var(--k-accent); }
+    .ob-ch.is-next .n { color: var(--k-accent); }
+    .ob-ch.is-locked b::after { content: ""; }
+
+    /* Sobre la obra */
+    .ob-syn { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-md); line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
+    .ob-syn.is-clamped { display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+    .ob-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: var(--k-3); margin: 0; }
+    .ob-kv div { padding: var(--k-3) var(--k-4); border-radius: var(--k-r-md); background: rgb(var(--k-ink) / .03); border: 1px solid var(--k-line); }
+    .ob-kv dt { font-size: var(--k-fs-xs); color: var(--k-text-3); text-transform: uppercase; letter-spacing: .1em; }
+    .ob-kv dd { margin: 4px 0 0; font-weight: 600; font-size: var(--k-fs-sm); overflow-wrap: anywhere; }
+    .ob-links { display: flex; flex-wrap: wrap; gap: var(--k-2); }
+    .ob-sec { display: grid; gap: var(--k-3); margin-bottom: var(--k-8); }
+    .ob-sec > h3 { margin: 0; font: 800 var(--k-fs-lg)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .04em; }
+
+    /* Puntuación */
+    .ob-rate { display: grid; grid-template-columns: auto 1fr; gap: var(--k-6); align-items: center; }
+    .ob-rate .big { font: 900 3rem/1 var(--k-font-display); }
+    .ob-rate .big small { font-size: 1rem; color: var(--k-text-3); }
+    .ob-dist { display: grid; gap: 6px; font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .ob-dist div { display: grid; grid-template-columns: 70px 1fr 30px; gap: var(--k-2); align-items: center; }
+    .ob-dist i { display: block; height: 6px; border-radius: 4px; background: rgb(var(--k-ink) / .08); overflow: hidden; }
+    .ob-dist i b { display: block; height: 100%; background: var(--k-gold); }
+    .ob-stars { display: inline-flex; gap: 2px; }
+    .ob-stars button { border: 0; background: none; padding: 2px; font-size: 26px; line-height: 1; color: rgb(var(--k-ink) / .2); cursor: pointer; transition: transform .1s, color .1s; }
+    .ob-stars button.on { color: var(--k-gold); }
+    .ob-stars button:hover { transform: scale(1.15); }
+
+    /* Comentarios y comunidad */
+    .ob-cmts { display: grid; gap: var(--k-3); }
+    .ob-cmt { display: grid; grid-template-columns: auto 1fr; gap: var(--k-3); }
+    .ob-cmt .head { display: flex; gap: var(--k-2); align-items: baseline; font-size: var(--k-fs-sm); }
+    .ob-cmt .head a { color: var(--k-text); font-weight: 700; text-decoration: none; }
+    .ob-cmt .head time { color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .ob-cmt p { margin: 4px 0 0; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; color: var(--k-text-2); font-size: var(--k-fs-sm); }
+    .ob-form { display: grid; gap: var(--k-2); margin-bottom: var(--k-5); }
+    .ob-form .k-row { justify-content: space-between; }
+
+    /* Lateral */
+    .ob-aside { display: grid; gap: var(--k-4); position: sticky; top: calc(var(--k-nav-h) + var(--k-4)); }
+    .ob-aside h3 { margin: 0 0 var(--k-3); font: 700 var(--k-fs-xs)/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); }
+    .ob-me-prog { height: 8px; border-radius: 99px; background: rgb(var(--k-ink) / .08); overflow: hidden; margin: var(--k-2) 0; }
+    .ob-me-prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--k-accent), var(--k-accent-2, var(--k-gold))); }
+    .ob-mini { display: grid; grid-template-columns: 48px 1fr; gap: var(--k-3); align-items: center; padding: 6px; margin: 0 -6px; border-radius: var(--k-r-sm); text-decoration: none; color: inherit; }
+    .ob-mini:hover { background: rgb(var(--k-ink) / .05); }
+    .ob-mini img, .ob-mini .ph { width: 48px; height: 68px; border-radius: 8px; object-fit: cover; background: var(--k-surface-2); }
+    .ob-mini b { display: block; font-size: var(--k-fs-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ob-mini small { color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .ob-act { display: flex; gap: var(--k-3); align-items: center; font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .ob-act + .ob-act { margin-top: var(--k-3); }
+    .ob-act b { font: 800 var(--k-fs-xl)/1 var(--k-font-display); color: var(--k-text); min-width: 34px; }
+
+    @media (max-width: 1023px) {
+      .ob-body { grid-template-columns: minmax(0, 1fr); }
+      .ob-aside { position: static; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .ob-top { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: var(--k-5); padding-top: var(--k-6); }
+      .ob-cover { width: min(200px, 56vw); }
+      .ob-badges, .ob-by, .ob-stats, .ob-actions { justify-content: center; }
+      .ob-actions .ob-cta { flex: 1 1 100%; }
+      .ob-actions .k-menu { left: 50%; transform: translateX(-50%); }
+      .ob-owner { justify-content: center; text-align: left; }
+      .ob-ch { grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--k-3); }
+      .ob-rate { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <div class="kmi-topbar">
-    <div style="display:flex;align-items:center;gap:16px;">
-      <img src="/assets/logo-kami.png" alt="KamiTales" style="height:22px;width:auto;">
-      <a href="javascript:void(0)" onclick="kmiVolver()" class="kmi-volver-btn">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-        Volver
-      </a>
-    </div>
-  </div>
-  <script>
-  function kmiVolver() {
-    var ref = document.referrer || '';
-    if (!ref || ref.indexOf('/leer/') >= 0 || ref.indexOf('/obra/') >= 0) {
-      window.location.href = '/explorar';
-    } else {
-      history.back();
-    }
-  }
-  </script>
+<div id="ob-loading" class="k-page" aria-busy="true">
+  <div style="display:grid;grid-template-columns:minmax(0,240px) 1fr;gap:32px;align-items:end;margin-top:32px"><div class="k-skeleton" style="aspect-ratio:2/3"></div><div class="k-stack"><div class="k-skeleton" style="height:56px;width:70%"></div><div class="k-skeleton" style="height:18px;width:50%"></div><div class="k-skeleton" style="height:44px;width:240px"></div></div></div>
+</div>
+<div id="ob-missing" class="k-page" hidden><div class="k-empty"><i class="ti ti-book-off" aria-hidden="true"></i><h3>Esta obra no existe</h3><p id="ob-missing-p">Puede que se haya retirado o que el enlace esté mal.</p><a class="k-btn k-btn--primary" href="/">Ir a Explorar</a></div></div>
 
-    <!-- LOADING -->
-    <div id="loading">
-        <div class="skeleton">
-            <div style="display:flex;gap:32px;">
-                <div class="skeleton-cover"></div>
-                <div style="flex:1;">
-                    <div class="skeleton-row wide"></div>
-                    <div class="skeleton-row medium" style="margin-bottom:24px;"></div>
-                    <div class="skeleton-row"></div>
-                    <div class="skeleton-row narrow"></div>
-    </div>
-          </div>
-
+<div id="ob" hidden>
+  <section class="ob-hero" id="ob-hero">
+    <div class="k-page ob-top" style="padding-bottom:var(--k-8)">
+      <div class="ob-cover" id="ob-cover"></div>
+      <div class="ob-info">
+        <div class="ob-badges" id="ob-badges"></div>
+        <div><h1 class="ob-title" id="ob-title"></h1></div>
+        <p class="ob-alt" id="ob-alt" hidden></p>
+        <div class="ob-by" id="ob-by"></div>
+        <div class="ob-stats" id="ob-stats"></div>
+        <div class="ob-actions" id="ob-actions">
+          <a class="k-btn k-btn--primary k-btn--lg ob-cta" id="ob-read" href="#"><i class="ti ti-player-play-filled" aria-hidden="true"></i><span id="ob-read-t">Empezar a leer</span></a>
+          <button class="k-btn k-btn--secondary k-btn--lg" type="button" id="ob-lib" aria-haspopup="menu" aria-expanded="false" aria-controls="ob-lib-menu"><i class="ti ti-bookmark-plus" aria-hidden="true" id="ob-lib-i"></i><span id="ob-lib-t">Añadir a la biblioteca</span><i class="ti ti-chevron-down" aria-hidden="true" style="font-size:14px"></i></button>
+          <div class="k-menu" id="ob-lib-menu" role="menu"></div>
+          <button class="k-btn k-btn--secondary k-btn--icon k-btn--lg ob-fav" type="button" id="ob-fav" aria-pressed="false" aria-label="Favorita" title="Favorita" hidden><i class="ti ti-heart" aria-hidden="true"></i></button>
+          <button class="k-btn k-btn--secondary k-btn--icon k-btn--lg" type="button" id="ob-share" aria-label="Compartir" title="Compartir"><i class="ti ti-share" aria-hidden="true"></i></button>
         </div>
+        <div class="ob-owner" id="ob-owner" hidden><span><i class="ti ti-pencil" aria-hidden="true"></i>Puedes editar esta obra</span><a class="k-btn k-btn--secondary k-btn--sm" id="ob-new-ch" href="#"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo capítulo</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-edit" href="#"><i class="ti ti-settings" aria-hidden="true"></i>Editar ficha</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-studio" href="/estudio"><i class="ti ti-chart-bar" aria-hidden="true"></i>Estadísticas</a></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="k-page" id="k-main" style="padding-top:0">
+    <div class="ob-body">
+      <div>
+        <div class="k-tabs ob-tabs" role="tablist" aria-label="Secciones de la obra" id="ob-tabs">
+          <button class="k-tab" role="tab" type="button" id="tab-capitulos" aria-controls="panel-capitulos" data-tab="capitulos">Capítulos<span class="k-num" id="n-chs"></span></button>
+          <button class="k-tab" role="tab" type="button" id="tab-sobre" aria-controls="panel-sobre" data-tab="sobre">Sobre la obra</button>
+          <button class="k-tab" role="tab" type="button" id="tab-comentarios" aria-controls="panel-comentarios" data-tab="comentarios">Comentarios<span class="k-num" id="n-cmts"></span></button>
+          <button class="k-tab" role="tab" type="button" id="tab-comunidad" aria-controls="panel-comunidad" data-tab="comunidad">Comunidad</button>
+        </div>
+
+        <section class="ob-panel" role="tabpanel" id="panel-capitulos" aria-labelledby="tab-capitulos">
+          <div class="ob-bar">
+            <div class="k-input-group"><i class="ti ti-search" aria-hidden="true"></i><label class="k-visually-hidden" for="ch-q">Buscar capítulo</label><input class="k-input" id="ch-q" type="search" placeholder="Buscar por número o título…" autocomplete="off"></div>
+            <button class="k-btn k-btn--secondary k-btn--sm" type="button" id="ch-sort" aria-label="Cambiar orden"><i class="ti ti-sort-descending" aria-hidden="true" id="ch-sort-i"></i><span id="ch-sort-t">Más recientes</span></button>
+          </div>
+          <div class="ob-chs" id="chs"></div>
+          <button class="k-btn k-btn--secondary k-btn--block" type="button" id="ch-more" hidden style="margin-top:var(--k-3)"></button>
+        </section>
+
+        <section class="ob-panel" role="tabpanel" id="panel-sobre" aria-labelledby="tab-sobre" hidden>
+          <div class="ob-sec"><h3>Sinopsis</h3><p class="ob-syn is-clamped" id="ob-syn"></p><button class="k-btn k-btn--quiet k-btn--sm" type="button" id="ob-syn-more" hidden style="justify-self:start">Leer más</button></div>
+          <div class="ob-sec" id="sec-genres"><h3>Géneros y etiquetas</h3><div class="k-chips" id="ob-genres"></div></div>
+          <div class="ob-sec"><h3>Ficha</h3><dl class="ob-kv" id="ob-kv"></dl></div>
+          <div class="ob-sec" id="sec-links" hidden><h3>Apoya al autor</h3><div class="ob-links" id="ob-links"></div></div>
+          <div class="ob-sec"><h3>Puntuación</h3>
+            <div class="k-card ob-rate">
+              <div><div class="big" id="rt-avg">—<small> / 10</small></div><small class="k-faint" id="rt-n"></small></div>
+              <div class="ob-dist" id="rt-dist"></div>
+            </div>
+            <div class="k-row" style="gap:var(--k-3);flex-wrap:wrap"><span class="k-muted" style="font-size:var(--k-fs-sm)" id="rt-you-l">Tu puntuación:</span><div class="ob-stars" id="rt-stars" role="group" aria-label="Tu puntuación"></div><button class="k-btn k-btn--quiet k-btn--sm" type="button" id="rt-clear" hidden>Quitar</button></div>
+          </div>
+        </section>
+
+        <section class="ob-panel" role="tabpanel" id="panel-comentarios" aria-labelledby="tab-comentarios" hidden>
+          <form class="ob-form" id="cm-form" novalidate>
+            <label class="k-visually-hidden" for="cm-text">Escribe un comentario</label>
+            <textarea class="k-input" id="cm-text" rows="3" maxlength="2000" placeholder="¿Qué te está pareciendo? Sin spoilers fuertes, por favor."></textarea>
+            <div class="k-row"><small class="k-faint" id="cm-n">0/2000</small><button class="k-btn k-btn--primary" type="submit" id="cm-send" disabled>Publicar</button></div>
+          </form>
+          <div class="ob-cmts" id="cmts"></div>
+        </section>
+
+        <section class="ob-panel" role="tabpanel" id="panel-comunidad" aria-labelledby="tab-comunidad" hidden>
+          <div class="ob-cmts" id="posts"></div>
+          <a class="k-btn k-btn--secondary" href="/comunidad" style="margin-top:var(--k-4)"><i class="ti ti-messages" aria-hidden="true"></i>Ir a Comunidad</a>
+        </section>
+      </div>
+
+      <aside class="ob-aside" aria-label="Resumen">
+        <div class="k-card" id="side-me" hidden>
+          <h3>Tu lectura</h3>
+          <div class="k-row k-row--between" style="font-size:var(--k-fs-sm)"><b id="me-status"></b><span class="k-faint" id="me-prog"></span></div>
+          <div class="ob-me-prog" aria-hidden="true"><i id="me-bar" style="width:0"></i></div>
+          <textarea class="k-input" id="me-notes" rows="2" maxlength="1000" placeholder="Nota privada sobre esta obra…" aria-label="Nota privada"></textarea>
+          <small class="k-faint" id="me-notes-s" style="font-size:var(--k-fs-xs)" aria-live="polite"></small>
+        </div>
+        <div class="k-card" id="side-act" hidden><h3>Actividad</h3><div id="act"></div></div>
+        <div class="k-card" id="side-recs" hidden><h3>Si te gusta, prueba</h3><div id="recs"></div></div>
+      </aside>
+    </div>
+  </main>
 </div>
 
-    <!-- ERROR -->
-    <div id="error-page" class="error-page" style="display:none;">
-        <h2>Manga no encontrado</h2>
-        <p>El manga que buscas no existe o ha sido eliminado.</p>
-        <a href="/" class="btn-back">← Volver al inicio</a>
-    </div>
-
-    <!-- CONTENT -->
-    <div id="manga-content" style="display:none;">
-      <!-- CARTELERA LAYOUT -->
-      <div class="cartelera-layout">
-        <!-- COLUMN 1: Cover + Info -->
-        <div class="cartelera-left" id="cartelera-left">
-          <div class="cartelera-card">
-            <!-- Title row (moved from banner) -->
-            <div class="manga-title-row">
-              <div class="manga-title" id="manga-title"></div>
-              <span class="manga-type-badge" id="manga-type-badge" style="display:none;"></span>
-              <span class="manga-status-badge" id="manga-status-badge" style="display:none;"></span>
-              <span class="manga-id-badge" id="manga-id-badge" style="display:none;"></span>
-              <span class="manga-viewed-badge" id="manga-viewed-badge" style="display:none;">Cartelera vista</span>
-            </div>
-            <div class="manga-subtitle" id="manga-subtitle" style="display:none;"></div>
-            <div class="manga-alt-titles" id="manga-alt-titles"></div>
-
-            <div class="manga-cover-wrap">
-              <div class="manga-cover" id="manga-cover"></div>
-              <div class="cover-rating" id="cover-rating" style="display:none;" onclick="toggleRatingVote(event)">
-                <div class="cover-rating-stars" id="cover-rating-stars"></div>
-                <span class="cover-rating-text" id="cover-rating-text"></span>
-                <span class="cover-rating-votes" id="cover-rating-votes"></span>
-              </div>
-              <div class="rating-vote-popup" id="rating-vote-popup" style="display:none;">
-                <div class="rating-stars-row">
-                  <span class="rating-star" data-val="1" onmouseover="hoverStar(1)" onmouseout="resetStars()" onclick="selectStar(1)">★</span>
-                  <span class="rating-star" data-val="2" onmouseover="hoverStar(2)" onmouseout="resetStars()" onclick="selectStar(2)">★</span>
-                  <span class="rating-star" data-val="3" onmouseover="hoverStar(3)" onmouseout="resetStars()" onclick="selectStar(3)">★</span>
-                  <span class="rating-star" data-val="4" onmouseover="hoverStar(4)" onmouseout="resetStars()" onclick="selectStar(4)">★</span>
-                  <span class="rating-star" data-val="5" onmouseover="hoverStar(5)" onmouseout="resetStars()" onclick="selectStar(5)">★</span>
-                </div>
-                <div class="rating-label" id="rating-label"></div>
-                <div class="rating-btn-row">
-                  <button class="status-btn" id="btn-rate-submit" disabled onclick="submitRating()">Enviar</button>
-                  <button class="status-btn" id="btn-rate-remove" style="display:none;" onclick="removeRating()">Quitar</button>
-                </div>
-                <div class="rating-status" id="rating-status"></div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <div class="info-row"><span class="info-label">Autor</span><span class="info-value" id="info-author">—</span></div>
-              <div class="info-row"><span class="info-label">Arte</span><span class="info-value" id="info-artist">—</span></div>
-              <div class="info-row" id="info-publisher-row" hidden><span class="info-label">Editorial</span><span class="info-value" id="info-publisher">—</span></div>
-            </div>
-
-            <div class="rpm-row" id="manga-stats" style="display:none;">
-              <div class="rpm-item"><span class="rpm-label">Ranked</span><span class="rpm-value" id="ranked-value">#—</span></div>
-              <div class="rpm-item"><span class="rpm-label">Popularity</span><span class="rpm-value" id="popularity-value">#—</span></div>
-              <div class="rpm-item"><span class="rpm-label">Members</span><span class="rpm-value" id="members-value">—</span></div>
-            </div>
-
-            <div class="manga-description" id="manga-description"></div>
-
-            <div class="tags-section" id="manga-tags"></div>
-
-            <div class="stats-row">
-              <div class="stats-mini">
-                <span class="stats-mini-label">Lecturas</span>
-                <span class="stats-mini-value" id="stat-reads">—</span>
-              </div>
-              <div class="stats-mini">
-                <span class="stats-mini-label">Cap. leídos</span>
-                <span class="stats-mini-value" id="stat-chapters">—</span>
-              </div>
-            </div>
-
-            <button class="btn-add-library" id="btn-add-to-library" onclick="addToLibrary()">
-              <i class="ti ti-plus"></i> + Añadir
-            </button>
-          </div>
-        </div>
-
-        <!-- COLUMN 2: Biblioteca + Notes + Chapters + Feed + Recommendations -->
-        <div class="cartelera-center">
-
-          <div class="center-section">
-            <h2 class="section-title">Biblioteca</h2>
-            <div class="status-bar" id="status-bar">
-              <button class="state-chip sc-reading" data-state="leyendo" onclick="handleStatusClick(this, 'leyendo')"><div class="state-chip-dot"></div>Leyendo</button>
-              <button class="state-chip sc-continuing" data-state="continuando" onclick="handleStatusClick(this, 'continuando')"><div class="state-chip-dot"></div>Continuando</button>
-              <button class="state-chip sc-planned" data-state="pendientes" onclick="handleStatusClick(this, 'pendientes')"><div class="state-chip-dot"></div>Pendientes</button>
-              <button class="state-chip sc-completed" data-state="terminados" onclick="handleStatusClick(this, 'terminados')"><div class="state-chip-dot"></div>Terminados</button>
-              <button class="state-chip sc-dropped" data-state="abandonados" onclick="handleStatusClick(this, 'abandonados')"><div class="state-chip-dot"></div>Abandonados</button>
-              <button class="state-chip sc-rereading" data-state="releyendo" onclick="handleStatusClick(this, 'releyendo')"><div class="state-chip-dot"></div>Releyendo</button>
-              <button class="state-chip sc-favorite" id="btn-favorite" style="display:none;" onclick="handleToggleFavorite()"><div class="state-chip-dot"></div><span id="fav-label">♡ Favorito</span></button>
-              <button class="state-chip btn-remove" id="btn-remove-library" style="display:none;" onclick="handleRemoveFromLibrary()">🗑 Quitar</button>
-            </div>
-          </div>
-
-          <div class="center-section">
-            <div class="notes-header">
-              <i class="ti ti-pencil" style="font-size:14px;"></i>
-              Añadir nota
-            </div>
-            <textarea class="notes-input" id="notes-input" placeholder="Escribe una nota personal sobre este manga..." rows="2"></textarea>
-          </div>
-
-          <!-- CHAPTERS -->
-          <div class="center-section">
-            <div class="chapters-header">
-              <h2 class="section-title" style="margin-bottom:0;">Lista de capítulos</h2>
-              <button class="chapters-order-btn" id="chapters-order-btn" onclick="toggleChapterOrder()" title="Cambiar orden">
-                <i class="ti ti-chevron-up order-arrow active" id="order-arrow-up"></i>
-                <i class="ti ti-chevron-down order-arrow" id="order-arrow-down"></i>
-              </button>
-            </div>
-            <div class="chapter-list" id="chapter-list">
-              <div class="chapter-empty">Cargando capítulos...</div>
-            </div>
-            <button class="chapters-show-more" id="chapters-show-more" style="display:none;" onclick="showAllChapters()">
-              ver más (<span id="chapters-hidden-count">0</span>)
-            </button>
-          </div>
-
-          <!-- FEED -->
-          <div class="feed-header">
-            <h2 class="section-title" style="margin-bottom:4px;">Feed <span class="feed-manga-tag" id="feed-manga-tag">—</span></h2>
-          </div>
-          <div class="feed-tabs">
-            <button class="feed-tab active" data-tab="post" onclick="switchFeedTab('post')">Post</button>
-            <button class="feed-tab" data-tab="social" onclick="switchFeedTab('social')">Social</button>
-          </div>
-          <div class="feed-content" id="feed-content">
-            <div class="feed-tab-panel" id="feed-panel-post">
-              <div class="post-list" id="post-list">
-                <div class="post-empty">Cargando publicaciones...</div>
-              </div>
-            </div>
-            <div class="feed-tab-panel" id="feed-panel-social" style="display:none;">
-              <div class="post-empty" id="social-placeholder">
-                <i class="ti ti-users" style="font-size:40px;color:rgb(var(--k-ink) / 0.06);"></i>
-                <div style="margin-top:12px;color:rgb(var(--k-ink) / 0.08);">Grupo social próximamente</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="recommendations-section">
-            <h3 class="section-subtitle">Recomendaciones</h3>
-            <div class="rec-horizontal" id="rec-horizontal">
-              <div class="rec-empty">Cargando recomendaciones...</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- COLUMN 3: Activity + Comments sidebar -->
-        <div class="cartelera-right" id="right-sidebar">
-          <div class="drawer-header">Actividad Reciente</div>
-          <div class="activity-cards">
-            <div class="activity-card">
-              <div class="activity-card-icon"><i class="ti ti-user-plus"></i></div>
-              <div class="activity-card-body">
-                <div class="activity-card-value" id="activity-new-today">0</div>
-                <div class="activity-card-label">Nuevo miembro hoy</div>
-              </div>
-            </div>
-            <div class="activity-card">
-              <div class="activity-card-icon"><i class="ti ti-book-2"></i></div>
-              <div class="activity-card-body">
-                <div class="activity-card-value" id="activity-reading-week">0</div>
-                <div class="activity-card-label">Empezaron esta semana</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sidebar trigger (fixed right edge) -->
-      <div class="sidebar-trigger" id="sidebar-trigger" onclick="toggleSidebar()">
-        <div class="trigger-line"></div>
-      </div>
-
-      <!-- Left column trigger (fixed left edge) -->
-      <div class="sidebar-trigger-left" id="sidebar-trigger-left" onclick="toggleLeftColumn()">
-        <div class="trigger-line"></div>
-      </div>
-
-      <!-- Comments FAB -->
-      <button class="comments-fab" id="comments-fab" onclick="toggleMangaComments()">
-        <i class="ti ti-message"></i>
-      </button>
-
-      <!-- Comments popover -->
-      <div class="comments-popover" id="comments-popover">
-        <div class="mcp-header">
-          <span class="mcp-title"><i class="ti ti-message"></i> Comentarios</span>
-          <button onclick="closeMangaComments()"><i class="ti ti-x"></i></button>
-        </div>
-        <div class="mcp-body" id="mcp-body">
-          <div class="comment-empty">Cargando comentarios...</div>
-        </div>
-        <div class="mcp-footer">
-          <textarea id="mcp-input" placeholder="Escribe un comentario..." rows="1"></textarea>
-          <button id="mcp-submit-btn" onclick="submitMangaComment()">Enviar</button>
-        </div>
-      </div>
-    </div>
-
-    <script>
-        function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-        const mangaId = decodeURIComponent(window.location.pathname.replace(/\/+$/, '').split('/').pop());
-        if (!mangaId) { console.error('[KAMI] mangaId vacío desde URL:', window.location.pathname); showError(); }
-
-        let mangaData = null;
-        let libraryStatus = null;
-        var currentChapterList = [];
-        var _userProgress = 0;
-        var currentUserRating = null;
-
-        async function trackAction(action_type, chapter_id, metadata) {
-          var token = localStorage.getItem('kami_token');
-          if (!token) return;
-          try {
-            await fetch('/api/track', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ action_type, manga_id: mangaId, chapter_id, metadata: metadata || {} }),
-            });
-          } catch (e) {}
-        }
-
-        var loadMangaStarted = Date.now();
-        var loadMangaTimer = setInterval(function() {
-            var elapsed = Math.round((Date.now() - loadMangaStarted) / 1000);
-            var loadingEl = document.getElementById('loading');
-            if (loadingEl && loadingEl.style.display !== 'none') {
-                var skeleton = loadingEl.querySelector('.skeleton');
-                if (skeleton) {
-                    var msg = skeleton.querySelector('.load-timeout-msg');
-                    if (!msg) {
-                        msg = document.createElement('div');
-                        msg.className = 'load-timeout-msg';
-                        msg.style.cssText = 'text-align:center;color:rgb(var(--k-ink) / 0.2);font-size:12px;margin-top:16px;';
-                        skeleton.appendChild(msg);
-                    }
-                    if (elapsed > 8) {
-                        msg.textContent = 'Conectando con el servidor... (' + elapsed + 's)';
-                    }
-                }
-                if (elapsed > 25) {
-                    clearInterval(loadMangaTimer);
-                    showError();
-                }
-            } else {
-                clearInterval(loadMangaTimer);
-            }
-        }, 2000);
-
-        async function loadManga() {
-            try {
-                var result = await Promise.all([
-                    kamiOffline.safeFetch(`/api/manga/${mangaId}`, {}, { cacheKey: 'kami_manga_' + mangaId, maxAge: 7*24*60*60*1000 }),
-                    kamiOffline.safeFetch(`/api/chapters/${mangaId}?limit=200`, {}, { cacheKey: 'kami_chapters_' + mangaId, maxAge: 7*24*60*60*1000 }),
-                    kamiOffline.safeFetch(`/api/manga/${mangaId}/stats`, {}, { cacheKey: 'kami_manga_stats_' + mangaId, maxAge: 7*24*60*60*1000 }),
-                ]);
-                clearInterval(loadMangaTimer);
-                var mangaResult = result[0], chaptersResult = result[1], statsResult = result[2];
-                if (!mangaResult.ok || !mangaResult.data?.manga) { console.error('[KAMI] manga no encontrado en API, resultado:', mangaResult); throw new Error('Not found'); }
-                mangaData = mangaResult.data.manga;
-                const chaptersData = chaptersResult.ok ? chaptersResult.data : null;
-                const statsData = statsResult.ok ? statsResult.data : null;
-                renderManga(mangaData, chaptersData?.chapters || [], statsData);
-                loadLibraryStatus();
-                // Track unique view + daily_login + manga_started
-                var token = localStorage.getItem('kami_token');
-                if (token) {
-                  fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + token } })
-                    .then(function(r){ return r.json(); })
-                    .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
-                    .catch(function(){});
-                  fetch('/api/manga/' + mangaId + '/view', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } })
-                    .then(function(r) { return r.json(); })
-                    .then(function(data) {
-                      if (data.hasViewed === false && data.success) {
-                        var vb = document.getElementById('manga-viewed-badge');
-                        if (vb) vb.style.display = 'inline-flex';
-                      }
-                    })
-                    .catch(function(){});
-                  trackAction('daily_login');
-                  trackAction('manga_started');
-                }
-            } catch(e) {
-                clearInterval(loadMangaTimer);
-                console.error('[KAMI] Error en loadManga:', e);
-                showError();
-            }
-        }
-
-        async function loadLibraryStatus() {
-            const token = localStorage.getItem('kami_token');
-            if (!token) return;
-            try {
-                const r = await fetch(`/api/library/check/${mangaId}`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const data = await r.json();
-                if (r.ok) {
-                    libraryStatus = data;
-                    updateStatusButtons(data);
-                }
-            } catch (e) {
-                console.error('Error al cargar estado de biblioteca:', e);
-            }
-        }
-
-        function updateStatusButtons(data) {
-            document.querySelectorAll('#status-bar .state-chip').forEach(btn => {
-                btn.classList.remove('active');
-                if (!btn.dataset.state) return;
-                const state = btn.dataset.state;
-                const dbState = { leyendo:'reading', continuando:'continuing', pendientes:'planned', favoritos:'favorite', terminados:'completed', abandonados:'dropped', releyendo:'rereading' }[state];
-                if (data.inLibrary && data.status === dbState) {
-                    btn.classList.add('active');
-                }
-            });
-            const removeBtn = document.getElementById('btn-remove-library');
-            if (removeBtn) {
-                removeBtn.style.display = data.inLibrary ? 'inline-flex' : 'none';
-            }
-            const favBtn = document.getElementById('btn-favorite');
-            const favLabel = document.getElementById('fav-label');
-            if (favBtn) {
-                favBtn.style.display = data.inLibrary ? 'inline-flex' : 'none';
-                if (favLabel) favLabel.textContent = data.is_favorite ? '❤️ Quitar favorito' : '♡ Favorito';
-            }
-            const addBtn = document.getElementById('btn-add-to-library');
-            if (addBtn) {
-                if (data.inLibrary) {
-                    addBtn.innerHTML = '<i class="ti ti-check"></i> Añadido';
-                    addBtn.className = 'btn-add-library added';
-                } else {
-                    addBtn.innerHTML = '<i class="ti ti-plus"></i> + Añadir';
-                    addBtn.className = 'btn-add-library';
-                }
-            }
-        }
-
-        async function handleStatusClick(btn, state) {
-            const token = localStorage.getItem('kami_token');
-            if (!token) {
-                if (confirm('Debes iniciar sesi\u00f3n para usar la biblioteca. \u00bfIr al login?')) {
-                    window.location.href = '/acceder?return=' + encodeURIComponent(window.location.pathname);
-                }
-                return;
-            }
-
-            document.querySelectorAll('#status-bar .state-chip').forEach(b => {
-                if (b.dataset.state) b.classList.toggle('active', b === btn);
-            });
-            btn.innerHTML = '⏳ ' + (btn.textContent.trim().replace(/^[^A-Za-z\u00C0-\u024f]+/, ''));
-
-            try {
-                const r = await fetch('/api/library/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ manga_id: mangaId, status: state }),
-                });
-                const data = await r.json();
-                if (!r.ok) {
-                    alert('Error: ' + (data.error || 'No se pudo guardar'));
-                    loadLibraryStatus();
-                    return;
-                }
-                libraryStatus = { inLibrary: true, status: data.manga?.status || state, is_favorite: libraryStatus?.is_favorite || false };
-                updateStatusButtons(libraryStatus);
-                trackAction('library_' + state, null, {});
-            } catch (e) {
-                alert('Error de conexi\u00f3n: ' + e.message);
-                loadLibraryStatus();
-            }
-        }
-
-        async function handleRemoveFromLibrary() {
-            var confirmed = await new Promise(function(resolve) {
-                var m = document.getElementById('confirm-modal');
-                if (!m) { resolve(true); return; }
-                m.style.display = 'flex';
-                m.querySelector('.confirm-msg').textContent = '\u00bfEliminar este manga de tu biblioteca?';
-                m.querySelector('.confirm-yes').onclick = function() { m.style.display = 'none'; resolve(true); };
-                m.querySelector('.confirm-no').onclick = function() { m.style.display = 'none'; resolve(false); };
-            });
-            if (!confirmed) return;
-            const token = localStorage.getItem('kami_token');
-            if (!token) return;
-            try {
-                const r = await fetch('/api/library/' + mangaId, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token },
-                });
-                const data = await r.json();
-                if (!r.ok) { alert('Error: ' + (data.error || 'No se pudo eliminar')); return; }
-                libraryStatus = null;
-                updateStatusButtons({ inLibrary: false });
-            } catch (e) {
-                alert('Error de conexión: ' + e.message);
-            }
-        }
-
-        async function handleToggleFavorite() {
-            const token = localStorage.getItem('kami_token');
-            if (!token) return;
-            try {
-                const r = await fetch('/api/library/' + mangaId + '/favorite', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token },
-                });
-                const data = await r.json();
-                if (!r.ok) { alert('Error: ' + (data.error || 'No se pudo cambiar')); return; }
-                if (libraryStatus) libraryStatus.is_favorite = data.is_favorite;
-                updateStatusButtons(libraryStatus || { inLibrary: true, status: '', is_favorite: data.is_favorite });
-            } catch (e) {
-                alert('Error de conexión: ' + e.message);
-            }
-        }
-
-        function showError() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('error-page').style.display = 'block';
-            var mc = document.getElementById('manga-content');
-            if (mc) mc.style.display = 'none';
-        }
-
-        function renderManga(manga, chapters, stats) {
-            var loadingEl = document.getElementById('loading');
-            if (loadingEl) loadingEl.style.display = 'none';
-            var contentEl = document.getElementById('manga-content');
-            if (contentEl) contentEl.style.display = 'block';
-
-            document.title = `${manga.title} · KamiTales`;
-
-            function setText(id, val) {
-                var el = document.getElementById(id);
-                if (el) el.textContent = val || '';
-            }
-            function setHTML(id, val) {
-                var el = document.getElementById(id);
-                if (el) el.innerHTML = val || '';
-            }
-            function setDisplay(id, val) {
-                var el = document.getElementById(id);
-                if (el) el.style.display = val || 'none';
-            }
-
-            setText('manga-title', manga.title);
-
-            const typeLabels = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', oneshot:'One-shot' };
-            var typeBadge = document.getElementById('manga-type-badge');
-            if (typeBadge) {
-                typeBadge.textContent = typeLabels[manga.type] || manga.type || 'Manga';
-                typeBadge.className = 'manga-type-badge type-badge-' + (manga.type || 'manga');
-                typeBadge.style.display = 'inline-flex';
-            }
-
-            const statusLabels = { ongoing:'En emisión', completed:'Completado', hiatus:'En hiato', cancelled:'Cancelado' };
-            var statusBadge = document.getElementById('manga-status-badge');
-            if (statusBadge) {
-                statusBadge.textContent = statusLabels[manga.status] || manga.status || '';
-                statusBadge.style.display = manga.status ? 'inline-flex' : 'none';
-            }
-
-            var idBadge = document.getElementById('manga-id-badge');
-            if (idBadge) {
-                idBadge.textContent = manga.id;
-                idBadge.style.display = 'inline-flex';
-            }
-
-            var viewedBadge = document.getElementById('manga-viewed-badge');
-            if (viewedBadge) viewedBadge.style.display = manga.hasViewedCartelera ? 'inline-flex' : 'none';
-
-            var parts = [];
-            if (manga.author) parts.push('Por <a href="/search?q=' + encodeURIComponent(manga.author) + '">' + manga.author + '</a>');
-            if (manga.artist && manga.artist !== manga.author) parts.push('Arte: ' + manga.artist);
-            setHTML('manga-subtitle', parts.join(' · ') || '&nbsp;');
-
-            var altEl = document.getElementById('manga-alt-titles');
-            var alts = (manga.alternativeTitles || []).filter(Boolean);
-            if (altEl) altEl.innerHTML = alts.length > 0 ? alts.map(function(t) { return '<span class="manga-alt-title">' + t + '</span>'; }).join('') : '';
-
-            var mangaStats = document.getElementById('manga-stats');
-            if (mangaStats) {
-                if (manga.ranked || manga.popularity || manga.members) {
-                    setText('ranked-value', manga.ranked ? '#' + manga.ranked.toLocaleString() : '#—');
-                    setText('popularity-value', manga.popularity ? '#' + manga.popularity.toLocaleString() : '#—');
-                    setText('members-value', manga.members ? manga.members.toLocaleString() : '—');
-                    mangaStats.style.display = 'flex';
-                } else {
-                    mangaStats.style.display = 'none';
-                }
-            }
-
-            var coverRatingEl = document.getElementById('cover-rating');
-            if (coverRatingEl) {
-                if (manga.rating > 0) {
-                    var full = Math.round(manga.rating / 2);
-                    var starsHtml = '';
-                    for (var si = 0; si < 5; si++) {
-                        starsHtml += '<span class="' + (si < full ? 'star-filled' : 'star-empty') + '">★</span>';
-                    }
-                    var coverRatingStars = document.getElementById('cover-rating-stars');
-                    if (coverRatingStars) coverRatingStars.innerHTML = starsHtml;
-                    setText('cover-rating-text', manga.rating.toFixed(1) + ' / 10');
-                    var coverRatingVotes = document.getElementById('cover-rating-votes');
-                    if (coverRatingVotes && manga.totalRatings) coverRatingVotes.textContent = ' · ' + manga.totalRatings.toLocaleString() + ' votos';
-                    coverRatingEl.style.display = 'flex';
-                } else {
-                    coverRatingEl.style.display = 'none';
-                }
-            }
-
-            var descEl = document.getElementById('manga-description');
-            if (descEl) {
-                var desc = manga.description || '';
-                if (desc) {
-                    descEl.textContent = desc;
-                    descEl.className = 'manga-description';
-                } else {
-                    descEl.textContent = 'Sin descripción disponible.';
-                    descEl.className = 'manga-description empty';
-                }
-            }
-
-            var tagsEl = document.getElementById('manga-tags');
-            if (tagsEl) {
-                var genres = manga.genres || [];
-                tagsEl.innerHTML = genres.map(function(g) { return '<span class="manga-tag">' + g + '</span>'; }).join('');
-            }
-
-            var coverEl = document.getElementById('manga-cover');
-            if (coverEl) {
-                if (manga.cover) {
-                    coverEl.innerHTML = '<img src="' + manga.cover + '" alt="' + (manga.title||'') + '" loading="lazy" onerror="kamiReplaceCover(this,\'' + (manga.type||'') + '\')">';
-                } else {
-                    coverEl.innerHTML = coverPlaceholder(manga.title, manga.type);
-                }
-            }
-
-            setText('info-author', manga.author || '—');
-            setText('info-artist', manga.artist || '—');
-            if (manga.publisher) { setText('info-publisher', manga.publisher); document.getElementById('info-publisher-row').hidden = false; }
-
-            if (stats) {
-                setText('stat-reads', (stats.totalReads || 0).toLocaleString());
-                setText('stat-chapters', (stats.chaptersRead || 0).toLocaleString());
-                if (stats.userRating) currentUserRating = stats.userRating * 2;
-            }
-
-            setText('feed-manga-tag', '[' + manga.title + ']');
-
-            currentChapterList = chapters;
-
-            loadChapterList();
-            loadUserNotes();
-            loadActivity();
-            loadRecommendations();
-            loadMangaPosts();
-        }
-
-        function coverPlaceholder(title, type) {
-            return '<div class="cover-placeholder">' + window.kamiDefaultCover(type) + '<span>' + (title ? title.charAt(0).toUpperCase() : '?') + '</span></div>';
-        }
-
-        var chapterOrderDesc = true;
-
-        function toggleChapterOrder() {
-          chapterOrderDesc = !chapterOrderDesc;
-          document.getElementById('order-arrow-up').classList.toggle('active', !chapterOrderDesc);
-          document.getElementById('order-arrow-down').classList.toggle('active', chapterOrderDesc);
-          renderChapterList();
-        }
-
-        function renderChapterList() {
-          var container = document.getElementById('chapter-list');
-          var showMoreBtn = document.getElementById('chapters-show-more');
-          var hiddenCount = document.getElementById('chapters-hidden-count');
-          if (!container) return;
-          var list = (Array.isArray(currentChapterList) ? currentChapterList : []).slice();
-          if (!chapterOrderDesc) list.reverse();
-
-          var displayed = list.slice(0, 2);
-          var hidden = list.slice(2);
-
-          container.innerHTML = displayed.map(function(ch) {
-            return renderChapterRow(ch);
-          }).join('');
-
-          if (hidden.length > 0) {
-            hidden.forEach(function(ch) {
-              var row = document.createElement('div');
-              row.className = 'chapter-row blurred';
-              row.innerHTML = renderChapterRow(ch).replace('chapter-row', '');
-              container.appendChild(row);
-            });
-            hiddenCount.textContent = hidden.length;
-            showMoreBtn.style.display = 'block';
-          } else {
-            showMoreBtn.style.display = 'none';
-          }
-        }
-
-        function renderChapterRow(ch) {
-          var date = ch.createdAt ? new Date(ch.createdAt).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }) : (ch.releaseDate || '');
-          var numStr = String(ch.number).padStart(3, '0');
-          var readClass = _userProgress > 0 && ch.number <= _userProgress ? ' chapter-read' : '';
-          return '<div class="chapter-row' + readClass + '" onclick="window.location.href=\'/leer/' + mangaId + '/' + ch.number + '\'">' +
-            '<div class="chapter-thumb">#' + numStr + '</div>' +
-            '<div class="chapter-info">' +
-              '<div class="chapter-num-line">' +
-                '<span class="chapter-num">#' + numStr + '</span>' +
-                '<span class="chapter-date">' + date + '</span>' +
-                (ch.freeAt && new Date(ch.freeAt) > new Date() ? '<span class="k-badge k-badge--gold" title="Adelanto: se libera gratis"><i class="ti ti-lock" aria-hidden="true"></i>Gratis el ' + new Date(ch.freeAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span>' : '') +
-                (ch.wordCount ? '<span class="chapter-date">' + Math.max(1, Math.round(ch.wordCount / 230)) + ' min</span>' : '') +
-              '</div>' +
-              '<div class="chapter-title">' + (ch.title ? escHtml('Cap\u00edtulo ' + ch.number + ': ' + ch.title) : escHtml('Cap\u00edtulo ' + ch.number)) + '</div>' +
-            '</div>' +
-            '<button class="chapter-comments-btn" onclick="event.stopPropagation();openChapterComments(' + ch.number + ')" title="Comentarios del cap\u00edtulo">' +
-              '<i class="ti ti-message"></i>' +
-              (ch.commentCount > 0 ? '<span class="cmt-count">' + ch.commentCount + '</span>' : '') +
-            '</button>' +
-          '</div>';
-        }
-
-        function showAllChapters() {
-          var container = document.getElementById('chapter-list');
-          var showMoreBtn = document.getElementById('chapters-show-more');
-          var list = (currentChapterList || []).slice();
-          if (!chapterOrderDesc) list.reverse();
-          container.innerHTML = list.map(function(ch) { return renderChapterRow(ch); }).join('');
-          showMoreBtn.style.display = 'none';
-        }
-
-        function loadChapterList() {
-          renderChapterList();
-        }
-
-        var currentCommentsChapter = null;
-
-        function ensureCommentsPanel() {
-          if (document.getElementById('chapter-comments-panel')) return;
-          var panel = document.createElement('div');
-          panel.id = 'chapter-comments-panel';
-          panel.innerHTML =
-            '<div class="cc-header">' +
-              '<div class="cc-title"><i class="ti ti-message"></i> <span id="cc-chapter-title">Comentarios</span></div>' +
-              '<button onclick="closeChapterComments()"><i class="ti ti-x"></i></button>' +
-            '</div>' +
-            '<div class="cc-body" id="cc-body"><div class="comment-empty">Cargando...</div></div>' +
-            '<div class="cc-footer">' +
-              '<textarea id="cc-input" placeholder="Escribe un comentario..." rows="1"></textarea>' +
-              '<button id="cc-submit-btn" onclick="submitChapterComment()">Enviar</button>' +
-            '</div>';
-          var overlay = document.createElement('div');
-          overlay.id = 'chapter-comments-overlay';
-          overlay.onclick = closeChapterComments;
-          document.body.appendChild(overlay);
-          document.body.appendChild(panel);
-        }
-
-        async function openChapterComments(chapterNum) {
-          var token = localStorage.getItem('kami_token');
-          if (!token) { alert('Debes iniciar sesión para ver comentarios'); return; }
-          ensureCommentsPanel();
-          currentCommentsChapter = chapterNum;
-          document.getElementById('cc-chapter-title').textContent = 'Cap\u00edtulo ' + chapterNum;
-          document.getElementById('chapter-comments-overlay').classList.add('open');
-          document.getElementById('chapter-comments-panel').classList.add('open');
-          document.getElementById('cc-input').value = '';
-          loadChapterComments();
-        }
-
-        function closeChapterComments() {
-          document.getElementById('chapter-comments-overlay').classList.remove('open');
-          document.getElementById('chapter-comments-panel').classList.remove('open');
-          currentCommentsChapter = null;
-        }
-
-        async function loadChapterComments() {
-          var body = document.getElementById('cc-body');
-          if (!body || !currentCommentsChapter) return;
-          body.innerHTML = '<div class="comment-empty">Cargando...</div>';
-          try {
-            var token = localStorage.getItem('kami_token');
-            var r = await fetch('/api/comments/' + mangaId + '/' + currentCommentsChapter, { headers: { 'Authorization': 'Bearer ' + token } });
-            var data = await r.json();
-            var comments = data.comments || [];
-            if (comments.length === 0) {
-              body.innerHTML = '<div class="comment-empty">Sin comentarios aún</div>';
-              return;
-            }
-            body.innerHTML = comments.map(function(c) {
-              var initial = (c.username || '?').substring(0, 2).toUpperCase();
-              var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
-              var color = colors[(c.id || 0) % colors.length];
-              var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-              return '<div class="comment-item">' +
-                '<div class="comment-avatar" style="background:' + color + '">' + initial + '</div>' +
-                '<div class="comment-body"><div class="comment-meta">' +
-                  '<span class="comment-username">' + escHtml(c.username || 'Anónimo') + '</span>' +
-                  '<span class="comment-date">' + time + '</span>' +
-                '</div>' +
-                '<div class="comment-text">' + escHtml(c.text || '') + '</div></div>' +
-              '</div>';
-            }).join('');
-          } catch(e) {
-            body.innerHTML = '<div class="comment-empty">Error al cargar</div>';
-          }
-        }
-
-        async function submitChapterComment() {
-          if (!currentCommentsChapter) return;
-          var token = localStorage.getItem('kami_token');
-          if (!token) { alert('Debes iniciar sesión'); return; }
-          var input = document.getElementById('cc-input');
-          var btn = document.getElementById('cc-submit-btn');
-          if (!input || !input.value.trim()) return;
-          btn.disabled = true; btn.textContent = 'Enviando...';
-          try {
-            var r = await fetch('/api/comments/' + mangaId + '/' + currentCommentsChapter, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ text: input.value.trim() })
-            });
-            if (r.ok) { input.value = ''; loadChapterComments(); }
-            else { var d = await r.json(); alert(d.error || 'Error'); }
-          } catch(e) { alert('Error de conexión'); }
-          btn.disabled = false; btn.textContent = 'Enviar';
-        }
-
-        function toggleSidebar() {
-          document.body.classList.toggle('right-closed');
-        }
-
-        function toggleLeftColumn() {
-          document.body.classList.toggle('left-closed');
-        }
-
-        async function addToLibrary() {
-          var token = localStorage.getItem('kami_token');
-          if (!token) { alert('Debes iniciar sesión'); return; }
-          try {
-            var r = await fetch('/api/library/update', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ manga_id: mangaId, status: 'pendientes' })
-            });
-            var d = await r.json();
-            if (r.ok) {
-              var btn = document.getElementById('btn-add-to-library');
-              btn.innerHTML = '<i class="ti ti-check"></i> Añadido';
-              btn.className = 'btn-add-library added';
-              loadLibraryStatus();
-              trackAction('library_pendientes');
-            } else { alert(d.error || 'Error'); }
-          } catch(e) { alert('Error de conexión'); }
-        }
-
-        async function loadUserNotes() {
-          var token = localStorage.getItem('kami_token');
-          if (!token) return;
-          try {
-            var r = await fetch('/api/manga/' + mangaId + '/notes', { headers: { 'Authorization': 'Bearer ' + token } });
-            if (r.ok) {
-              var d = await r.json();
-              var ta = document.getElementById('notes-input');
-              if (ta) { ta.value = d.notes || ''; }
-            }
-          } catch(e) {}
-        }
-
-        async function saveNotes() {
-          var token = localStorage.getItem('kami_token');
-          if (!token) return;
-          var ta = document.getElementById('notes-input');
-          if (!ta) return;
-          try {
-            await fetch('/api/manga/' + mangaId + '/notes', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ notes: ta.value })
-            });
-          } catch(e) {}
-        }
-
-        async function loadActivity() {
-          try {
-            var r = await fetch('/api/manga/' + mangaId + '/activity');
-            if (r.ok) {
-              var d = await r.json();
-              document.getElementById('activity-new-today').textContent = '+' + (d.newMembersToday || 0);
-              document.getElementById('activity-reading-week').textContent = '+' + (d.startedReadingWeek || 0);
-            }
-          } catch(e) {}
-        }
-
-        async function loadRecommendations() {
-          var container = document.getElementById('rec-horizontal');
-          if (!container) return;
-          try {
-            var r = await fetch('/api/manga/' + mangaId + '/recommendations?limit=6');
-            if (r.ok) {
-              var d = await r.json();
-              if (d.recommendations && d.recommendations.length > 0) {
-                container.innerHTML = d.recommendations.map(function(m) {
-                  var cover = m.cover || '';
-                  var initial = (m.title || '?').charAt(0).toUpperCase();
-                  var rating = m.rating ? parseFloat(m.rating).toFixed(1) : '';
-                  var coverHtml = cover
-                    ? '<img src="' + cover + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'rec-card-fallback\')">'
-                    : '<span class="rec-card-fallback">' + initial + '</span>';
-                  return '<a href="/obra/' + m.id + '" class="rec-card">' +
-                    '<div class="rec-card-cover">' + coverHtml + '</div>' +
-                    '<div class="rec-card-title">' + (m.title || '') + '</div>' +
-                    (rating ? '<div class="rec-card-rating">' + rating + '</div>' : '') +
-                    '</a>';
-                }).join('');
-              } else {
-                container.innerHTML = '<div class="rec-empty">No hay recomendaciones disponibles</div>';
-              }
-            } else {
-              container.innerHTML = '<div class="rec-empty">No hay recomendaciones disponibles</div>';
-            }
-          } catch(e) {
-            container.innerHTML = '<div class="rec-empty">Error al cargar recomendaciones</div>';
-          }
-        }
-
-        function toggleMangaComments() {
-          var token = localStorage.getItem('kami_token');
-          if (!token) { alert('Debes iniciar sesión para ver comentarios'); return; }
-          var popover = document.getElementById('comments-popover');
-          var fab = document.getElementById('comments-fab');
-          var isOpen = popover.classList.contains('open');
-          if (isOpen) {
-            popover.classList.remove('open');
-            fab.classList.remove('active');
-          } else {
-            popover.classList.add('open');
-            fab.classList.add('active');
-            document.getElementById('mcp-input').value = '';
-            loadMangaComments();
-          }
-        }
-
-        function closeMangaComments() {
-          document.getElementById('comments-popover').classList.remove('open');
-          document.getElementById('comments-fab').classList.remove('active');
-        }
-
-        async function loadMangaComments() {
-          var body = document.getElementById('mcp-body');
-          if (!body) return;
-          body.innerHTML = '<div class="comment-empty">Cargando...</div>';
-          try {
-            var r = await fetch('/api/manga/' + mangaId + '/comments?limit=50');
-            if (r.ok) {
-              var d = await r.json();
-              if (d.comments && d.comments.length > 0) {
-                body.innerHTML = d.comments.map(function(c) {
-                  var initial = (c.username || '?').substring(0, 2).toUpperCase();
-                  var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
-                  var color = colors[(c.id || 0) % colors.length];
-                  var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-                  return '<div class="comment-item">' +
-                    '<div class="comment-avatar" style="background:' + color + '">' + initial + '</div>' +
-                    '<div class="comment-body"><div class="comment-meta">' +
-                      '<span class="comment-username">' + escHtml(c.username || 'Anónimo') + '</span>' +
-                      '<span class="comment-date">' + time + '</span>' +
-                    '</div>' +
-                    '<div class="comment-text">' + escHtml(c.content || c.text || '') + '</div></div>' +
-                  '</div>';
-                }).join('');
-              } else {
-                body.innerHTML = '<div class="comment-empty">Sin comentarios aún</div>';
-              }
-            }
-          } catch(e) {}
-        }
-
-        async function submitMangaComment() {
-          var token = localStorage.getItem('kami_token');
-          if (!token) { alert('Debes iniciar sesión'); return; }
-          var input = document.getElementById('mcp-input');
-          var btn = document.getElementById('mcp-submit-btn');
-          if (!input || !input.value.trim()) return;
-          btn.disabled = true; btn.textContent = 'Enviando...';
-          try {
-            var r = await fetch('/api/manga/' + mangaId + '/comments', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-              body: JSON.stringify({ content: input.value.trim() })
-            });
-            if (r.ok) { input.value = ''; loadMangaComments(); }
-            else { var d = await r.json(); alert(d.error || 'Error'); }
-          } catch(e) { alert('Error de conexión'); }
-          btn.disabled = false; btn.textContent = 'Enviar';
-        }
-
-        function switchFeedTab(tab) {
-          document.querySelectorAll('.feed-tab').forEach(function(t) { t.classList.remove('active'); });
-          document.querySelector('.feed-tab[data-tab="' + tab + '"]').classList.add('active');
-          document.getElementById('feed-panel-post').style.display = tab === 'post' ? 'block' : 'none';
-          document.getElementById('feed-panel-social').style.display = tab === 'social' ? 'block' : 'none';
-        }
-
-        async function loadMangaPosts() {
-          var container = document.getElementById('post-list');
-          if (!container) return;
-          container.innerHTML = '<div class="post-empty">Cargando publicaciones...</div>';
-          try {
-            var token = localStorage.getItem('kami_token');
-            var h = {}; if (token) h['Authorization'] = 'Bearer ' + token;
-            var r = await fetch('/api/manga/' + mangaId + '/posts', { headers: h });
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            var data = await r.json();
-            var posts = data.posts || [];
-            if (posts.length === 0) {
-              container.innerHTML = '<div class="post-empty">No hay publicaciones aún. ¡Sé el primero!</div>';
-              return;
-            }
-            container.innerHTML = posts.map(function(p) {
-              var initial = (p.username || '?').substring(0, 2).toUpperCase();
-              var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
-              var color = colors[(p.user_id || '').length % colors.length];
-              var time = p.created_at ? new Date(p.created_at).toLocaleDateString('es-ES', { day:'numeric', month:'short' }) : '';
-              return '<div class="post-item">' +
-                '<div class="post-item-header">' +
-                  '<div class="post-avatar" style="background:' + color + '">' + initial + '</div>' +
-                  '<span class="post-username">' + escHtml(p.username || 'Anónimo') + '</span>' +
-                  '<span class="post-time">' + time + '</span>' +
-                '</div>' +
-                (p.title ? '<div class="post-body" style="font-weight:600;color:var(--k-text);margin-bottom:4px;">' + escHtml(p.title) + '</div>' : '') +
-                '<div class="post-body">' + escHtml(p.content) + '</div>' +
-              '</div>';
-            }).join('');
-          } catch(e) {
-            container.innerHTML = '<div class="post-empty">Error al cargar publicaciones</div>';
-          }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-          var notesInput = document.getElementById('notes-input');
-          if (notesInput) {
-            var saveTimer;
-            notesInput.addEventListener('input', function() {
-              clearTimeout(saveTimer);
-              saveTimer = setTimeout(saveNotes, 800);
-            });
-          }
-        });
-
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape') {
-            if (!document.body.classList.contains('right-closed')) toggleSidebar();
-            var cm = document.getElementById('chapter-comments-panel');
-            if (cm && cm.classList.contains('open')) closeChapterComments();
-          }
-        });
-
-        // Al volver del reader (pageshow), re-fetch progreso para atenuar capítulos
-        window.addEventListener('pageshow', function() {
-          var t = localStorage.getItem('kami_token');
-          if (t) {
-            fetch('/api/library/' + mangaId + '/progress', { headers: { 'Authorization': 'Bearer ' + t } })
-              .then(function(r){ return r.json(); })
-              .then(function(d){ _userProgress = d.progress || 0; if (window.currentChapterList) renderChapterList(); })
-              .catch(function(){});
-          }
-        });
-        loadManga();
-        document.title = 'ScriptOK-' + mangaId;
-    </script>
-
-  <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(6px);" onclick="if(event.target===this)this.style.display='none'">
-    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:18px;padding:32px;width:min(380px,90vw);box-shadow:0 24px 80px rgba(0,0,0,0.6);text-align:center;">
-      <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
-      <div style="font-family:var(--font-display);font-size:24px;letter-spacing:1px;margin-bottom:4px;">CONFIRMAR</div>
-      <div class="confirm-msg" style="font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.5;"></div>
-      <div style="display:flex;gap:10px;">
-        <button class="confirm-yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--accent);color: var(--k-text);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">Eliminar</button>
-        <button class="confirm-no" style="flex:0;padding:12px 24px;border-radius:10px;border:1px solid var(--border);background:rgb(var(--k-ink) / 0.06);color:var(--text-secondary);font-family:var(--font-body);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='rgb(var(--k-ink) / 0.1)';this.style.color='var(--text-primary)'" onmouseout="this.style.background='rgb(var(--k-ink) / 0.06)';this.style.color='var(--text-secondary)'">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var selectedRating = 0;
-
-    async function toggleRatingVote(event) {
-      event.stopPropagation();
-      var token = localStorage.getItem('kami_token');
-      if (!token) { alert('Debes iniciar sesión para votar'); return; }
-      var popup = document.getElementById('rating-vote-popup');
-      if (popup.style.display === 'block') { popup.style.display = 'none'; return; }
-
-      try {
-        var r = await fetch('/api/manga/' + mangaId + '/stats', {
-          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
-        });
-        if (r.ok) {
-          var data = await r.json();
-          currentUserRating = data.userRating ? data.userRating * 2 : null;
-        }
-      } catch (e) {}
-
-      selectedRating = 0;
-      document.getElementById('rating-label').textContent = '';
-      document.getElementById('rating-status').style.display = 'none';
-      var btn = document.getElementById('btn-rate-submit');
-      btn.textContent = 'Enviar';
-      btn.disabled = true;
-      btn.style.opacity = '0.4';
-      document.getElementById('btn-rate-remove').style.display = currentUserRating ? 'inline-flex' : 'none';
-      resetStars();
-
-      if (currentUserRating) {
-        var stars = Math.round(currentUserRating / 2);
-        selectedRating = stars;
-        document.getElementById('rating-label').textContent = '★'.repeat(stars) + '☆'.repeat(5-stars) + '  (' + currentUserRating.toFixed(1) + '/10)';
-        document.getElementById('btn-rate-submit').disabled = false;
-        document.getElementById('btn-rate-submit').style.opacity = '1';
-        resetStars();
-      }
-
-      popup.style.display = 'block';
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var CP437 = { '├í': 'á', '├®': 'é', '├¡': 'í', '├│': 'ó', '├║': 'ú', '├▒': 'ñ', '├╝': 'ü', '├ü': 'Á', '├ë': 'É', '├ì': 'Í', '├ô': 'Ó', '├Ü': 'Ú', '├æ': 'Ñ', '┬┐': '¿', '┬í': '¡' };
+  var fix = function (s) { return String(s == null ? '' : s).replace(/[├┬]./g, function (m) { return CP437[m] || m; }); };
+  var toast = function (m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); };
+  var nf = new Intl.NumberFormat('es-ES'), compact = new Intl.NumberFormat('es-ES', { notation: 'compact', maximumFractionDigits: 1 });
+  var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } } };
+  var logged = !!store.get('kami_token');
+  function api(url, opt) { return fetch(url, opt).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); }); }
+  function send(url, method, body) { return api(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); }
+  function track(action, meta) { if (logged) send('/api/track', 'POST', { action_type: action, manga_id: id, metadata: meta || {} }).catch(function () {}); }
+  function goLogin() { location.href = '/acceder?next=' + encodeURIComponent(location.pathname); }
+  function isImg(v) { return typeof v === 'string' && /^(data:image\/|https?:\/\/|\/)/.test(v); }
+  function ava(u, a) { return '<span class="k-avatar k-avatar--sm">' + (isImg(a) ? '<img src="' + esc(a) + '" alt="" loading="lazy">' : esc(String(a && a.length <= 3 ? a : (u || '?').slice(0, 2)).toUpperCase())) + '</span>'; }
+  function ago(d) {
+    var s = (Date.now() - new Date(d)) / 1000; if (isNaN(s)) return '';
+    var rtf = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });
+    if (s < 60) return 'ahora'; if (s < 3600) return rtf.format(-Math.round(s / 60), 'minute'); if (s < 86400) return rtf.format(-Math.round(s / 3600), 'hour'); if (s < 2592000) return rtf.format(-Math.round(s / 86400), 'day');
+    return new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  var fmtDate = function (d) { return d ? new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'; };
+
+  var id = decodeURIComponent(location.pathname.split('/')[2] || '');
+  var TYPE = { manga: 'Manga', manhwa: 'Manhwa', manhua: 'Manhua', novel: 'Novela', comic: 'Cómic', webtoon: 'Webtoon' };
+  var STATE = { ongoing: 'En emisión', completed: 'Completada', hiatus: 'En pausa', cancelled: 'Cancelada', dropped: 'Cancelada' };
+  var LIB = [['reading', 'Leyendo', 'ti-book-2'], ['continuing', 'Al día', 'ti-clock'], ['planned', 'Pendiente', 'ti-bookmark'], ['completed', 'Terminada', 'ti-circle-check'], ['rereading', 'Releyendo', 'ti-repeat'], ['dropped', 'Abandonada', 'ti-x']];
+  var AGE = { todos: 'Todos los públicos', adolescente: '+13', adulto: '+18' };
+  var ORIGIN = { original: 'Obra original', fanfic: 'Fanfic', traduccion: 'Traducción' };
+  var LANG = { es: 'Español', en: 'Inglés', pt: 'Portugués', ca: 'Catalán', eu: 'Euskera', gl: 'Gallego', fr: 'Francés', it: 'Italiano', ja: 'Japonés', ko: 'Coreano', zh: 'Chino' };
+  var LINKS = { patreon: ['Patreon', 'ti-brand-patreon'], kofi: ['Ko-fi', 'ti-coffee'], web: ['Web', 'ti-world'], x: ['X', 'ti-brand-x'], instagram: ['Instagram', 'ti-brand-instagram'], tiktok: ['TikTok', 'ti-brand-tiktok'], youtube: ['YouTube', 'ti-brand-youtube'], tienda: ['Tienda', 'ti-shopping-bag'], discord: ['Discord', 'ti-brand-discord'], twitter: ['X', 'ti-brand-x'], website: ['Web', 'ti-world'] };
+
+  var S = { m: null, chs: [], stats: null, lib: null, sortDesc: true, q: '', shown: 50 };
+  if (!id) return missing();
+
+  Promise.all([
+    api('/api/manga/' + encodeURIComponent(id)),
+    api('/api/chapters/' + encodeURIComponent(id) + '?limit=2000').catch(function () { return { chapters: [] }; }),
+    api('/api/manga/' + encodeURIComponent(id) + '/stats').catch(function () { return null; }),
+    logged ? api('/api/library/check/' + encodeURIComponent(id)).catch(function () { return null; }) : Promise.resolve(null),
+  ]).then(function (r) {
+    S.m = r[0].manga; S.chs = (r[1].chapters || []).map(function (c) { c.title = fix(c.title); return c; }); S.stats = r[2]; S.lib = r[3] && r[3].inLibrary ? r[3] : null;
+    renderHero(); renderChapters(); renderAbout(); renderMe();
+    $('ob-loading').hidden = true; $('ob').hidden = false;
+    selectTab(['capitulos', 'sobre', 'comentarios', 'comunidad'].indexOf(location.hash.slice(1)) >= 0 ? location.hash.slice(1) : 'capitulos');
+    loadSide();
+    if (logged) send('/api/manga/' + encodeURIComponent(id) + '/view', 'POST').catch(function () {});
+  }).catch(function (e) { missing(e); });
+
+  function missing(e) {
+    $('ob-loading').hidden = true; $('ob-missing').hidden = false;
+    if (e && e.status && e.status !== 404) { $('ob-missing').querySelector('h3').textContent = 'No se pudo cargar la obra'; $('ob-missing-p').textContent = 'Comprueba tu conexión y vuelve a intentarlo.'; }
+  }
+
+  // ── Cabecera ────────────────────────────────────────────
+  var isNovel = function () { return S.m.type === 'novel'; };
+  function published() { return S.chs.filter(function (c) { return !c.status || c.status === 'published' || (c.status === 'scheduled' && c.publishAt && new Date(c.publishAt) <= new Date()); }); }
+  function progress() { return Math.max(S.lib ? +S.lib.progress || 0 : 0, S.stats ? +S.stats.chaptersRead || 0 : 0); }
+  function renderHero() {
+    var m = S.m, title = fix(m.title);
+    document.title = title + ' · KamiTales';
+    $('ob-hero').style.setProperty('--_cover', m.cover ? 'url("' + m.cover.replace(/"/g, '%22') + '")' : 'none');
+    $('ob-cover').innerHTML = m.cover ? '<img src="' + esc(m.cover) + '" alt="Portada de ' + esc(title) + '">' : '';
+    var b = ['<span class="k-badge k-badge--solid">' + esc(TYPE[m.type] || m.type) + '</span>'];
+    if (STATE[m.status]) b.push('<span class="k-badge' + (m.status === 'ongoing' ? ' k-badge--ok' : '') + '">' + STATE[m.status] + '</span>');
+    if (m.contentRating && m.contentRating !== 'todos') b.push('<span class="k-badge k-badge--warn">' + esc(AGE[m.contentRating]) + '</span>');
+    if (m.origin && m.origin !== 'original') b.push('<span class="k-badge">' + esc(ORIGIN[m.origin]) + '</span>');
+    if (m.publisher === 'KamiTales') b.push('<span class="k-badge k-badge--gold"><i class="ti ti-crown" aria-hidden="true"></i>Editorial KamiTales</span>');
+    $('ob-badges').innerHTML = b.join('');
+    $('ob-title').textContent = title;
+    var alt = (m.alternativeTitles || []).map(fix).filter(Boolean);
+    if (alt.length) { $('ob-alt').textContent = alt.join(' · '); $('ob-alt').hidden = false; }
+    var by = [];
+    var author = fix(m.author), artist = fix(m.artist);
+    if (author) by.push('<span><i class="ti ti-pencil" aria-hidden="true"></i>' + (m.creator && m.creator.username ? '<a href="/perfil/' + encodeURIComponent(m.creator.username) + '">' + esc(author) + '</a>' : '<b>' + esc(author) + '</b>') + '</span>');
+    if (artist && artist !== author) by.push('<span><i class="ti ti-palette" aria-hidden="true"></i><b>' + esc(artist) + '</b></span>');
+    if (m.publisher && m.publisher !== 'KamiTales') by.push('<span><i class="ti ti-building" aria-hidden="true"></i>' + esc(m.publisher) + '</span>');
+    $('ob-by').innerHTML = by.join('');
+    var st = S.stats || {}, rating = +(st.rating != null ? st.rating : m.rating) || 0, votes = +(st.totalRatings != null ? st.totalRatings : m.totalRatings) || 0;
+    var pub = published().length;
+    $('ob-stats').innerHTML =
+      '<div class="ob-stat"><b><i class="ti ti-star-filled" aria-hidden="true" style="color:var(--k-gold)"></i>' + (votes ? rating.toFixed(1) : '—') + '</b><span>' + (votes ? nf.format(votes) + (votes === 1 ? ' voto' : ' votos') : 'Sin votos') + '</span></div>' +
+      '<div class="ob-stat"><b>' + compact.format(m.members || 0) + '</b><span>En bibliotecas</span></div>' +
+      '<div class="ob-stat"><b>' + nf.format(pub || m.totalChapters || 0) + '</b><span>Capítulos</span></div>' +
+      '<div class="ob-stat"><b>' + compact.format(st.totalReads != null ? st.totalReads : (m.totalReads || 0)) + '</b><span>Lecturas</span></div>' +
+      (m.ranked && votes ? '<div class="ob-stat"><b>#' + m.ranked + '</b><span>Ranking</span></div>' : '');
+    $('n-chs').textContent = pub ? nf.format(pub) : '';
+    renderCTA(); renderLibBtn();
+    if (m.canEdit) {
+      $('ob-owner').hidden = false;
+      $('ob-new-ch').href = isNovel() ? '/obra/' + encodeURIComponent(id) + '/escribir' : '/obra/' + encodeURIComponent(id) + '/nuevo-capitulo';
+      $('ob-new-ch').lastChild.textContent = isNovel() ? 'Escribir capítulo' : 'Subir capítulo';
+      $('ob-edit').href = '/obra/' + encodeURIComponent(id) + '/editar';
+      $('ob-studio').href = '/estudio#obra-' + encodeURIComponent(id);
     }
-
-    document.addEventListener('click', function(e) {
-      var popup = document.getElementById('rating-vote-popup');
-      var coverRating = document.getElementById('cover-rating');
-      if (popup && popup.style.display === 'block' && !popup.contains(e.target) && (!coverRating || !coverRating.contains(e.target))) {
-        popup.style.display = 'none';
-      }
-    });
-
-    function hoverStar(val) {
-      document.querySelectorAll('.rating-star').forEach(function(s) {
-        s.style.color = parseInt(s.dataset.val) <= val ? 'var(--k-gold)' : 'var(--text-muted)';
-      });
+  }
+  function nextChapter() {
+    var pub = published().map(function (c) { return c.number; }).sort(function (a, b) { return a - b; });
+    if (!pub.length) return null;
+    var last = S.stats && S.stats.lastChapter ? S.stats.lastChapter : 0, p = progress();
+    if (last && last >= p && pub.indexOf(last) >= 0 && S.stats.lastPercent && S.stats.lastPercent < 95) return { n: last, resume: true };
+    var nx = pub.filter(function (n) { return n > p; })[0];
+    return nx ? { n: nx, resume: false, started: p > 0 } : { n: pub[pub.length - 1], done: true };
+  }
+  function renderCTA() {
+    var nx = nextChapter(), a = $('ob-read');
+    if (!nx) { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); a.classList.add('is-disabled'); $('ob-read-t').innerHTML = 'Aún no hay capítulos'; a.style.opacity = '.6'; a.style.pointerEvents = 'none'; return; }
+    a.href = '/leer/' + encodeURIComponent(id) + '/' + nx.n;
+    $('ob-read-t').innerHTML = nx.done ? 'Volver a leer<small>Has llegado al último capítulo</small>' : nx.resume ? 'Seguir leyendo<small>Capítulo ' + nx.n + (S.stats.lastPercent ? ' · ' + Math.round(S.stats.lastPercent) + ' %' : '') + '</small>' : nx.started ? 'Continuar<small>Capítulo ' + nx.n + '</small>' : 'Empezar a leer<small>Capítulo ' + nx.n + '</small>';
+  }
+  function renderLibBtn() {
+    var cur = S.lib ? S.lib.status : null, item = LIB.filter(function (l) { return l[0] === cur; })[0];
+    $('ob-lib-t').textContent = item ? item[1] : 'Añadir a la biblioteca';
+    $('ob-lib-i').className = 'ti ' + (item ? item[2] : 'ti-bookmark-plus');
+    $('ob-lib').classList.toggle('k-btn--secondary', true);
+    $('ob-lib').style.borderColor = item ? 'var(--k-accent-line)' : '';
+    $('ob-lib-menu').innerHTML = LIB.map(function (l) { return '<button class="k-menu__item" role="menuitemradio" aria-checked="' + (l[0] === cur) + '" type="button" data-st="' + l[0] + '"><i class="ti ' + l[2] + '" aria-hidden="true"></i>' + l[1] + (l[0] === cur ? '<i class="ti ti-check" aria-hidden="true" style="margin-left:auto;color:var(--k-accent)"></i>' : '') + '</button>'; }).join('') +
+      (cur ? '<div class="k-menu__sep"></div><button class="k-menu__item k-menu__item--danger" role="menuitem" type="button" data-st="remove"><i class="ti ti-trash" aria-hidden="true"></i>Quitar de la biblioteca</button>' : '');
+    $('ob-fav').hidden = !cur;
+    var fv = !!(S.lib && S.lib.is_favorite); $('ob-fav').setAttribute('aria-pressed', String(fv)); $('ob-fav').innerHTML = '<i class="ti ti-heart' + (fv ? '-filled' : '') + '" aria-hidden="true"></i>';
+  }
+  function setMenu(open) { $('ob-lib-menu').classList.toggle('is-open', open); $('ob-lib').setAttribute('aria-expanded', String(open)); if (open) { var f = $('ob-lib-menu').querySelector('[aria-checked="true"]') || $('ob-lib-menu').querySelector('button'); if (f) f.focus(); } }
+  $('ob-lib').addEventListener('click', function (e) { e.stopPropagation(); if (!logged) return goLogin(); setMenu(!$('ob-lib-menu').classList.contains('is-open')); });
+  document.addEventListener('click', function () { setMenu(false); });
+  $('ob-lib-menu').addEventListener('keydown', function (e) { if (e.key === 'Escape') { setMenu(false); $('ob-lib').focus(); } });
+  $('ob-lib-menu').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-st]'); if (!b) return; var st = b.dataset.st; setMenu(false);
+    if (st === 'remove') {
+      return send('/api/library/' + encodeURIComponent(id), 'DELETE').then(function () { S.lib = null; S.m.members = Math.max(0, (S.m.members || 1) - 1); renderHero(); renderMe(); toast('Quitada de tu biblioteca', 'ok'); }).catch(function (er) { toast(er.message, 'bad'); });
     }
+    var wasIn = !!S.lib;
+    send('/api/library/update', 'POST', { manga_id: id, status: st }).then(function () {
+      S.lib = Object.assign(S.lib || { progress: 0, is_favorite: false }, { status: st, inLibrary: true });
+      if (!wasIn) S.m.members = (S.m.members || 0) + 1;
+      renderHero(); renderMe(); track('library_' + st);
+      toast(wasIn ? 'Movida a ' + LIB.filter(function (l) { return l[0] === st; })[0][1] : 'Añadida a tu biblioteca', 'ok');
+    }).catch(function (er) { toast(er.message, 'bad'); });
+  });
+  $('ob-fav').addEventListener('click', function () {
+    var btn = this; btn.disabled = true;
+    send('/api/library/' + encodeURIComponent(id) + '/favorite', 'POST').then(function (d) { S.lib.is_favorite = !!d.is_favorite; renderLibBtn(); toast(d.message || 'Hecho', 'ok'); })
+      .catch(function (er) { toast(er.message, 'bad'); }).then(function () { btn.disabled = false; });
+  });
+  $('ob-share').addEventListener('click', function () {
+    var url = location.origin + '/obra/' + encodeURIComponent(id), t = fix(S.m.title);
+    if (navigator.share) navigator.share({ title: t + ' · KamiTales', url: url }).catch(function () {});
+    else (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(function () { toast('Enlace copiado', 'ok'); }, function () { prompt('Copia el enlace:', url); });
+  });
 
-    function resetStars() {
-      document.querySelectorAll('.rating-star').forEach(function(s) {
-        s.style.color = parseInt(s.dataset.val) <= selectedRating ? 'var(--k-gold)' : 'var(--text-muted)';
-      });
+  // ── Pestañas ────────────────────────────────────────────
+  var TABS = ['capitulos', 'sobre', 'comentarios', 'comunidad'], done = {};
+  function selectTab(t, push) {
+    TABS.forEach(function (x) { var on = x === t; $('tab-' + x).setAttribute('aria-selected', String(on)); $('tab-' + x).tabIndex = on ? 0 : -1; $('panel-' + x).hidden = !on; });
+    if (push) history.replaceState(null, '', '#' + t);
+    if (!done[t]) { done[t] = true; if (t === 'comentarios') loadComments(); if (t === 'comunidad') loadPosts(); }
+    if (push) { var top = $('ob-tabs').getBoundingClientRect().top; if (top < 0) $('ob-tabs').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+  $('ob-tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) selectTab(b.dataset.tab, true); });
+  $('ob-tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var i = TABS.indexOf(document.activeElement.dataset.tab), n = TABS[(i + (e.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length];
+    selectTab(n, true); $('tab-' + n).focus(); e.preventDefault();
+  });
+
+  // ── Capítulos ───────────────────────────────────────────
+  function chState(c) {
+    var now = new Date();
+    if (c.status === 'draft') return 'draft';
+    if (c.status === 'scheduled' && (!c.publishAt || new Date(c.publishAt) > now)) return 'scheduled';
+    if (c.freeAt && new Date(c.freeAt) > now) return 'early';
+    return 'ok';
+  }
+  function renderChapters() {
+    var p = progress(), nx = nextChapter(), q = S.q.toLowerCase();
+    var list = S.chs.filter(function (c) { return S.m.canEdit || (chState(c) !== 'draft' && chState(c) !== 'scheduled'); })
+      .filter(function (c) { return !q || String(c.number) === q || (c.title || '').toLowerCase().indexOf(q) >= 0 || ('capítulo ' + c.number).indexOf(q) >= 0; })
+      .sort(function (a, b) { return S.sortDesc ? b.number - a.number : a.number - b.number; });
+    if (!S.chs.length) {
+      $('chs').innerHTML = '<div class="k-empty"><i class="ti ti-file-off" aria-hidden="true"></i><h3>Todavía no hay capítulos</h3><p>' + (S.m.canEdit ? 'Publica el primero cuando quieras.' : 'Añádela a tu biblioteca y te avisaremos cuando salga el primero.') + '</p>' + (S.m.canEdit ? '<a class="k-btn k-btn--primary" href="' + $('ob-new-ch').getAttribute('href') + '">' + (isNovel() ? 'Escribir el capítulo 1' : 'Subir el capítulo 1') + '</a>' : '') + '</div>';
+      $('ch-more').hidden = true; return;
     }
+    if (!list.length) { $('chs').innerHTML = '<p class="k-muted" style="padding:var(--k-5) 0;text-align:center">No hay capítulos que coincidan con «' + esc(S.q) + '».</p>'; $('ch-more').hidden = true; return; }
+    var weekAgo = Date.now() - 7 * 864e5;
+    $('chs').innerHTML = list.slice(0, S.shown).map(function (c) {
+      var st = chState(c), read = st === 'ok' && c.number <= p, next = nx && !nx.done && c.number === nx.n;
+      var when = c.releaseDate || c.createdAt;
+      var meta = [];
+      if (when) meta.push('<span>' + ago(when) + '</span>');
+      if (isNovel() && c.wordCount) meta.push('<span>' + nf.format(c.wordCount) + ' palabras · ' + Math.max(1, Math.round(c.wordCount / 230)) + ' min</span>');
+      else if (c.pages) meta.push('<span>' + c.pages + ' páginas</span>');
+      if (st === 'early') meta.push('<span class="k-badge k-badge--gold"><i class="ti ti-clock-bolt" aria-hidden="true"></i>Adelanto · gratis el ' + new Date(c.freeAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span>');
+      if (st === 'draft') meta.push('<span class="k-badge">Borrador</span>');
+      if (st === 'scheduled') meta.push('<span class="k-badge k-badge--info">Programado' + (c.publishAt ? ' · ' + new Date(c.publishAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '') + '</span>');
+      if (st === 'ok' && when && new Date(when).getTime() > weekAgo && !read) meta.push('<span class="k-badge k-badge--accent">Nuevo</span>');
+      var href = st === 'draft' || st === 'scheduled' ? (isNovel() ? '/obra/' + encodeURIComponent(id) + '/escribir/' + c.number : '#') : '/leer/' + encodeURIComponent(id) + '/' + c.number;
+      return '<a class="ob-ch' + (read ? ' is-read' : '') + (next ? ' is-next' : '') + '" href="' + href + '">' +
+        '<span class="n">' + c.number + '</span>' +
+        '<span style="min-width:0"><b>' + esc(c.title && !/^cap[ií]tulo\s*\d+$/i.test(c.title) ? c.title : 'Capítulo ' + c.number) + '</b><small>' + meta.join('') + '</small></span>' +
+        '<span class="r">' + (next ? '<span class="k-badge k-badge--accent">' + (nx.resume ? 'Por aquí' : 'Siguiente') + '</span>' : '') + (read ? '<i class="ti ti-check" aria-label="Leído" style="color:var(--k-ok)"></i>' : '') + (c.commentCount ? '<span><i class="ti ti-message-circle" aria-hidden="true"></i> ' + c.commentCount + '</span>' : '') + '</span></a>';
+    }).join('');
+    var rest = list.length - S.shown;
+    $('ch-more').hidden = rest <= 0; $('ch-more').textContent = 'Ver ' + Math.min(rest, 50) + ' capítulos más';
+  }
+  $('ch-sort').addEventListener('click', function () { S.sortDesc = !S.sortDesc; $('ch-sort-t').textContent = S.sortDesc ? 'Más recientes' : 'Desde el principio'; $('ch-sort-i').className = 'ti ti-sort-' + (S.sortDesc ? 'descending' : 'ascending'); renderChapters(); });
+  var qt; $('ch-q').addEventListener('input', function () { clearTimeout(qt); var v = this.value.trim(); qt = setTimeout(function () { S.q = v; S.shown = 50; renderChapters(); }, 120); });
+  $('ch-more').addEventListener('click', function () { S.shown += 50; renderChapters(); });
 
-    function selectStar(val) {
-      selectedRating = val;
-      var labels = ['', '1 - Pésimo', '2 - Malo', '3 - Normal', '4 - Bueno', '5 - Excelente'];
-      document.getElementById('rating-label').textContent = '★'.repeat(val) + '☆'.repeat(5-val) + '  ' + labels[val];
-      document.getElementById('btn-rate-submit').disabled = false;
-      document.getElementById('btn-rate-submit').style.opacity = '1';
-      resetStars();
+  // ── Sobre la obra ───────────────────────────────────────
+  function renderAbout() {
+    var m = S.m, syn = fix(m.description).trim();
+    $('ob-syn').textContent = syn || 'El autor todavía no ha escrito la sinopsis.';
+    if (!syn) $('ob-syn').style.color = 'var(--k-text-3)';
+    requestAnimationFrame(function () { $('ob-syn-more').hidden = $('ob-syn').scrollHeight <= $('ob-syn').clientHeight + 4; });
+    var g = (m.genres || []).map(fix), tags = (m.tags || []).map(fix);
+    $('ob-genres').innerHTML = g.map(function (x) { return '<a class="k-chip" href="/?genero=' + encodeURIComponent(x) + '">' + esc(x) + '</a>'; }).join('') + tags.map(function (x) { return '<span class="k-chip" style="cursor:default">#' + esc(x) + '</span>'; }).join('');
+    $('sec-genres').hidden = !g.length && !tags.length;
+    var kv = [['Formato', TYPE[m.type] || m.type], ['Estado', STATE[m.status] || m.status], ['Idioma', LANG[m.language] || m.language], ['Edad', AGE[m.contentRating] || 'Todos los públicos'], ['Origen', ORIGIN[m.origin] || 'Obra original']];
+    if (m.demographicTarget) kv.push(['Demografía', m.demographicTarget.charAt(0).toUpperCase() + m.demographicTarget.slice(1)]);
+    if (m.publisher) kv.push(['Editorial', m.publisher]);
+    kv.push(['Publicada', fmtDate(m.createdAt)], ['Actualizada', fmtDate(m.updatedAt)], ['Código', m.id]);
+    $('ob-kv').innerHTML = kv.filter(function (x) { return x[1]; }).map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd></div>'; }).join('');
+    var links = m.socialLinks || {}, lk = Object.keys(links).filter(function (k) { return /^https?:\/\//i.test(links[k] || ''); });
+    $('sec-links').hidden = !lk.length;
+    $('ob-links').innerHTML = lk.map(function (k) { var d = LINKS[k] || [k, 'ti-link']; return '<a class="k-btn k-btn--secondary k-btn--sm" href="' + esc(links[k]) + '" target="_blank" rel="noopener noreferrer nofollow"><i class="ti ' + d[1] + '" aria-hidden="true"></i>' + esc(d[0]) + '</a>'; }).join('');
+    renderRating();
+  }
+  $('ob-syn-more').addEventListener('click', function () { var c = $('ob-syn').classList.toggle('is-clamped'); this.textContent = c ? 'Leer más' : 'Leer menos'; });
+  function renderRating() {
+    var st = S.stats || {}, votes = +st.totalRatings || 0, dist = st.distribution || {};
+    $('rt-avg').innerHTML = (votes ? (+st.rating).toFixed(1) : '—') + '<small> / 10</small>';
+    $('rt-n').textContent = votes ? nf.format(votes) + (votes === 1 ? ' voto' : ' votos') : 'Todavía nadie ha votado';
+    var max = Math.max(1, dist.high || 0, dist.mid || 0, dist.low || 0);
+    $('rt-dist').innerHTML = [['Muy buena', dist.high], ['Normal', dist.mid], ['Floja', dist.low]].map(function (x) { return '<div><span>' + x[0] + '</span><i><b style="width:' + Math.round((x[1] || 0) / max * 100) + '%"></b></i><span>' + (x[1] || 0) + '</span></div>'; }).join('');
+    var mine = +st.userRating || 0;
+    $('rt-stars').innerHTML = [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" value="' + n + '" class="' + (n <= mine ? 'on' : '') + '" aria-label="' + n + (n === 1 ? ' estrella' : ' estrellas') + '" aria-pressed="' + (n === mine) + '">★</button>'; }).join('');
+    $('rt-clear').hidden = !mine;
+    $('rt-you-l').textContent = logged ? 'Tu puntuación:' : 'Inicia sesión para puntuar:';
+  }
+  $('rt-stars').addEventListener('mouseover', function (e) { var b = e.target.closest('button'); if (!b) return; [].forEach.call(this.children, function (x) { x.classList.toggle('on', +x.value <= +b.value); }); });
+  $('rt-stars').addEventListener('mouseleave', renderRating);
+  $('rt-stars').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return; if (!logged) return goLogin();
+    send('/api/manga/' + encodeURIComponent(id) + '/rate', 'POST', { rating: +b.value }).then(function () { return api('/api/manga/' + encodeURIComponent(id) + '/stats'); })
+      .then(function (s) { S.stats = s; renderRating(); renderHero(); track('manga_rated', { rating: +b.value }); toast('¡Gracias por puntuar!', 'ok'); }).catch(function (er) { toast(er.message, 'bad'); });
+  });
+  $('rt-clear').addEventListener('click', function () {
+    send('/api/manga/' + encodeURIComponent(id) + '/rate', 'DELETE').then(function () { return api('/api/manga/' + encodeURIComponent(id) + '/stats'); })
+      .then(function (s) { S.stats = s; renderRating(); renderHero(); toast('Puntuación quitada', 'ok'); }).catch(function (er) { toast(er.message, 'bad'); });
+  });
+
+  // ── Comentarios ─────────────────────────────────────────
+  function cmtHTML(c) {
+    var text = fix(c.content || c.text || '');
+    return '<div class="ob-cmt">' + ava(c.username, c.avatar) + '<div style="min-width:0"><div class="head"><a href="/perfil/' + encodeURIComponent(c.username || '') + '">' + esc(c.username || 'Anónimo') + '</a><time datetime="' + esc(c.created_at) + '">' + ago(c.created_at) + '</time></div>' + (c.title ? '<b style="display:block;margin-top:4px">' + esc(fix(c.title)) + '</b>' : '') + '<p>' + esc(text) + '</p></div></div>';
+  }
+  function loadComments() {
+    $('cmts').innerHTML = '<div class="k-skeleton" style="height:60px"></div><div class="k-skeleton" style="height:60px"></div>';
+    if (!logged) { $('cm-text').placeholder = 'Inicia sesión para comentar.'; $('cm-text').disabled = true; }
+    api('/api/manga/' + encodeURIComponent(id) + '/comments?limit=50').then(function (d) {
+      var l = d.comments || []; $('n-cmts').textContent = l.length ? (l.length >= 50 ? '50+' : l.length) : '';
+      $('cmts').innerHTML = l.length ? l.map(cmtHTML).join('') : '<div class="k-empty"><i class="ti ti-message-circle" aria-hidden="true"></i><h3>Sé la primera persona en comentar</h3><p>Cuenta qué te parece la obra. Los comentarios de cada capítulo están en el lector.</p></div>';
+    }).catch(function () { $('cmts').innerHTML = '<p class="k-error">No se pudieron cargar los comentarios.</p>'; });
+  }
+  $('cm-text').addEventListener('input', function () { $('cm-n').textContent = this.value.length + '/2000'; $('cm-send').disabled = !this.value.trim(); });
+  $('cm-form').addEventListener('submit', function (e) {
+    e.preventDefault(); if (!logged) return goLogin();
+    var v = $('cm-text').value.trim(); if (!v) return;
+    $('cm-send').disabled = true;
+    send('/api/manga/' + encodeURIComponent(id) + '/comments', 'POST', { content: v }).then(function (d) {
+      $('cm-text').value = ''; $('cm-n').textContent = '0/2000';
+      var box = $('cmts'); if (box.querySelector('.k-empty')) box.innerHTML = '';
+      box.insertAdjacentHTML('afterbegin', cmtHTML(d.comment || { username: 'Tú', content: v, created_at: new Date().toISOString() }));
+      toast('Comentario publicado', 'ok');
+    }).catch(function (er) { toast(er.message, 'bad'); $('cm-send').disabled = false; });
+  });
+
+  // ── Comunidad ───────────────────────────────────────────
+  function loadPosts() {
+    $('posts').innerHTML = '<div class="k-skeleton" style="height:80px"></div>';
+    api('/api/manga/' + encodeURIComponent(id) + '/posts').then(function (d) {
+      var l = d.posts || [];
+      $('posts').innerHTML = l.length ? l.map(cmtHTML).join('') : '<div class="k-empty"><i class="ti ti-messages" aria-hidden="true"></i><h3>Aún no hay publicaciones</h3><p>Abre un hilo en Comunidad sobre esta obra: teorías, fanart, recomendaciones…</p></div>';
+    }).catch(function () { $('posts').innerHTML = '<p class="k-error">No se pudieron cargar las publicaciones.</p>'; });
+  }
+
+  // ── Lateral ─────────────────────────────────────────────
+  function renderMe() {
+    $('side-me').hidden = !S.lib;
+    if (!S.lib) return;
+    var l = LIB.filter(function (x) { return x[0] === S.lib.status; })[0], p = progress(), tot = published().length || S.m.totalChapters || 0;
+    $('me-status').innerHTML = '<i class="ti ' + (l ? l[2] : 'ti-book') + '" aria-hidden="true" style="color:var(--k-accent)"></i> ' + (l ? l[1] : '');
+    $('me-prog').textContent = tot ? p + ' / ' + tot + ' capítulos' : p + ' capítulos';
+    $('me-bar').style.width = (tot ? Math.min(100, Math.round(p / tot * 100)) : 0) + '%';
+    if (!$('me-notes').dataset.loaded) {
+      $('me-notes').dataset.loaded = '1';
+      api('/api/manga/' + encodeURIComponent(id) + '/notes').then(function (d) { $('me-notes').value = d.notes || ''; }).catch(function () {});
     }
-
-    async function submitRating() {
-      if (!selectedRating) return;
-      var token = localStorage.getItem('kami_token');
-      if (!token) { alert('Debes iniciar sesión'); return; }
-      var btn = document.getElementById('btn-rate-submit');
-      btn.textContent = 'Enviando...';
-      btn.disabled = true;
-      try {
-        var userData = null;
-        try { userData = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
-        var bodyData = { rating: selectedRating };
-        if (userData && userData.id) bodyData.userId = userData.id;
-        var r = await fetch('/api/manga/' + mangaId + '/rate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify(bodyData)
-        });
-        var data = await r.json();
-        if (!r.ok) throw new Error(data.error || 'Error');
-        currentUserRating = selectedRating * 2;
-
-        // Update cover rating display
-        var coverRatingEl = document.getElementById('cover-rating');
-        var coverRatingStars = document.getElementById('cover-rating-stars');
-        var coverRatingText = document.getElementById('cover-rating-text');
-        var coverRatingVotes = document.getElementById('cover-rating-votes');
-        if (coverRatingEl && data.rating != null) {
-          var full = Math.round(data.rating / 2);
-          coverRatingStars.innerHTML = Array.from({length:5}, (_,i) =>
-            '<span class="' + (i < full ? 'star-filled' : 'star-empty') + '">★</span>'
-          ).join('');
-          coverRatingText.textContent = data.rating.toFixed(1) + ' / 10';
-          if (coverRatingVotes && data.totalRatings) coverRatingVotes.textContent = ' · ' + data.totalRatings.toLocaleString() + ' votos';
-          coverRatingEl.style.display = 'flex';
-        }
-
-        trackAction('manga_rated', null, { rating: selectedRating });
-        document.getElementById('rating-status').textContent = '✓ Votado';
-        document.getElementById('rating-status').style.color = 'var(--k-ok)';
-        document.getElementById('rating-status').style.display = 'block';
-        btn.textContent = 'Votado';
-        btn.disabled = true;
-        btn.style.opacity = '0.4';
-        document.getElementById('btn-rate-remove').style.display = 'inline-flex';
-        document.getElementById('rating-label').textContent = '';
-        setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 2000);
-      } catch (err) {
-        document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
-        document.getElementById('rating-status').style.color = 'var(--k-accent)';
-        document.getElementById('rating-status').style.display = 'block';
-        btn.textContent = 'Enviar';
-        btn.disabled = false;
-      }
-    }
-
-    async function removeRating() {
-      var token = localStorage.getItem('kami_token');
-      if (!token) return;
-      try {
-        var userData = null;
-        try { userData = JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch(e) {}
-        var bodyData = {};
-        if (userData && userData.id) bodyData.userId = userData.id;
-        var r = await fetch('/api/manga/' + mangaId + '/rate', {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyData)
-        });
-        var data = await r.json();
-        if (!r.ok) throw new Error(data.error || 'Error');
-        currentUserRating = null;
-
-        // Update cover rating display
-        var coverRatingEl = document.getElementById('cover-rating');
-        var coverRatingStars = document.getElementById('cover-rating-stars');
-        var coverRatingText = document.getElementById('cover-rating-text');
-        var coverRatingVotes = document.getElementById('cover-rating-votes');
-        if (coverRatingEl && data.rating != null) {
-          var full = Math.round(data.rating / 2);
-          coverRatingStars.innerHTML = Array.from({length:5}, (_,i) =>
-            '<span class="' + (i < full ? 'star-filled' : 'star-empty') + '">★</span>'
-          ).join('');
-          coverRatingText.textContent = data.rating.toFixed(1) + ' / 10';
-          if (coverRatingVotes && data.totalRatings) coverRatingVotes.textContent = ' · ' + data.totalRatings.toLocaleString() + ' votos';
-          coverRatingEl.style.display = 'flex';
-        } else if (data.rating === 0 || data.rating == null) {
-          coverRatingEl.style.display = 'none';
-        }
-
-        document.getElementById('rating-status').textContent = '✓ Voto eliminado';
-        document.getElementById('rating-status').style.color = 'var(--k-text-3)';
-        document.getElementById('rating-status').style.display = 'block';
-        document.getElementById('btn-rate-remove').style.display = 'none';
-        var btn = document.getElementById('btn-rate-submit');
-        btn.textContent = 'Enviar';
-        btn.disabled = true;
-        btn.style.opacity = '0.4';
-        selectedRating = 0;
-        resetStars();
-        document.getElementById('rating-label').textContent = '';
-        setTimeout(function() { document.getElementById('rating-vote-popup').style.display = 'none'; }, 1000);
-      } catch (err) {
-        document.getElementById('rating-status').textContent = '✖ ' + (err.message || 'Error');
-        document.getElementById('rating-status').style.color = 'var(--k-accent)';
-        document.getElementById('rating-status').style.display = 'block';
-      }
-    }
-  </script>
-
+  }
+  var nt; $('me-notes').addEventListener('input', function () {
+    clearTimeout(nt); var v = this.value; $('me-notes-s').textContent = 'Guardando…';
+    nt = setTimeout(function () { send('/api/manga/' + encodeURIComponent(id) + '/notes', 'POST', { notes: v }).then(function () { $('me-notes-s').textContent = 'Guardada'; }).catch(function () { $('me-notes-s').textContent = 'No se pudo guardar'; }); }, 700);
+  });
+  function loadSide() {
+    api('/api/manga/' + encodeURIComponent(id) + '/activity').then(function (d) {
+      var rows = [];
+      if (d.startedReadingWeek) rows.push('<div class="ob-act"><b>' + nf.format(d.startedReadingWeek) + '</b><span>' + (d.startedReadingWeek === 1 ? 'persona empezó' : 'personas empezaron') + ' a leerla esta semana</span></div>');
+      if (d.newMembersToday) rows.push('<div class="ob-act"><b>' + nf.format(d.newMembersToday) + '</b><span>la ' + (d.newMembersToday === 1 ? 'ha añadido' : 'han añadido') + ' hoy a su biblioteca</span></div>');
+      if (rows.length) { $('act').innerHTML = rows.join(''); $('side-act').hidden = false; }
+    }).catch(function () {});
+    api('/api/manga/' + encodeURIComponent(id) + '/recommendations?limit=5').then(function (d) {
+      var l = d.recommendations || []; if (!l.length) return;
+      $('recs').innerHTML = l.map(function (r) { return '<a class="ob-mini" href="/obra/' + encodeURIComponent(r.id) + '">' + (r.cover ? '<img src="' + esc(r.cover) + '" alt="" loading="lazy">' : '<span class="ph"></span>') + '<span style="min-width:0"><b>' + esc(fix(r.title)) + '</b><small>' + (+r.rating ? '★ ' + (+r.rating).toFixed(1) + ' · ' : '') + esc((r.genres || []).slice(0, 2).map(fix).join(', ')) + '</small></span></a>'; }).join('');
+      $('side-recs').hidden = false;
+    }).catch(function () {});
+  }
+})();
+</script>
 </body>
 </html>

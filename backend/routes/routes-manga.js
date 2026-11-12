@@ -11,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 const { upload, MANGA_ASSETS_DIR } = require('../upload-config');
 const { verifyToken } = require('../config');
-const { requireAuth, requireMangaEditor, requireNotBanned, hasOwnershipColumn } = require('../middleware/auth');
+const { requireAuth, requireMangaEditor, requireNotBanned, hasOwnershipColumn, canEditManga } = require('../middleware/auth');
 const { hasColumn } = require('../schema');
 
 // Enlaces externos del autor: solo claves conocidas y URLs http(s)
@@ -285,7 +285,7 @@ router.get('/:id', async (req, res) => {
         manga.members = memberCount;
 
         // Check if current user has viewed the cartelera
-        let hasViewedCartelera = false;
+        let hasViewedCartelera = false, canEdit = false;
         try {
             const token = req.headers.authorization?.split(' ')[1];
             if (token) {
@@ -295,10 +295,20 @@ router.get('/:id', async (req, res) => {
                     [req.params.id, decoded.userId]
                 );
                 hasViewedCartelera = v.rows.length > 0;
+                canEdit = await canEditManga(decoded.userId, req.params.id).catch(() => false);
             }
         } catch {}
 
         manga.hasViewedCartelera = hasViewedCartelera;
+        manga.canEdit = canEdit;
+        // Cuenta que creó la obra (para enlazar su perfil)
+        manga.creator = null;
+        if (result.rows[0].created_by) {
+            try {
+                const c = await pool.query('SELECT username, avatar FROM users WHERE id = $1', [result.rows[0].created_by]);
+                if (c.rows[0]) manga.creator = { username: c.rows[0].username, avatar: c.rows[0].avatar || '' };
+            } catch {}
+        }
 
         res.json({ manga });
     } catch (err) {
@@ -600,11 +610,17 @@ router.get('/:id/stats', async (req, res) => {
         const viewsStats = await pool.query('SELECT COUNT(*) AS total_views FROM manga_views WHERE manga_id = $1', [id]);
 
         // Individual: chapters read by this user
-        let chaptersRead = 0;
+        let chaptersRead = 0, lastChapter = 0, lastPercent = 0;
         let userRating = null;
         if (userId) {
-            const prog = await pool.query('SELECT COUNT(*) AS cnt FROM user_chapter_progress WHERE user_id = $1 AND manga_id = $2', [userId, id]);
-            chaptersRead = parseInt(prog.rows[0].cnt) || 0;
+            try {
+                const prog = await pool.query('SELECT last_chapter, last_percent FROM user_reading WHERE user_id = $1 AND manga_id = $2', [userId, id]);
+                if (prog.rows[0]) { lastChapter = parseInt(prog.rows[0].last_chapter) || 0; lastPercent = parseFloat(prog.rows[0].last_percent) || 0; }
+            } catch {}
+            try {
+                const lib = await pool.query('SELECT progress FROM user_manga_library WHERE user_id = $1 AND manga_id = $2', [userId, id]);
+                chaptersRead = Math.max(parseInt(lib.rows[0]?.progress) || 0, lastChapter);
+            } catch { chaptersRead = lastChapter; }
 
             const ur = await pool.query('SELECT rating FROM user_ratings WHERE user_id = $1 AND manga_id = $2', [userId, id]);
             if (ur.rows.length > 0) userRating = parseFloat(ur.rows[0].rating);
@@ -627,6 +643,8 @@ router.get('/:id/stats', async (req, res) => {
             totalReads: totalReads,
             userRating: userRating,
             chaptersRead: chaptersRead,
+            lastChapter: lastChapter,
+            lastPercent: lastPercent,
             distribution: {
                 high: parseInt(ratingStats.rows[0].high_votes) || 0,
                 mid: parseInt(ratingStats.rows[0].mid_votes) || 0,
@@ -900,7 +918,7 @@ router.post('/:id/notes', async (req, res) => {
 
         await pool.query(
             `INSERT INTO user_manga_library (user_id, manga_id, notes, status)
-             VALUES ($1, $2, $3, 'pendientes')
+             VALUES ($1, $2, $3, 'planned')
              ON CONFLICT (user_id, manga_id)
              DO UPDATE SET notes = EXCLUDED.notes`,
             [decoded.userId, req.params.id, (notes || '').trim()]

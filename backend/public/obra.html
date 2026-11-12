@@ -14,6 +14,11 @@
     .ob-hero { position: relative; overflow: hidden; isolation: isolate; }
     .ob-hero::before { content: ""; position: absolute; inset: -40px; z-index: -2; background: var(--_cover) center 30% / cover; filter: blur(42px) saturate(1.5); opacity: .45; transform: scale(1.1); }
     .ob-hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, color-mix(in srgb, var(--k-bg) 35%, transparent), var(--k-bg) 92%), radial-gradient(60% 80% at 15% 30%, transparent, var(--k-bg)); }
+    .ob-hero > .k-banner { z-index: -2; bottom: auto; height: min(78vh, 640px); }
+    .ob-hero.has-banner::before { display: none; }
+    .ob-hero.has-banner::after { background: linear-gradient(90deg, color-mix(in srgb, var(--k-bg) 70%, transparent) 0%, color-mix(in srgb, var(--k-bg) 25%, transparent) 45%, transparent 70%), linear-gradient(180deg, transparent 55%, var(--k-bg) 100%); }
+    .ob-hero.has-banner .ob-top { padding-top: clamp(150px, 24vw, 320px); }
+    .ob-hero.has-banner .ob-title { text-shadow: 0 2px 24px rgb(0 0 0 / .55); }
     .ob-top { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--k-8); align-items: end; padding-block: var(--k-10) var(--k-8); }
     .ob-cover { position: relative; aspect-ratio: 2 / 3; border-radius: var(--k-r-lg); overflow: hidden; background: var(--k-surface-2); border: 1px solid var(--k-line-2); box-shadow: 0 30px 60px -20px rgb(0 0 0 / .8), 0 0 0 1px rgb(255 255 255 / .04), 0 0 60px -20px var(--k-work-accent); }
     .ob-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -150,7 +155,7 @@
           <button class="k-btn k-btn--secondary k-btn--icon k-btn--lg ob-fav" type="button" id="ob-fav" aria-pressed="false" aria-label="Favorita" title="Favorita" hidden><i class="ti ti-heart" aria-hidden="true"></i></button>
           <button class="k-btn k-btn--secondary k-btn--icon k-btn--lg" type="button" id="ob-share" aria-label="Compartir" title="Compartir"><i class="ti ti-share" aria-hidden="true"></i></button>
         </div>
-        <div class="ob-owner" id="ob-owner" hidden><span><i class="ti ti-pencil" aria-hidden="true"></i>Puedes editar esta obra</span><a class="k-btn k-btn--secondary k-btn--sm" id="ob-new-ch" href="#"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo capítulo</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-edit" href="#"><i class="ti ti-settings" aria-hidden="true"></i>Editar ficha</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-studio" href="/estudio"><i class="ti ti-chart-bar" aria-hidden="true"></i>Estadísticas</a></div>
+        <div class="ob-owner" id="ob-owner" hidden><span><i class="ti ti-pencil" aria-hidden="true"></i>Puedes editar esta obra</span><a class="k-btn k-btn--quiet k-btn--sm" id="ob-banner" href="#"><i class="ti ti-panorama-horizontal" aria-hidden="true"></i>Banner</a><a class="k-btn k-btn--secondary k-btn--sm" id="ob-new-ch" href="#"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo capítulo</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-edit" href="#"><i class="ti ti-settings" aria-hidden="true"></i>Editar ficha</a><a class="k-btn k-btn--quiet k-btn--sm" id="ob-studio" href="/estudio"><i class="ti ti-chart-bar" aria-hidden="true"></i>Estadísticas</a></div>
       </div>
     </div>
   </section>
@@ -282,6 +287,9 @@
     var m = S.m, title = fix(m.title);
     document.title = title + ' · KamiTales';
     $('ob-hero').style.setProperty('--_cover', m.cover ? 'url("' + m.cover.replace(/"/g, '%22') + '")' : 'none');
+    var oldB = $('ob-hero').querySelector(':scope > .k-banner'); if (oldB) oldB.remove();
+    $('ob-hero').classList.toggle('has-banner', !!m.banner);
+    if (m.banner) { var bn = document.createElement('div'); bn.className = 'k-banner'; bn.setAttribute('aria-hidden', 'true'); bn.style.setProperty('--k-banner-pos', (m.bannerPosition != null ? m.bannerPosition : 50) + '%'); bn.innerHTML = '<img src="' + esc(m.banner) + '" alt="" fetchpriority="high">'; $('ob-hero').insertBefore(bn, $('ob-hero').firstChild); }
     $('ob-cover').innerHTML = m.cover ? '<img src="' + esc(m.cover) + '" alt="Portada de ' + esc(title) + '">' : '<div class="ob-gen" role="img" aria-label="Portada de ' + esc(title) + '"><span>神</span><b>' + esc(title) + '</b><small>' + esc(fix(m.author) || 'KamiTales') + '</small></div>';
     var b = ['<span class="k-badge k-badge--solid">' + esc(TYPE[m.type] || m.type) + '</span>'];
     if (STATE[m.status]) b.push('<span class="k-badge' + (m.status === 'ongoing' ? ' k-badge--ok' : '') + '">' + STATE[m.status] + '</span>');
@@ -313,6 +321,7 @@
       $('ob-new-ch').href = isNovel() ? '/obra/' + encodeURIComponent(id) + '/escribir' : '/obra/' + encodeURIComponent(id) + '/nuevo-capitulo';
       $('ob-new-ch').lastChild.textContent = isNovel() ? 'Escribir capítulo' : 'Subir capítulo';
       $('ob-edit').href = '/obra/' + encodeURIComponent(id) + '/editar';
+      $('ob-banner').href = '/obra/' + encodeURIComponent(id) + '/editar#bn-card';
       $('ob-studio').href = '/estudio#obra-' + encodeURIComponent(id);
     }
   }

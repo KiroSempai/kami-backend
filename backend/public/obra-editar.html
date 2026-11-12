@@ -151,6 +151,29 @@
     </style>
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+
+  <style>
+    .bn-card { max-width: 1100px; margin: 24px auto 0; display: grid; gap: 14px; }
+    .bn-head { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-start; justify-content: space-between; }
+    .bn-title { margin: 0; font: 800 1.35rem/1 var(--k-font-display); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+    .bn-title i { color: var(--k-accent); }
+    .bn-sub { margin: 6px 0 0; color: var(--k-text-3); font-size: var(--k-fs-sm); max-width: 62ch; line-height: 1.5; }
+    .bn-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .bn-stage { position: relative; aspect-ratio: 16 / 5; min-height: 170px; border-radius: var(--k-r-md); overflow: hidden; background: var(--k-bg); border: 1px solid var(--k-line); }
+    .bn-stage.is-over { outline: 2px dashed var(--k-accent); outline-offset: 3px; }
+    .bn-empty { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; text-align: center; color: var(--k-text-3); font-size: var(--k-fs-sm); line-height: 1.5; }
+    .bn-empty i { font-size: 34px; }
+    .bn-fake { position: absolute; left: 4%; bottom: 10%; display: flex; align-items: flex-end; gap: 14px; }
+    .bn-fake-cover { width: clamp(44px, 7vw, 74px); aspect-ratio: 2 / 3; border-radius: 8px; background: var(--k-surface-2); border: 1px solid var(--k-line-2); box-shadow: 0 10px 24px -8px rgb(0 0 0 / .7); }
+    .bn-fake-title { font: 900 clamp(1rem, 2.4vw, 1.8rem)/.95 var(--k-font-display); text-transform: uppercase; text-shadow: 0 2px 14px rgb(0 0 0 / .6); max-width: 60vw; }
+    .bn-busy { position: absolute; inset: 0; display: grid; place-items: center; }
+    .bn-busy > * { grid-area: 1 / 1; }
+    .bn-pos { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: var(--k-fs-sm); }
+    .bn-pos label { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+    .bn-pos input { accent-color: var(--k-accent); width: 100%; }
+    .bn-pos output { min-width: 64px; text-align: right; color: var(--k-text-2); font-variant-numeric: tabular-nums; }
+    [hidden] { display: none !important; }
+  </style>
 </head>
 
 <body>
@@ -190,6 +213,31 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- BANNER DE LA OBRA -->
+        <section class="k-card bn-card" id="bn-card" aria-labelledby="bn-t">
+            <div class="bn-head">
+                <div><h2 id="bn-t" class="bn-title"><i class="ti ti-panorama-horizontal" aria-hidden="true"></i>Banner</h2>
+                <p class="bn-sub">Imagen apaisada para la cabecera de la ficha. Se funde con el fondo de forma progresiva. Mejor 1920 × 720 px o más, sin texto importante en los bordes.</p></div>
+                <div class="bn-acts">
+                    <label class="k-btn k-btn--primary k-btn--sm" id="bn-pick"><i class="ti ti-photo-up" aria-hidden="true"></i><span id="bn-pick-t">Subir banner</span><input type="file" id="bn-file" accept="image/png,image/jpeg,image/webp,image/avif" class="k-visually-hidden"></label>
+                    <button class="k-btn k-btn--quiet k-btn--sm" type="button" id="bn-remove" hidden><i class="ti ti-trash" aria-hidden="true"></i>Quitar</button>
+                </div>
+            </div>
+            <div class="bn-stage" id="bn-stage">
+                <div class="k-banner" id="bn-preview"></div>
+                <div class="bn-empty" id="bn-empty"><i class="ti ti-photo" aria-hidden="true"></i><span>Sin banner: la ficha usa la portada difuminada.<br>Arrastra aquí una imagen o pulsa «Subir banner».</span></div>
+                <div class="bn-fake" aria-hidden="true"><span class="bn-fake-cover"></span><span class="bn-fake-title" id="bn-fake-title"></span></div>
+                <div class="bn-busy" id="bn-busy" hidden><span class="k-skeleton" style="width:100%;height:100%;border-radius:0;opacity:.6"></span><b>Procesando…</b></div>
+            </div>
+            <div class="bn-pos" id="bn-pos-row" hidden>
+                <label for="bn-pos"><i class="ti ti-arrows-vertical" aria-hidden="true"></i>Encuadre</label>
+                <input type="range" id="bn-pos" min="0" max="100" step="1" value="50" aria-describedby="bn-pos-v">
+                <output id="bn-pos-v" for="bn-pos">Centro</output>
+            </div>
+            <span class="k-error" id="bn-err" role="alert"></span>
+        </section>
 
         <!-- CHAPTERS -->
         <div class="chapters-section">
@@ -460,8 +508,8 @@
                     coverEl.innerHTML = window.kamiDefaultCover(manga.type) + '<div class="cover-overlay"><span>✎</span></div>';
                 }
 
-            if (manga.cover) {
-                document.getElementById('banner-bg').style.backgroundImage = `url(${manga.cover})`;
+            if (manga.banner || manga.cover) {
+                document.getElementById('banner-bg').style.backgroundImage = `url(${manga.banner || manga.cover})`;
             }
 
             document.getElementById('chapters-count').textContent = `${chapters.length} capítulos`;
@@ -758,5 +806,63 @@
         loadManga();
     </script>
   <script src="/js/notifications.js"></script>
+
+<script>
+(function () {
+  // Banner de la obra: subir (POST), encuadrar (PUT) y quitar (DELETE) en /api/manga/:id/banner
+  var $ = function (id) { return document.getElementById(id); };
+  var id = decodeURIComponent(location.pathname.split('/')[2] || '');
+  var state = { banner: '', pos: 50, available: true };
+  var toast = function (m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); };
+  function label(v) { return v <= 15 ? 'Arriba' : v >= 85 ? 'Abajo' : (v >= 42 && v <= 58) ? 'Centro' : v + ' %'; }
+  function paint() {
+    var has = !!state.banner;
+    $('bn-preview').innerHTML = has ? '<img src="' + state.banner.replace(/"/g, '%22') + '" alt="">' : '';
+    $('bn-stage').style.setProperty('--k-banner-pos', state.pos + '%');
+    $('bn-empty').hidden = has; $('bn-remove').hidden = !has; $('bn-pos-row').hidden = !has;
+    $('bn-pick-t').textContent = has ? 'Cambiar banner' : 'Subir banner';
+    $('bn-pos').value = state.pos; $('bn-pos-v').textContent = label(state.pos);
+    var bg = $('banner-bg'); if (bg && has) bg.style.backgroundImage = 'url(' + state.banner + ')';
+  }
+  function unavailable(msg) { state.available = false; $('bn-err').textContent = msg; $('bn-pick').setAttribute('aria-disabled', 'true'); $('bn-pick').style.opacity = '.5'; $('bn-file').disabled = true; }
+  fetch('/api/manga/' + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (d) {
+    var m = d.manga || {}; $('bn-fake-title').textContent = m.title || '';
+    if (!('banner' in m)) unavailable('Los banners se activarán en cuanto se actualice el servidor.');
+    state.banner = m.banner || ''; state.pos = m.bannerPosition != null ? m.bannerPosition : 50; paint();
+  }).catch(function () {});
+  function upload(file) {
+    if (!state.available || !file) return;
+    $('bn-err').textContent = '';
+    if (!/^image\/(png|jpeg|webp|avif)$/.test(file.type)) { $('bn-err').textContent = 'Usa una imagen PNG, JPG, WebP o AVIF.'; return; }
+    if (file.size > 10 * 1024 * 1024) { $('bn-err').textContent = 'La imagen pesa más de 10 MB.'; return; }
+    var fd = new FormData(); fd.append('bannerImage', file); fd.append('position', state.pos);
+    $('bn-busy').hidden = false;
+    fetch('/api/manga/' + encodeURIComponent(id) + '/banner', { method: 'POST', body: fd })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo subir.'); return d; }); })
+      .then(function (d) { state.banner = d.banner; state.pos = d.bannerPosition; paint(); toast('Banner guardado', 'ok'); })
+      .catch(function (e) { $('bn-err').textContent = e.message; })
+      .then(function () { $('bn-busy').hidden = true; });
+  }
+  $('bn-file').addEventListener('change', function () { upload(this.files[0]); this.value = ''; });
+  var st = $('bn-stage');
+  st.addEventListener('dragover', function (e) { if (!state.available) return; e.preventDefault(); st.classList.add('is-over'); });
+  st.addEventListener('dragleave', function () { st.classList.remove('is-over'); });
+  st.addEventListener('drop', function (e) { e.preventDefault(); st.classList.remove('is-over'); upload(e.dataTransfer.files[0]); });
+  var t;
+  $('bn-pos').addEventListener('input', function () {
+    state.pos = +this.value; paint(); clearTimeout(t);
+    t = setTimeout(function () {
+      fetch('/api/manga/' + encodeURIComponent(id) + '/banner', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position: state.pos }) })
+        .then(function (r) { if (!r.ok) throw new Error(); toast('Encuadre guardado', 'ok'); }).catch(function () { $('bn-err').textContent = 'No se pudo guardar el encuadre.'; });
+    }, 500);
+  });
+  $('bn-remove').addEventListener('click', function () {
+    if (!confirm('¿Quitar el banner? La ficha volverá a usar la portada difuminada.')) return;
+    fetch('/api/manga/' + encodeURIComponent(id) + '/banner', { method: 'DELETE' })
+      .then(function (r) { if (!r.ok) throw new Error(); state.banner = ''; state.pos = 50; paint(); var bg = $('banner-bg'); toast('Banner quitado', 'ok'); })
+      .catch(function () { $('bn-err').textContent = 'No se pudo quitar el banner.'; });
+  });
+})();
+</script>
 </body>
 </html>

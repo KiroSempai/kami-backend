@@ -611,3 +611,23 @@ body.k-has-shell .kmi-topbar, body.k-has-shell .com-sidebar .com-logo { display:
 .k-skin__art { display: block; aspect-ratio: 16 / 10; border-radius: 8px; background: radial-gradient(70% 90% at 25% 20%, color-mix(in srgb, var(--_b) 70%, transparent), transparent 70%), radial-gradient(60% 80% at 85% 90%, color-mix(in srgb, var(--_b) 35%, transparent), transparent 70%), var(--_a); border: 1px solid rgb(255 255 255 / .08); }
 .k-premium-group h3 { display: flex; align-items: center; gap: 6px; }
 .k-premium-group.is-locked .k-switch { opacity: .55; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════════════════════════════
+   BANNER DE OBRA — imagen apaisada que se funde con el fondo.
+   Degradado progresivo (curva suave, sin línea de corte) hacia abajo y
+   hacia los lados. --k-banner-pos: punto vertical visible (0–100 %).
+   ══════════════════════════════════════════════════════════════════ */
+.k-banner { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.k-banner img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  object-position: 50% var(--k-banner-pos, 50%);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .97) 22%, rgb(0 0 0 / .9) 36%, rgb(0 0 0 / .76) 48%, rgb(0 0 0 / .56) 60%, rgb(0 0 0 / .34) 72%, rgb(0 0 0 / .16) 84%, rgb(0 0 0 / .05) 93%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .97) 22%, rgb(0 0 0 / .9) 36%, rgb(0 0 0 / .76) 48%, rgb(0 0 0 / .56) 60%, rgb(0 0 0 / .34) 72%, rgb(0 0 0 / .16) 84%, rgb(0 0 0 / .05) 93%, transparent 100%),
+    linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-composite: intersect;
+}
+@media (max-width: 720px) { .k-banner img { -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .9) 30%, rgb(0 0 0 / .6) 55%, rgb(0 0 0 / .25) 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, rgb(0 0 0 / .9) 30%, rgb(0 0 0 / .6) 55%, rgb(0 0 0 / .25) 78%, transparent 100%); } }

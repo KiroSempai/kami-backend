@@ -68,6 +68,8 @@ function mapRow(row) {
         chapters: row.chapters || [],
         socialLinks: row.social_links || {},
         publisher: row.publisher || '',
+        // Solo si existe la columna (migrate-banners.sql): así el editor sabe si puede ofrecer banners
+        ...('banner' in row ? { banner: row.banner || '', bannerPosition: row.banner_position != null ? Number(row.banner_position) : 50 } : {}),
         language: row.language || 'es',
         lead: row.lead || '',
         contentRating: row.content_rating || 'todos',
@@ -484,6 +486,68 @@ router.put('/:id', requireAuth, requireMangaEditor, upload.single('coverImage'),
         }
         console.error('Error actualizando manga:', err);
         res.status(500).json({ error: 'Error al actualizar manga' });
+    }
+});
+
+// ─── BANNER DE LA OBRA (migrate-banners.sql) ─────────────────────
+// POST   /api/manga/:id/banner   bannerImage (archivo) + position → sube o cambia el banner
+// PUT    /api/manga/:id/banner   { position }                     → mueve el encuadre
+// DELETE /api/manga/:id/banner                                     → lo quita
+const BANNER_W = 2400, BANNER_H = 900;
+async function bannerReady(res) {
+    if (await hasColumn('mangas', 'banner')) return true;
+    res.status(503).json({ error: 'Los banners aún no están activados en el servidor.' });
+    return false;
+}
+function clampPos(v) { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 50; }
+function removeBannerFiles(dir) {
+    try { fs.readdirSync(dir).filter(f => f.startsWith('banner')).forEach(f => { try { fs.unlinkSync(path.join(dir, f)); } catch (_) {} }); } catch (_) {}
+}
+router.post('/:id/banner', requireAuth, requireMangaEditor, upload.single('bannerImage'), async (req, res) => {
+    const tmp = req.file && req.file.path;
+    try {
+        if (!(await bannerReady(res))) return;
+        if (!req.file) return res.status(400).json({ error: 'Elige una imagen JPG, PNG, WebP o AVIF de hasta 10 MB.' });
+        const { id } = req.params;
+        const sharp = require('sharp');
+        const img = sharp(tmp, { failOn: 'error' }).rotate();
+        const meta = await img.metadata();
+        if (!meta.width || meta.width < 800) return res.status(400).json({ error: 'El banner debe medir al menos 800 px de ancho (mejor 1920 px o más).' });
+        const dir = path.join(MANGA_ASSETS_DIR, id);
+        fs.mkdirSync(dir, { recursive: true });
+        removeBannerFiles(dir);
+        const name = 'banner-' + Date.now().toString(36) + '.webp'; // nombre nuevo = sin caché antigua
+        await img.resize({ width: BANNER_W, height: BANNER_H, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82 }).toFile(path.join(dir, name));
+        const url = '/assets/manga/' + id + '/' + name, pos = clampPos(req.body.position);
+        await pool.query('UPDATE mangas SET banner = $1, banner_position = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3', [url, pos, id]);
+        res.json({ success: true, banner: url, bannerPosition: pos });
+    } catch (err) {
+        console.error('Error subiendo banner:', err.message);
+        res.status(500).json({ error: 'No se pudo procesar la imagen. Prueba con otra.' });
+    } finally {
+        if (tmp) { try { fs.unlinkSync(tmp); } catch (_) {} }
+    }
+});
+router.put('/:id/banner', requireAuth, requireMangaEditor, async (req, res) => {
+    try {
+        if (!(await bannerReady(res))) return;
+        const pos = clampPos(req.body && req.body.position);
+        await pool.query('UPDATE mangas SET banner_position = $1 WHERE id = $2', [pos, req.params.id]);
+        res.json({ success: true, bannerPosition: pos });
+    } catch (err) {
+        console.error('Error moviendo banner:', err.message);
+        res.status(500).json({ error: 'No se pudo guardar el encuadre.' });
+    }
+});
+router.delete('/:id/banner', requireAuth, requireMangaEditor, async (req, res) => {
+    try {
+        if (!(await bannerReady(res))) return;
+        removeBannerFiles(path.join(MANGA_ASSETS_DIR, req.params.id));
+        await pool.query("UPDATE mangas SET banner = '', banner_position = 50, updated_at = CURRENT_TIMESTAMP WHERE id = $1", [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error quitando banner:', err.message);
+        res.status(500).json({ error: 'No se pudo quitar el banner.' });
     }
 });
 

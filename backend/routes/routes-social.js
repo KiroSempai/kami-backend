@@ -9,6 +9,7 @@ const router = express.Router();
 const { pool } = require('../db');
 const { verifyToken } = require('../config');
 const getRole = require('../getRole');
+const { hasColumn } = require('../schema');
 
 async function auth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
@@ -83,6 +84,8 @@ router.get('/:username/profile', optionalAuth, async (req, res) => {
         role: role,
         isVerified: user.company_verified || false,
         isPremium: user.premium_expires_at && new Date(user.premium_expires_at) > new Date(),
+        isOwner: !!user.is_owner,
+        isBanned: !!user.is_banned || (user.banned_until && new Date(user.banned_until) > new Date()) || false,
       },
       counts: {
         followers: followersCount,
@@ -97,6 +100,31 @@ router.get('/:username/profile', optionalAuth, async (req, res) => {
   } catch (err) {
     console.error('[social] Error en profile:', err);
     res.status(500).json({ error: 'Error al obtener perfil social' });
+  }
+});
+
+// GET /api/social/:username/works — obras de las que es autor (o, para el propietario, las de la editorial KamiTales)
+router.get('/:username/works', async (req, res) => {
+  try {
+    const u = await pool.query('SELECT id, username, is_owner FROM users WHERE username = $1', [req.params.username]);
+    if (!u.rows.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    const user = u.rows[0];
+    const owned = await hasColumn('mangas', 'created_by');
+    const pub = await hasColumn('mangas', 'publisher');
+    const conds = ['LOWER(m.author) = LOWER($1)'];
+    if (owned) conds.push('m.created_by = $2');
+    if (pub && user.is_owner) conds.push("m.publisher = 'KamiTales'");
+    const r = await pool.query(
+      `SELECT m.id, m.title, m.cover, m.type, m.status, m.genres, m.total_chapters, m.total_reads, m.rating, m.updated_at
+         FROM mangas m WHERE ${conds.join(' OR ')} ORDER BY m.updated_at DESC NULLS LAST LIMIT 60`,
+      owned ? [user.username, user.id] : [user.username]);
+    res.json({ works: r.rows.map(w => ({
+      id: w.id, title: w.title, cover: w.cover, type: w.type, status: w.status, genres: w.genres || [],
+      chapters: w.total_chapters || 0, reads: parseInt(w.total_reads) || 0, rating: w.rating, updatedAt: w.updated_at,
+    })) });
+  } catch (err) {
+    console.error('[social] Error en works:', err.message);
+    res.status(500).json({ error: 'Error al obtener las obras' });
   }
 });
 

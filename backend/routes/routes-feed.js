@@ -7,6 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const { hasColumn } = require('../schema');
 const { verifyToken } = require('../config');
 const https = require('https');
 const http = require('http');
@@ -976,7 +977,8 @@ router.get('/user-posts/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
     // Obtener pinned_post_id del usuario
-    const userR = await pool.query('SELECT pinned_post_id, username FROM users WHERE id = $1', [userId]);
+    const hasPin = await hasColumn('users', 'pinned_post_id');
+    const userR = await pool.query(`SELECT ${hasPin ? 'pinned_post_id' : 'NULL::INTEGER AS pinned_post_id'}, username FROM users WHERE id = $1`, [userId]);
     if (!userR.rows.length) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     const pinnedId = userR.rows[0].pinned_post_id;

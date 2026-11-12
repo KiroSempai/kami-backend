@@ -110,5 +110,5 @@ Red social de manga estilo X.com con feed algorítmico, composer profesional, in
 | `/premium` · `/premium/exito` · `/admin/analiticas` | `premium.html` · `premium-exito.html` · `admin-analiticas.html` |
 
 - Lectores: `css/reader-glass.css` es la interfaz de cristal común a `lector.html` (cómic) y `lector-novela.html`.
-- Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` y `migrate-novels.sql` (aplicadas), `migrate-novel-reader.sql` (texto de capítulos, comentarios por párrafo, progreso por párrafo, reacciones).
+- Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` y `migrate-novels.sql` (aplicadas), `migrate-novel-reader.sql` (aplicada el 2026-11-12: texto de capítulos, estados y fechas, comentarios por párrafo, progreso por párrafo, reacciones).
 - Novelas: API en `backend/routes/routes-novel.js` (`/api/novel`). Cada capítulo guarda bloques `{id, type: p|quote|scene, html}`; el id de párrafo no cambia al editar. `backend/schema.js` permite que el código funcione antes de aplicar una migración.

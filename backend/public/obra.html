@@ -17,6 +17,10 @@
     .ob-top { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--k-8); align-items: end; padding-block: var(--k-10) var(--k-8); }
     .ob-cover { position: relative; aspect-ratio: 2 / 3; border-radius: var(--k-r-lg); overflow: hidden; background: var(--k-surface-2); border: 1px solid var(--k-line-2); box-shadow: 0 30px 60px -20px rgb(0 0 0 / .8), 0 0 0 1px rgb(255 255 255 / .04), 0 0 60px -20px var(--k-work-accent); }
     .ob-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ob-gen { position: absolute; inset: 0; display: grid; align-content: end; gap: var(--k-2); padding: var(--k-5); text-align: left; background: radial-gradient(90% 70% at 20% 10%, color-mix(in srgb, var(--k-accent) 55%, transparent), transparent 70%), radial-gradient(80% 60% at 90% 100%, color-mix(in srgb, var(--k-accent-2, var(--k-gold)) 35%, transparent), transparent 70%), var(--k-surface-2); }
+    .ob-gen span { position: absolute; top: 14px; right: 16px; font: 700 28px/1 "Noto Sans JP", sans-serif; opacity: .35; }
+    .ob-gen b { font: 900 clamp(1.4rem, 3vw, 2rem)/.95 var(--k-font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+    .ob-gen small { font-size: var(--k-fs-xs); color: var(--k-text-2); }
     .ob-info { display: grid; gap: var(--k-4); min-width: 0; }
     .ob-badges { display: flex; flex-wrap: wrap; gap: 6px; }
     .ob-title { margin: 0; font: 900 clamp(2.2rem, 5.5vw, 4rem)/.92 var(--k-font-display); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; text-wrap: balance; }
@@ -278,7 +282,7 @@
     var m = S.m, title = fix(m.title);
     document.title = title + ' · KamiTales';
     $('ob-hero').style.setProperty('--_cover', m.cover ? 'url("' + m.cover.replace(/"/g, '%22') + '")' : 'none');
-    $('ob-cover').innerHTML = m.cover ? '<img src="' + esc(m.cover) + '" alt="Portada de ' + esc(title) + '">' : '';
+    $('ob-cover').innerHTML = m.cover ? '<img src="' + esc(m.cover) + '" alt="Portada de ' + esc(title) + '">' : '<div class="ob-gen" role="img" aria-label="Portada de ' + esc(title) + '"><span>神</span><b>' + esc(title) + '</b><small>' + esc(fix(m.author) || 'KamiTales') + '</small></div>';
     var b = ['<span class="k-badge k-badge--solid">' + esc(TYPE[m.type] || m.type) + '</span>'];
     if (STATE[m.status]) b.push('<span class="k-badge' + (m.status === 'ongoing' ? ' k-badge--ok' : '') + '">' + STATE[m.status] + '</span>');
     if (m.contentRating && m.contentRating !== 'todos') b.push('<span class="k-badge k-badge--warn">' + esc(AGE[m.contentRating]) + '</span>');

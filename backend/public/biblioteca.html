@@ -36,6 +36,7 @@
 
     /* Cuadrícula */
     .lb-card { position: relative; }
+    .lb-gen { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 12px; font: 900 1.15rem/.95 var(--k-font-display); text-transform: uppercase; overflow-wrap: anywhere; background: radial-gradient(90% 70% at 20% 10%, color-mix(in srgb, var(--k-accent) 50%, transparent), transparent 70%), var(--k-surface-2); }
     .lb-card .k-cover__art { box-shadow: none; }
     .lb-new { position: absolute; right: 8px; bottom: 8px; }
     .lb-card .k-cover__badges { right: 48px; }
@@ -240,7 +241,7 @@
   function cardHTML(m) {
     var n = newCount(m);
     return '<div class="lb-card"><a class="k-cover" href="/obra/' + encodeURIComponent(m.id) + '">' +
-      '<div class="k-cover__art">' + (m.cover ? '<img src="' + esc(m.cover) + '" alt="" loading="lazy">' : '') +
+      '<div class="k-cover__art">' + (m.cover ? '<img src="' + esc(m.cover) + '" alt="" loading="lazy">' : '<span class="lb-gen" aria-hidden="true">' + esc(m.title) + '</span>') +
       '<div class="k-cover__badges"><span class="k-badge k-badge--solid">' + esc(TYPE[m.type] || m.type) + '</span><span class="k-badge" style="background:rgb(0 0 0/.65);color:#fff">' + (LABEL[m.status] || '') + '</span></div>' +
       (n ? '<span class="k-badge k-badge--accent lb-new" style="background:var(--k-accent-fill);color:var(--k-on-accent)">+' + n + '</span>' : '') +
       (m.fav ? '<i class="ti ti-heart-filled lb-fav" aria-label="Favorita"></i>' : '') + '</div>' +

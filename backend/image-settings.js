@@ -17,7 +17,7 @@ const ROLE_MAX = {
 function getAllowedQualities(role) {
   const max = ROLE_MAX[role] || '1080';
   const idx = QUALITY_ORDER.indexOf(max);
-  return QUALITY_ORDER.slice(0, idx + 1);
+  return QUALITY_ORDER.slice(idx); // de la calidad máxima del rol hacia abajo
 }
 
 function getDefaultQuality(role) {

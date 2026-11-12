@@ -30,8 +30,38 @@ function signToken(payload) {
 async function verifyToken(token) {
   const decoded = jwt.verify(token, JWT_SECRET);
   await checkBlacklist(token);
+  await checkSessionDate(decoded);
   return decoded;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Sesiones: un token emitido antes del último cambio de seguridad del usuario
+// (cambio o restablecimiento de contraseña, «cerrar sesión en todas partes»)
+// deja de valer. La fecha se guarda en users.password_changed_at y se cachea 30 s.
+// ═══════════════════════════════════════════════════════════════════════════════
+const sessionCache = new Map();
+async function securityDate(userId) {
+  const hit = sessionCache.get(userId);
+  if (hit && Date.now() - hit.at < 30000) return hit.ts;
+  let ts = 0;
+  try {
+    const r = await pool.query('SELECT password_changed_at FROM users WHERE id = $1', [userId]);
+    ts = r.rows[0] && r.rows[0].password_changed_at ? new Date(r.rows[0].password_changed_at).getTime() : 0;
+  } catch { return 0; } // si la base de datos falla, no se bloquea a nadie
+  sessionCache.set(userId, { ts, at: Date.now() });
+  if (sessionCache.size > 5000) sessionCache.delete(sessionCache.keys().next().value);
+  return ts;
+}
+async function checkSessionDate(decoded) {
+  if (!decoded || !decoded.userId || !decoded.iat) return;
+  const ts = await securityDate(decoded.userId);
+  if (ts && decoded.iat * 1000 + 1000 < ts) {
+    const err = new Error('Sesión cerrada');
+    err.name = 'TokenRevokedError';
+    throw err;
+  }
+}
+function forgetSessionCache(userId) { sessionCache.delete(userId); }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Verifica un token ignorando expiración (útil para renovación o revocación).
@@ -99,4 +129,5 @@ module.exports = {
   verifyTokenIgnoreExp,
   revokeToken,
   cleanExpiredTokens,
+  forgetSessionCache,
 };

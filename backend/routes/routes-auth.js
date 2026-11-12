@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('../db');
-const { signToken, verifyToken, verifyTokenIgnoreExp, revokeToken } = require('../config');
+const { signToken, verifyToken, verifyTokenIgnoreExp, revokeToken, forgetSessionCache } = require('../config');
 
 const generateUserId = require('../generateUserID');
 const getRole = require('../getRole');
@@ -278,6 +278,8 @@ router.get('/me', async (req, res) => {
                 emoji: user.emoji || '',
                 createdAt: user.created_at,
                 premiumExpiresAt: user.premium_expires_at,
+                isOwner: !!user.is_owner,
+                isPremium: !!(user.premium_expires_at && new Date(user.premium_expires_at) > new Date()) || ['silver', 'gold'].includes(user.subscription_tier) || !!user.is_owner || !!user.is_admin,
                 reputationScore: user.reputation_score,
                 companyVerified: user.company_verified,
                 isBanned: user.is_banned,
@@ -745,6 +747,8 @@ router.get('/profile/editor', async (req, res) => {
                 emoji: user.emoji || '',
                 createdAt: user.created_at,
                 premiumExpiresAt: user.premium_expires_at,
+                isOwner: !!user.is_owner,
+                isPremium: !!(user.premium_expires_at && new Date(user.premium_expires_at) > new Date()) || ['silver', 'gold'].includes(user.subscription_tier) || !!user.is_owner || !!user.is_admin,
                 reputationScore: user.reputation_score,
                 companyVerified: user.company_verified,
                 isBanned: user.is_banned,
@@ -788,8 +792,10 @@ router.put('/change-password', async (req, res) => {
 
         const newPasswordHash = await bcrypt.hash(newPassword, 10);
         await pool.query('UPDATE users SET password = $1, password_changed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [newPasswordHash, decoded.userId]);
-
-        res.json({ success: true, message: 'Contraseña actualizada correctamente' });
+        forgetSessionCache(decoded.userId);
+        // Las demás sesiones se cierran; esta recibe un token nuevo
+        await new Promise(ok => setTimeout(ok, 1100));
+        res.json({ success: true, message: 'Contraseña actualizada. Se ha cerrado la sesión en los demás dispositivos.', token: signToken({ userId: user.id, username: user.username, email: user.email }) });
     } catch (err) {
         console.error('Error cambiando contraseña:', err.message);
         res.status(500).json({ error: 'Error al cambiar contraseña' });

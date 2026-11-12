@@ -212,18 +212,17 @@ router.get('/:username/achievements', (req, res) => {
 
 router.put('/', authMiddleware, async (req, res) => {
     try {
-        const { bio, country, avatar, banner, imageQuality } = req.body;
+        const { country, imageQuality } = req.body;
+        if (country !== undefined && (typeof country !== 'string' || country.length > 60 || /[<>]/.test(country))) return res.status(400).json({ error: 'País no válido' });
+        if (imageQuality !== undefined && !['1080', '720', '480'].includes(String(imageQuality))) return res.status(400).json({ error: 'Calidad no válida (usa /api/settings/quality)' });
         const result = await pool.query(
             `UPDATE users SET
-                bio = COALESCE($1, bio),
-                country = COALESCE($2, country),
-                avatar = COALESCE($3, avatar),
-                banner = COALESCE($4, banner),
-                image_quality = COALESCE($5, image_quality),
+                country = COALESCE($1, country),
+                image_quality = COALESCE($2, image_quality),
                 updated_at = CURRENT_TIMESTAMP
-             WHERE id = $6
+             WHERE id = $3
              RETURNING *`,
-            [bio || null, country || null, avatar || null, banner || null, imageQuality || null, req.user.userId]
+            [country || null, imageQuality ? String(imageQuality) : null, req.user.userId]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
         const user = result.rows[0];

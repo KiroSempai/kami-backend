@@ -21,7 +21,16 @@
 
   /* ── 1. Apariencia ─────────────────────────────────────────────── */
   var STORE_KEY = 'kami_appearance';
-  var DEFAULTS = { theme: 'dark', accent: 'shinku', custom: '', density: 'comfy', text: 'md', font: 'jakarta', glow: 'on', motion: 'system' };
+  var DEFAULTS = { theme: 'dark', accent: 'shinku', custom: '', density: 'comfy', text: 'md', font: 'jakarta', glow: 'on', motion: 'system', skin: 'none', ambient: 'off', gradient: 'off' };
+  // Ambientes del modo premium (solo en tema oscuro)
+  var SKINS = [
+    { id: 'none', name: 'Clásico', desc: 'El negro de KamiTales', colors: ['#0a0912', '#ff3b6b'] },
+    { id: 'aurora', name: 'Aurora', desc: 'Azul profundo y luces boreales', colors: ['#060a14', '#22d3ee'] },
+    { id: 'kin', name: 'Kin', desc: 'Negro cálido y oro', colors: ['#0d0a06', '#f5c842'] },
+    { id: 'tokyo', name: 'Neón Tokio', desc: 'Violeta eléctrico y rejilla', colors: ['#09061a', '#b56bff'] },
+    { id: 'sakura', name: 'Sakura', desc: 'Ciruela nocturna y rosa', colors: ['#10070f', '#ff8fcf'] },
+  ];
+  function isPremium() { var u = getUser(); return !!(u && (u.isPremium || u.isOwner || u.role === 'admin')); }
   var ACCENTS = [
     { id: 'shinku', name: 'Shinku', color: '#ff3b6b' },
     { id: 'sakura', name: 'Sakura', color: '#ff5fbf' },
@@ -70,6 +79,12 @@
     if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
     meta.content = (p.theme === 'light') ? '#f3f2f7' : '#0a0912';
     if (p.font === 'legible') ensureFont('legible', 'family=Atkinson+Hyperlegible:wght@400;700');
+    // Modo premium
+    var prem = isPremium();
+    if (prem) r.setAttribute('data-premium', ''); else r.removeAttribute('data-premium');
+    if (prem && p.skin && p.skin !== 'none') r.setAttribute('data-skin', p.skin); else r.removeAttribute('data-skin');
+    if (prem && p.ambient === 'on') r.setAttribute('data-ambient', 'on'); else r.removeAttribute('data-ambient');
+    if (prem && p.gradient === 'on') r.setAttribute('data-gradient', 'on'); else r.removeAttribute('data-gradient');
   }
 
   var prefs = readPrefs();
@@ -230,6 +245,18 @@
     }).join('') + '</div>';
   }
 
+  function premiumGroup(p) {
+    var prem = isPremium();
+    return '<div class="k-sheet__group k-premium-group' + (prem ? '' : ' is-locked') + '"><h3><i class="ti ti-crown" aria-hidden="true"></i> Modo premium' + (prem ? '' : ' <span class="k-badge k-badge--gold">Premium</span>') + '</h3>' +
+      '<div class="k-skins" data-k-skins>' + SKINS.map(function (s) {
+        return '<button type="button" class="k-skin" value="' + s.id + '" aria-pressed="' + (p.skin === s.id) + '"' + (prem ? '' : ' disabled') + ' style="--_a:' + s.colors[0] + ';--_b:' + s.colors[1] + '"><span class="k-skin__art" aria-hidden="true"></span><b>' + s.name + '</b></button>';
+      }).join('') + '</div>' +
+      '<label class="k-switch"><input type="checkbox" id="k-pref-ambient"' + (p.ambient === 'on' ? ' checked' : '') + (prem ? '' : ' disabled') + '>Fondo animado</label>' +
+      '<label class="k-switch"><input type="checkbox" id="k-pref-gradient"' + (p.gradient === 'on' ? ' checked' : '') + (prem ? '' : ' disabled') + '>Acento degradado</label>' +
+      (prem ? '' : '<a class="k-btn k-btn--secondary k-btn--sm" href="' + ROUTES.premium + '"><i class="ti ti-crown" aria-hidden="true"></i>Desbloquear con Premium</a>') +
+    '</div>';
+  }
+
   function buildSheet() {
     var p = prefs;
     var sheet = document.createElement('div');
@@ -247,6 +274,7 @@
         '<div class="k-sheet__group"><h3>Tamaño del texto</h3>' + seg('text', p.text, [['sm', 'S'], ['md', 'M'], ['lg', 'L'], ['xl', 'XL']]) + '</div>' +
         '<div class="k-sheet__group"><h3>Densidad</h3>' + seg('density', p.density, [['comfy', 'Cómoda'], ['compact', 'Compacta']]) + '</div>' +
         '<div class="k-sheet__group"><h3>Letra</h3>' + seg('font', p.font, [['jakarta', 'KamiTales'], ['legible', 'Alta legibilidad']]) + '</div>' +
+        premiumGroup(p) +
         '<div class="k-sheet__group"><h3>Efectos</h3>' +
           '<label class="k-switch"><input type="checkbox" id="k-pref-glow"' + (p.glow === 'on' ? ' checked' : '') + '>Brillo neón</label>' +
           '<label class="k-switch"><input type="checkbox" id="k-pref-motion"' + (p.motion === 'reduce' ? ' checked' : '') + '>Reducir animaciones</label>' +
@@ -283,6 +311,10 @@
       if (t.hasAttribute('data-k-reset')) { prefs = Object.assign({}, DEFAULTS); writePrefs(prefs); applyPrefs(prefs); var fresh = buildSheet(); sheet.replaceWith(fresh); bindSheet(fresh); fresh.classList.add('is-open'); return; }
       var group = t.closest('[data-k-pref]');
       if (group) { group.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === t)); }); return setPref(group.getAttribute('data-k-pref'), t.value); }
+      if (t.closest('[data-k-skins]') && t.classList.contains('k-skin')) {
+        sheet.querySelectorAll('.k-skin').forEach(function (b) { b.setAttribute('aria-pressed', String(b === t)); });
+        return setPref('skin', t.value);
+      }
       if (t.closest('[data-k-accents]') && t.classList.contains('k-swatch')) {
         sheet.querySelectorAll('.k-swatch').forEach(function (b) { b.setAttribute('aria-pressed', String(b === t)); });
         return setPref('accent', t.value);
@@ -296,6 +328,8 @@
     });
     sheet.querySelector('#k-pref-glow').addEventListener('change', function (e) { setPref('glow', e.target.checked ? 'on' : 'off'); });
     sheet.querySelector('#k-pref-motion').addEventListener('change', function (e) { setPref('motion', e.target.checked ? 'reduce' : 'system'); });
+    sheet.querySelector('#k-pref-ambient').addEventListener('change', function (e) { setPref('ambient', e.target.checked ? 'on' : 'off'); });
+    sheet.querySelector('#k-pref-gradient').addEventListener('change', function (e) { setPref('gradient', e.target.checked ? 'on' : 'off'); });
   }
 
   /* ── Menú de usuario ───────────────────────────────────────────── */
@@ -383,6 +417,21 @@
     var q = new URLSearchParams(location.search).get('q'), qi = document.getElementById('k-nav-q');
     if (q && qi) qi.value = q;
     loadUnread();
+    refreshPlan();
+  }
+
+  function refreshPlan(force) {
+    var t = getToken(); if (!t || !window.fetch) return;
+    try { if (!force && sessionStorage.getItem('kami_plan_checked')) return; } catch (e) { /* nada */ }
+    fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + t } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.user) return;
+        var u = getUser() || {}, before = isPremium();
+        u.isPremium = !!d.user.isPremium; u.isOwner = !!d.user.isOwner; u.role = d.user.role;
+        try { localStorage.setItem('kami_user', JSON.stringify(u)); sessionStorage.setItem('kami_plan_checked', '1'); } catch (e) { /* nada */ }
+        if (before !== isPremium()) { applyPrefs(prefs); var s = document.getElementById('k-appearance'); if (s) { var fresh = buildSheet(); s.replaceWith(fresh); bindSheet(fresh); } }
+      }).catch(function () { /* sin conexión */ });
   }
 
   function refreshNav() {
@@ -397,7 +446,7 @@
 
   /* ── API pública ───────────────────────────────────────────────── */
   window.KAMI = {
-    theme: { get: function () { return Object.assign({}, prefs); }, set: setPref, accents: ACCENTS },
+    theme: { get: function () { return Object.assign({}, prefs); }, set: setPref, accents: ACCENTS, skins: SKINS, defaults: DEFAULTS, isPremium: isPremium, refreshPlan: refreshPlan },
     toast: toast, openAppearance: openAppearance, refreshNav: refreshNav, logout: logout, routes: ROUTES,
   };
   // Compatibilidad con el código que llamaba a menu-global.js

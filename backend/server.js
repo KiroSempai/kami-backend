@@ -182,6 +182,7 @@ const adminRoutes        = require('./routes/routes-admin');
 const novelRoutes        = require('./routes/routes-novel');
 const studioRoutes       = require('./routes/routes-studio');
 const passwordRoutes     = require('./routes/routes-password');
+const settingsRoutes     = require('./routes/routes-settings');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 App Express
@@ -389,6 +390,7 @@ app.use('/assets', express.static(path.join(PUB, 'assets'), { maxAge: '365d', im
 
 app.use('/api/auth',         authRoutes);
 app.use('/api/auth',         passwordRoutes);
+app.use('/api/settings',     settingsRoutes);
 app.use('/api/profile',      profileRoutes);
 app.use('/api/library',      libraryRoutes);
 app.use('/api/manga',        mangaRoutes);

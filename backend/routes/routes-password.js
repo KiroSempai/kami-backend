@@ -20,7 +20,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('../db');
-const { JWT_SECRET } = require('../config');
+const { JWT_SECRET, forgetSessionCache } = require('../config');
 
 const TTL = '1h';
 const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false,
@@ -109,6 +109,7 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
     if (!user) return res.status(400).json({ error: 'Este enlace ha caducado o ya se ha usado. Pide uno nuevo.' });
     const hash = await bcrypt.hash(password, 10);
     await pool.query('UPDATE users SET password = $1, password_changed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [hash, user.id]);
+    forgetSessionCache(user.id); // cierra todas las sesiones abiertas con la contraseña anterior
     res.json({ success: true, message: 'Contraseña cambiada. Ya puedes iniciar sesión con ella.' });
   } catch (e) {
     console.error('[contraseña] reset:', e.message);

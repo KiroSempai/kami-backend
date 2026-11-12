@@ -561,3 +561,53 @@ body.k-has-shell :is(.mobile-top-header, .mobile-bottom-nav, .mob-top-nav, .mob-
 }
 /* Barras propias que duplicaban la nav: ficha de obra y logo de la barra de Comunidad */
 body.k-has-shell .kmi-topbar, body.k-has-shell .com-sidebar .com-logo { display: none !important; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   MODO PREMIUM — ambientes, fondo animado y acento degradado.
+   El shell solo pone estos atributos si la cuenta es Premium.
+   Los ambientes se aplican en tema oscuro (Noche o Sistema oscuro).
+   ══════════════════════════════════════════════════════════════════ */
+:root { --k-accent-2: var(--k-gold); }
+:root[data-skin="aurora"]:not([data-theme="light"]) { --k-bg: #060a14; --k-surface-1: #0c1322; --k-surface-2: #111a2d; --k-surface-3: #18233a; --k-accent-2: #22d3ee; --k-amb-1: #1b6cff; --k-amb-2: #22d3ee; --k-amb-3: #7c3aed; }
+:root[data-skin="kin"]:not([data-theme="light"])    { --k-bg: #0d0a06; --k-surface-1: #17120b; --k-surface-2: #1f1810; --k-surface-3: #2a2116; --k-accent-2: #f5c842; --k-amb-1: #f5c842; --k-amb-2: #c2741d; --k-amb-3: #7a4b12; }
+:root[data-skin="tokyo"]:not([data-theme="light"])  { --k-bg: #09061a; --k-surface-1: #120d28; --k-surface-2: #191236; --k-surface-3: #221a45; --k-accent-2: #22d3ee; --k-amb-1: #b56bff; --k-amb-2: #22d3ee; --k-amb-3: #ff3b6b; }
+:root[data-skin="sakura"]:not([data-theme="light"]) { --k-bg: #10070f; --k-surface-1: #1b0e19; --k-surface-2: #241322; --k-surface-3: #2f1a2c; --k-accent-2: #ff8fcf; --k-amb-1: #ff8fcf; --k-amb-2: #ff3b6b; --k-amb-3: #9d7bff; }
+@media (prefers-color-scheme: light) { :root[data-skin]:not([data-theme]) { --k-accent-2: var(--k-gold); } }
+:root[data-skin="tokyo"]:not([data-theme="light"]) body { background-image: linear-gradient(rgb(181 107 255 / .05) 1px, transparent 1px), linear-gradient(90deg, rgb(181 107 255 / .05) 1px, transparent 1px); background-size: 48px 48px; background-attachment: fixed; }
+
+/* Fondo animado: luces que se mueven despacio detrás del contenido */
+:root[data-ambient="on"] body { background-color: transparent; }
+:root[data-ambient="on"] body::before {
+  content: ""; position: fixed; inset: -20vmax; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(32vmax 32vmax at 20% 25%, color-mix(in srgb, var(--k-amb-1, var(--k-accent)) 22%, transparent), transparent 70%),
+    radial-gradient(28vmax 28vmax at 80% 30%, color-mix(in srgb, var(--k-amb-2, var(--k-accent-2)) 18%, transparent), transparent 70%),
+    radial-gradient(36vmax 36vmax at 55% 85%, color-mix(in srgb, var(--k-amb-3, var(--k-accent)) 16%, transparent), transparent 70%);
+  filter: blur(20px); animation: k-ambient 28s ease-in-out infinite alternate;
+}
+:root[data-ambient="on"][data-theme="light"] body::before { opacity: .55; }
+@keyframes k-ambient { 0% { transform: translate3d(0, 0, 0) rotate(0deg); } 50% { transform: translate3d(4vmax, -3vmax, 0) rotate(8deg); } 100% { transform: translate3d(-3vmax, 3vmax, 0) rotate(-6deg); } }
+:root[data-motion="reduce"][data-ambient="on"] body::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { :root[data-ambient="on"] body::before { animation: none; } }
+
+/* Acento degradado */
+:root[data-gradient="on"] .k-btn--primary { background: linear-gradient(120deg, var(--k-accent-fill), color-mix(in oklab, var(--k-accent-2), #000 18%)); border-color: transparent; }
+:root[data-gradient="on"] .k-tab[aria-selected="true"]::after, :root[data-gradient="on"] .k-tab.is-active::after { background: linear-gradient(90deg, var(--k-accent), var(--k-accent-2)); }
+:root[data-gradient="on"] .k-chip[aria-pressed="true"], :root[data-gradient="on"] .k-chip.is-active { background: linear-gradient(120deg, var(--k-accent-fill), color-mix(in oklab, var(--k-accent-2), #000 18%)); }
+:root[data-gradient="on"] .k-switch input:checked { background: linear-gradient(90deg, var(--k-accent), var(--k-accent-2)); }
+:root[data-gradient="on"] .k-nav__word b { background: linear-gradient(100deg, var(--k-accent), var(--k-accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-gradient="on"] .k-h1 { background: linear-gradient(100deg, var(--k-text) 30%, var(--k-accent) 70%, var(--k-accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* Marca premium en el avatar de la barra */
+:root[data-premium] #k-avatar-btn .k-avatar { box-shadow: 0 0 0 2px var(--k-bg), 0 0 0 4px var(--k-gold), 0 0 14px -2px var(--k-gold); }
+
+/* Selector de ambientes (panel y Ajustes) */
+.k-skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--k-2); }
+.k-skin { display: grid; gap: 6px; padding: 6px 6px 8px; border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: rgb(var(--k-ink) / .03); color: var(--k-text-2); font: 600 var(--k-fs-xs)/1.2 var(--k-font-body); cursor: pointer; text-align: center; transition: border-color var(--k-t-fast), transform var(--k-t-fast); }
+.k-skin:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--k-line-2); }
+.k-skin[aria-pressed="true"] { border-color: var(--_b); color: var(--k-text); box-shadow: 0 0 0 1px var(--_b), 0 8px 22px -10px var(--_b); }
+.k-skin:disabled { cursor: not-allowed; opacity: .55; }
+.k-skin__art { display: block; aspect-ratio: 16 / 10; border-radius: 8px; background: radial-gradient(70% 90% at 25% 20%, color-mix(in srgb, var(--_b) 70%, transparent), transparent 70%), radial-gradient(60% 80% at 85% 90%, color-mix(in srgb, var(--_b) 35%, transparent), transparent 70%), var(--_a); border: 1px solid rgb(255 255 255 / .08); }
+.k-premium-group h3 { display: flex; align-items: center; gap: 6px; }
+.k-premium-group.is-locked .k-switch { opacity: .55; cursor: not-allowed; }

@@ -332,7 +332,7 @@
         $('ed-bar-t').textContent = 'Tienes cambios sin guardar';
         render();
       })
-      .catch(function (e) { $('ed-bar-t').textContent = e.message; toast(e.message, 'error'); })
+      .catch(function (e) { $('ed-bar-t').textContent = e.message; toast(e.message, 'bad'); })
       .then(function () { saving = false; $('ed-save').disabled = false; $('ed-save').textContent = 'Guardar'; });
   }
   $('ed-save').addEventListener('click', save);

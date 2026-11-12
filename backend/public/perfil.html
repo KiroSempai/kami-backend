@@ -427,12 +427,12 @@
       p.isFollowing = !p.isFollowing; p.counts.followers = Math.max(0, p.counts.followers + (p.isFollowing ? 1 : -1));
       renderActions(); renderStats();
       toast(p.isFollowing ? 'Ahora sigues a ' + p.user.username : 'Has dejado de seguir a ' + p.user.username);
-    }).catch(function (e) { btn.disabled = false; toast(e.message, 'error'); });
+    }).catch(function (e) { btn.disabled = false; toast(e.message, 'bad'); });
   }
   function sendFriend() {
     postJSON('/api/friends/add', { username: S.profile.user.username })
       .then(function (d) { toast(d.message || 'Solicitud enviada'); })
-      .catch(function (e) { toast(e.message, 'error'); });
+      .catch(function (e) { toast(e.message, 'bad'); });
   }
 
   // ── Cifras ───────────────────────────────────────────────

@@ -179,6 +179,7 @@ const dmRoutes = require('./routes/routes-dms');
 const feedRoutes         = require('./routes/routes-feed');
 const communityRoutes    = require('./routes/routes-communities');
 const adminRoutes        = require('./routes/routes-admin');
+const novelRoutes        = require('./routes/routes-novel');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 App Express
@@ -346,7 +347,17 @@ app.get('/estudio/nueva',            page('obra-nueva.html'));
 app.get('/obra/:id',                 page('obra.html'));
 app.get('/obra/:id/editar',          page('obra-editar.html'));
 app.get('/obra/:id/nuevo-capitulo',  page('capitulo-nuevo.html'));
-app.get('/leer/:id/:cap',            page('lector.html'));
+// El lector depende del tipo de obra: texto para novelas, páginas para cómics
+app.get('/leer/:id/:cap', async (req, res) => {
+  let file = 'lector.html';
+  try {
+    const r = await pool.query('SELECT type FROM mangas WHERE id = $1', [req.params.id]);
+    if (r.rows[0]?.type === 'novel') file = 'lector-novela.html';
+  } catch { /* sin base: lector de cómic */ }
+  res.sendFile(path.join(PUB, file));
+});
+app.get('/obra/:id/escribir',        page('escribir.html'));
+app.get('/obra/:id/escribir/:num',   page('escribir.html'));
 app.get('/premium',                  page('premium.html'));
 app.get('/premium/exito',            page('premium-exito.html'));
 app.get('/mensajes',                 page('mensajes.html'));
@@ -396,6 +407,7 @@ app.use('/api/feed',         feedRoutes);
 app.use('/api/communities',  communityRoutes);
 app.use('/api/dms',          dmRoutes);
 app.use('/api/admin',        adminRoutes);
+app.use('/api/novel',        novelRoutes);
 
 // Rutas sueltas que no encajan en los groups anteriores
 

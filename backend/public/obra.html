@@ -687,6 +687,8 @@
               '<div class="chapter-num-line">' +
                 '<span class="chapter-num">#' + numStr + '</span>' +
                 '<span class="chapter-date">' + date + '</span>' +
+                (ch.freeAt && new Date(ch.freeAt) > new Date() ? '<span class="k-badge k-badge--gold" title="Adelanto: se libera gratis"><i class="ti ti-lock" aria-hidden="true"></i>Gratis el ' + new Date(ch.freeAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span>' : '') +
+                (ch.wordCount ? '<span class="chapter-date">' + Math.max(1, Math.round(ch.wordCount / 230)) + ' min</span>' : '') +
               '</div>' +
               '<div class="chapter-title">' + (ch.title ? escHtml('Cap\u00edtulo ' + ch.number + ': ' + ch.title) : escHtml('Cap\u00edtulo ' + ch.number)) + '</div>' +
             '</div>' +

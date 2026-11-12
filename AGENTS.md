@@ -101,10 +101,12 @@ Red social de manga estilo X.com con feed algorítmico, composer profesional, in
 | `/`, `/explorar` | `explorar.html` (cómics y novelas) |
 | `/comunidad` | `comunidad.html` |
 | `/obra/:id` · `/obra/:id/editar` · `/obra/:id/nuevo-capitulo` | `obra.html` · `obra-editar.html` · `capitulo-nuevo.html` |
-| `/leer/:id/:cap` | `lector.html` |
+| `/leer/:id/:cap` | `lector.html` (cómic) o `lector-novela.html` (novela), según el tipo de obra |
+| `/obra/:id/escribir` · `/obra/:id/escribir/:num` | `escribir.html` (editor de novelas) |
 | `/estudio` · `/estudio/nueva` | `estudio.html` · `obra-nueva.html` |
 | `/acceder` · `/registro` · `/ajustes` · `/mensajes` | `acceder.html` · `registro.html` · `ajustes.html` · `mensajes.html` |
 | `/perfil`, `/perfil/:usuario` · `/perfil-editar/:usuario` | `perfil.html` · `perfil-editar.html` |
 | `/premium` · `/premium/exito` · `/admin/analiticas` | `premium.html` · `premium-exito.html` · `admin-analiticas.html` |
 
-- Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` (aplicada), `migrate-novels.sql` (tipo `novel`).
+- Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` y `migrate-novels.sql` (aplicadas), `migrate-novel-reader.sql` (texto de capítulos, comentarios por párrafo, progreso por párrafo, reacciones).
+- Novelas: API en `backend/routes/routes-novel.js` (`/api/novel`). Cada capítulo guarda bloques `{id, type: p|quote|scene, html}`; el id de párrafo no cambia al editar. `backend/schema.js` permite que el código funcione antes de aplicar una migración.

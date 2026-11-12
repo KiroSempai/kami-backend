@@ -11,7 +11,18 @@ const { pool } = require('../db');
 const { upload, MANGA_ASSETS_DIR } = require('../upload-config');
 const { processChapterImages } = require('../image-processor');
 const { verifyToken } = require('../config');
-const { requireAuth, requireMangaEditor } = require('../middleware/auth');
+const { requireAuth, requireMangaEditor, canEditManga } = require('../middleware/auth');
+const { hasColumn } = require('../schema');
+
+// Borradores y capítulos programados no se listan al público
+async function visibilityFilter(req, mangaId) {
+    if (!(await hasColumn('chapters', 'status'))) return '';
+    const h = req.headers.authorization || '';
+    if (h.startsWith('Bearer ')) {
+        try { const u = await verifyToken(h.slice(7)); if (await canEditManga(u.userId, mangaId)) return ''; } catch { /* anónimo */ }
+    }
+    return " AND (c.status = 'published' OR (c.status = 'scheduled' AND c.publish_at <= NOW()))";
+}
 const { signURL } = require('../url-signer');
 
 const CHAPTERS_PER_PAGE = 50;
@@ -22,8 +33,9 @@ router.get('/:mangaId', async (req, res) => {
         const { mangaId } = req.params;
         const { page = 1, limit = CHAPTERS_PER_PAGE } = req.query;
 
+        const vis = await visibilityFilter(req, mangaId);
         const countResult = await pool.query(
-            'SELECT COUNT(*) FROM chapters WHERE manga_id = $1',
+            'SELECT COUNT(*) FROM chapters c WHERE c.manga_id = $1' + vis,
             [mangaId]
         );
         const total = parseInt(countResult.rows[0].count);
@@ -34,7 +46,7 @@ router.get('/:mangaId', async (req, res) => {
         const offset = (pageNum - 1) * limitNum;
 
         const result = await pool.query(
-            `SELECT c.id, c.chapter_number, c.title, c.pages, c.scan_group, c.release_date, c.created_at,
+            `SELECT c.*,
                     COALESCE(cm.comment_count, 0) AS comment_count
              FROM chapters c
              LEFT JOIN (
@@ -42,7 +54,7 @@ router.get('/:mangaId', async (req, res) => {
                FROM chapter_comments
                GROUP BY manga_id, chapter_number
              ) cm ON cm.manga_id = c.manga_id AND cm.chapter_number = c.chapter_number
-             WHERE c.manga_id = $1
+             WHERE c.manga_id = $1${vis}
              ORDER BY c.chapter_number DESC
              LIMIT $2 OFFSET $3`,
             [mangaId, limitNum, offset]
@@ -59,6 +71,9 @@ router.get('/:mangaId', async (req, res) => {
                 releaseDate: r.release_date,
                 createdAt: r.created_at,
                 commentCount: parseInt(r.comment_count) || 0,
+                status: r.status || 'published',
+                freeAt: r.free_at || null,
+                wordCount: r.word_count || 0,
             })),
             pagination: { page: pageNum, limit: limitNum, total, totalPages },
         });

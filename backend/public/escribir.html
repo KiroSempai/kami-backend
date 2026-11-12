@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Escribir · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Editor de novelas. Escribir con la misma tipografía que verá el lector. */
+    :root { --ed-font: "Literata", Georgia, "Times New Roman", serif; --ed-bar-h: 56px; }
+    body { min-height: 100dvh; }
+    .ed-bar { position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); z-index: 40; display: flex; align-items: center; gap: var(--k-2); min-height: var(--ed-bar-h); padding: var(--k-2) max(16px, env(safe-area-inset-right, 0px)) var(--k-2) max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--k-bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--k-line); flex-wrap: wrap; }
+    .ed-bar__work { display: grid; min-width: 0; margin-right: auto; }
+    .ed-bar__work b { font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 32ch; }
+    .ed-save { font-size: var(--k-fs-xs); color: var(--k-text-3); display: inline-flex; align-items: center; gap: 6px; }
+    .ed-save.is-ok i { color: var(--k-ok); } .ed-save.is-warn { color: var(--k-warn); } .ed-save.is-bad { color: var(--k-bad); }
+    .ed-tools { display: flex; gap: 2px; padding: 3px; border-radius: var(--k-r-pill); background: rgb(var(--k-ink) / .05); }
+    .ed-tools .k-btn[aria-pressed="true"] { background: var(--k-accent-soft); color: var(--k-text); }
+    .ed-sep { width: 1px; height: 24px; background: var(--k-line-2); margin: 0 var(--k-1); }
+
+    .ed-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+    @media (min-width: 1100px) { .ed-layout { grid-template-columns: 280px minmax(0, 1fr); } }
+    .ed-side { display: none; position: sticky; top: calc(var(--k-nav-h) + var(--ed-bar-h)); align-self: start; max-height: calc(100dvh - var(--k-nav-h) - var(--ed-bar-h)); overflow-y: auto; padding: var(--k-5) var(--k-4); border-right: 1px solid var(--k-line); }
+    @media (min-width: 1100px) { .ed-side { display: grid; gap: var(--k-5); align-content: start; } }
+    .ed-side.is-open { display: grid; gap: var(--k-5); align-content: start; position: fixed; z-index: 60; inset: calc(var(--k-nav-h) + var(--ed-bar-h)) auto 0 0; width: min(320px, 88vw); max-height: none; background: var(--k-surface-1); box-shadow: var(--k-shadow-2); }
+    .ed-side h2 { font: 700 var(--k-fs-xs)/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); margin: 0; }
+    .ed-chapters { display: grid; gap: 2px; }
+    .ed-ch { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: var(--k-2); align-items: center; padding: var(--k-2); border-radius: var(--k-r-sm); text-decoration: none; color: var(--k-text-2); font-size: var(--k-fs-sm); }
+    .ed-ch:hover { background: rgb(var(--k-ink) / .05); color: var(--k-text); }
+    .ed-ch[aria-current="page"] { background: var(--k-accent-soft); color: var(--k-text); }
+    .ed-ch__n { font: 600 var(--k-fs-xs) var(--k-font-mono); color: var(--k-text-3); }
+    .ed-ch__t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ed-stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--k-2); }
+    .ed-stats .k-stat b { font-size: var(--k-fs-xl); }
+
+    .ed-main { padding: var(--k-10) max(16px, env(safe-area-inset-right, 0px)) 30vh max(16px, env(safe-area-inset-left, 0px)); }
+    .ed-paper { max-width: 68ch; margin: 0 auto; display: grid; gap: var(--k-4); }
+    .ed-kicker { font: 600 var(--k-fs-xs) var(--k-font-mono); color: var(--k-accent); letter-spacing: .1em; text-transform: uppercase; }
+    .ed-title { width: 100%; border: 0; background: none; color: var(--k-text); font: 600 clamp(1.8rem, 4vw, 2.6rem)/1.15 var(--ed-font); padding: 0; outline: none; }
+    .ed-title::placeholder { color: var(--k-text-3); }
+    .ed-text { min-height: 50vh; outline: none; font: 400 1.18rem/1.85 var(--ed-font); color: var(--k-text); caret-color: var(--k-accent); word-wrap: break-word; }
+    .ed-text > p { margin: 0 0 1em; }
+    .ed-text > blockquote { margin: 0 0 1em; padding-left: 1.2em; border-left: 3px solid var(--k-accent-line); font-style: italic; color: var(--k-text-2); }
+    .ed-text > hr { border: 0; height: 1.5em; margin: 1.6em 0; text-align: center; overflow: visible; }
+    .ed-text > hr::after { content: "⁂"; color: var(--k-text-3); font-size: 1.1em; letter-spacing: .4em; }
+    .ed-text:empty::before, .ed-text > p:only-child:empty::before { content: attr(data-placeholder); color: var(--k-text-3); pointer-events: none; }
+    .ed-text strong, .ed-text b { font-weight: 600; }
+    /* Modo foco: solo el párrafo actual con contraste pleno */
+    body.ed-focus .ed-text > * { opacity: .28; transition: opacity var(--k-t); }
+    body.ed-focus .ed-text > .is-current { opacity: 1; }
+    body.ed-focus .ed-side, body.ed-focus .k-nav { opacity: .2; transition: opacity var(--k-t); }
+    body.ed-focus .ed-side:hover, body.ed-focus .k-nav:hover { opacity: 1; }
+
+    .ed-recover { max-width: 68ch; margin: 0 auto var(--k-6); }
+    .ed-recover .k-row { margin-top: var(--k-2); }
+
+    /* Panel de publicación (hoja lateral derecha) */
+    .ed-pub .k-sheet__panel { gap: var(--k-5); }
+    .ed-pub .k-field { gap: 6px; }
+    .ed-opt { display: grid; gap: var(--k-2); }
+    .ed-opt label.ed-radio { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--k-3); align-items: start; padding: var(--k-3); border: 1px solid var(--k-line-2); border-radius: var(--k-r-md); cursor: pointer; }
+    .ed-opt label.ed-radio:has(input:checked) { border-color: var(--k-accent); background: var(--k-accent-soft); }
+    .ed-opt input[type="radio"] { accent-color: var(--k-accent); margin-top: 3px; }
+    .ed-opt b { display: block; font-size: var(--k-fs-sm); }
+    .ed-opt span { font-size: var(--k-fs-xs); color: var(--k-text-2); }
+
+    /* Vista previa */
+    .ed-prev { position: fixed; inset: 0; z-index: 850; display: none; background: var(--k-overlay); backdrop-filter: blur(4px); }
+    .ed-prev.is-open { display: grid; grid-template-rows: auto 1fr; }
+    .ed-prev__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--k-3); padding: var(--k-3) var(--k-4); background: var(--k-surface-1); border-bottom: 1px solid var(--k-line); }
+    .ed-prev__stage { display: grid; place-items: center; padding: var(--k-4); overflow: auto; }
+    .ed-prev iframe { width: 100%; height: 100%; border: 1px solid var(--k-line-2); border-radius: var(--k-r-md); background: var(--k-bg); box-shadow: var(--k-shadow-2); transition: width var(--k-t) var(--k-ease); }
+    .ed-prev[data-device="mobile"] iframe { width: 390px; max-width: 100%; height: min(844px, 100%); border-radius: 28px; }
+    .ed-prev[data-device="desktop"] iframe { width: min(1200px, 100%); }
+
+    .ed-gate { max-width: 560px; margin: 12vh auto; }
+    @media (max-width: 640px) { .ed-bar__work b { max-width: 18ch; } .ed-hide-sm { display: none !important; } .ed-text { font-size: 1.08rem; } }
+  </style>
+</head>
+<body data-shell="minimal" data-shell-back="/estudio">
+
+<div id="ed-gate" class="ed-gate" hidden></div>
+
+<div id="ed-app" hidden>
+  <div class="ed-bar" role="toolbar" aria-label="Editor">
+    <button type="button" class="k-btn k-btn--quiet k-btn--icon" id="ed-side-btn" aria-label="Capítulos" aria-expanded="false" aria-controls="ed-side"><i class="ti ti-layout-sidebar" aria-hidden="true"></i></button>
+    <div class="ed-bar__work"><b id="ed-work">Obra</b><span class="ed-save" id="ed-save" role="status" aria-live="polite"><i class="ti ti-circle-dashed" aria-hidden="true"></i>Sin cambios</span></div>
+    <div class="ed-tools" role="group" aria-label="Formato">
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="bold" aria-label="Negrita (Ctrl+B)" title="Negrita (Ctrl+B)"><i class="ti ti-bold" aria-hidden="true"></i></button>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="italic" aria-label="Cursiva (Ctrl+I)" title="Cursiva (Ctrl+I)"><i class="ti ti-italic" aria-hidden="true"></i></button>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="quote" aria-label="Cita" title="Cita"><i class="ti ti-blockquote" aria-hidden="true"></i></button>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="scene" aria-label="Separador de escena" title="Separador de escena (⁂)"><i class="ti ti-separator" aria-hidden="true"></i></button>
+    </div>
+    <span class="ed-sep ed-hide-sm" aria-hidden="true"></span>
+    <button type="button" class="k-btn k-btn--quiet k-btn--icon ed-hide-sm" id="ed-focus" aria-pressed="false" aria-label="Modo foco" title="Modo foco"><i class="ti ti-focus-2" aria-hidden="true"></i></button>
+    <button type="button" class="k-btn k-btn--quiet k-btn--icon ed-hide-sm" id="ed-full" aria-label="Pantalla completa" title="Pantalla completa"><i class="ti ti-maximize" aria-hidden="true"></i></button>
+    <button type="button" class="k-btn k-btn--secondary k-btn--sm" id="ed-preview-btn"><i class="ti ti-eye" aria-hidden="true"></i><span class="ed-hide-sm">Vista previa</span></button>
+    <button type="button" class="k-btn k-btn--primary k-btn--sm" id="ed-pub-btn"><i class="ti ti-send" aria-hidden="true"></i>Publicar</button>
+  </div>
+
+  <div class="ed-layout">
+    <aside class="ed-side" id="ed-side" aria-label="Capítulos de la obra">
+      <div class="k-stack--sm k-stack">
+        <h2>Este capítulo</h2>
+        <div class="ed-stats">
+          <div class="k-stat"><b class="k-num" id="ed-words">0</b><span>Palabras</span></div>
+          <div class="k-stat"><b class="k-num" id="ed-mins">0</b><span>Min. de lectura</span></div>
+        </div>
+        <div id="ed-state-badge"></div>
+      </div>
+      <div class="k-stack--sm k-stack">
+        <div class="k-row k-row--between"><h2>Capítulos</h2><a class="k-btn k-btn--quiet k-btn--sm" id="ed-new" href="#"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo</a></div>
+        <nav class="ed-chapters" id="ed-chapters" aria-label="Lista de capítulos"></nav>
+      </div>
+      <a class="k-btn k-btn--quiet k-btn--sm" id="ed-obra-link" href="#"><i class="ti ti-external-link" aria-hidden="true"></i>Ver la ficha de la obra</a>
+    </aside>
+
+    <main class="ed-main" id="k-main">
+      <div class="ed-recover" id="ed-recover" hidden></div>
+      <div class="ed-paper">
+        <span class="ed-kicker" id="ed-kicker">Capítulo nuevo</span>
+        <label class="k-visually-hidden" for="ed-title">Título del capítulo</label>
+        <input class="ed-title" id="ed-title" type="text" placeholder="Título del capítulo" autocomplete="off" maxlength="200">
+        <div class="ed-text" id="ed-text" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Texto del capítulo" spellcheck="true" lang="es" data-placeholder="Empieza a escribir. El guardado es automático."></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Publicación -->
+<div class="k-sheet ed-pub" id="ed-pub">
+  <div class="k-sheet__scrim" data-close></div>
+  <section class="k-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="ed-pub-t">
+    <div class="k-row k-row--between"><h2 class="k-h2" id="ed-pub-t">Publicación</h2><button type="button" class="k-btn k-btn--quiet k-btn--icon" data-close aria-label="Cerrar"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+    <div class="ed-opt" role="radiogroup" aria-label="Estado">
+      <label class="ed-radio"><input type="radio" name="ed-status" value="draft"><div><b>Borrador</b><span>Solo lo ves tú. Sigue guardándose solo.</span></div></label>
+      <label class="ed-radio"><input type="radio" name="ed-status" value="scheduled"><div><b>Programar</b><span>Se publica solo en la fecha que elijas.</span></div></label>
+      <label class="ed-radio"><input type="radio" name="ed-status" value="published"><div><b>Publicar ahora</b><span>Lo verán tus lectores en cuanto guardes.</span></div></label>
+    </div>
+    <div class="k-field" id="ed-when-wrap" hidden><label class="k-label" for="ed-when">Fecha y hora de publicación</label><input class="k-input" type="datetime-local" id="ed-when"></div>
+    <div class="k-stack--sm k-stack">
+      <label class="k-switch"><input type="checkbox" id="ed-early">Adelanto de pago</label>
+      <span class="k-help">Los lectores ven el capítulo en la lista con la fecha en que se libera gratis. Hasta entonces, el texto no se muestra.</span>
+      <div class="k-field" id="ed-free-wrap" hidden><label class="k-label" for="ed-free">Se libera gratis el</label><input class="k-input" type="datetime-local" id="ed-free"></div>
+    </div>
+    <div class="k-field"><label class="k-label" for="ed-note-before">Nota del autor, antes del capítulo</label><textarea class="k-textarea" id="ed-note-before" rows="3" placeholder="Opcional. Un aviso o un saludo breve…"></textarea></div>
+    <div class="k-field"><label class="k-label" for="ed-note-after">Nota del autor, al final</label><textarea class="k-textarea" id="ed-note-after" rows="3" placeholder="Opcional. Agradecimientos, cuándo sale el siguiente…"></textarea></div>
+    <div class="k-stack--sm k-stack">
+      <span class="k-label">Avisos de contenido</span>
+      <div class="k-chips" id="ed-warnings">
+        <button type="button" class="k-chip" aria-pressed="false" value="violencia">Violencia</button>
+        <button type="button" class="k-chip" aria-pressed="false" value="sexual">Contenido sexual</button>
+        <button type="button" class="k-chip" aria-pressed="false" value="lenguaje">Lenguaje fuerte</button>
+        <button type="button" class="k-chip" aria-pressed="false" value="autolesion">Autolesión</button>
+        <button type="button" class="k-chip" aria-pressed="false" value="drogas">Drogas</button>
+        <button type="button" class="k-chip" aria-pressed="false" value="terror">Terror</button>
+      </div>
+    </div>
+    <div class="k-error" id="ed-pub-err" role="alert"></div>
+    <button type="button" class="k-btn k-btn--primary k-btn--lg k-btn--block" id="ed-pub-save">Guardar</button>
+  </section>
+</div>
+
+<!-- Vista previa -->
+<div class="ed-prev" id="ed-prev" data-device="mobile" role="dialog" aria-modal="true" aria-label="Vista previa">
+  <div class="ed-prev__bar">
+    <div class="k-segmented" role="group" aria-label="Dispositivo" id="ed-device">
+      <button type="button" value="mobile" aria-pressed="true"><i class="ti ti-device-mobile" aria-hidden="true"></i> Móvil</button>
+      <button type="button" value="desktop" aria-pressed="false"><i class="ti ti-device-desktop" aria-hidden="true"></i> Escritorio</button>
+    </div>
+    <button type="button" class="k-btn k-btn--secondary k-btn--sm" id="ed-prev-close">Cerrar vista previa</button>
+  </div>
+  <div class="ed-prev__stage"><iframe id="ed-prev-frame" title="Vista previa del capítulo"></iframe></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var parts = location.pathname.split('/');            // /obra/:id/escribir/:num
+  var mangaId = decodeURIComponent(parts[2] || '');
+  var num = parseInt(parts[4], 10) || null;
+  var $ = function (id) { return document.getElementById(id); };
+  var ed = $('ed-text'), titleIn = $('ed-title');
+  var meta = { status: 'draft', publishAt: null, freeAt: null, noteBefore: '', noteAfter: '', warnings: [] };
+  var dirty = false, saving = false, saveTimer = null, serverUpdatedAt = null, offline = false;
+  var STATUS_LABEL = { draft: 'Borrador', scheduled: 'Programado', published: 'Publicado' };
+
+  function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function uid() { return Math.random().toString(36).slice(2, 10); }
+  function localKey() { return 'kt_draft_' + mangaId + '_' + (num || 'nuevo'); }
+  function api(method, url, body) {
+    return fetch(url, { method: method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); });
+  }
+  function gate(icon, title, text, cta) {
+    $('ed-gate').innerHTML = '<div class="k-card"><div class="k-empty"><i class="ti ' + icon + '" aria-hidden="true"></i><h3>' + title + '</h3><p>' + text + '</p>' + (cta || '') + '</div></div>';
+    $('ed-gate').hidden = false; $('ed-app').hidden = true;
+  }
+
+  /* ── Bloques ⇄ DOM ─────────────────────────────────────────── */
+  function inlineHtml(node) {
+    var out = '';
+    node.childNodes.forEach(function (n) {
+      if (n.nodeType === 3) { out += esc(n.nodeValue); return; }
+      if (n.nodeType !== 1) return;
+      var tag = n.tagName, st = n.getAttribute('style') || '';
+      var inner = inlineHtml(n);
+      if (tag === 'BR') out += '<br>';
+      else if (tag === 'B' || tag === 'STRONG' || /font-weight:\s*(bold|[6-9]00)/.test(st)) out += inner ? '<strong>' + inner + '</strong>' : '';
+      else if (tag === 'I' || tag === 'EM' || /font-style:\s*italic/.test(st)) out += inner ? '<em>' + inner + '</em>' : '';
+      else out += inner;
+    });
+    return out.replace(/<\/strong><strong>/g, '').replace(/<\/em><em>/g, '');
+  }
+  function serialize() {
+    normalize();
+    var blocks = [];
+    ed.childNodes.forEach(function (el) {
+      if (el.nodeType !== 1) return;
+      var type = el.tagName === 'BLOCKQUOTE' ? 'quote' : el.tagName === 'HR' ? 'scene' : 'p';
+      var html = type === 'scene' ? '' : inlineHtml(el).replace(/(<br>)+$/, '');
+      if (type !== 'scene' && !html.replace(/<[^>]+>|&nbsp;|\s/g, '')) return;
+      blocks.push({ id: el.dataset.id, type: type, html: html });
+    });
+    return blocks;
+  }
+  function render(blocks) {
+    ed.innerHTML = '';
+    (blocks && blocks.length ? blocks : [{ id: uid(), type: 'p', html: '' }]).forEach(function (b) {
+      var el = document.createElement(b.type === 'quote' ? 'blockquote' : b.type === 'scene' ? 'hr' : 'p');
+      el.dataset.id = b.id || uid();
+      if (b.type !== 'scene') el.innerHTML = b.html || '<br>';
+      ed.appendChild(el);
+    });
+  }
+  // Mantiene la estructura: solo <p>, <blockquote> y <hr> directos, cada uno con id único
+  function normalize() {
+    var seen = {};
+    Array.from(ed.childNodes).forEach(function (n) {
+      if (n.nodeType === 3) { if (!n.nodeValue.trim()) { n.remove(); return; } var p = document.createElement('p'); n.replaceWith(p); p.appendChild(n); n = p; }
+      if (n.nodeType !== 1) { n.remove(); return; }
+      if (!/^(P|BLOCKQUOTE|HR)$/.test(n.tagName)) {
+        var p2 = document.createElement('p'); p2.innerHTML = n.innerHTML || n.textContent; n.replaceWith(p2); n = p2;
+      }
+      if (!n.dataset.id || seen[n.dataset.id]) n.dataset.id = uid();
+      seen[n.dataset.id] = 1;
+      n.removeAttribute('style'); n.removeAttribute('class');
+    });
+    if (!ed.firstChild) { var p3 = document.createElement('p'); p3.dataset.id = uid(); p3.innerHTML = '<br>'; ed.appendChild(p3); }
+  }
+  function currentBlock() {
+    var s = getSelection(); if (!s.rangeCount) return null;
+    var n = s.anchorNode; while (n && n.parentNode !== ed) n = n.parentNode;
+    return n && n.nodeType === 1 ? n : null;
+  }
+
+  /* ── Tipografía automática ─────────────────────────────────── */
+  function typography(e) {
+    if (e.inputType !== 'insertText' || !e.data) return;
+    var s = getSelection(); if (!s.rangeCount) return;
+    var node = s.anchorNode, off = s.anchorOffset;
+    if (!node || node.nodeType !== 3) return;
+    var before = node.nodeValue.slice(0, off), rep = null, len = 0;
+    if (before.endsWith('--')) { rep = '—'; len = 2; }
+    else if (before.endsWith('...')) { rep = '…'; len = 3; }
+    else if (e.data === '"') { var prev = before.slice(-2, -1); rep = (!prev || /[\s(\[«—]/.test(prev)) ? '«' : '»'; len = 1; }
+    else if (e.data === ' ' && /^-\s$/.test(before) && node === firstText(currentBlock())) { rep = '—'; len = 2; }
+    // Inciso del narrador: « -dijo» → « —dijo» (raya pegada a la palabra)
+    else if (/[\p{L}]/u.test(e.data) && /\s-[\p{L}]$/u.test(before)) {
+      node.nodeValue = before.slice(0, -2) + '—' + before.slice(-1) + node.nodeValue.slice(off);
+      var r0 = document.createRange(); r0.setStart(node, off); r0.collapse(true); s.removeAllRanges(); s.addRange(r0);
+      return;
+    }
+    if (!rep) return;
+    node.nodeValue = before.slice(0, off - len) + rep + node.nodeValue.slice(off);
+    var r = document.createRange(); r.setStart(node, off - len + rep.length); r.collapse(true); s.removeAllRanges(); s.addRange(r);
+  }
+  function firstText(el) { if (!el) return null; var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); return w.nextNode(); }
+
+  /* ── Pegado limpio (Word, Google Docs, web) ────────────────── */
+  ed.addEventListener('paste', function (e) {
+    e.preventDefault();
+    var html = e.clipboardData.getData('text/html'), text = e.clipboardData.getData('text/plain');
+    var out = '';
+    if (html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var blocks = doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, div:not(:has(p,div,li,h1,h2,h3,blockquote))');
+      if (!blocks.length) blocks = [doc.body];
+      blocks.forEach(function (b) {
+        var inner = inlineHtml(b).trim();
+        if (!inner) return;
+        if (/^(\*\s*){3}$|^⁂$|^#$/.test(b.textContent.trim())) { out += '<hr>'; return; }
+        out += b.tagName === 'BLOCKQUOTE' ? '<blockquote>' + inner + '</blockquote>' : '<p>' + inner + '</p>';
+      });
+    } else {
+      out = text.split(/\r?\n\s*\r?\n|\r?\n/).map(function (l) { l = l.trim(); return l ? (/^(\*\s*){3}$|^⁂$/.test(l) ? '<hr>' : '<p>' + esc(l) + '</p>') : ''; }).join('');
+    }
+    document.execCommand('insertHTML', false, out || esc(text));
+    normalize(); changed();
+  });
+
+  /* ── Formato ───────────────────────────────────────────────── */
+  function toggleQuote() {
+    var b = currentBlock(); if (!b || b.tagName === 'HR') return;
+    var el = document.createElement(b.tagName === 'BLOCKQUOTE' ? 'p' : 'blockquote');
+    el.dataset.id = b.dataset.id; el.innerHTML = b.innerHTML; b.replaceWith(el);
+    placeCaret(el); changed();
+  }
+  function insertScene() {
+    var b = currentBlock() || ed.lastChild;
+    var hr = document.createElement('hr'); hr.dataset.id = uid();
+    var p = document.createElement('p'); p.dataset.id = uid(); p.innerHTML = '<br>';
+    b.after(hr); hr.after(p); placeCaret(p); changed();
+  }
+  function placeCaret(el) { var r = document.createRange(); r.selectNodeContents(el); r.collapse(false); var s = getSelection(); s.removeAllRanges(); s.addRange(r); ed.focus(); }
+  document.querySelector('.ed-tools').addEventListener('mousedown', function (e) { if (e.target.closest('button')) e.preventDefault(); });
+  document.querySelector('.ed-tools').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cmd]'); if (!b) return;
+    var c = b.dataset.cmd;
+    if (c === 'bold' || c === 'italic') { ed.focus(); document.execCommand(c); changed(); }
+    else if (c === 'quote') toggleQuote();
+    else if (c === 'scene') insertScene();
+    syncTools();
+  });
+  function syncTools() {
+    try {
+      document.querySelector('[data-cmd="bold"]').setAttribute('aria-pressed', String(document.queryCommandState('bold')));
+      document.querySelector('[data-cmd="italic"]').setAttribute('aria-pressed', String(document.queryCommandState('italic')));
+      var cb = currentBlock(); document.querySelector('[data-cmd="quote"]').setAttribute('aria-pressed', String(!!cb && cb.tagName === 'BLOCKQUOTE'));
+    } catch (e) {}
+  }
+  document.addEventListener('selectionchange', function () {
+    if (!ed.contains(getSelection().anchorNode)) return;
+    syncTools();
+    var cb = currentBlock();
+    ed.querySelectorAll('.is-current').forEach(function (x) { if (x !== cb) x.classList.remove('is-current'); });
+    if (cb) cb.classList.add('is-current');
+  });
+
+  ed.addEventListener('input', function (e) { typography(e); changed(); });
+  ed.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(true); }
+  });
+  titleIn.addEventListener('input', changed);
+  try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+
+  /* ── Contadores ────────────────────────────────────────────── */
+  function words() { return (ed.innerText.match(/[^\s—–-]+/g) || []).length; }
+  function updateStats() {
+    var w = words();
+    $('ed-words').textContent = new Intl.NumberFormat('es').format(w);
+    $('ed-mins').textContent = Math.max(1, Math.round(w / 230));
+  }
+
+  /* ── Guardado ──────────────────────────────────────────────── */
+  function setSave(state, text) {
+    var el = $('ed-save'); el.className = 'ed-save ' + (state ? 'is-' + state : '');
+    var icon = state === 'ok' ? 'ti-cloud-check' : state === 'warn' ? 'ti-cloud-off' : state === 'bad' ? 'ti-alert-triangle' : 'ti-loader-2';
+    el.innerHTML = '<i class="ti ' + icon + '" aria-hidden="true"></i>' + esc(text);
+  }
+  function payload() {
+    return { title: titleIn.value.trim(), blocks: serialize(), status: meta.status, publishAt: meta.publishAt, freeAt: meta.freeAt, noteBefore: meta.noteBefore, noteAfter: meta.noteAfter, warnings: meta.warnings };
+  }
+  function backupLocal() {
+    try { localStorage.setItem(localKey(), JSON.stringify({ savedAt: Date.now(), data: payload() })); } catch (e) {}
+  }
+  function changed() {
+    dirty = true; updateStats(); backupLocal();
+    setSave(null, 'Cambios sin guardar');
+    // El error ya se muestra en el indicador; aquí solo se evita una promesa sin capturar
+    clearTimeout(saveTimer); saveTimer = setTimeout(function () { save(false).catch(function () {}); }, 1500);
+  }
+  function save(force) {
+    if (saving) { clearTimeout(saveTimer); saveTimer = setTimeout(function () { save(force).catch(function () {}); }, 800); return Promise.resolve(); }
+    if (!dirty && !force) return Promise.resolve();
+    var data = payload();
+    if (!num && !data.title && !data.blocks.length) return Promise.resolve();
+    saving = true; setSave(null, 'Guardando…');
+    var req = num ? api('PUT', '/api/novel/' + encodeURIComponent(mangaId) + '/' + num, data) : api('POST', '/api/novel/' + encodeURIComponent(mangaId), data);
+    return req.then(function (d) {
+      saving = false; dirty = false; offline = false;
+      if (!num && d.chapter) {
+        try { localStorage.removeItem(localKey()); } catch (e) {}
+        num = d.chapter.number;
+        history.replaceState(null, '', '/obra/' + encodeURIComponent(mangaId) + '/escribir/' + num);
+        $('ed-kicker').textContent = 'Capítulo ' + num;
+        loadChapters();
+      }
+      try { localStorage.removeItem(localKey()); } catch (e) {}
+      serverUpdatedAt = d.chapter && d.chapter.updatedAt;
+      setSave('ok', 'Guardado · ' + new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(new Date()));
+      renderState();
+    }).catch(function (e) {
+      saving = false;
+      if (!e.status) { offline = true; setSave('warn', 'Sin conexión: guardado en este navegador'); return; }
+      setSave('bad', e.message);
+      throw e;
+    });
+  }
+  window.addEventListener('online', function () { if (offline || dirty) { dirty = true; save(true).catch(function () {}); } });
+  window.addEventListener('beforeunload', function (e) { if (dirty || saving) { backupLocal(); e.preventDefault(); e.returnValue = ''; } });
+
+  /* ── Estado y publicación ──────────────────────────────────── */
+  function renderState() {
+    var s = meta.status, early = meta.freeAt && new Date(meta.freeAt) > new Date();
+    var cls = s === 'published' ? 'k-badge--ok' : s === 'scheduled' ? 'k-badge--info' : '';
+    var when = s === 'scheduled' && meta.publishAt ? ' · ' + new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(meta.publishAt)) : '';
+    $('ed-state-badge').innerHTML = '<span class="k-badge ' + cls + '">' + STATUS_LABEL[s] + when + '</span>' + (early ? ' <span class="k-badge k-badge--gold">Adelanto</span>' : '');
+    $('ed-pub-btn').innerHTML = '<i class="ti ti-send" aria-hidden="true"></i>' + (s === 'draft' ? 'Publicar' : 'Publicación');
+  }
+  function toLocalInput(iso) { if (!iso) return ''; var d = new Date(iso); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
+  function fromLocalInput(v) { return v ? new Date(v).toISOString() : null; }
+  function openPub() {
+    document.querySelectorAll('[name="ed-status"]').forEach(function (r) { r.checked = r.value === meta.status; });
+    $('ed-when').value = toLocalInput(meta.publishAt); $('ed-when-wrap').hidden = meta.status !== 'scheduled';
+    $('ed-early').checked = !!meta.freeAt; $('ed-free').value = toLocalInput(meta.freeAt); $('ed-free-wrap').hidden = !meta.freeAt;
+    $('ed-note-before').value = meta.noteBefore; $('ed-note-after').value = meta.noteAfter;
+    $('ed-warnings').querySelectorAll('.k-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(meta.warnings.indexOf(c.value) >= 0)); });
+    $('ed-pub-err').textContent = '';
+    $('ed-pub').classList.add('is-open');
+    var first = document.querySelector('[name="ed-status"]:checked'); if (first) first.focus();
+  }
+  function closePub() { $('ed-pub').classList.remove('is-open'); $('ed-pub-btn').focus(); }
+  $('ed-pub-btn').addEventListener('click', openPub);
+  $('ed-pub').addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePub(); });
+  document.querySelectorAll('[name="ed-status"]').forEach(function (r) { r.addEventListener('change', function () { $('ed-when-wrap').hidden = r.value !== 'scheduled' || !r.checked; }); });
+  $('ed-early').addEventListener('change', function (e) {
+    $('ed-free-wrap').hidden = !e.target.checked;
+    if (e.target.checked && !$('ed-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ed-free').value = toLocalInput(d.toISOString()); }
+  });
+  $('ed-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); });
+  $('ed-pub-save').addEventListener('click', function () {
+    var st = (document.querySelector('[name="ed-status"]:checked') || {}).value || 'draft';
+    var when = fromLocalInput($('ed-when').value);
+    if (st === 'scheduled' && (!when || new Date(when) <= new Date())) { $('ed-pub-err').textContent = 'Elige una fecha futura para programar el capítulo.'; return; }
+    if (st !== 'draft' && !serialize().length) { $('ed-pub-err').textContent = 'El capítulo está vacío. Escribe algo antes de publicarlo.'; return; }
+    meta.status = st; meta.publishAt = st === 'scheduled' ? when : null;
+    meta.freeAt = $('ed-early').checked ? fromLocalInput($('ed-free').value) : null;
+    meta.noteBefore = $('ed-note-before').value.trim(); meta.noteAfter = $('ed-note-after').value.trim();
+    meta.warnings = Array.from($('ed-warnings').querySelectorAll('.k-chip[aria-pressed="true"]')).map(function (c) { return c.value; });
+    dirty = true; var btn = $('ed-pub-save'); btn.disabled = true; btn.textContent = 'Guardando…';
+    save(true).then(function () {
+      closePub();
+      KAMI.toast(st === 'published' ? 'Capítulo publicado' : st === 'scheduled' ? 'Capítulo programado' : 'Guardado como borrador', 'ok');
+      loadChapters();
+    }).catch(function (e) { $('ed-pub-err').textContent = e.message; })
+      .then(function () { btn.disabled = false; btn.textContent = 'Guardar'; });
+  });
+
+  /* ── Vista previa ──────────────────────────────────────────── */
+  $('ed-preview-btn').addEventListener('click', function () {
+    dirty = true;
+    save(true).then(function () {
+      if (!num) { KAMI.toast('Escribe algo para poder ver la vista previa.'); return; }
+      $('ed-prev-frame').src = '/leer/' + encodeURIComponent(mangaId) + '/' + num + '?vista=previa';
+      $('ed-prev').classList.add('is-open'); $('ed-prev-close').focus();
+    }).catch(function () {});
+  });
+  $('ed-prev-close').addEventListener('click', function () { $('ed-prev').classList.remove('is-open'); $('ed-prev-frame').src = 'about:blank'; });
+  $('ed-device').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    $('ed-prev').dataset.device = b.value;
+  });
+
+  /* ── Foco, pantalla completa y panel lateral ───────────────── */
+  $('ed-focus').addEventListener('click', function () { var on = document.body.classList.toggle('ed-focus'); this.setAttribute('aria-pressed', String(on)); ed.focus(); });
+  $('ed-full').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen(); else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+  });
+  $('ed-side-btn').addEventListener('click', function () { var o = $('ed-side').classList.toggle('is-open'); this.setAttribute('aria-expanded', String(o)); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if ($('ed-prev').classList.contains('is-open')) $('ed-prev-close').click();
+    else if ($('ed-pub').classList.contains('is-open')) closePub();
+    else if ($('ed-side').classList.contains('is-open')) $('ed-side-btn').click();
+  });
+
+  /* ── Capítulos de la obra ──────────────────────────────────── */
+  function loadChapters() {
+    return api('GET', '/api/novel/' + encodeURIComponent(mangaId) + '/chapters').then(function (d) {
+      var list = d.chapters || [];
+      $('ed-chapters').innerHTML = list.length ? list.map(function (c) {
+        var cls = c.status === 'published' ? 'k-badge--ok' : c.status === 'scheduled' ? 'k-badge--info' : '';
+        return '<a class="ed-ch" href="/obra/' + encodeURIComponent(mangaId) + '/escribir/' + c.number + '"' + (c.number === num ? ' aria-current="page"' : '') + '><span class="ed-ch__n">' + c.number + '</span><span class="ed-ch__t">' + esc(c.title || 'Sin título') + '</span><span class="k-badge ' + cls + '">' + STATUS_LABEL[c.status] + '</span></a>';
+      }).join('') : '<p class="k-faint" style="margin:0;font-size:13px">Aún no hay capítulos.</p>';
+    }).catch(function () {});
+  }
+
+  /* ── Recuperar borrador local ──────────────────────────────── */
+  function offerRecover() {
+    var raw = null; try { raw = JSON.parse(localStorage.getItem(localKey()) || 'null'); } catch (e) {}
+    if (!raw || !raw.data) return;
+    var serverTime = serverUpdatedAt ? new Date(serverUpdatedAt).getTime() : 0;
+    if (raw.savedAt <= serverTime) { try { localStorage.removeItem(localKey()); } catch (e) {} return; }
+    var box = $('ed-recover');
+    box.innerHTML = '<div class="k-alert k-alert--warn"><i class="ti ti-history" aria-hidden="true"></i><div>Hay una versión más reciente guardada en este navegador (' + new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(raw.savedAt)) + ') que no llegó a subirse.<div class="k-row"><button type="button" class="k-btn k-btn--primary k-btn--sm" id="ed-rec-yes">Recuperarla</button><button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ed-rec-no">Descartarla</button></div></div></div>';
+    box.hidden = false;
+    $('ed-rec-yes').onclick = function () {
+      titleIn.value = raw.data.title || ''; render(raw.data.blocks || []);
+      Object.assign(meta, { status: raw.data.status || meta.status, publishAt: raw.data.publishAt, freeAt: raw.data.freeAt, noteBefore: raw.data.noteBefore || '', noteAfter: raw.data.noteAfter || '', warnings: raw.data.warnings || [] });
+      box.hidden = true; changed();
+    };
+    $('ed-rec-no').onclick = function () { try { localStorage.removeItem(localKey()); } catch (e) {} box.hidden = true; };
+  }
+
+  /* ── Arranque ──────────────────────────────────────────────── */
+  function start() {
+    if (!token()) { gate('ti-lock', 'Inicia sesión para escribir', 'El editor guarda tus capítulos en tu cuenta de autor.', '<a class="k-btn k-btn--primary" href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Acceder</a>'); return; }
+    api('GET', '/api/manga/' + encodeURIComponent(mangaId)).then(function (d) {
+      var m = d.manga || d;
+      if (m.type && m.type !== 'novel') { gate('ti-photo', 'Esta obra es un cómic', 'Los capítulos de cómic se suben como imágenes.', '<a class="k-btn k-btn--primary" href="/obra/' + encodeURIComponent(mangaId) + '/nuevo-capitulo">Subir capítulo</a>'); return Promise.reject('comic'); }
+      $('ed-work').textContent = m.title || 'Obra';
+      document.title = (m.title ? m.title + ' · ' : '') + 'Escribir · KamiTales';
+      $('ed-obra-link').href = '/obra/' + encodeURIComponent(mangaId);
+      $('ed-new').href = '/obra/' + encodeURIComponent(mangaId) + '/escribir';
+      if (!num) return null;
+      return api('GET', '/api/novel/' + encodeURIComponent(mangaId) + '/' + num);
+    }).then(function (d) {
+      $('ed-app').hidden = false;
+      if (d && d.chapter) {
+        if (!d.isEditor) { gate('ti-lock', 'Solo el autor puede editar', 'Este capítulo pertenece a otra cuenta.', '<a class="k-btn k-btn--primary" href="/leer/' + encodeURIComponent(mangaId) + '/' + num + '">Leerlo</a>'); return; }
+        var c = d.chapter;
+        titleIn.value = c.title || ''; render(c.blocks || []);
+        Object.assign(meta, { status: c.status, publishAt: c.publishAt, freeAt: c.freeAt, noteBefore: c.noteBefore || '', noteAfter: c.noteAfter || '', warnings: c.warnings || [] });
+        serverUpdatedAt = c.updatedAt;
+        $('ed-kicker').textContent = 'Capítulo ' + num;
+        setSave('ok', 'Guardado');
+      } else { render([]); }
+      updateStats(); renderState(); loadChapters(); offerRecover();
+      (titleIn.value ? ed : titleIn).focus();
+    }).catch(function (e) {
+      if (e === 'comic') return;
+      if (e && e.status === 503) gate('ti-database-off', 'Las novelas aún no están activadas', 'Falta aplicar una migración de la base de datos (migrate-novel-reader.sql).');
+      else if (e && e.status === 404) gate('ti-file-off', 'No existe', 'Esta obra o este capítulo no existen.', '<a class="k-btn k-btn--primary" href="/estudio">Volver al Estudio</a>');
+      else gate('ti-wifi-off', 'No se pudo abrir el editor', (e && e.message) || 'Comprueba tu conexión y recarga.');
+    });
+  }
+  start();
+})();
+</script>
+</body>
+</html>

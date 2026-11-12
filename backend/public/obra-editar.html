@@ -198,7 +198,7 @@
                 <div class="chapters-actions">
                     <span class="chapters-count" id="chapters-count"></span>
                     <button class="btn-edit-info" onclick="openEditInfoModal()">✎ Editar info</button>
-                    <button class="btn-add-chapter" onclick="window.location.href='/obra/' + mangaId + '/nuevo-capitulo'">+ Añadir capítulo</button>
+                    <button class="btn-add-chapter" id="btn-add-chapter" onclick="window.location.href='/obra/' + mangaId + (mangaData && mangaData.type === 'novel' ? '/escribir' : '/nuevo-capitulo')">+ Añadir capítulo</button>
                 </div>
             </div>
             <div class="chapter-list" id="chapter-list"></div>
@@ -470,6 +470,7 @@
             if (chapters.length === 0) {
                 chapterListEl.innerHTML = '<div class="chapter-empty" style="text-align:center;padding:40px;color:var(--text-muted);font-size:14px;">📭 Aún no hay capítulos. Añade el primero.</div>';
             } else {
+                var isNovel = mangaData && mangaData.type === 'novel';
                 chapterListEl.innerHTML = chapters.sort(function(a,b){return b.number - a.number}).map(function(ch) {
                     var dateStr = ch.releaseDate ? new Date(ch.releaseDate).toLocaleDateString('es-ES') : '';
                     return '<div class="chapter-item">' +
@@ -478,14 +479,14 @@
                             '<div>' +
                                 '<div style="font-weight:600;font-size:14px;">Cap\u00edtulo ' + ch.number + (ch.title ? ': ' + ch.title : '') + '</div>' +
                                 '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' +
-                                    (ch.pages ? ch.pages + ' p\u00e1gs' : '') +
+                                    (isNovel ? (ch.wordCount ? ch.wordCount + ' palabras' : '') + (ch.status && ch.status !== 'published' ? ' \u00b7 ' + (ch.status === 'draft' ? 'Borrador' : 'Programado') : '') : (ch.pages ? ch.pages + ' p\u00e1gs' : '')) +
                                     (ch.scanGroup ? ' \u00b7 ' + ch.scanGroup : '') +
                                     (dateStr ? ' \u00b7 ' + dateStr : '') +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
                         '<div style="display:flex;gap:6px;">' +
-                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="window.location.href=\'/obra/' + mangaId + '/nuevo-capitulo\'" title="Subir versi\u00f3n">⬆</button>' +
+                            '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="window.location.href=\'/obra/' + mangaId + (isNovel ? '/escribir/' + ch.number : '/nuevo-capitulo') + '\'" title="' + (isNovel ? 'Abrir en el editor' : 'Subir versi\u00f3n') + '">' + (isNovel ? '\u270d' : '⬆') + '</button>' +
                             '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);transition:all .12s;" onclick="openEditChapterModal(' + ch.number + ',\'' + (ch.title||'').replace(/\'/g,"\\'") + '\',\'' + (ch.scanGroup||'').replace(/\'/g,"\\'") + '\')" title="Editar">\u270e</button>' +
                             '<button class="btn-icon" style="width:30px;height:30px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent);transition:all .12s;" onclick="deleteChapter(' + ch.number + ')" title="Eliminar">\u2716</button>' +
                         '</div>' +

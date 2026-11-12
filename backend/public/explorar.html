@@ -71,7 +71,8 @@
     /* Continuar leyendo */
     .ex-continue { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
     .ex-cont { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: var(--k-3); align-items: center; padding: var(--k-3); text-decoration: none; color: inherit; }
-    .ex-cont img, .ex-cont .ex-ph { width: 56px; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; }
+    /* height:auto anula el height="450" del <img> para que mande la proporción 2:3 */
+    .ex-cont img, .ex-cont .ex-ph { width: 56px; height: auto; aspect-ratio: 2/3; border-radius: 8px; object-fit: cover; display: block; }
     .ex-cont b { display: block; font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ex-bar { height: 4px; border-radius: 4px; background: rgb(var(--k-ink) / .1); overflow: hidden; margin-top: 6px; }
     .ex-bar i { display: block; height: 100%; background: var(--k-accent); box-shadow: 0 0 10px var(--k-accent); }

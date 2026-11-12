@@ -33,6 +33,7 @@ router.get('/works', async (req, res) => {
     const r = await pool.query(
       `SELECT m.id, m.title, m.type, m.status, m.cover, m.genres, m.rating, m.total_ratings, m.total_reads, m.updated_at, m.created_at,
               ${await hasColumn('mangas', 'created_by') ? 'm.created_by' : 'NULL AS created_by'},
+              ${await hasColumn('mangas', 'publisher') ? 'm.publisher' : "'' AS publisher"},
               COUNT(c.id)::int AS chapters,
               ${status ? `COUNT(c.id) FILTER (WHERE c.status = 'published' OR (c.status = 'scheduled' AND c.publish_at <= NOW()))::int AS published,
               COUNT(c.id) FILTER (WHERE c.status = 'draft')::int AS drafts,
@@ -55,6 +56,7 @@ router.get('/works', async (req, res) => {
         chapters: w.chapters, published: w.published, drafts: w.drafts, scheduled: w.scheduled, words: w.words,
         members: w.members, comments7d: w.comments_7d, updatedAt: w.updated_at, lastChapterAt: w.last_chapter_at,
         owned: !!w.created_by && w.created_by === req.user.userId,
+        publisher: w.publisher || '',
       })),
     });
   } catch (e) {

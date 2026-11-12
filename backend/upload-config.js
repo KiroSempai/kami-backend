@@ -3,7 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 const MANGA_ASSETS_DIR = path.join(__dirname, 'public', 'assets', 'manga');
-const TEMP_DIR = path.join(__dirname, 'public', 'temp');
+// Subidas a medio procesar: fuera de public/ para que nunca se puedan descargar desde la web
+const TEMP_DIR = path.join(__dirname, 'uploads-tmp');
 
 [MANGA_ASSETS_DIR, TEMP_DIR].forEach(d => {
     try { fs.mkdirSync(d, { recursive: true }); } catch (e) {}

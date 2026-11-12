@@ -13,3 +13,5 @@ backend/.env.*
 
 # Copias de seguridad que generan los scripts de reparación
 backend/backups/
+# Subidas temporales (multer)
+backend/uploads-tmp/

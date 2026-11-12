@@ -227,6 +227,15 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json({ limit: '1mb' })); // las fotos de perfil van como data URL comprimida
+// Al terminar cada petición se borran los archivos subidos que la ruta no se haya llevado
+// (errores, validaciones fallidas, capítulo repetido…). Si ya se movieron, no pasa nada.
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    const files = [].concat(req.file || [], Array.isArray(req.files) ? req.files : Object.values(req.files || {}).flat());
+    files.forEach(f => { if (f && f.path) fs.unlink(f.path, () => {}); });
+  });
+  next();
+});
 app.use(express.urlencoded({ extended: true }));
 
 // ─── IP Ban middleware ───────────────────────────────────────────────────────

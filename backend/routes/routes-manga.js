@@ -510,7 +510,8 @@ router.post('/:id/banner', requireAuth, requireMangaEditor, upload.single('banne
         if (!req.file) return res.status(400).json({ error: 'Elige una imagen JPG, PNG, WebP o AVIF de hasta 10 MB.' });
         const { id } = req.params;
         const sharp = require('sharp');
-        const img = sharp(tmp, { failOn: 'error' }).rotate();
+        // Se lee a memoria: en Windows sharp deja el archivo abierto y luego no se podría borrar el temporal
+        const img = sharp(fs.readFileSync(tmp), { failOn: 'error' }).rotate();
         const meta = await img.metadata();
         if (!meta.width || meta.width < 800) return res.status(400).json({ error: 'El banner debe medir al menos 800 px de ancho (mejor 1920 px o más).' });
         const dir = path.join(MANGA_ASSETS_DIR, id);

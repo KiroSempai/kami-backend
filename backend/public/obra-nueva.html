@@ -1,601 +1,518 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva obra · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <link rel="stylesheet" href="/css/kmi-card.css">
-    <style>
-        :root {
-            --bg: var(--k-bg);
-            --surface: var(--k-surface-1);
-            --surface2: var(--k-surface-2);
-            --border: rgb(var(--k-ink) / 0.07);
-            --accent: var(--k-accent);
-            --accent-gold: var(--k-gold);
-            --blue: var(--k-info);
-            --green: var(--k-ok);
-            --purple: var(--k-violet);
-            --text-primary: var(--k-text);
-            --text-muted: var(--k-text-3);
-            --radius: 12px;
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-body: 'Plus Jakarta Sans', sans-serif;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
-
-        /* ── REST OF PAGE ── */
-
-        /* LAYOUT */
-        .editor-wrap { max-width:1100px; margin:0 auto; padding:40px 24px; display:grid; grid-template-columns:1fr 320px; gap:32px; align-items:start; }
-        @media(max-width:860px) { .editor-wrap { grid-template-columns:1fr; } }
-
-        /* CARD */
-        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; }
-        .card-title { font-family:var(--font-display); font-size:20px; letter-spacing:1px; margin-bottom:22px; display:flex; align-items:center; gap:10px; }
-        .card-title span { font-size:18px; }
-
-        /* FORM */
-        .field { margin-bottom:18px; }
-        .field label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
-        .field input, .field textarea, .field select {
-            width:100%; background:rgb(var(--k-ink) / 0.04); border:1px solid var(--border);
-            border-radius:8px; color:var(--text-primary); font-family:var(--font-body); font-size:14px;
-            padding:10px 14px; transition:border-color .2s; outline:none;
-        }
-        .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 5%, transparent); }
-        .field textarea { resize:vertical; min-height:100px; line-height:1.6; }
-        .field select option { background:var(--surface2); }
-        .field-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .field-hint { font-size:11px; color:var(--text-muted); margin-top:4px; }
-        .required { color:var(--accent); margin-left:2px; }
-
-        /* GÉNEROS */
-        .genre-group-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
-        .genre-group-list { display: flex; flex-direction: column; gap: 2px; }
-        .genre-check { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: all .15s; user-select: none; }
-        .genre-check:hover { background: rgb(var(--k-ink) / 0.04); color: var(--text-primary); }
-        .genre-check input[type="checkbox"] { appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--border); border-radius: 3px; background: transparent; cursor: pointer; position: relative; flex-shrink: 0; transition: all .15s; }
-        .genre-check input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
-        .genre-check input[type="checkbox"]:checked::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--k-text); font-size: 10px; font-weight: 700; }
-
-        /* ALT TITLES */
-        .alt-list { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
-        .alt-item { display:flex; gap:6px; align-items:center; }
-        .alt-item input { flex:1; }
-        .btn-rm { background:color-mix(in srgb, var(--k-accent) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:13px; transition:all .18s; }
-        .btn-rm:hover { background:color-mix(in srgb, var(--k-accent) 30%, transparent); }
-        .btn-add-alt { background:rgb(var(--k-ink) / 0.05); border:1px solid var(--border); color:var(--text-muted); border-radius:8px; padding:8px 14px; font-size:12px; font-family:var(--font-body); cursor:pointer; transition:all .2s; width:100%; margin-top:4px; }
-        .btn-add-alt:hover { color:var(--text-primary); border-color:rgb(var(--k-ink) / 0.2); }
-
-        /* TOGGLE */
-        .toggle-row { display:flex; align-items:center; justify-content:space-between; }
-        .toggle-label { font-size:14px; color:var(--text-primary); }
-        .toggle { position:relative; width:44px; height:24px; }
-        .toggle input { opacity:0; width:0; height:0; }
-        .toggle-track { position:absolute; inset:0; background:rgb(var(--k-ink) / 0.1); border-radius:12px; cursor:pointer; transition:.25s; }
-        .toggle input:checked + .toggle-track { background:var(--accent); }
-        .toggle-track::before { content:''; position:absolute; width:18px; height:18px; border-radius:50%; background:#fff; top:3px; left:3px; transition:.25s; }
-        .toggle input:checked + .toggle-track::before { transform:translateX(20px); }
-
-        /* COVER PREVIEW */
-        .cover-preview { width:100%; aspect-ratio:3/4; background:var(--surface2); border-radius:10px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:12px; position:relative; }
-        .cover-preview img { width:100%; height:100%; object-fit:cover; }
-        .cover-placeholder { text-align:center; color:var(--text-muted); font-size:13px; }
-        .cover-placeholder .icon { font-size:40px; margin-bottom:8px; display:block; }
-
-        /* PREVIEW CARD */
-        .preview-card { background:var(--surface2); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
-        .preview-cover { width:100%; height:160px; object-fit:cover; background:linear-gradient(135deg,var(--k-surface-2),#2d1040); display:flex; align-items:center; justify-content:center; font-size:50px; }
-        .preview-body { padding:14px; }
-        .preview-title { font-family:var(--font-display); font-size:18px; letter-spacing:1px; margin-bottom:4px; }
-        .preview-meta { font-size:11px; color:var(--text-muted); margin-bottom:8px; }
-        .preview-genres { display:flex; flex-wrap:wrap; gap:4px; }
-        .preview-genre { background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 25%, transparent); color:var(--accent); border-radius:4px; padding:2px 8px; font-size:10px; font-weight:600; }
-        .preview-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; }
-        .badge-manga { background:color-mix(in srgb, var(--k-info) 15%, transparent); color:var(--blue); border:1px solid color-mix(in srgb, var(--k-info) 30%, transparent); }
-        .badge-manhwa { background:color-mix(in srgb, var(--k-ok) 15%, transparent); color:var(--green); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); }
-        .badge-manhua { background:rgba(251,146,60,0.15); color:var(--k-orange); border:1px solid rgba(251,146,60,0.3); }
-        .badge-oneshot { background:color-mix(in srgb, var(--k-violet) 15%, transparent); color:var(--purple); border:1px solid color-mix(in srgb, var(--k-violet) 30%, transparent); }
-
-        /* SUBMIT */
-        .btn-submit { width:100%; padding:14px; background:linear-gradient(135deg,var(--accent),var(--k-accent-strong)); border:none; border-radius:10px; color: var(--k-text); font-family:var(--font-display); font-size:20px; letter-spacing:2px; cursor:pointer; transition:all .22s; margin-top:12px; }
-        .btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 24px color-mix(in srgb, var(--k-accent) 40%, transparent); }
-        .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-
-        /* STATUS */
-        .status-box { padding:14px 16px; border-radius:10px; font-size:14px; margin-top:14px; display:none; }
-        .status-box.success { background:color-mix(in srgb, var(--k-ok) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color:var(--green); }
-        .status-box.error { background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); }
-        .status-box.show { display:block; }
-        .status-id { font-family:var(--font-display); font-size:22px; letter-spacing:2px; margin-top:6px; }
-
-        /* SECTION HEADER */
-        .section-header { font-family:var(--font-display); font-size:28px; letter-spacing:2px; margin-bottom:6px; }
-        .section-sub { font-size:13px; color:var(--text-muted); margin-bottom:28px; }
-        .prov-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:color-mix(in srgb, var(--k-gold) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-gold) 30%, transparent); color:var(--accent-gold); border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; margin-bottom:16px; }
-
-        /* ── DUPLICATE MODAL ── */
-        .dup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
-        .dup-overlay.show { display:flex; }
-        .dup-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; width:90%; max-width:460px; text-align:center; }
-        .dup-icon { font-size:48px; margin-bottom:12px; display:block; }
-        .dup-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; margin-bottom:8px; }
-        .dup-desc { color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:6px; }
-        .dup-match { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; background:color-mix(in srgb, var(--k-accent) 10%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 20%, transparent); border-radius:8px; margin:12px 0 20px; font-size:14px; font-weight:600; }
-        .dup-match-img { width:32px; height:44px; border-radius:4px; object-fit:cover; background:var(--surface2); }
-        .dup-actions { display:flex; gap:10px; }
-        .dup-btn { flex:1; padding:12px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
-        .dup-btn.danger { background:var(--accent); color: var(--k-text); }
-        .dup-btn.danger:hover { opacity:.9; }
-        .dup-btn.secondary { background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); color:var(--text-muted); }
-        .dup-btn.secondary:hover { color:var(--text-primary); background:rgb(var(--k-ink) / 0.1); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Nueva obra · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Crear obra: formulario por secciones a la izquierda; vista previa, lista de
+       comprobación y botón de crear fijos a la derecha. */
+    .nw { display: grid; gap: var(--k-6); grid-template-columns: minmax(0, 1fr); align-items: start; }
+    @media (min-width: 1080px) { .nw { grid-template-columns: minmax(0, 1fr) 340px; } }
+    .nw-head { display: grid; gap: var(--k-2); margin-bottom: var(--k-6); }
+    .nw-head h1 { margin: 0; font: 800 clamp(2rem, 4vw, 2.8rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .nw-head p { margin: 0; color: var(--k-text-2); max-width: 64ch; }
+    .nw-form { display: grid; gap: var(--k-5); min-width: 0; }
+    .nw-sec { display: grid; gap: var(--k-5); padding: var(--k-6); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); min-width: 0; }
+    .nw-sec > header { display: grid; gap: 4px; }
+    .nw-sec > header h2 { margin: 0; font-size: var(--k-fs-lg); display: flex; align-items: center; gap: var(--k-2); }
+    .nw-sec > header h2 .k-num { color: var(--k-accent); font-size: var(--k-fs-sm); }
+    .nw-sec > header p { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-sm); }
+    .nw-grid2 { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+    .nw-count { font: 600 var(--k-fs-xs) var(--k-font-mono); color: var(--k-text-3); justify-self: end; }
+    .nw-count.is-low { color: var(--k-warn); } .nw-count.is-over { color: var(--k-bad); }
+    .nw-labelrow { display: flex; justify-content: space-between; align-items: baseline; gap: var(--k-2); }
+
+    /* Formato */
+    .nw-formats { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+    .nw-format { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: var(--k-3); align-items: start; padding: var(--k-4); border-radius: var(--k-r-md); border: 1.5px solid var(--k-line-2); cursor: pointer; transition: border-color var(--k-t-fast), background var(--k-t-fast); }
+    .nw-format:has(input:checked) { border-color: var(--k-accent); background: var(--k-accent-soft); }
+    .nw-format:has(input:focus-visible) { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+    .nw-format input { position: absolute; opacity: 0; pointer-events: none; }
+    .nw-format__i { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; }
+    .nw-format--comic .nw-format__i { background: color-mix(in srgb, var(--k-info) 16%, transparent); color: var(--k-info); }
+    .nw-format--novel .nw-format__i { background: color-mix(in srgb, var(--k-violet) 16%, transparent); color: var(--k-violet); }
+    .nw-format b { display: block; font-size: var(--k-fs-md); }
+    .nw-format span { font-size: var(--k-fs-sm); color: var(--k-text-2); }
+
+    /* Géneros y etiquetas */
+    .nw-genres { display: grid; gap: var(--k-4); }
+    .nw-genres fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: var(--k-2); }
+    .nw-genres legend { font: 700 10.5px/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); margin-bottom: var(--k-2); padding: 0; }
+    .k-chip .nw-main { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+    .nw-tags { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; min-height: var(--k-control); padding: 6px; border-radius: var(--k-r-sm); border: 1px solid var(--k-line-2); background: var(--k-surface-1); }
+    .nw-tags:focus-within { border-color: var(--k-accent); box-shadow: 0 0 0 3px var(--k-accent-soft); }
+    .nw-tags input { flex: 1; min-width: 140px; border: 0; background: none; color: var(--k-text); font: inherit; outline: none; padding: 4px; }
+    .nw-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; background: var(--k-accent-soft); color: var(--k-text); font-size: var(--k-fs-xs); font-weight: 600; }
+    .nw-tag button { border: 0; background: none; color: inherit; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
+    .nw-tag button:hover { background: rgb(var(--k-ink) / .1); }
+    .nw-sugg { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nw-sugg .k-chip { min-height: 28px; }
+
+    /* Portada */
+    .nw-cover { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--k-5); align-items: start; }
+    @media (max-width: 520px) { .nw-cover { grid-template-columns: 1fr; } }
+    .nw-drop { aspect-ratio: 2 / 3; border-radius: var(--k-r-md); border: 2px dashed var(--k-line-2); display: grid; place-items: center; text-align: center; padding: var(--k-3); cursor: pointer; overflow: hidden; background: rgb(var(--k-ink) / .02); color: var(--k-text-3); font-size: var(--k-fs-xs); transition: border-color var(--k-t-fast), background var(--k-t-fast); max-width: 200px; }
+    .nw-drop:hover, .nw-drop:focus-visible, .nw-drop.is-over { border-color: var(--k-accent); background: var(--k-accent-soft); outline: none; }
+    .nw-drop i { font-size: 30px; color: var(--k-accent); display: block; margin-bottom: 6px; }
+    .nw-drop.has-img { border-style: solid; padding: 0; }
+    .nw-drop img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nw-cover ul { margin: 0; padding-left: 18px; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.6; }
+
+    .nw-links { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+    .nw-links .k-input-group > i { font-size: 16px; }
+
+    /* Columna derecha */
+    .nw-aside { display: grid; gap: var(--k-4); }
+    @media (min-width: 1080px) { .nw-aside { position: sticky; top: calc(var(--k-nav-h) + var(--k-6)); } }
+    .nw-card { display: grid; gap: var(--k-3); padding: var(--k-5); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .nw-pv { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--k-4); align-items: start; }
+    .nw-pv__cover { aspect-ratio: 2/3; border-radius: var(--k-r-sm); overflow: hidden; background: linear-gradient(135deg, color-mix(in srgb, var(--k-accent) 30%, var(--k-surface-2)), var(--k-surface-3)); display: grid; place-items: center; font: 900 26px var(--k-font-display); color: rgb(var(--k-ink) / .7); text-transform: uppercase; }
+    .nw-pv__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nw-pv__t { display: grid; gap: 6px; min-width: 0; }
+    .nw-pv__t b { font-size: var(--k-fs-md); line-height: 1.25; word-wrap: break-word; }
+    .nw-pv__t span { font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .nw-pv__syn { margin: 0; font-size: var(--k-fs-xs); color: var(--k-text-2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .nw-check { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: var(--k-fs-sm); }
+    .nw-check li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; align-items: start; color: var(--k-text-2); }
+    .nw-check li i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; border: 1.5px solid var(--k-line-2); color: transparent; }
+    .nw-check li.ok { color: var(--k-text); } .nw-check li.ok i { background: var(--k-ok); border-color: var(--k-ok); color: #04170d; }
+    .nw-check li.opt i { border-style: dashed; }
+    .nw-id { font: 700 var(--k-fs-sm) var(--k-font-mono); color: var(--k-gold); }
+    .nw-dupes { display: grid; gap: 6px; }
+    .nw-dupe { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--k-2); align-items: center; font-size: var(--k-fs-xs); color: var(--k-text-2); text-decoration: none; }
+    .nw-dupe img, .nw-dupe span.ph { width: 32px; aspect-ratio: 2/3; border-radius: 4px; object-fit: cover; background: var(--k-surface-3); }
+    .nw-gate { max-width: 560px; margin: 12vh auto; }
+    [hidden] { display: none !important; }
+  </style>
 </head>
-
 <body>
-<div style="max-width:1100px;margin:40px auto;padding:0 24px;">
-    <a class="k-btn k-btn--quiet k-btn--sm" href="/estudio#obras"><i class="ti ti-arrow-left" aria-hidden="true"></i>Volver al Estudio</a>
-    <h1 class="section-header" id="nw-title">NUEVA OBRA</h1>
-    <p class="section-sub" id="nw-sub">Completa la ficha. Después podrás subir o escribir el primer capítulo desde el Estudio.</p>
-</div>
+<main class="k-page" id="k-main">
+  <div id="nw-gate" class="nw-gate" hidden></div>
+  <div id="nw-app" hidden>
+    <header class="nw-head">
+      <a class="k-btn k-btn--quiet k-btn--sm" href="/estudio#obras" style="justify-self:start"><i class="ti ti-arrow-left" aria-hidden="true"></i>Volver al Estudio</a>
+      <h1 id="nw-title">Nueva obra</h1>
+      <p id="nw-sub">Rellena la ficha. Al crearla irás directamente a su primer capítulo.</p>
+      <div id="nw-restored" hidden class="k-alert"><i class="ti ti-history" aria-hidden="true"></i><div>Hemos recuperado lo que dejaste a medias. <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="nw-reset" style="min-height:0;padding:0 6px">Empezar de cero</button></div></div>
+    </header>
 
-<div class="editor-wrap">
-    <!-- FORMULARIO -->
-    <div>
-        <form id="manga-form">
-
-            <!-- Información básica -->
-            <div class="card" style="margin-bottom:20px;">
-                <div class="card-title"><span>📖</span> Información básica</div>
-
-                <div class="field">
-                    <label>Título principal <span class="required">*</span></label>
-                    <input type="text" id="f-title" placeholder="Ej: Berserk" required>
-                    <div class="field-hint">El ID se genera automáticamente como número de serie único (KMI-0000001, KMI-0000002…)</div>
-                </div>
-
-                <div class="field">
-                    <label>Títulos alternativos</label>
-                    <div class="alt-list" id="alt-list"></div>
-                    <button type="button" class="btn-add-alt" onclick="addAltTitle()">+ Añadir título alternativo</button>
-                </div>
-
-                <div class="field-row">
-                    <div class="field">
-                        <label>Tipo <span class="required">*</span></label>
-                        <select id="f-type" required>
-                            <option value="">— Seleccionar —</option>
-                            <option value="manga">Manga 🇯🇵</option>
-                            <option value="manhwa">Manhwa 🇰🇷</option>
-                            <option value="manhua">Manhua 🇨🇳</option>
-                            <option value="oneshot">One-shot</option>
-                            <option value="novel">Novela</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Estado <span class="required">*</span></label>
-                        <select id="f-status" required>
-                            <option value="">— Seleccionar —</option>
-                            <option value="ongoing">En emisión</option>
-                            <option value="completed">Completado</option>
-                            <option value="hiatus">En hiato</option>
-                            <option value="cancelled">Cancelado</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label>Descripción / Sinopsis</label>
-                    <textarea id="f-desc" placeholder="Escribe una sinopsis…"></textarea>
-                </div>
-
-                <div class="field">
-                    <div class="toggle-row">
-                        <span class="toggle-label">Es One-shot (obra de un solo capítulo)</span>
-                        <label class="toggle">
-                            <input type="checkbox" id="f-oneshot" onchange="document.getElementById('f-chapters').disabled=this.checked;if(this.checked)document.getElementById('f-chapters').value=1;">
-                            <div class="toggle-track"></div>
-                        </label>
-                    </div>
-                </div>
+    <div class="nw">
+      <form class="nw-form" id="nw-form" novalidate>
+        <!-- 1 · Formato -->
+        <section class="nw-sec" aria-labelledby="s1">
+          <header><h2 id="s1"><span class="k-num">1</span> Formato</h2><p>Decide cómo se publica y qué editor usarás para los capítulos.</p></header>
+          <div class="nw-formats" role="radiogroup" aria-label="Formato">
+            <label class="nw-format nw-format--comic"><input type="radio" name="format" value="comic"><span class="nw-format__i"><i class="ti ti-brush" aria-hidden="true"></i></span><div><b>Cómic</b><span>Capítulos en páginas de imagen. Editor de cómic.</span></div></label>
+            <label class="nw-format nw-format--novel"><input type="radio" name="format" value="novel"><span class="nw-format__i"><i class="ti ti-book-2" aria-hidden="true"></i></span><div><b>Novela</b><span>Capítulos de texto. Editor de novela.</span></div></label>
+          </div>
+          <div class="k-field" data-only="comic">
+            <span class="k-label">Tipo de cómic <span class="k-req">*</span></span>
+            <div class="k-chips" id="nw-subtype" role="radiogroup" aria-label="Tipo de cómic">
+              <button type="button" class="k-chip" role="radio" aria-checked="false" aria-pressed="false" value="manga">Manga · Japón</button>
+              <button type="button" class="k-chip" role="radio" aria-checked="false" aria-pressed="false" value="manhwa">Manhwa · Corea (vertical)</button>
+              <button type="button" class="k-chip" role="radio" aria-checked="false" aria-pressed="false" value="manhua">Manhua · China</button>
+              <button type="button" class="k-chip" role="radio" aria-checked="false" aria-pressed="false" value="oneshot">One-shot</button>
             </div>
+          </div>
+          <label class="k-switch" data-only="novel"><input type="checkbox" id="nw-short">Relato corto: la historia cabe en un solo capítulo</label>
+        </section>
 
-            <!-- Autores y detalles -->
-            <div class="card" style="margin-bottom:20px;">
-                <div class="card-title"><span>✍️</span> Autores y detalles</div>
+        <!-- 2 · Lo básico -->
+        <section class="nw-sec" aria-labelledby="s2">
+          <header><h2 id="s2"><span class="k-num">2</span> Lo básico</h2><p>Lo primero que verá un lector en Explorar.</p></header>
+          <div class="k-field">
+            <div class="nw-labelrow"><label class="k-label" for="nw-name">Título <span class="k-req">*</span></label><span class="nw-count" id="nw-name-c">0/120</span></div>
+            <input class="k-input" id="nw-name" type="text" maxlength="120" autocomplete="off" placeholder="Ej.: El torii apagado…">
+            <div class="k-alert k-alert--warn" id="nw-dup" hidden><i class="ti ti-alert-triangle" aria-hidden="true"></i><div><b>Hay obras con un título parecido.</b> Si es la misma, no hace falta crearla otra vez.<div class="nw-dupes" id="nw-dupes" style="margin-top:8px"></div></div></div>
+          </div>
+          <div class="k-field">
+            <span class="k-label">Títulos alternativos</span>
+            <div class="nw-tags" id="nw-alts"><input id="nw-alt-in" type="text" maxlength="120" placeholder="Otro idioma o abreviatura… (Intro para añadir)" aria-label="Añadir título alternativo"></div>
+            <span class="k-help">Ayudan a que te encuentren en la búsqueda. Hasta 5.</span>
+          </div>
+          <div class="k-field">
+            <div class="nw-labelrow"><label class="k-label" for="nw-syn">Sinopsis</label><span class="nw-count" id="nw-syn-c">0/1000</span></div>
+            <textarea class="k-textarea" id="nw-syn" maxlength="1000" rows="5" placeholder="Presenta a tu protagonista y el conflicto, sin destripar el final…"></textarea>
+            <span class="k-help">Recomendado: al menos 100 caracteres. Es lo que decide si alguien abre el capítulo 1.</span>
+          </div>
+          <div class="nw-grid2">
+            <div class="k-field"><label class="k-label" for="nw-status">Estado <span class="k-req">*</span></label>
+              <select class="k-select" id="nw-status"><option value="ongoing">En curso</option><option value="completed">Completa</option><option value="hiatus">En pausa</option><option value="cancelled">Cancelada</option></select></div>
+            <div class="k-field" data-meta><label class="k-label" for="nw-lang">Idioma</label>
+              <select class="k-select" id="nw-lang"><option value="es">Español</option><option value="en">Inglés</option><option value="pt">Portugués</option><option value="ca">Catalán</option><option value="eu">Euskera</option><option value="gl">Gallego</option><option value="fr">Francés</option><option value="it">Italiano</option><option value="ja">Japonés</option><option value="ko">Coreano</option><option value="zh">Chino</option></select></div>
+          </div>
+        </section>
 
-                <div class="field-row">
-                    <div class="field">
-                        <label>Autor (Historia) <span class="required">*</span></label>
-                        <input type="text" id="f-author" placeholder="Ej: Kentaro Miura" required>
-                    </div>
-                    <div class="field">
-                        <label>Artista (Dibujo)</label>
-                        <input type="text" id="f-artist" placeholder="Si difiere del autor">
-                    </div>
-                </div>
+        <!-- 3 · Clasificación -->
+        <section class="nw-sec" aria-labelledby="s3">
+          <header><h2 id="s3"><span class="k-num">3</span> Clasificación</h2><p>Coloca tu obra donde la buscarán sus lectores.</p></header>
+          <div class="k-field">
+            <div class="nw-labelrow"><span class="k-label">Géneros <span class="k-req">*</span></span><span class="nw-count" id="nw-gen-c">0/5</span></div>
+            <span class="k-help">El primero que elijas será el género principal. Hasta 5.</span>
+            <div class="nw-genres" id="nw-genres"></div>
+          </div>
+          <div class="k-field" data-meta>
+            <div class="nw-labelrow"><span class="k-label">Etiquetas</span><span class="nw-count" id="nw-tag-c">0/10</span></div>
+            <div class="nw-tags" id="nw-tags"><input id="nw-tag-in" type="text" maxlength="30" placeholder="Escribe y pulsa Intro…" aria-label="Añadir etiqueta"></div>
+            <div class="nw-sugg" id="nw-sugg" aria-label="Sugerencias"></div>
+          </div>
+          <div class="nw-grid2">
+            <div class="k-field"><label class="k-label" for="nw-demo">Público</label>
+              <select class="k-select" id="nw-demo"><option value="">Sin especificar</option><option value="shonen">Shōnen (jóvenes)</option><option value="shoujo">Shōjo (chicas)</option><option value="seinen">Seinen (adultos)</option><option value="josei">Josei (mujeres adultas)</option><option value="kodomomuke">Kodomomuke (infantil)</option></select></div>
+            <div class="k-field" data-meta><label class="k-label" for="nw-lead">Protagonista</label>
+              <select class="k-select" id="nw-lead"><option value="">Sin especificar</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="grupo">Coral o grupo</option></select></div>
+            <div class="k-field" data-meta><label class="k-label" for="nw-rating">Clasificación por edad</label>
+              <select class="k-select" id="nw-rating"><option value="todos">Todos los públicos</option><option value="adolescente">Adolescentes (+13)</option><option value="adulto">Adultos (+18)</option></select>
+              <span class="k-help" id="nw-rating-h" hidden>Las obras +18 solo se muestran a lectores que verifican su edad.</span></div>
+            <div class="k-field" data-meta><label class="k-label" for="nw-origin">Origen</label>
+              <select class="k-select" id="nw-origin"><option value="original">Obra original</option><option value="fanfic">Fanfic</option><option value="traduccion">Traducción autorizada</option></select></div>
+          </div>
+          <div class="k-alert k-alert--warn" id="nw-origin-warn" hidden><i class="ti ti-alert-triangle" aria-hidden="true"></i><div>Solo puedes publicar traducciones con permiso escrito del autor original. Podemos pedírtelo si recibimos una reclamación.</div></div>
+        </section>
 
-                <div class="field-row">
-                    <div class="field">
-                        <label>Target demográfico</label>
-                        <select id="f-demo">
-                            <option value="">— Ninguno / Desconocido —</option>
-                            <option value="shonen">Shōnen (jóvenes)</option>
-                            <option value="shoujo">Shōjo (chicas)</option>
-                            <option value="seinen">Seinen (adultos)</option>
-                            <option value="josei">Josei (mujeres adultas)</option>
-                            <option value="kodomomuke">Kodomomuke (infantil)</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Capítulos totales</label>
-                        <input type="number" id="f-chapters" min="0" placeholder="0 = desconocido">
-                        <div class="field-hint">Estimado si está en emisión</div>
-                    </div>
-                </div>
+        <!-- 4 · Autoría -->
+        <section class="nw-sec" aria-labelledby="s4">
+          <header><h2 id="s4"><span class="k-num">4</span> Autoría</h2><p>Cómo aparece tu nombre en la ficha.</p></header>
+          <div class="nw-grid2">
+            <div class="k-field"><label class="k-label" for="nw-author">Autor <span class="k-req">*</span></label><input class="k-input" id="nw-author" type="text" maxlength="120" autocomplete="name" placeholder="Tu nombre o seudónimo…"></div>
+            <div class="k-field"><label class="k-label" for="nw-artist" id="nw-artist-l">Artista (dibujo)</label><input class="k-input" id="nw-artist" type="text" maxlength="120" autocomplete="off" placeholder="Si es otra persona…"></div>
+            <div class="k-field" id="nw-chapters-f"><label class="k-label" for="nw-chapters">Capítulos previstos</label><input class="k-input" id="nw-chapters" type="number" min="0" max="9999" inputmode="numeric" placeholder="0 = sin decidir"></div>
+          </div>
+        </section>
+
+        <!-- 5 · Portada -->
+        <section class="nw-sec" aria-labelledby="s5">
+          <header><h2 id="s5"><span class="k-num">5</span> Portada</h2><p>Se muestra en Explorar, en tu ficha y en las bibliotecas.</p></header>
+          <div class="nw-cover">
+            <div class="nw-drop" id="nw-drop" role="button" tabindex="0" aria-label="Elegir portada"><div><i class="ti ti-photo-plus" aria-hidden="true"></i>Arrastra la portada o pulsa para elegirla</div></div>
+            <div class="k-stack--sm k-stack">
+              <ul><li>Formato vertical 2:3, por ejemplo 600 × 900 px.</li><li>JPG, PNG o WEBP de hasta 10 MB.</li><li>Sin textos pequeños: en el móvil se ve a unos 140 px de ancho.</li></ul>
+              <div class="k-row"><button type="button" class="k-btn k-btn--secondary k-btn--sm" id="nw-cover-pick">Elegir imagen</button><button type="button" class="k-btn k-btn--quiet k-btn--sm" id="nw-cover-rm" hidden>Quitar</button></div>
+              <span class="k-help" id="nw-cover-info"></span>
             </div>
+          </div>
+          <input type="file" id="nw-cover" accept="image/jpeg,image/png,image/webp" hidden>
+        </section>
 
-            <!-- Géneros -->
-            <div class="card" style="margin-bottom:20px;">
-                <div class="card-title"><span>🏷️</span> Géneros</div>
-                <div class="adv-section">
-                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;" id="add-genre-groups">
-                        <div>
-                            <div class="genre-group-title">Acción y Aventura</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Acción"> Acción</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Aventura"> Aventura</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Artes Marciales"> Artes Marciales</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Militar"> Militar</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Drama y Romance</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Drama"> Drama</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Romance"> Romance</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Slice of Life"> Slice of Life</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Tragedia"> Tragedia</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Fantasía y Ciencia Ficción</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Fantasía"> Fantasía</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Isekai"> Isekai</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Ciencia Ficción"> Ciencia Ficción</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Mecha"> Mecha</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Sistema"> Sistema</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Dark Fantasy"> Dark Fantasy</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Comedia y Costumbrista</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Comedia"> Comedia</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Escolar"> Escolar</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Recuentos de la vida"> Recuentos de la vida</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Deportes"> Deportes</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Terror y Suspenso</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Horror"> Horror</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Misterio"> Misterio</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Thriller"> Thriller</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Psicológico"> Psicológico</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Sobrenatural"> Sobrenatural</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Historia y Cultura</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Histórico"> Histórico</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Historia"> Historia</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Música"> Música</label>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="genre-group-title">Demográficos y Especiales</div>
-                            <div class="genre-group-list">
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Seinen"> Seinen</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Shonen"> Shonen</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Shoujo"> Shoujo</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Josei"> Josei</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Ecchi"> Ecchi</label>
-                                <label class="genre-check"><input type="checkbox" name="add-genre" value="Harem"> Harem</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- 6 · Enlaces -->
+        <section class="nw-sec" aria-labelledby="s6">
+          <header><h2 id="s6"><span class="k-num">6</span> Enlaces externos <span class="k-badge k-badge--ok">Sin comisión</span></h2><p>Opcional. Aparecen al final de cada capítulo para que tus lectores te apoyen.</p></header>
+          <div class="nw-links" id="nw-links"></div>
+        </section>
+      </form>
 
-            <!-- Portada -->
-            <div class="card">
-                <div class="card-title"><span>🖼️</span> Portada</div>
-                <div class="field">
-                    <label>Imagen de portada</label>
-                    <input type="file" id="f-cover" accept="image/*" onchange="updateCoverPreview(this)">
-                    <div class="field-hint">Imagen en formato vertical (ratio 3:4 recomendado, max 10MB)</div>
-                </div>
-            </div>
-
-        </form>
-    </div>
-
-    <!-- SIDEBAR: PREVIEW + SUBMIT -->
-    <div>
-        <div class="card" style="margin-bottom:20px; position:sticky; top:80px;">
-            <div class="card-title"><span>👁️</span> Vista previa</div>
-
-            <div class="preview-card">
-                <div class="preview-cover" id="preview-cover">📖</div>
-                <div class="preview-body">
-                    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
-                        <span class="preview-badge badge-manga" id="preview-type-badge">MANGA</span>
-                        <span id="preview-status" style="font-size:10px;color:var(--text-muted);">En emisión</span>
-                    </div>
-                    <div class="preview-title" id="preview-title">Título del manga</div>
-                    <div class="preview-meta" id="preview-meta">Autor · ? caps</div>
-                    <div class="preview-genres" id="preview-genres"></div>
-                </div>
-            </div>
-
-            <div style="margin-top:16px;padding:12px;background:rgb(var(--k-ink) / 0.03);border-radius:8px;border:1px solid var(--border);">
-                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">ID generado (secuencial)</div>
-                <div style="font-family:var(--font-display);font-size:18px;letter-spacing:1px;color:var(--accent-gold);" id="preview-id">Cargando…</div>
-            </div>
-
-            <button class="btn-submit" id="btn-submit" type="button" onclick="submitManga()">
-                PUBLICAR EN CATÁLOGO
-            </button>
-
-            <div class="status-box" id="status-box">
-                <div id="status-msg"></div>
-                <div class="status-id" id="status-id"></div>
-            </div>
+      <aside class="nw-aside" aria-label="Resumen">
+        <div class="nw-card">
+          <span class="k-eyebrow">Vista previa</span>
+          <div class="nw-pv"><div class="nw-pv__cover" id="pv-cover">KT</div><div class="nw-pv__t"><div class="k-row" id="pv-badges"></div><b id="pv-title">Título de tu obra</b><span id="pv-meta">Autor</span><div class="k-row" id="pv-genres"></div></div></div>
+          <p class="nw-pv__syn" id="pv-syn">La sinopsis aparecerá aquí.</p>
+          <span class="k-faint" style="font-size:12px">Se creará con el ID <span class="nw-id" id="pv-id">…</span></span>
         </div>
-    </div>
-</div>
-
-<!-- DUPLICATE CONFIRMATION MODAL -->
-<div class="dup-overlay" id="dup-overlay">
-    <div class="dup-box">
-        <span class="dup-icon">⚠️</span>
-        <div class="dup-title">OBRA DUPLICADA</div>
-        <div class="dup-desc">Ya existe una obra registrada con este nombre:</div>
-        <div class="dup-match" id="dup-match-display"></div>
-        <div class="dup-desc" style="margin-bottom:16px;">¿Estás seguro de que quieres crearla de todas formas?</div>
-        <div class="dup-actions">
-            <button class="dup-btn secondary" onclick="closeDupModal()">Volver atrás</button>
-            <button class="dup-btn danger" onclick="confirmDupSubmit()">Sí, crear</button>
+        <div class="nw-card">
+          <b style="font-size:14px">Antes de crear</b>
+          <ul class="nw-check" id="nw-check"></ul>
+          <button type="button" class="k-btn k-btn--primary k-btn--lg k-btn--block" id="nw-submit"><i class="ti ti-check" aria-hidden="true"></i><span id="nw-submit-l">Crear obra</span></button>
+          <span class="k-help" id="nw-next" style="text-align:center"></span>
+          <div class="k-error" id="nw-err" role="alert"></div>
         </div>
+      </aside>
     </div>
-</div>
+  </div>
+</main>
+
+<dialog class="k-modal" id="nw-dup-modal" aria-labelledby="nw-dup-t">
+  <div class="k-modal__head"><h2 class="k-h3" id="nw-dup-t">Ya existe una obra con este título</h2></div>
+  <div class="k-modal__body"><div class="nw-dupes" id="nw-dup-list"></div><p class="k-muted" style="margin:0;font-size:14px">Si es otra obra distinta, puedes crearla igualmente. Si es la misma, no hace falta duplicarla.</p></div>
+  <div class="k-modal__foot"><button type="button" class="k-btn k-btn--quiet" id="nw-dup-back">Cambiar el título</button><button type="button" class="k-btn k-btn--primary" id="nw-dup-go">Crear igualmente</button></div>
+</dialog>
 
 <script>
-function getAddGenres() {
-    return [...document.querySelectorAll('#add-genre-groups input[name="add-genre"]:checked')]
-        .map(cb => cb.value);
-}
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var GENRES = [
+    ['Acción y aventura', ['Acción', 'Aventura', 'Artes Marciales', 'Militar']],
+    ['Fantasía y ciencia ficción', ['Fantasía', 'Dark Fantasy', 'Isekai', 'Sistema', 'Ciencia Ficción', 'Mecha', 'Sobrenatural']],
+    ['Romance y drama', ['Romance', 'Drama', 'Tragedia', 'Harem', 'Ecchi']],
+    ['Misterio y terror', ['Misterio', 'Thriller', 'Psicológico', 'Horror']],
+    ['Vida cotidiana', ['Slice of Life', 'Recuentos de la vida', 'Comedia', 'Escolar', 'Deportes', 'Música']],
+    ['Historia', ['Histórico', 'Historia']],
+    ['Demografía', ['Seinen', 'Shonen', 'Shoujo', 'Josei']],
+  ];
+  var TAG_SUGG = ['Reencarnación', 'Protagonista fuerte', 'Protagonista femenina', 'Slow burn', 'Venganza', 'Magia', 'Academia', 'Sistema de niveles', 'Viajes en el tiempo', 'Antihéroe', 'Enemies to lovers', 'Familia encontrada', 'Cultivo', 'Distopía', 'Realeza'];
+  var LINKS = [['patreon', 'Patreon', 'ti-heart-handshake', 'https://patreon.com/tu-nombre'], ['kofi', 'Ko-fi', 'ti-coffee', 'https://ko-fi.com/tu-nombre'], ['web', 'Web o blog', 'ti-world', 'https://…'], ['tienda', 'Tienda o libros', 'ti-shopping-bag', 'https://…'], ['x', 'X / Twitter', 'ti-brand-x', 'https://x.com/…'], ['instagram', 'Instagram', 'ti-brand-instagram', 'https://instagram.com/…'], ['discord', 'Discord', 'ti-brand-discord', 'https://discord.gg/…']];
+  var TYPE_LABEL = { manga: 'Manga', manhwa: 'Manhwa', manhua: 'Manhua', oneshot: 'One-shot', novel: 'Novela' };
+  var STATUS_LABEL = { ongoing: 'En curso', completed: 'Completa', hiatus: 'En pausa', cancelled: 'Cancelada' };
+  var DRAFT = 'kt_nueva_obra';
+  var st = { format: null, subtype: null, genres: [], tags: [], alts: [], cover: null, coverUrl: null, coverWH: null, meta: false, dupes: [] };
 
-// Títulos alternativos
-let altCount = 0;
-function addAltTitle() {
-    const list = document.getElementById('alt-list');
-    const id = `alt-${altCount++}`;
-    const div = document.createElement('div');
-    div.className = 'alt-item';
-    div.id = id;
-    div.innerHTML = `<input type="text" placeholder="Título en otro idioma…"><button type="button" class="btn-rm" onclick="document.getElementById('${id}').remove()">✕</button>`;
-    list.appendChild(div);
-}
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
+  function user() { try { return JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch (e) { return null; } }
+  function api(url) { return fetch(url).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(d.error || 'Error ' + r.status); return d; }); }); }
+  function type() { return st.format === 'novel' ? 'novel' : st.subtype; }
 
-// ID secuencial actual (se obtiene del servidor)
-let currentNextId = 'KMI-???????';
+  /* ── Construcción ──────────────────────────────────────────── */
+  $('nw-genres').innerHTML = GENRES.map(function (g) {
+    return '<fieldset><legend>' + g[0] + '</legend><div class="k-chips">' + g[1].map(function (n) { return '<button type="button" class="k-chip" aria-pressed="false" value="' + esc(n) + '">' + esc(n) + '</button>'; }).join('') + '</div></fieldset>';
+  }).join('');
+  $('nw-links').innerHTML = LINKS.map(function (l) {
+    return '<div class="k-field"><label class="k-label" for="nw-l-' + l[0] + '">' + l[1] + '</label><div class="k-input-group"><i class="ti ' + l[2] + '" aria-hidden="true"></i><input class="k-input" id="nw-l-' + l[0] + '" data-link="' + l[0] + '" type="url" inputmode="url" spellcheck="false" autocomplete="off" placeholder="' + l[3] + '"></div><span class="k-error" id="nw-l-' + l[0] + '-e"></span></div>';
+  }).join('');
+  function renderSugg() { $('nw-sugg').innerHTML = TAG_SUGG.filter(function (t) { return st.tags.indexOf(t) < 0; }).slice(0, 10).map(function (t) { return '<button type="button" class="k-chip" value="' + esc(t) + '">+ ' + esc(t) + '</button>'; }).join(''); }
 
-// Obtener el siguiente ID disponible del servidor
-async function fetchNextId() {
-    try {
-        const res = await fetch('/api/manga/next-id');
-        const data = await res.json();
-        currentNextId = data.nextId;
-    } catch {
-        currentNextId = 'KMI-???????';
-    }
-    document.getElementById('preview-id').textContent = currentNextId;
-}
+  /* ── Formato ───────────────────────────────────────────────── */
+  function setFormat(f) {
+    st.format = f;
+    document.querySelectorAll('[name="format"]').forEach(function (r) { r.checked = r.value === f; });
+    document.querySelectorAll('[data-only]').forEach(function (el) { el.hidden = el.dataset.only !== f; });
+    var novel = f === 'novel';
+    $('nw-title').textContent = novel ? 'Nueva novela' : f === 'comic' ? 'Nuevo cómic' : 'Nueva obra';
+    $('nw-sub').textContent = novel ? 'Rellena la ficha. Al crearla irás directamente a escribir el capítulo 1.' : f === 'comic' ? 'Rellena la ficha. Al crearla irás directamente a subir las páginas del capítulo 1.' : 'Rellena la ficha. Al crearla irás directamente a su primer capítulo.';
+    $('nw-artist-l').textContent = novel ? 'Ilustrador de la portada' : 'Artista (dibujo)';
+    $('nw-submit-l').textContent = novel ? 'Crear novela' : f === 'comic' ? 'Crear cómic' : 'Crear obra';
+    $('nw-next').textContent = novel ? 'Después se abre el editor de novela.' : f === 'comic' ? 'Después se abre el editor de cómic.' : '';
+    document.title = $('nw-title').textContent + ' · KamiTales';
+    sync();
+  }
+  document.querySelectorAll('[name="format"]').forEach(function (r) { r.addEventListener('change', function () { setFormat(r.value); save(); }); });
+  $('nw-subtype').addEventListener('click', function (e) {
+    var b = e.target.closest('.k-chip'); if (!b) return;
+    st.subtype = b.value;
+    this.querySelectorAll('.k-chip').forEach(function (x) { var on = x === b; x.setAttribute('aria-pressed', String(on)); x.setAttribute('aria-checked', String(on)); });
+    sync(); save();
+  });
+  $('nw-short').addEventListener('change', function () { sync(); save(); });
 
-// Actualizar preview en tiempo real
-function updatePreview() {
-    const title = document.getElementById('f-title').value || 'Título del manga';
-    const type  = document.getElementById('f-type').value || 'manga';
-    const status= document.getElementById('f-status').value;
-    const author= document.getElementById('f-author').value || 'Autor';
-    const chapters = document.getElementById('f-chapters').value;
-
-    document.getElementById('preview-title').textContent = title;
-    document.getElementById('preview-meta').textContent = `${author} · ${chapters || '?'} caps`;
-
-    const statusLabels = { ongoing:'En emisión', completed:'Completado', hiatus:'En hiato', cancelled:'Cancelado' };
-    document.getElementById('preview-status').textContent = statusLabels[status] || '';
-
-    const badge = document.getElementById('preview-type-badge');
-    badge.textContent = type.toUpperCase();
-    badge.className = `preview-badge badge-${type || 'manga'}`;
-}
-
-function updateCoverPreview(input) {
-    const el = document.getElementById('preview-cover');
-    el.style.backgroundImage = '';
-    el.style.backgroundSize = 'cover';
-    el.style.backgroundPosition = 'center';
-    if (input?.files?.[0]) {
-        el.style.backgroundImage = `url(${URL.createObjectURL(input.files[0])})`;
-        el.textContent = '';
-    } else {
-        el.textContent = '📖';
-    }
-}
-
-function updatePreviewGenres() {
-    const el = document.getElementById('preview-genres');
-    el.innerHTML = '';
-    getAddGenres().slice(0,4).forEach(g => {
-        const span = document.createElement('span');
-        span.className = 'preview-genre';
-        span.textContent = g;
-        el.appendChild(span);
+  /* ── Chips de géneros, etiquetas y títulos alternativos ────── */
+  $('nw-genres').addEventListener('click', function (e) {
+    var b = e.target.closest('.k-chip'); if (!b) return;
+    var i = st.genres.indexOf(b.value);
+    if (i >= 0) st.genres.splice(i, 1);
+    else if (st.genres.length >= 5) { KAMI.toast('Puedes elegir hasta 5 géneros.'); return; }
+    else st.genres.push(b.value);
+    paintGenres(); sync(); save();
+  });
+  function paintGenres() {
+    $('nw-genres').querySelectorAll('.k-chip').forEach(function (b) {
+      var i = st.genres.indexOf(b.value);
+      b.setAttribute('aria-pressed', String(i >= 0));
+      b.innerHTML = esc(b.value) + (i === 0 ? ' <span class="nw-main">· principal</span>' : '');
     });
-}
-
-// Live bindings
-['f-title','f-type','f-status','f-author','f-chapters'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updatePreview);
-});
-document.querySelectorAll('#add-genre-groups input[name="add-genre"]').forEach(cb => {
-    cb.addEventListener('change', updatePreviewGenres);
-});
-updatePreview();
-fetchNextId();
-
-// Recolectar títulos alternativos
-function getAltTitles() {
-    return [...document.querySelectorAll('#alt-list .alt-item input')]
-        .map(i => i.value.trim()).filter(Boolean);
-}
-
-let pendingFormData = null;
-
-// Submit con FormData (multipart)
-async function submitManga() {
-    const btn = document.getElementById('btn-submit');
-    const box = document.getElementById('status-box');
-    box.className = 'status-box';
-
-    const title  = document.getElementById('f-title').value.trim();
-    const type   = document.getElementById('f-type').value;
-    const estatus = document.getElementById('f-status').value;
-    const author = document.getElementById('f-author').value.trim();
-
-    if (!title) { showStatus('error', 'El título es obligatorio'); return; }
-    if (!type)  { showStatus('error', 'Selecciona el tipo'); return; }
-    if (!estatus){ showStatus('error', 'Selecciona el estado'); return; }
-    if (!author){ showStatus('error', 'El autor es obligatorio'); return; }
-
-    btn.disabled = true;
-    btn.textContent = 'VERIFICANDO…';
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('type', type);
-    formData.append('status', estatus);
-    formData.append('author', author);
-    formData.append('artist', document.getElementById('f-artist').value.trim() || author);
-    formData.append('description', document.getElementById('f-desc').value.trim());
-    formData.append('demographicTarget', document.getElementById('f-demo').value);
-    formData.append('totalChapters', document.getElementById('f-chapters').value || '0');
-    formData.append('isOneshot', document.getElementById('f-oneshot').checked ? 'true' : 'false');
-    formData.append('genres', JSON.stringify(getAddGenres()));
-    formData.append('alternativeTitles', JSON.stringify(getAltTitles()));
-
-    const fileInput = document.getElementById('f-cover');
-    if (fileInput.files?.[0]) {
-        formData.append('coverImage', fileInput.files[0]);
+    var c = $('nw-gen-c'); c.textContent = st.genres.length + '/5'; c.classList.toggle('is-low', !st.genres.length);
+  }
+  function tagBox(boxId, inputId, list, max, label) {
+    var box = $(boxId), input = $(inputId);
+    function paint() {
+      box.querySelectorAll('.nw-tag').forEach(function (t) { t.remove(); });
+      list.forEach(function (t, i) {
+        var s = document.createElement('span'); s.className = 'nw-tag';
+        s.innerHTML = esc(t) + '<button type="button" aria-label="Quitar ' + esc(t) + '" data-i="' + i + '"><i class="ti ti-x" aria-hidden="true"></i></button>';
+        box.insertBefore(s, input);
+      });
     }
-
-    // Verificar si ya existe una obra con el mismo título
-    try {
-        const searchRes = await fetch(`/api/manga/search?q=${encodeURIComponent(title)}&limit=5`);
-        const searchData = await searchRes.json();
-        const exactMatch = (searchData.results || []).find(m =>
-            m.title.toLowerCase() === title.toLowerCase()
-        );
-
-        if (exactMatch) {
-            btn.disabled = false;
-            btn.textContent = 'PUBLICAR EN CATÁLOGO';
-            pendingFormData = formData;
-            const matchEl = document.getElementById('dup-match-display');
-            const coverImg = exactMatch.cover
-                ? `<img src="${exactMatch.cover}" class="dup-match-img" onerror="this.style.display='none'">`
-                : '';
-            matchEl.innerHTML = `${coverImg}<span>${exactMatch.title} (${exactMatch.id})</span>`;
-            document.getElementById('dup-overlay').classList.add('show');
-            return;
-        }
-    } catch {}
-
-    // No hay duplicado → publicar directamente
-    executeSubmit(formData, btn);
-}
-
-function closeDupModal() {
-    document.getElementById('dup-overlay').classList.remove('show');
-    pendingFormData = null;
-}
-
-function confirmDupSubmit() {
-    document.getElementById('dup-overlay').classList.remove('show');
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.textContent = 'PUBLICANDO…';
-    executeSubmit(pendingFormData, btn);
-}
-
-async function executeSubmit(formData, btn) {
-    const box = document.getElementById('status-box');
-    try {
-        const res = await fetch('/api/manga', {
-            method: 'POST',
-            body: formData,
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error del servidor');
-
-        showStatus('success', `✅ ${data.message}`, data.manga.id);
-        setTimeout(() => {
-            window.location.href = `/estudio#obra-${data.manga.id}`;
-        }, 1500);
-    } catch (err) {
-        showStatus('error', `❌ ${err.message}`);
-        btn.disabled = false;
-        btn.textContent = 'PUBLICAR EN CATÁLOGO';
+    function add(v) {
+      v = String(v || '').trim().replace(/,+$/, ''); if (!v) return;
+      if (list.some(function (x) { return x.toLowerCase() === v.toLowerCase(); })) { input.value = ''; return; }
+      if (list.length >= max) { KAMI.toast('Máximo ' + max + ' ' + label + '.'); return; }
+      list.push(v); input.value = ''; paint(); sync(); save();
     }
-}
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input.value); }
+      if (e.key === 'Backspace' && !input.value && list.length) { list.pop(); paint(); sync(); save(); }
+    });
+    input.addEventListener('blur', function () { add(input.value); });
+    box.addEventListener('click', function (e) { var b = e.target.closest('[data-i]'); if (b) { list.splice(+b.dataset.i, 1); paint(); sync(); save(); } else if (e.target === box) input.focus(); });
+    return { add: add, paint: paint };
+  }
+  var tags = tagBox('nw-tags', 'nw-tag-in', st.tags, 10, 'etiquetas');
+  var alts = tagBox('nw-alts', 'nw-alt-in', st.alts, 5, 'títulos alternativos');
+  $('nw-sugg').addEventListener('click', function (e) { var b = e.target.closest('.k-chip'); if (b) tags.add(b.value); });
 
-function showStatus(type, msg, id) {
-    const box = document.getElementById('status-box');
-    document.getElementById('status-msg').textContent = msg;
-    document.getElementById('status-id').textContent = id ? `ID: ${id}` : '';
-    box.className = `status-box ${type} show`;
-}
-</script>
-  <script src="/js/notifications.js"></script>
-<script>
-  // Formato elegido en el Estudio: cómic (imágenes) o novela (texto)
-  (function () {
-    var tipo = new URLSearchParams(location.search).get('tipo');
-    var sel = document.getElementById('f-type'); if (!sel || !tipo) return;
-    var novel = tipo === 'novel';
-    Array.from(sel.options).forEach(function (o) { if (o.value && (o.value === 'novel') !== novel) o.remove(); });
-    if (novel) sel.value = 'novel';
-    document.getElementById('nw-title').textContent = novel ? 'NUEVA NOVELA' : 'NUEVO CÓMIC';
-    document.getElementById('nw-sub').textContent = novel
-      ? 'Completa la ficha de tu novela. Al terminar irás a tu obra en el Estudio para escribir el primer capítulo.'
-      : 'Completa la ficha de tu cómic y elige su formato. Al terminar irás a tu obra en el Estudio para subir el primer capítulo.';
-    document.title = (novel ? 'Nueva novela' : 'Nuevo cómic') + ' · KamiTales';
-    sel.dispatchEvent(new Event('change'));
-  })();
+  /* ── Portada ───────────────────────────────────────────────── */
+  function setCover(file) {
+    $('nw-err').textContent = '';
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { KAMI.toast('La portada debe ser JPG, PNG o WEBP.', 'bad'); return; }
+    if (file.size > 10 * 1024 * 1024) { KAMI.toast('La portada pesa más de 10 MB. Redúcela y vuelve a intentarlo.', 'bad'); return; }
+    if (st.coverUrl) URL.revokeObjectURL(st.coverUrl);
+    st.cover = file; st.coverUrl = URL.createObjectURL(file);
+    var img = new Image(); img.onload = function () { st.coverWH = [img.naturalWidth, img.naturalHeight]; sync(); }; img.src = st.coverUrl;
+    sync();
+  }
+  $('nw-drop').addEventListener('click', function () { $('nw-cover').click(); });
+  $('nw-drop').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('nw-cover').click(); } });
+  $('nw-cover-pick').addEventListener('click', function () { $('nw-cover').click(); });
+  $('nw-cover').addEventListener('change', function (e) { setCover(e.target.files[0]); e.target.value = ''; });
+  $('nw-cover-rm').addEventListener('click', function () { if (st.coverUrl) URL.revokeObjectURL(st.coverUrl); st.cover = st.coverUrl = st.coverWH = null; sync(); });
+  ['dragenter', 'dragover'].forEach(function (ev) { $('nw-drop').addEventListener(ev, function (e) { e.preventDefault(); $('nw-drop').classList.add('is-over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { $('nw-drop').addEventListener(ev, function () { $('nw-drop').classList.remove('is-over'); }); });
+  $('nw-drop').addEventListener('drop', function (e) { e.preventDefault(); setCover(e.dataTransfer.files[0]); });
+
+  /* ── Duplicados ────────────────────────────────────────────── */
+  var dupT = null;
+  function checkDupes() {
+    clearTimeout(dupT);
+    var q = $('nw-name').value.trim();
+    if (q.length < 3) { st.dupes = []; $('nw-dup').hidden = true; return; }
+    dupT = setTimeout(function () {
+      api('/api/manga/search?q=' + encodeURIComponent(q) + '&limit=5').then(function (d) {
+        st.dupes = (d.results || []).filter(function (m) { return m.title.toLowerCase().indexOf(q.toLowerCase()) >= 0 || q.toLowerCase().indexOf(m.title.toLowerCase()) >= 0; });
+        $('nw-dupes').innerHTML = st.dupes.map(dupeHtml).join('');
+        $('nw-dup').hidden = !st.dupes.length;
+      }).catch(function () {});
+    }, 450);
+  }
+  function dupeHtml(m) { return '<a class="nw-dupe" href="/obra/' + encodeURIComponent(m.id) + '" target="_blank" rel="noopener">' + (m.cover ? '<img src="' + esc(m.cover) + '" alt="">' : '<span class="ph"></span>') + '<span><b>' + esc(m.title) + '</b> · ' + esc(TYPE_LABEL[m.type] || m.type) + '</span></a>'; }
+
+  /* ── Sincronizar vista previa y lista ──────────────────────── */
+  function counter(id, val, max, low) { var c = $(id); c.textContent = val.length + '/' + max; c.classList.toggle('is-low', !!low && val.length > 0 && val.length < low); c.classList.toggle('is-over', val.length > max); }
+  function linkErrors() {
+    var bad = 0;
+    document.querySelectorAll('[data-link]').forEach(function (i) {
+      var v = i.value.trim(), ok = !v || /^https?:\/\/\S+\.\S+/.test(v);
+      $(i.id + '-e').textContent = ok ? '' : 'Debe empezar por https:// (por ejemplo ' + i.placeholder + ').';
+      i.setAttribute('aria-invalid', String(!ok)); if (!ok) bad++;
+    });
+    return bad;
+  }
+  function checks() {
+    var name = $('nw-name').value.trim();
+    return [
+      { ok: !!st.format && (st.format === 'novel' || !!st.subtype), t: st.format === 'comic' && !st.subtype ? 'Elige el tipo de cómic' : 'Formato elegido', req: true },
+      { ok: name.length >= 2, t: 'Título', req: true },
+      { ok: st.genres.length > 0, t: 'Al menos un género', req: true },
+      { ok: !!$('nw-author').value.trim(), t: 'Autor', req: true },
+      { ok: $('nw-syn').value.trim().length >= 100, t: 'Sinopsis de 100 caracteres o más', req: false },
+      { ok: !!st.cover, t: 'Portada', req: false },
+    ];
+  }
+  function sync() {
+    var name = $('nw-name').value.trim(), syn = $('nw-syn').value.trim(), author = $('nw-author').value.trim();
+    counter('nw-name-c', $('nw-name').value, 120); counter('nw-syn-c', $('nw-syn').value, 1000, 100);
+    $('nw-tag-c').textContent = st.tags.length + '/10';
+    var short = st.format === 'novel' ? $('nw-short').checked : st.subtype === 'oneshot';
+    $('nw-chapters-f').hidden = short;
+    $('nw-rating-h').hidden = $('nw-rating').value !== 'adulto';
+    $('nw-origin-warn').hidden = $('nw-origin').value !== 'traduccion';
+    // Portada
+    var drop = $('nw-drop');
+    if (st.coverUrl) { drop.classList.add('has-img'); drop.innerHTML = '<img src="' + st.coverUrl + '" alt="Portada elegida">'; }
+    else { drop.classList.remove('has-img'); drop.innerHTML = '<div><i class="ti ti-photo-plus" aria-hidden="true"></i>Arrastra la portada o pulsa para elegirla</div>'; }
+    $('nw-cover-rm').hidden = !st.cover;
+    var info = '';
+    if (st.cover) {
+      info = st.cover.name + ' · ' + (st.cover.size / 1048576).toLocaleString('es', { maximumFractionDigits: 1 }) + ' MB';
+      if (st.coverWH) {
+        var r = st.coverWH[0] / st.coverWH[1];
+        info += ' · ' + st.coverWH[0] + ' × ' + st.coverWH[1] + ' px';
+        if (r > 0.8 || r < 0.55) info += '. No es vertical 2:3: se recortará en las tarjetas.';
+        else if (st.coverWH[0] < 400) info += '. Es pequeña: puede verse borrosa.';
+      }
+    }
+    $('nw-cover-info').textContent = info;
+    // Vista previa
+    var t = type();
+    $('pv-cover').innerHTML = st.coverUrl ? '<img src="' + st.coverUrl + '" alt="">' : esc((name || 'KT').slice(0, 2));
+    $('pv-badges').innerHTML = (st.format ? '<span class="k-badge ' + (st.format === 'novel' ? 'k-badge--info' : 'k-badge--accent') + '">' + (st.format === 'novel' ? 'Novela' : 'Cómic' + (t ? ' · ' + TYPE_LABEL[t] : '')) + '</span>' : '') +
+      '<span class="k-badge">' + STATUS_LABEL[$('nw-status').value] + '</span>' + (st.meta && $('nw-rating').value === 'adulto' ? '<span class="k-badge k-badge--bad">+18</span>' : '');
+    $('pv-title').textContent = name || 'Título de tu obra';
+    $('pv-meta').textContent = (author || 'Autor') + (short ? ' · relato de un capítulo' : $('nw-chapters').value > 0 ? ' · ' + $('nw-chapters').value + ' capítulos previstos' : '');
+    $('pv-genres').innerHTML = st.genres.slice(0, 3).map(function (g) { return '<span class="k-badge">' + esc(g) + '</span>'; }).join('');
+    $('pv-syn').textContent = syn || 'La sinopsis aparecerá aquí.';
+    // Lista
+    var cs = checks();
+    $('nw-check').innerHTML = cs.map(function (c) { return '<li class="' + (c.ok ? 'ok' : '') + (c.req ? '' : ' opt') + '"><i class="ti ti-check" aria-hidden="true"></i><span>' + c.t + (c.req ? '' : ' <span class="k-faint">(recomendado)</span>') + '</span></li>'; }).join('');
+    $('nw-submit').disabled = cs.some(function (c) { return c.req && !c.ok; });
+  }
+  ['nw-name', 'nw-syn', 'nw-author', 'nw-artist', 'nw-chapters', 'nw-status', 'nw-lang', 'nw-demo', 'nw-lead', 'nw-rating', 'nw-origin'].forEach(function (id) {
+    $(id).addEventListener('input', function () { sync(); save(); });
+    $(id).addEventListener('change', function () { sync(); save(); });
+  });
+  $('nw-name').addEventListener('input', checkDupes);
+  $('nw-links').addEventListener('input', function () { save(); });
+  $('nw-links').addEventListener('focusout', linkErrors);
+
+  /* ── Borrador del formulario (sin la portada) ──────────────── */
+  var saveT = null;
+  function collect() {
+    var links = {}; document.querySelectorAll('[data-link]').forEach(function (i) { if (i.value.trim()) links[i.dataset.link] = i.value.trim(); });
+    return { format: st.format, subtype: st.subtype, genres: st.genres, tags: st.tags, alts: st.alts, links: links, short: $('nw-short').checked,
+      fields: ['nw-name', 'nw-syn', 'nw-author', 'nw-artist', 'nw-chapters', 'nw-status', 'nw-lang', 'nw-demo', 'nw-lead', 'nw-rating', 'nw-origin'].reduce(function (o, id) { o[id] = $(id).value; return o; }, {}) };
+  }
+  function save() { clearTimeout(saveT); saveT = setTimeout(function () { try { localStorage.setItem(DRAFT, JSON.stringify(collect())); } catch (e) {} }, 300); }
+  function restore() {
+    var d = null; try { d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
+    if (!d) return false;
+    var any = d.fields && (d.fields['nw-name'] || d.fields['nw-syn']) || (d.genres || []).length;
+    if (!any) return false;
+    Object.keys(d.fields || {}).forEach(function (id) { if ($(id) && d.fields[id] != null) $(id).value = d.fields[id]; });
+    $('nw-short').checked = !!d.short;
+    (d.genres || []).forEach(function (g) { st.genres.push(g); });
+    (d.tags || []).forEach(function (g) { st.tags.push(g); });
+    (d.alts || []).forEach(function (g) { st.alts.push(g); });
+    Object.keys(d.links || {}).forEach(function (k) { var i = document.querySelector('[data-link="' + k + '"]'); if (i) i.value = d.links[k]; });
+    if (d.subtype) { st.subtype = d.subtype; var b = $('nw-subtype').querySelector('[value="' + d.subtype + '"]'); if (b) { b.setAttribute('aria-pressed', 'true'); b.setAttribute('aria-checked', 'true'); } }
+    if (d.format) st.format = d.format;
+    return true;
+  }
+  $('nw-reset').addEventListener('click', function () { try { localStorage.removeItem(DRAFT); } catch (e) {} location.reload(); });
+
+  /* ── Crear ─────────────────────────────────────────────────── */
+  function submit(force) {
+    $('nw-err').textContent = '';
+    if (linkErrors()) { $('nw-err').textContent = 'Revisa los enlaces externos marcados.'; return; }
+    var name = $('nw-name').value.trim();
+    var exact = st.dupes.filter(function (m) { return m.title.toLowerCase() === name.toLowerCase(); });
+    if (exact.length && !force) { $('nw-dup-list').innerHTML = exact.map(dupeHtml).join(''); $('nw-dup-modal').showModal(); return; }
+    var t = type(), short = st.format === 'novel' ? $('nw-short').checked : t === 'oneshot';
+    var links = {}; document.querySelectorAll('[data-link]').forEach(function (i) { if (i.value.trim()) links[i.dataset.link] = i.value.trim(); });
+    var fd = new FormData();
+    fd.append('title', name); fd.append('type', t); fd.append('status', $('nw-status').value);
+    fd.append('author', $('nw-author').value.trim()); fd.append('artist', $('nw-artist').value.trim() || $('nw-author').value.trim());
+    fd.append('description', $('nw-syn').value.trim()); fd.append('demographicTarget', $('nw-demo').value);
+    fd.append('totalChapters', short ? '1' : ($('nw-chapters').value || '0')); fd.append('isOneshot', short ? 'true' : 'false');
+    fd.append('genres', JSON.stringify(st.genres)); fd.append('alternativeTitles', JSON.stringify(st.alts)); fd.append('socialLinks', JSON.stringify(links));
+    if (st.meta) { fd.append('language', $('nw-lang').value); fd.append('lead', $('nw-lead').value); fd.append('contentRating', $('nw-rating').value); fd.append('origin', $('nw-origin').value); fd.append('tags', JSON.stringify(st.tags)); }
+    if (st.cover) fd.append('coverImage', st.cover, st.cover.name);
+    var btn = $('nw-submit'); btn.disabled = true; $('nw-submit-l').textContent = 'Creando…';
+    fetch('/api/manga', { method: 'POST', body: fd }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo crear la obra (error ' + r.status + ').'); return d; }); })
+      .then(function (d) {
+        try { localStorage.removeItem(DRAFT); } catch (e) {}
+        KAMI.toast('«' + d.manga.title + '» creada', 'ok');
+        var id = encodeURIComponent(d.manga.id);
+        setTimeout(function () { location.href = st.format === 'novel' ? '/obra/' + id + '/escribir' : '/obra/' + id + '/nuevo-capitulo'; }, 600);
+      })
+      .catch(function (e) { $('nw-err').textContent = e.message; btn.disabled = false; setFormat(st.format); });
+  }
+  $('nw-submit').addEventListener('click', function () { submit(false); });
+  $('nw-dup-back').addEventListener('click', function () { $('nw-dup-modal').close(); $('nw-name').focus(); });
+  $('nw-dup-go').addEventListener('click', function () { $('nw-dup-modal').close(); submit(true); });
+
+  /* ── Arranque ──────────────────────────────────────────────── */
+  if (!token()) {
+    $('nw-gate').innerHTML = '<div class="k-card"><div class="k-empty"><i class="ti ti-lock" aria-hidden="true"></i><h3>Inicia sesión para crear una obra</h3><p>Las obras se crean desde tu cuenta de autor.</p><a class="k-btn k-btn--primary" href="/acceder?return=' + encodeURIComponent(location.pathname + location.search) + '">Acceder</a></div></div>';
+    $('nw-gate').hidden = false; return;
+  }
+  $('nw-app').hidden = false;
+  var restored = restore();
+  var q = new URLSearchParams(location.search).get('tipo');
+  if (q === 'novel' || q === 'comic') st.format = q;
+  if (!$('nw-author').value) { var u = user(); if (u && u.username) $('nw-author').value = u.username; }
+  $('nw-restored').hidden = !restored;
+  tags.paint(); alts.paint(); paintGenres(); renderSugg();
+  $('nw-sugg').addEventListener('click', renderSugg);
+  setFormat(st.format);
+  api('/api/manga/next-id').then(function (d) { $('pv-id').textContent = d.nextId; }).catch(function () { $('pv-id').textContent = 'automático'; });
+  api('/api/studio/features').then(function (f) { st.meta = !!f.workMeta; document.querySelectorAll('[data-meta]').forEach(function (el) { el.hidden = !st.meta; }); sync(); })
+    .catch(function () { document.querySelectorAll('[data-meta]').forEach(function (el) { el.hidden = true; }); });
+  document.querySelectorAll('[data-meta]').forEach(function (el) { el.hidden = true; });
+  if ($('nw-name').value) checkDupes();
+})();
 </script>
 </body>
 </html>

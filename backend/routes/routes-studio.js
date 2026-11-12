@@ -127,6 +127,7 @@ router.get('/features', async (req, res) => {
     chapterStatus: await hasColumn('chapters', 'status'),   // borrador, programado y adelanto
     novels: await hasColumn('chapters', 'content'),          // editor y lector de novelas
     ownership: await hasColumn('mangas', 'created_by'),
+    workMeta: await hasColumn('mangas', 'content_rating'), // idioma, protagonista, clasificación, origen, etiquetas
   });
 });
 

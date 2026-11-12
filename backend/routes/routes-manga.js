@@ -12,6 +12,36 @@ const fs = require('fs');
 const { upload, MANGA_ASSETS_DIR } = require('../upload-config');
 const { verifyToken } = require('../config');
 const { requireAuth, requireMangaEditor, requireNotBanned, hasOwnershipColumn } = require('../middleware/auth');
+const { hasColumn } = require('../schema');
+
+// Enlaces externos del autor: solo claves conocidas y URLs http(s)
+const LINK_KEYS = ['patreon', 'kofi', 'web', 'x', 'instagram', 'tiktok', 'youtube', 'tienda', 'discord'];
+function cleanLinks(raw) {
+    let o = {}; try { o = typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw || {}); } catch { return {}; }
+    const out = {};
+    LINK_KEYS.forEach(k => { const v = String(o[k] || '').trim(); if (/^https?:\/\/\S+$/i.test(v) && v.length <= 300) out[k] = v; });
+    return out;
+}
+// Ficha ampliada (migrate-obra-meta.sql)
+function cleanMeta(body) {
+    const pick = (v, list, def) => list.includes(v) ? v : def;
+    let tags = []; try { tags = JSON.parse(body.tags || '[]'); } catch { tags = []; }
+    tags = [...new Set((Array.isArray(tags) ? tags : []).map(t => String(t).trim().slice(0, 30)).filter(Boolean))].slice(0, 10);
+    return {
+        language: pick(String(body.language || 'es'), ['es', 'en', 'pt', 'ca', 'eu', 'gl', 'fr', 'it', 'ja', 'ko', 'zh'], 'es'),
+        lead: pick(String(body.lead || ''), ['masculino', 'femenino', 'grupo', ''], ''),
+        contentRating: pick(String(body.contentRating || 'todos'), ['todos', 'adolescente', 'adulto'], 'todos'),
+        origin: pick(String(body.origin || 'original'), ['original', 'fanfic', 'traduccion'], 'original'),
+        tags,
+    };
+}
+async function saveMeta(id, body) {
+    if (!(await hasColumn('mangas', 'content_rating'))) return false;
+    const m = cleanMeta(body);
+    await pool.query('UPDATE mangas SET language = $2, lead = $3, content_rating = $4, origin = $5, tags = $6 WHERE id = $1',
+        [id, m.language, m.lead, m.contentRating, m.origin, m.tags]);
+    return true;
+}
 
 function formatId(num) {
     return `KMI-${String(num).padStart(7, '0')}`;
@@ -310,18 +340,20 @@ router.post('/', requireAuth, requireNotBanned, upload.single('coverImage'), asy
 
         const withOwner = await hasOwnershipColumn();
         const result = await pool.query(`
-            INSERT INTO mangas (id, title, alternative_titles, cover, description, type, status, genres, demographic_target, author, artist, total_chapters, is_oneshot${withOwner ? ', created_by' : ''})
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13${withOwner ? ',$14' : ''})
+            INSERT INTO mangas (id, title, alternative_titles, cover, description, type, status, genres, demographic_target, author, artist, total_chapters, is_oneshot, social_links${withOwner ? ', created_by' : ''})
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14${withOwner ? ',$15' : ''})
             RETURNING id, title, type, status, cover, created_at
         `, [
             formattedId, title.trim(), altArr, coverPath, description || '',
             type, status, genresArr, demographicTarget || '',
             author || '', artist || author || '',
             isOneshot === 'true' ? 1 : (parseInt(totalChapters) || 0), isOneshot === 'true',
+            JSON.stringify(cleanLinks(req.body.socialLinks)),
             ...(withOwner ? [req.user.userId] : []),
         ]);
 
         const newManga = result.rows[0];
+        await saveMeta(newManga.id, req.body).catch(e => console.warn('[manga] ficha ampliada:', e.message));
 
         // Auto-crear comunidad para el nuevo manga
         try {

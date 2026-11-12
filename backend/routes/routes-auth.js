@@ -637,14 +637,21 @@ router.put('/profile/edit', async (req, res) => {
             return res.status(401).json({ error: 'Token inválido' });
         }
 
-        const { bio, avatar, banner, favoriteGenres, emoji } = req.body;
+        const { bio, avatar, banner, favoriteGenres, emoji, country } = req.body;
 
-        if (bio !== undefined && bio.length > 300) {
+        // Imagen: data URL de imagen (png/jpeg/webp/gif), URL https o iniciales de hasta 3 letras; '' para quitarla
+        const okImage = (v, max) => v === '' || (typeof v === 'string' && v.length <= max && (
+            /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(v) || /^https:\/\/[^\s"'<>]+$/.test(v) || /^\/[\w\-./]+$/.test(v) || /^[\p{L}\p{N}]{1,3}$/u.test(v)));
+        if (bio !== undefined && (typeof bio !== 'string' || bio.length > 300)) {
             return res.status(400).json({ error: 'La bio no puede superar 300 caracteres' });
         }
-        if (favoriteGenres !== undefined && (!Array.isArray(favoriteGenres) || favoriteGenres.length > 3)) {
+        if (favoriteGenres !== undefined && (!Array.isArray(favoriteGenres) || favoriteGenres.length > 3 || favoriteGenres.some(g => typeof g !== 'string' || !g.trim() || g.length > 40))) {
             return res.status(400).json({ error: 'Máximo 3 géneros favoritos' });
         }
+        if (avatar !== undefined && !okImage(avatar, 400000)) return res.status(400).json({ error: 'La foto de perfil no es válida o pesa demasiado.' });
+        if (banner !== undefined && !okImage(banner, 700000)) return res.status(400).json({ error: 'La portada no es válida o pesa demasiado.' });
+        if (emoji !== undefined && (typeof emoji !== 'string' || emoji.length > 16 || /[<>"'&]/.test(emoji))) return res.status(400).json({ error: 'Emoji no válido.' });
+        if (country !== undefined && (typeof country !== 'string' || country.length > 60 || /[<>]/.test(country))) return res.status(400).json({ error: 'El país no puede superar 60 caracteres.' });
 
         const result = await pool.query(
             `UPDATE users
@@ -653,6 +660,7 @@ router.put('/profile/edit', async (req, res) => {
                  banner         = COALESCE($3, banner),
                  favorite_genres = COALESCE($4, favorite_genres),
                  emoji          = COALESCE($5, emoji),
+                 country        = COALESCE($7, country),
                  updated_at     = CURRENT_TIMESTAMP
              WHERE id = $6
              RETURNING *`,
@@ -663,6 +671,7 @@ router.put('/profile/edit', async (req, res) => {
                 favoriteGenres  !== undefined ? favoriteGenres   : null,
                 emoji           !== undefined ? emoji            : null,
                 decoded.userId,
+                country         !== undefined ? country.trim()   : null,
             ]
         );
 

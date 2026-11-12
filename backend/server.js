@@ -225,7 +225,7 @@ app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'production') res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
   next();
 });
-app.use(express.json());
+app.use(express.json({ limit: '1mb' })); // las fotos de perfil van como data URL comprimida
 app.use(express.urlencoded({ extended: true }));
 
 // ─── IP Ban middleware ───────────────────────────────────────────────────────

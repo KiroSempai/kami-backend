@@ -1,421 +1,348 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar perfil · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=4">
-    <link rel="stylesheet" href="/css/perfil.css">
-    <style>
-        .editor-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 25%, transparent); border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--accent); }
-        .editor-save-bar { position:sticky; bottom:0; left:0; right:0; background:color-mix(in srgb, var(--k-surface-1) 95%, transparent); backdrop-filter:blur(12px); border-top:1px solid var(--border); padding:12px 32px; display:flex; justify-content:flex-end; gap:10px; z-index:100; }
-        .editor-save-bar .btn-cancel { padding:10px 22px; border-radius:8px; border:1px solid var(--border); background:rgb(var(--k-ink) / 0.05); color:var(--text-muted); cursor:pointer; font-size:13px; font-weight:600; font-family:var(--font-body); transition:all .2s; }
-        .editor-save-bar .btn-cancel:hover { color:var(--text-primary); background:rgb(var(--k-ink) / 0.1); }
-        .editor-save-bar .btn-save { padding:10px 28px; border-radius:8px; border:none; background:linear-gradient(135deg,var(--accent),var(--k-accent-strong)); color: var(--k-text); cursor:pointer; font-size:13px; font-weight:700; font-family:var(--font-body); transition:all .2s; }
-        .editor-save-bar .btn-save:hover { opacity:.9; transform:translateY(-1px); }
-        .editor-save-bar .btn-save:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-        .editor-save-bar .btn-save .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgb(var(--k-ink) / 0.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; margin-right:6px; vertical-align:middle; }
-        @keyframes spin { to{transform:rotate(360deg)} }
-
-        .editable-textarea { width:100%; background:rgb(var(--k-ink) / 0.04); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; resize:vertical; outline:none; line-height:1.6; min-height:80px; transition:border-color .2s; box-sizing:border-box; }
-        .editable-textarea:focus { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 5%, transparent); }
-
-        .tag-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px dashed var(--border); background:rgb(var(--k-ink) / 0.04); color:var(--text-muted); cursor:pointer; transition:all .18s; font-family:var(--font-body); }
-        .tag-btn:hover { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb, var(--k-accent) 6%, transparent); }
-        .tag-chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:16px; font-size:11px; font-weight:600; background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 25%, transparent); color:var(--accent); }
-        .tag-chip .tag-rm { cursor:pointer; font-size:13px; line-height:1; opacity:.6; }
-        .tag-chip .tag-rm:hover { opacity:1; }
-
-        .edit-tag { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); color:var(--text-muted); }
-        .edit-tag.readonly { border-style:dashed; opacity:.7; }
-
-        .editable-avatar-wrap { flex-shrink:0; position:relative; cursor:pointer; margin-top:4px; }
-        .editable-avatar-wrap .profile-avatar { width:80px; height:80px; font-size:28px; }
-        .editable-avatar-wrap:hover .upload-overlay { opacity:1; }
-
-        .overlay-modal { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:3000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
-        .overlay-modal.open { display:flex; }
-        .modal-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); width:min(520px,94vw); max-height:82vh; display:flex; flex-direction:column; }
-        .modal-box-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 0; }
-        .modal-box-title { font-family:var(--font-display); font-size:20px; letter-spacing:1px; }
-        .modal-box-close { background:none; border:none; color:var(--text-muted); font-size:22px; cursor:pointer; padding:4px; line-height:1; }
-        .modal-box-close:hover { color:var(--text-primary); }
-        .modal-box-body { padding:16px 24px 20px; overflow-y:auto; flex:1; }
-        .modal-box-footer { display:flex; justify-content:flex-end; gap:8px; padding:0 24px 20px; }
-        .modal-btn { padding:9px 20px; border-radius:8px; border:none; font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
-        .modal-btn.primary { background:var(--accent); color: var(--k-text); }
-        .modal-btn.primary:hover { opacity:.9; }
-        .modal-btn.secondary { background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); color:var(--text-muted); }
-        .modal-btn.secondary:hover { color:var(--text-primary); background:rgb(var(--k-ink) / 0.1); }
-
-        .genre-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; }
-        .genre-picker-item { padding:7px 12px; border-radius:8px; font-size:12px; font-weight:500; border:1px solid var(--border); background:rgb(var(--k-ink) / 0.03); color:var(--text-secondary); cursor:pointer; transition:all .15s; text-align:center; user-select:none; }
-        .genre-picker-item:hover { border-color:rgb(var(--k-ink) / 0.2); color:var(--text-primary); }
-        .genre-picker-item.selected { background:color-mix(in srgb, var(--k-accent) 15%, transparent); border-color:var(--accent); color:var(--accent); font-weight:600; }
-
-        .emoji-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:12px; overflow-x:auto; }
-        .emoji-tab { padding:8px 14px; font-size:18px; cursor:pointer; border:none; background:none; opacity:.4; transition:all .15s; border-bottom:2px solid transparent; flex-shrink:0; }
-        .emoji-tab:hover { opacity:.7; }
-        .emoji-tab.active { opacity:1; border-bottom-color:var(--accent); }
-        .emoji-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(40px,1fr)); gap:4px; }
-        .emoji-item { font-size:26px; text-align:center; padding:4px; cursor:pointer; border-radius:6px; transition:background .12s; }
-        .emoji-item:hover { background:rgb(var(--k-ink) / 0.08); transform:scale(1.15); }
-
-        .upload-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; cursor:pointer; border-radius:inherit; }
-        .upload-overlay:hover { opacity:1; }
-        .upload-overlay span { color: var(--k-text); font-size:22px; }
-
-        .locked-tab-content { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 24px; text-align:center; gap:12px; }
-        .locked-icon { font-size:64px; opacity:0.3; }
-        .locked-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; color:var(--text-muted); }
-        .locked-desc { font-size:14px; color:var(--text-muted); max-width:360px; line-height:1.6; }
-        .locked-btn { display:inline-flex; padding:10px 24px; background:var(--accent); color: var(--k-text); border-radius:8px; text-decoration:none; font-weight:600; font-size:13px; margin-top:8px; }
-
-        .status-msg { display:none; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:12px; }
-        .status-msg.show { display:block; }
-        .status-msg.success { background:color-mix(in srgb, var(--k-ok) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color:var(--green); }
-        .status-msg.error { background:color-mix(in srgb, var(--k-accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); }
-
-        .profile-banner { position:relative; overflow:hidden; }
-        .profile-banner::after { display:none; }
-        #editor-content .profile-hero { margin-top:0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Editar perfil · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    [hidden] { display: none !important; }
+    .ed { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--k-8); align-items: start; padding-bottom: 120px; }
+    .ed-form { display: grid; gap: var(--k-5); }
+    .ed-sec { display: grid; gap: var(--k-4); }
+    .ed-sec > header { display: grid; gap: 4px; }
+    .ed-sec > header h2 { margin: 0; font: 800 var(--k-fs-xl)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .02em; }
+    .ed-sec > header p { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-sm); }
+
+    /* Imágenes */
+    .ed-banner { position: relative; aspect-ratio: 3 / 1; border-radius: var(--k-r-md); overflow: hidden; border: 1px dashed var(--k-line-2); background:
+      radial-gradient(70% 120% at 15% 0%, color-mix(in srgb, var(--k-accent) 40%, transparent), transparent 60%),
+      radial-gradient(60% 120% at 90% 30%, color-mix(in srgb, var(--k-gold) 20%, transparent), transparent 60%), var(--k-surface-2); }
+    .ed-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ed-drop.is-over { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+    .ed-img-row { display: grid; grid-template-columns: auto 1fr; gap: var(--k-5); align-items: center; }
+    .ed-ava { width: 112px; height: 112px; border-radius: 50%; padding: 3px; background: conic-gradient(from 210deg, var(--k-accent), var(--k-gold), var(--k-accent)); position: relative; }
+    .ed-ava > span { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--k-surface-2); border: 3px solid var(--k-surface-1); font: 800 38px/1 var(--k-font-display); }
+    .ed-ava img { width: 100%; height: 100%; object-fit: cover; }
+    .ed-btns { display: flex; flex-wrap: wrap; gap: var(--k-2); }
+    .ed-hint { font-size: var(--k-fs-xs); color: var(--k-text-3); margin: 0; }
+
+    /* Géneros y emoji */
+    .ed-count { font-size: var(--k-fs-xs); color: var(--k-text-3); font-variant-numeric: tabular-nums; }
+    .ed-count.is-full { color: var(--k-accent); }
+    .ed-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; }
+    .ed-emoji { height: 44px; border-radius: 12px; border: 1px solid var(--k-line); background: rgb(var(--k-ink) / .03); font-size: 22px; cursor: pointer; transition: transform .12s, border-color .12s, background .12s; }
+    .ed-emoji:hover { transform: scale(1.08); border-color: var(--k-line-2); }
+    .ed-emoji[aria-pressed="true"] { border-color: var(--k-accent); background: var(--k-accent-soft); box-shadow: var(--k-glow); }
+    .ed-emoji--none { font: 600 var(--k-fs-xs)/1 var(--k-font-body); color: var(--k-text-3); }
+    .ed-tabs { margin-bottom: var(--k-3); }
+
+    /* Vista previa */
+    .ed-side { position: sticky; top: calc(var(--k-nav-h) + var(--k-5)); display: grid; gap: var(--k-3); }
+    .ed-side > h3 { margin: 0; font: 700 var(--k-fs-xs)/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); }
+    .pv { border-radius: var(--k-r-lg); overflow: hidden; border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pv-banner { position: relative; aspect-ratio: 3 / 1; background:
+      radial-gradient(70% 120% at 15% 0%, color-mix(in srgb, var(--k-accent) 45%, transparent), transparent 60%),
+      radial-gradient(60% 120% at 90% 30%, color-mix(in srgb, var(--k-gold) 22%, transparent), transparent 60%), var(--k-surface-2); }
+    .pv-banner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pv-banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, var(--k-surface-1)); }
+    .pv-body { padding: 0 var(--k-5) var(--k-5); display: grid; gap: var(--k-3); margin-top: -44px; position: relative; }
+    .pv-ava { width: 84px; height: 84px; border-radius: 50%; padding: 3px; background: conic-gradient(from 210deg, var(--k-accent), var(--k-gold), var(--k-accent)); position: relative; box-shadow: 0 0 30px -6px var(--k-accent); }
+    .pv-ava > span { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--k-surface-2); border: 3px solid var(--k-surface-1); font: 800 28px/1 var(--k-font-display); }
+    .pv-ava img { width: 100%; height: 100%; object-fit: cover; }
+    .pv-emoji { position: absolute; right: -2px; bottom: 2px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-style: normal; background: var(--k-surface-1); border: 2px solid var(--k-surface-1); }
+    .pv-name { margin: 0; font: 900 2rem/1 var(--k-font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+    .pv-bio { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+    .pv-bio:empty::before { content: "Tu bio aparecerá aquí."; color: var(--k-text-3); }
+    .pv-meta { display: flex; flex-wrap: wrap; gap: var(--k-2) var(--k-3); color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .pv-meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+    /* Barra de guardar */
+    .ed-bar { position: fixed; left: 50%; bottom: calc(var(--k-5) + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 140%); z-index: 400; width: min(640px, calc(100vw - 32px)); display: flex; align-items: center; gap: var(--k-3); padding: var(--k-3) var(--k-3) var(--k-3) var(--k-5); border-radius: var(--k-r-pill); background: color-mix(in srgb, var(--k-surface-2) 92%, transparent); backdrop-filter: blur(14px); border: 1px solid var(--k-line-2); box-shadow: var(--k-shadow-2); transition: transform .25s var(--k-ease); }
+    .ed-bar.is-on { transform: translate(-50%, 0); }
+    .ed-bar span { flex: 1; font-size: var(--k-fs-sm); color: var(--k-text-2); min-width: 0; }
+
+    @media (max-width: 1023px) {
+      .ed { grid-template-columns: minmax(0, 1fr); }
+      .ed-side { position: static; order: -1; }
+      .pv { max-width: 520px; }
+    }
+    @media (max-width: 767px) {
+      .ed-bar { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); border-radius: var(--k-r-lg); padding-left: var(--k-4); }
+      .ed-bar span { font-size: var(--k-fs-xs); }
+      .ed-img-row { grid-template-columns: 1fr; justify-items: start; }
+    }
+  </style>
 </head>
-<body>
-    <div id="loading" style="text-align:center;padding:120px 24px;color:var(--text-muted);font-size:15px;">
-        <div style="font-size:48px;margin-bottom:16px;opacity:.4;">✏️</div>
-        Cargando editor…
+<body data-shell-back="/perfil">
+<main class="k-page" id="k-main">
+  <div class="k-page-head">
+    <div>
+      <span class="k-eyebrow">Tu perfil</span>
+      <h1 class="k-h1" style="margin:0">Editar perfil</h1>
     </div>
-
-    <div id="error-page" style="display:none;text-align:center;padding:80px 24px;">
-        <div style="font-size:64px;margin-bottom:16px;">🔒</div>
-        <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:1px;margin-bottom:8px;">Acceso denegado</h2>
-        <p style="color:var(--text-muted);margin-bottom:20px;" id="error-msg">No puedes editar este perfil.</p>
-        <a href="/" class="locked-btn">← Volver al inicio</a>
+    <div class="k-row" style="gap:var(--k-2)">
+      <a class="k-btn k-btn--quiet" href="/ajustes"><i class="ti ti-settings" aria-hidden="true"></i>Cuenta y contraseña</a>
+      <a class="k-btn k-btn--secondary" id="ed-view" href="/perfil"><i class="ti ti-eye" aria-hidden="true"></i>Ver perfil</a>
     </div>
+  </div>
 
-    <div id="editor-content" style="display:none;">
+  <div id="ed-loading" class="k-stack" aria-busy="true"><div class="k-skeleton" style="height:220px"></div><div class="k-skeleton" style="height:160px"></div></div>
+  <div id="ed-error" class="k-empty" hidden><i class="ti ti-lock" aria-hidden="true"></i><h3 id="ed-error-t">Inicia sesión</h3><p id="ed-error-p">Necesitas iniciar sesión para editar tu perfil.</p><a class="k-btn k-btn--primary" href="/acceder?next=/perfil">Iniciar sesión</a></div>
 
-        <div class="profile-hero">
-
-            <div class="profile-banner" id="edit-banner" style="cursor:pointer;position:relative;background:var(--k-bg);">
-                <div class="profile-banner-manga" id="edit-banner-manga"></div>
-                <div class="upload-overlay" onclick="document.getElementById('banner-file-input').click()">
-                    <span>🖼 Cambiar banner</span>
-                </div>
-                <input id="banner-file-input" type="file" accept="image/*" hidden onchange="handleBannerImage(this)">
-            </div>
-
-            <div class="profile-info-bar" id="edit-info-bar">
-                <div class="profile-info-inner" style="align-items:flex-start;">
-                    <div class="editable-avatar-wrap" onclick="document.getElementById('avatar-file-input').click()">
-                        <div class="profile-avatar" id="edit-avatar">?</div>
-                        <div class="upload-overlay" style="border-radius:50%;">
-                            <span style="font-size:18px;">📷</span>
-                        </div>
-                        <input id="avatar-file-input" type="file" accept="image/*" hidden onchange="handleAvatarImage(this)">
-                    </div>
-
-                    <div class="profile-meta" style="flex:1;min-width:0;">
-                        <div class="profile-username-row">
-                            <span class="profile-username" id="edit-username"></span>
-                            <span class="editor-badge">✎ Modo edición</span>
-                        </div>
-
-                        <div style="margin-bottom:10px;">
-                            <textarea class="editable-textarea" id="edit-bio" maxlength="300" rows="3" placeholder="Escribe una descripción…"></textarea>
-                            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:right;" id="bio-counter">0/300</div>
-                        </div>
-
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-                            <span class="edit-tag readonly" id="edit-country-tag">🌍 Cargando…</span>
-                            <span class="edit-tag readonly" id="edit-joined-tag">📅 Cargando…</span>
-                            <div id="selected-tags-display" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-                            <button class="tag-btn" onclick="openGenrePicker()">🏷️ Tags+</button>
-                            <button class="tag-btn" onclick="openEmojiPicker()">✨ Emoji <span id="selected-emoji-preview" style="font-size:16px;"></span></button>
-                        </div>
-                        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Tags+: selecciona hasta 2 géneros · Emoji: elige uno</div>
-                    </div>
-                </div>
-            </div>
+  <div class="ed" id="ed" hidden>
+    <form class="ed-form" id="ed-form" novalidate>
+      <!-- Imágenes -->
+      <section class="k-card ed-sec" aria-labelledby="s-img">
+        <header><h2 id="s-img">Imagen</h2><p>Arrastra una imagen o elige un archivo. La recortamos y comprimimos por ti.</p></header>
+        <div class="k-field">
+          <span class="k-label" id="l-banner">Portada</span>
+          <div class="ed-banner ed-drop" id="ed-banner" data-kind="banner" aria-labelledby="l-banner"></div>
+          <div class="ed-btns">
+            <label class="k-btn k-btn--secondary k-btn--sm"><i class="ti ti-photo-up" aria-hidden="true"></i>Cambiar portada<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" id="f-banner" class="k-visually-hidden"></label>
+            <button class="k-btn k-btn--quiet k-btn--sm" type="button" id="rm-banner"><i class="ti ti-trash" aria-hidden="true"></i>Quitar</button>
+          </div>
+          <p class="ed-hint">Se recorta a 3:1 (1500 × 500 px). Mejor una imagen horizontal sin texto importante en los bordes.</p>
         </div>
-
-        <div style="max-width:1100px;margin:0 auto;padding:0 32px;">
-            <div class="status-msg" id="status-msg"></div>
+        <div class="ed-img-row">
+          <div class="ed-ava ed-drop" data-kind="avatar"><span id="ed-ava"></span></div>
+          <div class="k-field">
+            <span class="k-label">Foto de perfil</span>
+            <div class="ed-btns">
+              <label class="k-btn k-btn--secondary k-btn--sm"><i class="ti ti-camera" aria-hidden="true"></i>Cambiar foto<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" id="f-avatar" class="k-visually-hidden"></label>
+              <button class="k-btn k-btn--quiet k-btn--sm" type="button" id="rm-avatar"><i class="ti ti-letter-case" aria-hidden="true"></i>Usar iniciales</button>
+            </div>
+            <p class="ed-hint">Se recorta en cuadrado desde el centro.</p>
+          </div>
         </div>
+        <span class="k-error" id="err-img" role="alert"></span>
+      </section>
 
-        <div class="profile-tabs" id="profile-tabs">
-            <button class="tab-btn active">📚 Biblioteca</button>
-            <button class="tab-btn">📊 Estadísticas</button>
-            <button class="tab-btn">🕐 Historial</button>
-            <button class="tab-btn">👥 Actividad</button>
-            <button class="tab-btn">🎵 Listas</button>
-            <button class="tab-btn">🏆 Logros</button>
+      <!-- Sobre ti -->
+      <section class="k-card ed-sec" aria-labelledby="s-about">
+        <header><h2 id="s-about">Sobre ti</h2><p>Lo primero que ven quienes visitan tu perfil.</p></header>
+        <div class="k-field">
+          <div class="k-row k-row--between"><label class="k-label" for="f-bio">Bio</label><span class="ed-count" id="c-bio" aria-live="polite">0/300</span></div>
+          <textarea class="k-input" id="f-bio" rows="4" maxlength="300" placeholder="Qué lees, qué escribes, cada cuánto publicas…"></textarea>
         </div>
-
-        <div class="tab-content active" id="content-biblioteca">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">BIBLIOTECA BLOQUEADA</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn">← Ver perfil público</a>
-            </div>
+        <div class="k-field">
+          <label class="k-label" for="f-country">País o ciudad</label>
+          <input class="k-input" id="f-country" type="text" maxlength="60" autocomplete="country-name" placeholder="Por ejemplo: España" list="countries">
+          <datalist id="countries"><option>España</option><option>México</option><option>Argentina</option><option>Colombia</option><option>Chile</option><option>Perú</option><option>Venezuela</option><option>Ecuador</option><option>Uruguay</option><option>Estados Unidos</option></datalist>
         </div>
-        <div class="tab-content" id="content-estadisticas">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">ESTADÍSTICAS BLOQUEADAS</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn2">← Ver perfil público</a>
-            </div>
+      </section>
+
+      <!-- Géneros -->
+      <section class="k-card ed-sec" aria-labelledby="s-genres">
+        <header><div class="k-row k-row--between"><h2 id="s-genres">Géneros favoritos</h2><span class="ed-count" id="c-genres">0/3</span></div><p>Elige hasta 3. Ayudan a que otros lectores te encuentren.</p></header>
+        <div class="k-chips" id="genres" role="group" aria-labelledby="s-genres"></div>
+      </section>
+
+      <!-- Emoji -->
+      <section class="k-card ed-sec" aria-labelledby="s-emoji">
+        <header><h2 id="s-emoji">Emoji de perfil</h2><p>Aparece junto a tu foto.</p></header>
+        <div class="k-tabs ed-tabs" role="tablist" aria-label="Categorías de emoji" id="emoji-tabs"></div>
+        <div class="ed-emoji-grid" id="emoji-grid" role="group" aria-label="Emojis"></div>
+      </section>
+    </form>
+
+    <aside class="ed-side" aria-label="Vista previa">
+      <h3>Vista previa</h3>
+      <div class="pv">
+        <div class="pv-banner" id="pv-banner"></div>
+        <div class="pv-body">
+          <div class="pv-ava"><span id="pv-ava"></span><i class="pv-emoji" id="pv-emoji" hidden></i></div>
+          <h2 class="pv-name" id="pv-name"></h2>
+          <p class="pv-bio" id="pv-bio"></p>
+          <div class="pv-meta" id="pv-meta"></div>
+          <div class="k-chips" id="pv-genres"></div>
         </div>
-        <div class="tab-content" id="content-historial">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">HISTORIAL BLOQUEADO</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn3">← Ver perfil público</a>
-            </div>
-        </div>
-        <div class="tab-content" id="content-actividad">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">ACTIVIDAD BLOQUEADA</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn4">← Ver perfil público</a>
-            </div>
-        </div>
-        <div class="tab-content" id="content-listas">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">LISTAS BLOQUEADAS</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn5">← Ver perfil público</a>
-            </div>
-        </div>
-        <div class="tab-content" id="content-logros">
-            <div class="locked-tab-content">
-                <div class="locked-icon">🔒</div>
-                <div class="locked-title">LOGROS BLOQUEADOS</div>
-                <div class="locked-desc">Disponible en tu perfil público.</div>
-                <a href="/perfil/" class="locked-btn" id="view-profile-btn6">← Ver perfil público</a>
-            </div>
-        </div>
+      </div>
+    </aside>
+  </div>
+</main>
 
-        <div class="editor-save-bar">
-            <button class="btn-cancel" id="btn-cancel">Cancelar</button>
-            <button class="btn-save" id="btn-save" onclick="saveProfile()">Guardar cambios</button>
-        </div>
-    </div>
+<div class="ed-bar" id="ed-bar" role="region" aria-label="Cambios sin guardar">
+  <span id="ed-bar-t">Tienes cambios sin guardar</span>
+  <button class="k-btn k-btn--quiet k-btn--sm" type="button" id="ed-discard">Descartar</button>
+  <button class="k-btn k-btn--primary" type="button" id="ed-save">Guardar</button>
+</div>
 
-    <div class="overlay-modal" id="genre-modal">
-        <div class="modal-box">
-            <div class="modal-box-header">
-                <div class="modal-box-title">SELECCIONAR GÉNEROS</div>
-                <button class="modal-box-close" onclick="closeGenrePicker()">&times;</button>
-            </div>
-            <div class="modal-box-body">
-                <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Elige hasta <strong>2 géneros</strong> favoritos</div>
-                <div class="genre-picker-grid" id="genre-picker-grid"></div>
-            </div>
-            <div class="modal-box-footer">
-                <button class="modal-btn secondary" onclick="closeGenrePicker()">Cancelar</button>
-                <button class="modal-btn primary" onclick="confirmGenres()">Aceptar cambios</button>
-            </div>
-        </div>
-    </div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var toast = function (m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); };
+  var CP437 = { '├í': 'á', '├®': 'é', '├¡': 'í', '├│': 'ó', '├║': 'ú', '├▒': 'ñ', '├╝': 'ü', '├ü': 'Á', '├ë': 'É', '├ì': 'Í', '├ô': 'Ó', '├Ü': 'Ú', '├æ': 'Ñ', '┬┐': '¿', '┬í': '¡' };
+  var fix = function (s) { return String(s || '').replace(/[├┬]./g, function (m) { return CP437[m] || m; }); };
+  var isImg = function (v) { return typeof v === 'string' && /^(data:image\/|https?:\/\/|\/)/.test(v); };
 
-    <div class="overlay-modal" id="emoji-modal">
-        <div class="modal-box">
-            <div class="modal-box-header">
-                <div class="modal-box-title">SELECCIONAR EMOJI</div>
-                <button class="modal-box-close" onclick="closeEmojiPicker()">&times;</button>
-            </div>
-            <div class="modal-box-body">
-                <div class="emoji-tabs" id="emoji-tabs"></div>
-                <div class="emoji-grid" id="emoji-grid"></div>
-            </div>
-            <div class="modal-box-footer">
-                <button class="modal-btn secondary" onclick="closeEmojiPicker()">Cancelar</button>
-            </div>
-        </div>
-    </div>
+  var GENRES = ['Acción', 'Aventura', 'Artes marciales', 'Comedia', 'Drama', 'Romance', 'Slice of Life', 'Fantasía', 'Dark Fantasy', 'Isekai', 'Ciencia ficción', 'Mecha', 'Sistema', 'Terror', 'Misterio', 'Thriller', 'Psicológico', 'Sobrenatural', 'Histórico', 'Escolar', 'Deportes', 'Música', 'Tragedia', 'Militar', 'Seinen', 'Shonen', 'Shoujo', 'Josei', 'BL', 'GL'];
+  var EMOJI = [
+    ['✨', 'Destacados', ['✨', '🔥', '⭐', '🌙', '🌸', '🦊', '🐉', '⚔️', '🗡️', '🛡️', '👑', '💎', '🎴', '⛩️', '🏯', '🍥', '🍵', '📚', '✍️', '🖋️', '🎨', '🎮', '🎧', '🎭']],
+    ['😀', 'Caras', ['😀', '😄', '😁', '😆', '😂', '🥲', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '😋', '😜', '🤪', '🤗', '🤭', '🤫', '🤔', '😐', '😏', '🙄', '😬', '😳', '🥺', '😢', '😭', '😤', '😡', '😈', '💀', '👻', '🤖', '👽', '😺']],
+    ['🐱', 'Animales', ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🐧', '🦉', '🦇', '🐺', '🦄', '🐝', '🦋', '🐢', '🐍', '🦖', '🐙', '🐬', '🐳', '🦈', '🐉', '🕊️', '🦢', '🐈‍⬛', '🦌']],
+    ['💜', 'Símbolos', ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💔', '💖', '💫', '☯️', '♾️', '⚡', '☄️', '🌈', '❄️', '🌊', '🍀', '🌹', '🌻', '🌌', '🔮', '🪐', '♠️', '♥️', '♦️', '♣️', '💯', '🏆']],
+  ];
 
-    <script>
-        const username = window.location.pathname.split('/').pop();
-        if (!username) window.location.href = '/';
+  var token = (function () { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } })();
+  var urlUser = decodeURIComponent((location.pathname.split('/')[2] || ''));
+  var orig = null, cur = null, saving = false, needsFix = false;
 
-        let userData = null;
-        let avatarImage = null;
-        let bannerImage = null;
-        let selectedFavGenres = [];
-        let tempSelectedGenres = [];
-        let selectedEmoji = '';
+  function fail(t, p, showLogin) { $('ed-loading').hidden = true; $('ed-error').hidden = false; $('ed-error-t').textContent = t; $('ed-error-p').textContent = p; $('ed-error').querySelector('a').hidden = !showLogin; }
+  if (!token) { fail('Inicia sesión', 'Necesitas iniciar sesión para editar tu perfil.', true); return; }
 
-        const GENRE_OPTIONS = [
-            'Acción','Aventura','Artes marciales','Militar',
-            'Drama','Romance','Slice of Life','Tragedia',
-            'Fantasía','Isekai','Ciencia Ficción','Mecha','Sistema','Dark Fantasy',
-            'Comedia','Escolar','Recuentos de la vida','Deportes',
-            'Horror','Misterio','Thriller','Psicológico','Sobrenatural',
-            'Histórico','Historia','Música',
-            'Seinen','Shonen','Shoujo','Josei','Ecchi','Harem'
-        ];
+  fetch('/api/auth/profile/editor').then(function (r) {
+    if (r.status === 401) { fail('Tu sesión ha caducado', 'Vuelve a iniciar sesión para editar tu perfil.', true); throw null; }
+    return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'Error ' + r.status); return d; });
+  }).then(function (d) {
+    var u = d.user;
+    if (urlUser && urlUser.toLowerCase() !== u.username.toLowerCase()) { location.replace('/perfil-editar/' + encodeURIComponent(u.username)); return; }
+    orig = { username: u.username, createdAt: u.createdAt, avatar: u.avatar || '', banner: u.banner || '', bio: fix(u.bio), country: fix(u.country), genres: (u.favoriteGenres || []).map(fix).slice(0, 3), emoji: u.emoji || '' };
+    // Si el país o los géneros estaban mal codificados en la base de datos, se corrigen al guardar
+    needsFix = fix(u.country) !== (u.country || '') || (u.favoriteGenres || []).some(function (g) { return fix(g) !== g; });
+    cur = JSON.parse(JSON.stringify(orig));
+    document.title = 'Editar perfil · ' + u.username;
+    $('ed-view').href = '/perfil/' + encodeURIComponent(u.username);
+    $('f-bio').value = cur.bio; $('f-country').value = cur.country;
+    buildGenres(); buildEmoji(0); render();
+    $('ed-loading').hidden = true; $('ed').hidden = false;
+  }).catch(function (e) { if (e) fail('No se pudo cargar el editor', e.message || 'Inténtalo de nuevo en un momento.', false); });
 
-        const EMOJI_CATEGORIES = {
-            '😀 Caras': ['😀','😃','😄','😁','😆','😂','🤣','🥲','☺️','😊','😇','🙂','😉','😌','😍','🥰','😘','😗','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫡','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','😮','😯','😲','😳','🥺','😢','😭','😤','😡','🤬','😈','👿','💀','☠️'],
-            '🐻 Animales': ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🪲','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊'],
-            '🍕 Comida': ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌽','🥕','🧄','🧅','🥔','🍠','🥐','🍞','🥖','🥨','🧀','🥚','🍳','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔','🍟','🍕','🫓','🥪','🥙','🧆','🌮','🌯','🥗','🥘','🫕','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🦪','🍤','🍙','🍚','🍘','🍥','🥠','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯'],
-            '⚽ Deportes': ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','🤺','⛵','🚣','🏊','🤽'],
-            '🌍 Viajes': ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🛺','🚲','🛴','🛹','🚏','🛣️','🛤️','⛽','🛳️','⛴️','🛥️','🚢','✈️','🛩️','🛫','🛬','🪂','💺','🚀','🛸','🚁','🛶','⛺','🏕️','🏖️','🏜️','🏝️','🏔️','🗻','🌋','🏠','🏡','🏢','🏣','🏤','🏥','🏦','🏨','🏩','🏪','🏫','🏬','🏭','🏯','🏰'],
-            '💡 Símbolos': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚕️','♿','🚹','🚺','🚻','🚼','🚾','🛂','🛃','🛄','🛅','⚠️','🚸','⛔','🚫','🚳','🚭','🚯','🚱','🚷','📵','🔞','☢️','☣️','💯','♻️','✅','❌','❓','❗','➕','➖','➗','♾️'],
-            '🎵 Otros': ['🎵','🎶','🎼','🎤','🎧','📻','🎷','🎸','🎺','🎻','🪕','🥁','🎲','♟️','🎭','🎨','🧩','🪅','🪆','🎪','🎬','🎤','🎯','🎳','🎮','🕹️','🎰','🎡','🎢','🎠','💎','🎁','🎈','🎉','🎊','🎃','🎄','🎃','🎆','🎇','✨','🎗️','🎟️','🎫','🏆','🏅','🥇','🥈','🥉','⚽','🏀','🏈','🎽','🏿','🏻','🏼','🏽','🏾']
-        };
-        const EMOJI_CAT_KEYS = Object.keys(EMOJI_CATEGORIES);
+  // ── Pintar ───────────────────────────────────────────────
+  function initials() { return cur.username.slice(0, 2).toUpperCase(); }
+  function avatarInner() { return isImg(cur.avatar) ? '<img src="' + esc(cur.avatar) + '" alt="">' : esc(cur.avatar && cur.avatar.length <= 3 ? cur.avatar : initials()); }
+  function render() {
+    var banner = isImg(cur.banner) ? '<img src="' + esc(cur.banner) + '" alt="">' : '';
+    $('ed-banner').innerHTML = banner; $('pv-banner').innerHTML = banner;
+    $('ed-ava').innerHTML = avatarInner(); $('pv-ava').innerHTML = avatarInner();
+    $('rm-banner').hidden = !cur.banner; $('rm-avatar').hidden = !isImg(cur.avatar);
+    $('pv-emoji').textContent = cur.emoji; $('pv-emoji').hidden = !cur.emoji;
+    $('pv-name').textContent = cur.username;
+    $('pv-bio').textContent = cur.bio;
+    $('pv-meta').innerHTML = (cur.country ? '<span><i class="ti ti-map-pin" aria-hidden="true"></i>' + esc(cur.country) + '</span>' : '') +
+      (cur.createdAt ? '<span><i class="ti ti-calendar" aria-hidden="true"></i>Desde ' + esc(new Date(cur.createdAt).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })) + '</span>' : '');
+    $('pv-genres').innerHTML = cur.genres.map(function (g) { return '<span class="k-chip" style="cursor:default">' + esc(g) + '</span>'; }).join('');
+    $('c-bio').textContent = cur.bio.length + '/300';
+    $('c-genres').textContent = cur.genres.length + '/3'; $('c-genres').classList.toggle('is-full', cur.genres.length === 3);
+    document.querySelectorAll('#genres .k-chip').forEach(function (b) {
+      var on = cur.genres.indexOf(b.dataset.g) >= 0;
+      b.setAttribute('aria-pressed', on); b.disabled = !on && cur.genres.length >= 3;
+    });
+    document.querySelectorAll('#emoji-grid .ed-emoji').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.e === cur.emoji); });
+    $('ed-bar').classList.toggle('is-on', dirty());
+  }
+  function dirty() { return !!orig && JSON.stringify(payload()) !== '{}'; }
+  function payload() {
+    var p = {};
+    if (cur.bio !== orig.bio) p.bio = cur.bio;
+    if (cur.country !== orig.country) p.country = cur.country;
+    if (cur.avatar !== orig.avatar) p.avatar = cur.avatar;
+    if (cur.banner !== orig.banner) p.banner = cur.banner;
+    if (cur.emoji !== orig.emoji) p.emoji = cur.emoji;
+    if (cur.genres.join('|') !== orig.genres.join('|')) p.favoriteGenres = cur.genres;
+    return p;
+  }
 
-        async function loadEditor() {
-            const token = localStorage.getItem('kami_token');
-            if (!token) { showError('Debes iniciar sesión. <a href="/acceder" style="color:var(--accent);text-decoration:underline;">Iniciar sesión</a>'); return; }
-            try {
-                const res = await fetch('/api/auth/profile/editor', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.status === 401) { localStorage.removeItem('kami_token'); showError('Sesión expirada. <a href="/acceder" style="color:var(--accent);text-decoration:underline;">iniciar sesión</a>.'); return; }
-                if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.error||'Error (HTTP '+res.status+')'); }
-                const data = await res.json(), u = data.user;
-                if (u.username.toLowerCase() !== username.toLowerCase()) { window.location.href='/perfil-editar/'+encodeURIComponent(u.username); return; }
-                userData = u;
-                renderEditor(u);
-            } catch(e) { showError('Error al cargar el editor: '+e.message); }
-        }
+  // ── Campos ───────────────────────────────────────────────
+  $('f-bio').addEventListener('input', function () { cur.bio = this.value.slice(0, 300); render(); });
+  $('f-country').addEventListener('input', function () { cur.country = this.value.trim().slice(0, 60); render(); });
 
-        function showError(m) { document.getElementById('loading').style.display='none'; document.getElementById('error-page').style.display='block'; document.getElementById('error-msg').innerHTML=m; }
+  function buildGenres() {
+    var list = GENRES.slice(); cur.genres.forEach(function (g) { if (list.indexOf(g) < 0) list.unshift(g); });
+    $('genres').innerHTML = list.map(function (g) { return '<button class="k-chip" type="button" data-g="' + esc(g) + '" aria-pressed="false">' + esc(g) + '</button>'; }).join('');
+  }
+  $('genres').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-g]'); if (!b) return;
+    var g = b.dataset.g, i = cur.genres.indexOf(g);
+    if (i >= 0) cur.genres.splice(i, 1); else if (cur.genres.length < 3) cur.genres.push(g);
+    render();
+  });
 
-        function renderEditor(u) {
-            document.getElementById('loading').style.display='none'; document.getElementById('editor-content').style.display='block';
-            document.title='Editar perfil-'+u.username;
-            document.getElementById('edit-username').textContent=u.username;
-            document.getElementById('edit-bio').value=u.bio||'';
-            updateBioCounter();
-            updateAvatarDisplay(u.avatar);
-            updateBannerDisplay(u.banner);
-            document.getElementById('edit-country-tag').textContent='🌍 '+(u.country||'No especificado');
-            const joined=u.createdAt?new Date(u.createdAt).toLocaleDateString('es-ES',{year:'numeric',month:'long'}):'Desconocido';
-            document.getElementById('edit-joined-tag').textContent='📅 Miembro desde '+joined;
-            selectedEmoji=u.emoji||'';
-            document.getElementById('selected-emoji-preview').textContent=selectedEmoji;
-            selectedFavGenres=u.favoriteGenres||[];
-            renderSelectedTags();
-            document.querySelectorAll('[id^="view-profile-btn"]').forEach(el=>el.href='/perfil/'+u.username);
-            document.getElementById('btn-cancel').onclick=function(){ window.location.href='/perfil/'+u.username; };
-        }
+  function buildEmoji(tab) {
+    $('emoji-tabs').innerHTML = EMOJI.map(function (c, i) { return '<button class="k-tab" role="tab" type="button" aria-selected="' + (i === tab) + '" data-t="' + i + '" title="' + c[1] + '">' + c[0] + ' <span class="k-visually-hidden">' + c[1] + '</span></button>'; }).join('');
+    $('emoji-grid').innerHTML = '<button class="ed-emoji ed-emoji--none" type="button" data-e="" aria-pressed="false">Ninguno</button>' +
+      EMOJI[tab][2].map(function (e) { return '<button class="ed-emoji" type="button" data-e="' + e + '" aria-pressed="false" aria-label="' + e + '">' + e + '</button>'; }).join('');
+    if (cur) render();
+  }
+  $('emoji-tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-t]'); if (t) buildEmoji(+t.dataset.t); });
+  $('emoji-grid').addEventListener('click', function (e) { var b = e.target.closest('[data-e]'); if (!b) return; cur.emoji = b.dataset.e; render(); });
 
-        function handleAvatarImage(i) {
-            const f=i.files[0]; if(!f) return;
-            const r=new FileReader(); r.onload=function(e){avatarImage=e.target.result;updateAvatarDisplay(avatarImage);}; r.readAsDataURL(f);
-        }
-        function updateAvatarDisplay(src) {
-            const el=document.getElementById('edit-avatar');
-            if(src&&src.startsWith('data:image/')){ el.style.cssText="background-image: url('"+src+"') !important; background-size: cover !important; background-position: center !important;"; el.textContent=''; }
-            else if(userData&&userData.username){ el.style.cssText=''; el.style.background='linear-gradient(135deg,var(--k-accent),var(--k-gold))'; el.textContent=userData.username.charAt(0).toUpperCase(); }
-        }
+  // ── Imágenes: recorte y compresión en el navegador ──────
+  var SPEC = { avatar: { w: 320, h: 320, max: 380000 }, banner: { w: 1500, h: 500, max: 650000 } };
+  function loadImage(file) {
+    return new Promise(function (res, rej) {
+      if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) return rej(new Error('Usa una imagen PNG, JPG, WebP o GIF.'));
+      if (file.size > 15 * 1024 * 1024) return rej(new Error('La imagen pesa más de 15 MB.'));
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () { res(img); URL.revokeObjectURL(url); };
+      img.onerror = function () { rej(new Error('No se pudo leer la imagen.')); URL.revokeObjectURL(url); };
+      img.src = url;
+    });
+  }
+  function crop(img, kind) {
+    var s = SPEC[kind], ratio = s.w / s.h, iw = img.naturalWidth, ih = img.naturalHeight;
+    var sw = iw, sh = iw / ratio; if (sh > ih) { sh = ih; sw = ih * ratio; }
+    var w = Math.min(s.w, Math.round(sw)), h = Math.round(w / ratio);
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#16141f'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, w, h);
+    var webp = c.toDataURL('image/webp', 0.9).indexOf('data:image/webp') === 0;
+    for (var q = 0.88; q >= 0.4; q -= 0.08) {
+      var out = c.toDataURL(webp ? 'image/webp' : 'image/jpeg', q);
+      if (out.length <= s.max) return out;
+    }
+    throw new Error('La imagen sigue siendo demasiado pesada. Prueba con otra.');
+  }
+  function useFile(file, kind) {
+    $('err-img').textContent = '';
+    loadImage(file).then(function (img) { cur[kind] = crop(img, kind); render(); })
+      .catch(function (e) { $('err-img').textContent = e.message; });
+  }
+  $('f-banner').addEventListener('change', function () { if (this.files[0]) useFile(this.files[0], 'banner'); this.value = ''; });
+  $('f-avatar').addEventListener('change', function () { if (this.files[0]) useFile(this.files[0], 'avatar'); this.value = ''; });
+  $('rm-banner').addEventListener('click', function () { cur.banner = ''; render(); });
+  $('rm-avatar').addEventListener('click', function () { cur.avatar = initials(); render(); });
+  document.querySelectorAll('.ed-drop').forEach(function (z) {
+    z.addEventListener('dragover', function (e) { e.preventDefault(); z.classList.add('is-over'); });
+    z.addEventListener('dragleave', function () { z.classList.remove('is-over'); });
+    z.addEventListener('drop', function (e) { e.preventDefault(); z.classList.remove('is-over'); var f = e.dataTransfer.files[0]; if (f) useFile(f, z.dataset.kind); });
+  });
 
-        function handleBannerImage(i) {
-            const f=i.files[0]; if(!f) return;
-            const r=new FileReader(); r.onload=function(e){bannerImage=e.target.result;updateBannerDisplay(bannerImage);}; r.readAsDataURL(f);
-        }
-        function updateBannerDisplay(src) {
-            const el=document.getElementById('edit-banner');
-            if(src&&src.startsWith('data:image/')){ el.style.cssText="cursor:pointer;position:relative;background-image: url('"+src+"') !important; background-size: cover !important; background-position: center !important;"; }
-            else { el.style.cssText='cursor:pointer;position:relative;background:var(--k-bg);'; }
-        }
-
-        document.getElementById('edit-bio').addEventListener('input', updateBioCounter);
-        function updateBioCounter() { var l=document.getElementById('edit-bio').value.length; document.getElementById('bio-counter').textContent=l+'/300'; }
-
-        function renderSelectedTags() {
-            var el=document.getElementById('selected-tags-display');
-            var html='';
-            for(var i=0;i<selectedFavGenres.length;i++){ var g=selectedFavGenres[i]; html+='<span class="tag-chip">'+g+'<span class="tag-rm" onclick="removeFavGenre(\''+g+'\')">&times;</span></span>'; }
-            el.innerHTML=html;
-        }
-        function removeFavGenre(g) { selectedFavGenres=selectedFavGenres.filter(function(x){return x!==g;}); renderSelectedTags(); }
-
-        function openGenrePicker() {
-            tempSelectedGenres=selectedFavGenres.slice();
-            var grid=document.getElementById('genre-picker-grid');
-            var html='';
-            for(var i=0;i<GENRE_OPTIONS.length;i++){ var g=GENRE_OPTIONS[i]; html+='<div class="genre-picker-item'+(tempSelectedGenres.indexOf(g)>=0?' selected':'')+'" onclick="toggleTempGenre(this,\''+g+'\')">'+g+'</div>'; }
-            grid.innerHTML=html;
-            document.getElementById('genre-modal').classList.add('open');
-        }
-        function toggleTempGenre(el,g) {
-            var idx=tempSelectedGenres.indexOf(g);
-            if(idx>=0){ tempSelectedGenres.splice(idx,1); el.classList.remove('selected'); }
-            else if(tempSelectedGenres.length<2){ tempSelectedGenres.push(g); el.classList.add('selected'); }
-        }
-        function confirmGenres() { selectedFavGenres=tempSelectedGenres.slice(); renderSelectedTags(); closeGenrePicker(); }
-        function closeGenrePicker() { document.getElementById('genre-modal').classList.remove('open'); }
-
-        function openEmojiPicker() {
-            var tabs=document.getElementById('emoji-tabs'), grid=document.getElementById('emoji-grid');
-            var tabHtml='';
-            for(var i=0;i<EMOJI_CAT_KEYS.length;i++){ var k=EMOJI_CAT_KEYS[i]; tabHtml+='<button class="emoji-tab'+(i===0?' active':'')+'" onclick="switchEmojiTab(this,'+i+')">'+EMOJI_CATEGORIES[k][0]+'</button>'; }
-            tabs.innerHTML=tabHtml;
-            showEmojiCategory(0);
-            document.getElementById('emoji-modal').classList.add('open');
-        }
-        function switchEmojiTab(el,i) {
-            var tabs=document.querySelectorAll('.emoji-tab');
-            for(var t=0;t<tabs.length;t++) tabs[t].classList.remove('active');
-            el.classList.add('active');
-            showEmojiCategory(i);
-        }
-        function showEmojiCategory(i) {
-            var cat=EMOJI_CAT_KEYS[i], grid=document.getElementById('emoji-grid');
-            var emojis=EMOJI_CATEGORIES[cat];
-            var html='';
-            for(var e=0;e<emojis.length;e++) html+='<div class="emoji-item" onclick="pickEmoji(\''+emojis[e]+'\')">'+emojis[e]+'</div>';
-            grid.innerHTML=html;
-        }
-        function pickEmoji(e) { selectedEmoji=e; document.getElementById('selected-emoji-preview').textContent=e; closeEmojiPicker(); }
-        function closeEmojiPicker() { document.getElementById('emoji-modal').classList.remove('open'); }
-
-        async function saveProfile() {
-            var btn=document.getElementById('btn-save'), statusEl=document.getElementById('status-msg');
-            var bio=document.getElementById('edit-bio').value.trim();
-            statusEl.className='status-msg'; btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Guardando…';
-            var token=localStorage.getItem('kami_token');
-            if(!token){ showStatus('error','Sesión expirada.'); btn.disabled=false; btn.innerHTML='Guardar cambios'; return; }
-            var body={bio:bio};
-            if(avatarImage) body.avatar=avatarImage;
-            if(bannerImage) body.banner=bannerImage;
-            body.favoriteGenres=selectedFavGenres;
-            body.emoji=selectedEmoji;
-            try {
-                var r=await fetch('/api/auth/profile/edit',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
-                var d=await r.json();
-                if(!r.ok) throw new Error(d.error||'Error del servidor');
-                var u=d.user;
-                var st=JSON.parse(localStorage.getItem('kami_user')||'{}');
-                st.bio=u.bio; st.emoji=u.emoji; st.favoriteGenres=u.favoriteGenres;
-                st.country=u.country||userData.country||st.country;
-                if(avatarImage) st.avatar=u.avatar;
-                if(bannerImage) st.banner=u.banner;
-                st.role=u.role;
-                localStorage.setItem('kami_user',JSON.stringify(st));
-                showStatus('success','✓ Perfil actualizado correctamente');
-                if(typeof window.kamiRefreshNav==='function') window.kamiRefreshNav();
-                setTimeout(function(){ window.location.href='/perfil/'+userData.username; },1500);
-            } catch(e){ showStatus('error','✕ '+e.message); btn.disabled=false; btn.innerHTML='Guardar cambios'; }
-        }
-        function showStatus(t,m) { var e=document.getElementById('status-msg'); e.textContent=m; e.className='status-msg '+t+' show'; }
-
-        loadEditor();
-    </script>
-  <script src="/js/notifications.js"></script>
+  // ── Guardar ──────────────────────────────────────────────
+  function save() {
+    if (saving || !dirty()) return;
+    var body = payload(); saving = true;
+    if (needsFix) { body.country = cur.country; body.favoriteGenres = cur.genres; }
+    $('ed-save').disabled = true; $('ed-save').textContent = 'Guardando…'; $('ed-bar-t').textContent = 'Guardando cambios…';
+    fetch('/api/auth/profile/edit', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(r.status === 413 ? 'Las imágenes pesan demasiado.' : (d.error || 'No se pudo guardar.')); return d; }); })
+      .then(function (d) {
+        orig = JSON.parse(JSON.stringify(cur)); needsFix = false;
+        try {
+          var st = JSON.parse(localStorage.getItem('kami_user') || '{}');
+          st.bio = d.user.bio; st.emoji = d.user.emoji; st.favoriteGenres = d.user.favoriteGenres; st.country = d.user.country; st.avatar = d.user.avatar; st.banner = d.user.banner;
+          localStorage.setItem('kami_user', JSON.stringify(st));
+        } catch (e) {}
+        toast('Perfil guardado');
+        $('ed-bar-t').textContent = 'Tienes cambios sin guardar';
+        render();
+      })
+      .catch(function (e) { $('ed-bar-t').textContent = e.message; toast(e.message, 'error'); })
+      .then(function () { saving = false; $('ed-save').disabled = false; $('ed-save').textContent = 'Guardar'; });
+  }
+  $('ed-save').addEventListener('click', save);
+  $('ed-form').addEventListener('submit', function (e) { e.preventDefault(); save(); });
+  document.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && cur) { e.preventDefault(); save(); } });
+  $('ed-discard').addEventListener('click', function () {
+    cur = JSON.parse(JSON.stringify(orig)); $('f-bio').value = cur.bio; $('f-country').value = cur.country; $('err-img').textContent = ''; $('ed-bar-t').textContent = 'Tienes cambios sin guardar'; render();
+  });
+  window.addEventListener('beforeunload', function (e) { if (dirty() && !saving) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
 </body>
 </html>

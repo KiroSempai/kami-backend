@@ -10,3 +10,6 @@ client_secret_*.json
 !.env.example
 backend/.env.*
 !backend/.env.example
+
+# Copias de seguridad que generan los scripts de reparación
+backend/backups/

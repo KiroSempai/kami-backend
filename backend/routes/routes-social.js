@@ -10,6 +10,7 @@ const { pool } = require('../db');
 const { verifyToken } = require('../config');
 const getRole = require('../getRole');
 const { hasColumn } = require('../schema');
+const notifyPrefs = require('../notify-prefs');
 
 async function auth(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
@@ -37,6 +38,7 @@ router.get('/:username/profile', optionalAuth, async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    if (user.deleted_at) return res.status(404).json({ error: 'Usuario no encontrado' });
     const role = getRole(user);
 
     let followersCount = 0, followingCount = 0, isFollowing = false;
@@ -420,8 +422,8 @@ router.post('/follow', auth, async (req, res) => {
         'INSERT INTO user_follows (follower_id, following_id) VALUES ($1, $2)',
         [followerId, following_id]
       );
-      // Notificar al usuario seguido
-      await pool.query(
+      // Notificar al usuario seguido (si quiere recibir este aviso)
+      if (await notifyPrefs.wants(following_id, 'follows')) await pool.query(
         `INSERT INTO feed_notifications (user_id, actor_id, post_id, notification_type)
          VALUES ($1, $2, NULL, 'follow')
          ON CONFLICT DO NOTHING`,

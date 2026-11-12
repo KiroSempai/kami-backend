@@ -418,6 +418,7 @@
     if (q && qi) qi.value = q;
     loadUnread();
     refreshPlan();
+    if (/[?&]cuenta=eliminada/.test(location.search)) setTimeout(function () { toast('Tu cuenta se ha eliminado. Gracias por haber pasado por KamiTales.'); }, 300);
   }
 
   function refreshPlan(force) {

@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const { hasColumn } = require('../schema');
+const notifyPrefs = require('../notify-prefs');
 const { verifyToken } = require('../config');
 const https = require('https');
 const http = require('http');
@@ -654,7 +655,7 @@ router.post('/interact', auth, async (req, res) => {
       const author = await pool.query('SELECT user_id, manga_id FROM feed_posts WHERE id = $1', [post_id]);
       if (author.rows.length > 0 && author.rows[0].user_id !== req.user.userId) {
         const authorId = author.rows[0].user_id;
-        await pool.query(`
+        if (await notifyPrefs.wants(authorId, interaction_type === 'repost' ? 'reposts' : 'likes')) await pool.query(`
           INSERT INTO feed_notifications (user_id, actor_id, post_id, notification_type)
           VALUES ($1, $2, $3, $4)
         `, [authorId, req.user.userId, post_id, interaction_type]);
@@ -1506,7 +1507,7 @@ router.post('/post', auth, async (req, res) => {
         const parentPost = await pool.query('SELECT user_id FROM feed_posts WHERE id = $1', [parent_id]);
         if (parentPost.rows.length > 0) {
           const receptorId = parentPost.rows[0].user_id;
-          if (receptorId !== req.user.userId) {
+          if (receptorId !== req.user.userId && await notifyPrefs.wants(receptorId, 'replies')) {
             await pool.query(`
               INSERT INTO feed_notifications (user_id, actor_id, post_id, notification_type, read, created_at)
               VALUES ($1, $2, $3, 'reply', false, NOW())

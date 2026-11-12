@@ -143,7 +143,7 @@ router.post('/:threadId', auth, async (req, res) => {
 
     // Notify the other party
     const notifyUserId = isMod ? thread.rows[0].user_id : (thread.rows[0].assigned_moderator_id || thread.rows[0].user_id);
-    if (notifyUserId && notifyUserId !== req.user.userId) {
+    if (notifyUserId && notifyUserId !== req.user.userId && await require('../notify-prefs').wants(notifyUserId, 'messages')) {
       await pool.query(
         `INSERT INTO notifications (user_id, type, title, message, link) VALUES ($1, 'info', 'Nuevo mensaje', $2, '/messages?thread=${req.params.threadId}')`,
         [notifyUserId, thread.rows[0].subject]

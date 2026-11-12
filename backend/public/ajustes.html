@@ -110,6 +110,7 @@
       <a href="#seguridad" data-s="seguridad"><i class="ti ti-shield-lock" aria-hidden="true"></i>Seguridad</a>
       <a href="#apariencia" data-s="apariencia"><i class="ti ti-palette" aria-hidden="true"></i>Apariencia</a>
       <a href="#lectura" data-s="lectura"><i class="ti ti-book-2" aria-hidden="true"></i>Lectura</a>
+      <a href="#notificaciones" data-s="notificaciones"><i class="ti ti-bell" aria-hidden="true"></i>Notificaciones</a>
       <a href="#premium" data-s="premium"><i class="ti ti-crown" aria-hidden="true"></i>Premium<span class="k-badge k-badge--gold" id="nav-plan"></span></a>
       <a href="#datos" data-s="datos"><i class="ti ti-database" aria-hidden="true"></i>Tus datos</a>
     </nav>
@@ -247,6 +248,21 @@
         </div>
       </section>
 
+      <!-- ── Notificaciones ── -->
+      <section class="st-panel" id="p-notificaciones" aria-labelledby="h-notificaciones" hidden>
+        <div class="st-head"><h2 id="h-notificaciones">Notificaciones</h2><p>Qué avisos aparecen en tu campana. Se guarda en tu cuenta.</p></div>
+        <div class="k-alert k-alert--info" id="nt-off" hidden><i class="ti ti-info-circle" aria-hidden="true"></i><div>Las preferencias de notificaciones se activarán en cuanto se actualice el servidor. Mientras tanto recibes todos los avisos.</div></div>
+        <div class="k-card st-card" id="nt-card">
+          <h3><i class="ti ti-bell-ringing" aria-hidden="true"></i>Avisos en KamiTales</h3>
+          <div class="st-row"><div><b>Me gusta y guardados</b><small>Cuando a alguien le gusta o guarda una publicación tuya.</small></div><label class="k-switch"><input type="checkbox" data-nt="likes"><span class="k-visually-hidden">Me gusta y guardados</span></label></div>
+          <div class="st-row"><div><b>Compartidos</b><small>Cuando alguien comparte una publicación tuya.</small></div><label class="k-switch"><input type="checkbox" data-nt="reposts"><span class="k-visually-hidden">Compartidos</span></label></div>
+          <div class="st-row"><div><b>Respuestas</b><small>Cuando alguien responde a lo que publicas en Comunidad.</small></div><label class="k-switch"><input type="checkbox" data-nt="replies"><span class="k-visually-hidden">Respuestas</span></label></div>
+          <div class="st-row"><div><b>Nuevos seguidores</b><small>Cuando alguien empieza a seguirte.</small></div><label class="k-switch"><input type="checkbox" data-nt="follows"><span class="k-visually-hidden">Nuevos seguidores</span></label></div>
+          <div class="st-row"><div><b>Mensajes de soporte</b><small>Respuestas del equipo a tus consultas.</small></div><label class="k-switch"><input type="checkbox" data-nt="messages"><span class="k-visually-hidden">Mensajes de soporte</span></label></div>
+          <div class="st-row"><div><b>Avisos de moderación</b><small>Siempre activados: te avisan si tu cuenta recibe una sanción.</small></div><label class="k-switch"><input type="checkbox" checked disabled><span class="k-visually-hidden">Avisos de moderación</span></label></div>
+        </div>
+      </section>
+
       <!-- ── Premium ── -->
       <section class="st-panel" id="p-premium" aria-labelledby="h-premium" hidden>
         <div class="st-head"><h2 id="h-premium">Premium</h2><p>Tu plan y lo que incluye.</p></div>
@@ -275,6 +291,27 @@
           <p>La apariencia y las preferencias de lectura se guardan aquí, no en tu cuenta.</p>
           <button class="k-btn k-btn--quiet" type="button" id="reset-local" style="justify-self:start"><i class="ti ti-restore" aria-hidden="true"></i>Restablecer preferencias de este navegador</button>
         </div>
+        <form class="k-card st-card st-danger" id="del-form" novalidate>
+          <h3><i class="ti ti-alert-octagon" aria-hidden="true" style="color:var(--k-bad)"></i>Eliminar la cuenta</h3>
+          <p>No se puede deshacer. Se borran tu biblioteca, progreso, seguidores, amistades y reacciones; tus comentarios y publicaciones se vacían, y no podrás volver a entrar con esta cuenta. Descarga tus datos antes si los quieres conservar.</p>
+          <div class="k-alert k-alert--info" id="del-note" hidden><i class="ti ti-info-circle" aria-hidden="true"></i><div id="del-note-t"></div></div>
+          <div id="del-fields" class="k-stack">
+            <div class="k-field" id="del-pw-f">
+              <label class="k-label" for="del-pw">Tu contraseña</label>
+              <input class="k-input" id="del-pw" type="password" autocomplete="current-password" maxlength="200">
+            </div>
+            <div class="k-field" id="del-user-f" hidden>
+              <label class="k-label" for="del-user">Tu nombre de usuario</label>
+              <input class="k-input" id="del-user" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="k-field">
+              <label class="k-label" for="del-confirm">Escribe ELIMINAR para confirmar</label>
+              <input class="k-input" id="del-confirm" autocomplete="off" spellcheck="false" autocapitalize="characters">
+            </div>
+            <span class="k-error" id="del-err" role="alert"></span>
+            <button class="k-btn k-btn--danger" type="submit" id="del-btn" style="justify-self:start" disabled>Eliminar mi cuenta para siempre</button>
+          </div>
+        </form>
       </section>
     </div>
   </div>
@@ -317,7 +354,7 @@
 
   api('/api/settings').then(function (d) {
     D = d;
-    renderAccount(); renderSecurity(); renderAppearance(); renderReading(); renderPlan();
+    renderAccount(); renderSecurity(); renderAppearance(); renderReading(); renderPlan(); renderNotifications(); renderDelete();
     $('st-loading').hidden = true; $('st').hidden = false;
     route();
   }).catch(function (e) {
@@ -327,7 +364,7 @@
   });
 
   // ── Navegación entre secciones ──────────────────────────
-  var SECTIONS = ['cuenta', 'seguridad', 'apariencia', 'lectura', 'premium', 'datos'];
+  var SECTIONS = ['cuenta', 'seguridad', 'apariencia', 'lectura', 'notificaciones', 'premium', 'datos'];
   function route() {
     var s = location.hash.slice(1); if (SECTIONS.indexOf(s) < 0) s = 'cuenta';
     SECTIONS.forEach(function (x) { $('p-' + x).hidden = x !== s; });
@@ -518,6 +555,47 @@
       $('nav-plan').hidden = true;
     }
   }
+
+  // ── Notificaciones ──────────────────────────────────────
+  function renderNotifications() {
+    var n = D.notifications || { available: false, prefs: {} };
+    $('nt-off').hidden = n.available;
+    document.querySelectorAll('[data-nt]').forEach(function (i) { i.checked = n.prefs[i.dataset.nt] !== false; i.disabled = !n.available; });
+  }
+  document.querySelectorAll('[data-nt]').forEach(function (i) {
+    i.addEventListener('change', function () {
+      var body = {}; body[i.dataset.nt] = i.checked;
+      send('/api/settings/notifications', 'PUT', body).then(function (d) { D.notifications.prefs = d.prefs || D.notifications.prefs; toast(i.checked ? 'Aviso activado' : 'Aviso desactivado', 'ok'); })
+        .catch(function (er) { i.checked = !i.checked; toast(er.message, 'bad'); });
+    });
+  });
+
+  // ── Eliminar la cuenta ──────────────────────────────────
+  function renderDelete() {
+    var del = D.deletion || { available: false }, u = D.user, note = null;
+    if (!del.available) note = 'La eliminación de cuentas se activará en cuanto se actualice el servidor.';
+    else if (del.blockedBy === 'owner') note = 'La cuenta propietaria no se puede eliminar.';
+    else if (del.blockedBy === 'works') note = 'Tienes obras publicadas. Escríbenos para traspasarlas o retirarlas antes de eliminar la cuenta.';
+    $('del-note').hidden = !note; $('del-note-t').textContent = note || '';
+    $('del-fields').hidden = !!note;
+    var google = u.googleLinked && !u.hasPassword;
+    $('del-pw-f').hidden = google; $('del-user-f').hidden = !google;
+  }
+  function delReady() { return $('del-confirm').value.trim().toUpperCase() === 'ELIMINAR' && ($('del-pw-f').hidden ? $('del-user').value.trim() : $('del-pw').value); }
+  ['del-pw', 'del-user', 'del-confirm'].forEach(function (id) { $(id).addEventListener('input', function () { $('del-btn').disabled = !delReady(); }); });
+  $('del-form').addEventListener('submit', function (e) {
+    e.preventDefault(); if (!delReady()) return;
+    confirmBox('¿Eliminar tu cuenta para siempre?', 'Es la última confirmación. No hay forma de recuperarla después.', 'Eliminar para siempre').then(function (ok) {
+      if (!ok) return;
+      var btn = $('del-btn'); btn.disabled = true; btn.textContent = 'Eliminando…'; $('del-err').textContent = '';
+      var body = { confirm: $('del-confirm').value.trim() };
+      if ($('del-pw-f').hidden) body.username = $('del-user').value.trim(); else body.password = $('del-pw').value;
+      send('/api/settings/delete', 'POST', body).then(function () {
+        try { localStorage.removeItem('kami_token'); localStorage.removeItem('kami_user'); } catch (er) {}
+        location.replace('/?cuenta=eliminada');
+      }).catch(function (er) { $('del-err').textContent = er.message; btn.disabled = false; btn.textContent = 'Eliminar mi cuenta para siempre'; });
+    });
+  });
 
   // ── Datos ───────────────────────────────────────────────
   $('dl-data').addEventListener('click', function () {

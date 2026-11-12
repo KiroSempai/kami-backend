@@ -14,6 +14,9 @@ const { pool } = require('../db');
 const { verifyToken, signToken, forgetSessionCache } = require('../config');
 const getRole = require('../getRole');
 const { getAllowedQualities, setUserQuality } = require('../image-settings');
+const { hasColumn } = require('../schema');
+const notifyPrefs = require('../notify-prefs');
+const bcrypt = require('bcryptjs');
 
 async function auth(req, res, next) {
   const token = (req.headers.authorization || '').split(' ')[1];
@@ -46,6 +49,8 @@ router.get('/', async (req, res) => {
       },
       plan: planOf(u),
       quality: { selected: u.image_quality || '1080', allowed: getAllowedQualities(u.subscription_tier || (u.is_admin ? 'admin' : 'user')) },
+      notifications: { available: await hasColumn('users', 'notification_prefs'), prefs: await notifyPrefs.getPrefs(u.id) },
+      deletion: { available: await hasColumn('users', 'deleted_at'), blockedBy: u.is_owner ? 'owner' : ((await hasColumn('mangas', 'created_by')) && (await pool.query('SELECT 1 FROM mangas WHERE created_by = $1 LIMIT 1', [u.id])).rows.length ? 'works' : null) },
     });
   } catch (e) {
     console.error('[ajustes] get:', e.message);
@@ -109,6 +114,81 @@ router.get('/export', exportLimiter, async (req, res) => {
   } catch (e) {
     console.error('[ajustes] export:', e.message);
     res.status(500).json({ error: 'No se pudieron exportar tus datos.' });
+  }
+});
+
+// ── Preferencias de notificaciones ───────────────────────────────
+router.put('/notifications', async (req, res) => {
+  try {
+    if (!(await hasColumn('users', 'notification_prefs'))) return res.status(503).json({ error: 'Las preferencias de notificaciones aún no están activadas en el servidor.' });
+    const body = req.body || {}, prefs = {};
+    for (const k of notifyPrefs.KEYS) if (typeof body[k] === 'boolean') prefs[k] = body[k];
+    if (!Object.keys(prefs).length) return res.status(400).json({ error: 'Nada que guardar.' });
+    const r = await pool.query("UPDATE users SET notification_prefs = COALESCE(notification_prefs, '{}'::jsonb) || $1::jsonb, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING notification_prefs", [JSON.stringify(prefs), req.user.userId]);
+    if (!r.rows.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    notifyPrefs.forget(req.user.userId);
+    res.json({ success: true, prefs: await notifyPrefs.getPrefs(req.user.userId) });
+  } catch (e) {
+    console.error('[ajustes] notificaciones:', e.message);
+    res.status(500).json({ error: 'No se pudieron guardar las preferencias.' });
+  }
+});
+
+// ── Eliminar la cuenta ───────────────────────────────────────────
+// Irreversible: se borran biblioteca, progreso, seguidores, amistades y reacciones;
+// los comentarios y publicaciones se vacían; la cuenta se anonimiza y no puede volver a entrar.
+const deleteLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false, message: { error: 'Demasiados intentos. Espera una hora.' } });
+router.post('/delete', deleteLimiter, async (req, res) => {
+  const id = req.user.userId;
+  try {
+    if (!(await hasColumn('users', 'deleted_at'))) return res.status(503).json({ error: 'La eliminación de cuentas aún no está activada en el servidor.' });
+    const r = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    const u = r.rows[0];
+    if (!u || u.deleted_at) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (u.is_owner) return res.status(403).json({ error: 'La cuenta propietaria no se puede eliminar.' });
+    const { password, confirm, username } = req.body || {};
+    if (String(confirm || '').trim().toUpperCase() !== 'ELIMINAR') return res.status(400).json({ error: 'Escribe ELIMINAR para confirmar.' });
+    if (password) {
+      const okPw = await bcrypt.compare(String(password), u.password || '').catch(() => false);
+      if (!okPw) return res.status(401).json({ error: 'La contraseña no es correcta.' });
+    } else if (u.google_id) {
+      // Cuentas de Google sin contraseña propia: se confirma con el nombre de usuario
+      if (String(username || '').trim().toLowerCase() !== String(u.username).toLowerCase()) return res.status(400).json({ error: 'Escribe tu nombre de usuario para confirmar.' });
+    } else {
+      return res.status(401).json({ error: 'Escribe tu contraseña para confirmar.' });
+    }
+    if ((await hasColumn('mangas', 'created_by')) && (await pool.query('SELECT 1 FROM mangas WHERE created_by = $1 LIMIT 1', [id])).rows.length) {
+      return res.status(409).json({ error: 'Tienes obras publicadas. Escríbenos para traspasarlas o retirarlas antes de eliminar la cuenta.' });
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const step = async (sql) => { await client.query('SAVEPOINT s'); try { await client.query(sql, [id]); await client.query('RELEASE SAVEPOINT s'); } catch (e) { await client.query('ROLLBACK TO SAVEPOINT s'); console.warn('[ajustes] eliminar, paso omitido:', e.message.slice(0, 120)); } };
+      await step('DELETE FROM user_manga_library WHERE user_id = $1');
+      await step('DELETE FROM user_reading WHERE user_id = $1');
+      await step('DELETE FROM user_follows WHERE follower_id = $1 OR following_id = $1');
+      await step('DELETE FROM user_friends WHERE user_id = $1 OR friend_id = $1');
+      await step('DELETE FROM feed_interactions WHERE user_id = $1');
+      await step('DELETE FROM chapter_reactions WHERE user_id = $1');
+      await step('DELETE FROM feed_notifications WHERE user_id = $1 OR actor_id = $1');
+      await step('DELETE FROM notifications WHERE user_id = $1');
+      await step("UPDATE chapter_comments SET text = '', deleted_at = COALESCE(deleted_at, NOW()) WHERE user_id = $1");
+      await step("UPDATE feed_posts SET content = '', media_url = NULL WHERE user_id = $1");
+      const tag = String(id).replace(/-/g, '').slice(0, 10);
+      await client.query(
+        `UPDATE users SET username = $2, email = $3, password = '!cuenta-eliminada', google_id = NULL,
+           avatar = '', banner = '', bio = '', country = '', emoji = '', favorite_genres = '{}',
+           notification_prefs = '{}'::jsonb, deleted_at = NOW(), password_changed_at = NOW(), updated_at = NOW()
+         WHERE id = $1`, [id, 'eliminada-' + tag, 'eliminada+' + tag + '@kamitales.invalid']);
+      await client.query('COMMIT');
+    } catch (e) { await client.query('ROLLBACK').catch(() => {}); throw e; }
+    finally { client.release(); }
+    forgetSessionCache(id); notifyPrefs.forget(id);
+    res.json({ success: true, message: 'Tu cuenta se ha eliminado.' });
+  } catch (e) {
+    console.error('[ajustes] eliminar:', e.message);
+    res.status(500).json({ error: 'No se pudo eliminar la cuenta. No se ha borrado nada.' });
   }
 });
 

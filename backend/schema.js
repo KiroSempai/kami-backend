@@ -15,7 +15,7 @@ async function hasColumn(table, column) {
   if ((noUntil.get(key) || 0) > Date.now()) return false;
   try {
     const r = await pool.query(
-      'SELECT 1 FROM information_schema.columns WHERE table_name = $1 AND column_name = $2',
+      'SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = $1 AND column_name = $2',
       [table, column]
     );
     if (r.rows.length) { yes.add(key); return true; }

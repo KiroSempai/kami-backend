@@ -1,205 +1,456 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudio · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <link rel="stylesheet" href="/css/kmi-card.css">
-    <style>
-        :root {
-            --bg: var(--k-bg);
-            --surface: var(--k-surface-1);
-            --surface2: var(--k-surface-2);
-            --border: rgb(var(--k-ink) / 0.07);
-            --accent: var(--k-accent);
-            --accent-gold: var(--k-gold);
-            --blue: var(--k-info);
-            --green: var(--k-ok);
-            --text-primary: var(--k-text);
-            --text-muted: var(--k-text-3);
-            --radius: 12px;
-            --font-display: 'Bebas Neue', sans-serif;
-            --font-body: 'Plus Jakarta Sans', sans-serif;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
-
-        .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
-
-        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
-        .page-title { font-family:var(--font-display); font-size:36px; letter-spacing:2px; }
-        .page-subtitle { color:var(--text-muted); font-size:14px; margin-top:4px; }
-        .btn-add { display:inline-flex; align-items:center; gap:8px; padding:12px 28px; background:linear-gradient(135deg,var(--accent),var(--k-accent-strong)); border:none; border-radius:10px; color: var(--k-text); font-family:var(--font-display); font-size:18px; letter-spacing:1px; cursor:pointer; text-decoration:none; transition:all .22s; }
-        .btn-add:hover { transform:translateY(-2px); box-shadow:0 8px 24px color-mix(in srgb, var(--k-accent) 40%, transparent); }
-
-        .search-section { margin-bottom:32px; }
-        .search-bar { display:flex; gap:12px; }
-        .search-input { flex:1; padding:16px 20px; background:rgb(var(--k-ink) / 0.04); border:1px solid var(--border); border-radius:12px; color:var(--text-primary); font-family:var(--font-body); font-size:16px; outline:none; transition:border-color .2s; }
-        .search-input:focus { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 5%, transparent); }
-        .search-input::placeholder { color:var(--text-muted); }
-        .btn-search { padding:16px 28px; background:rgb(var(--k-ink) / 0.06); border:1px solid var(--border); border-radius:12px; color:var(--text-primary); font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
-        .btn-search:hover { border-color:var(--accent); background:color-mix(in srgb, var(--k-accent) 8%, transparent); color:var(--accent); }
-
-        .results-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-        .results-count { font-size:14px; color:var(--text-muted); }
-        .kmi-grid { margin-bottom:0; }
-
-        .manga-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:all .25s; cursor:pointer; text-decoration:none; color:var(--text-primary); }
-        .manga-card:hover { border-color:var(--accent); transform:translateY(-6px); box-shadow:0 12px 40px color-mix(in srgb, var(--k-accent) 15%, transparent); }
-        .manga-card-cover { width:100%; aspect-ratio:3/4; background:var(--surface2); overflow:hidden; position:relative; }
-        .manga-card-cover img { width:100%; height:100%; object-fit:cover; display:block; }
-        .manga-card-cover .placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; color:var(--text-muted); background:linear-gradient(145deg,var(--surface2),var(--surface)); }
-        .manga-card-body { padding:12px 14px 14px; }
-        .manga-card-title { font-size:13px; font-weight:600; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .manga-card-meta { font-size:11px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; }
-        .manga-card-rating { color:var(--accent-gold); font-weight:700; }
-        .manga-card-type { padding:2px 8px; border-radius:4px; font-size:9px; font-weight:700; text-transform:uppercase; }
-        .type-manga { background:color-mix(in srgb, var(--k-info) 15%, transparent); color:var(--blue); border:1px solid color-mix(in srgb, var(--k-info) 30%, transparent); }
-        .type-manhwa { background:color-mix(in srgb, var(--k-ok) 15%, transparent); color:var(--green); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); }
-        .type-manhua { background:rgba(251,146,60,0.15); color:var(--k-orange); border:1px solid rgba(251,146,60,0.3); }
-        .type-oneshot { background:color-mix(in srgb, var(--k-violet) 15%, transparent); color:var(--k-violet); border:1px solid color-mix(in srgb, var(--k-violet) 30%, transparent); }
-
-        .empty-state { text-align:center; padding:80px 24px; }
-        .empty-icon { font-size:64px; margin-bottom:16px; display:block; opacity:0.4; }
-        .empty-title { font-family:var(--font-display); font-size:24px; letter-spacing:1px; margin-bottom:8px; }
-        .empty-desc { color:var(--text-muted); font-size:14px; max-width:400px; margin:0 auto; line-height:1.6; }
-
-        .loading-state { text-align:center; padding:60px; color:var(--text-muted); }
-        .spinner { display:inline-block; width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .loading-text { margin-top:12px; font-size:14px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Estudio · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Estudio de autores: panel de trabajo limpio. Una página, secciones separadas;
+       cómics y novelas comparten panel y cada formato abre su propio editor. */
+    :root { --st-side: 248px; }
+    body { background: var(--k-bg); }
+    .st { display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(100dvh - var(--k-nav-h)); }
+    @media (min-width: 1024px) { .st { grid-template-columns: var(--st-side) minmax(0, 1fr); } }
+
+    /* Barra lateral */
+    .st-side { display: none; position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); align-self: start; height: calc(100dvh - var(--k-nav-h)); overflow-y: auto; padding: var(--k-6) var(--k-4); border-right: 1px solid var(--k-line); background: var(--k-surface-1); }
+    @media (min-width: 1024px) { .st-side { display: grid; align-content: start; gap: var(--k-5); } }
+    .st-side__head { display: grid; gap: 2px; padding: 0 var(--k-2); }
+    .st-side__head b { font: 800 22px/1 var(--k-font-display); letter-spacing: .04em; text-transform: uppercase; }
+    .st-side__head span { font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .st-group { display: grid; gap: 2px; }
+    .st-group > span { font: 700 10.5px/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); padding: var(--k-2) var(--k-3) var(--k-1); }
+    .st-link { display: flex; align-items: center; gap: var(--k-3); min-height: 38px; padding: 0 var(--k-3); border-radius: var(--k-r-sm); color: var(--k-text-2); text-decoration: none; font-size: var(--k-fs-sm); font-weight: 600; }
+    .st-link:hover { background: rgb(var(--k-ink) / .05); color: var(--k-text); }
+    .st-link[aria-current="page"] { background: var(--k-accent-soft); color: var(--k-text); }
+    .st-link[aria-current="page"] i { color: var(--k-accent); }
+    .st-link i { font-size: 18px; width: 20px; }
+    .st-link .k-count { margin-left: auto; }
+
+    /* Navegación en móvil */
+    .st-mtabs { position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); z-index: 30; display: flex; gap: var(--k-2); overflow-x: auto; scrollbar-width: none; padding: var(--k-3) max(16px, env(safe-area-inset-right, 0px)) var(--k-3) max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--k-bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--k-line); }
+    .st-mtabs::-webkit-scrollbar { display: none; }
+    @media (min-width: 1024px) { .st-mtabs { display: none; } }
+    .st-mtabs a { flex: none; text-decoration: none; }
+
+    /* Contenido */
+    .st-main { min-width: 0; padding-block: var(--k-8) var(--k-12); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+    @media (min-width: 768px) { .st-main { padding-left: var(--k-10); padding-right: var(--k-10); } }
+    .st-view { max-width: 1160px; display: grid; gap: var(--k-6); }
+    .st-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--k-4); }
+    .st-head > div { display: grid; gap: 4px; min-width: 0; }
+    .st-head h1 { margin: 0; font: 800 clamp(1.8rem, 3.5vw, 2.4rem)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .01em; }
+    .st-head p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); }
+    .st-sec { display: grid; gap: var(--k-3); min-width: 0; align-content: start; }
+    .st-sec > h2 { margin: 0; font-size: var(--k-fs-md); font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: var(--k-3); }
+    .st-cols { display: grid; gap: var(--k-6); grid-template-columns: minmax(0, 1fr); align-items: start; }
+    @media (min-width: 1100px) { .st-cols { grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); } }
+
+    /* Cifras */
+    .st-kpis { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); }
+    .st-kpi { padding: var(--k-4) var(--k-5); border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: var(--k-surface-1); display: grid; gap: 4px; }
+    .st-kpi span { font-size: var(--k-fs-xs); color: var(--k-text-3); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+    .st-kpi b { font: 800 30px/1 var(--k-font-display); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+
+    /* Tabla de obras */
+    .st-table { border: 1px solid var(--k-line); border-radius: var(--k-r-lg); background: var(--k-surface-1); overflow: hidden; }
+    .st-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--k-4); align-items: center; padding: var(--k-3) var(--k-4); border-bottom: 1px solid var(--k-line); }
+    .st-row:last-child { border-bottom: 0; }
+    .st-row:hover { background: rgb(var(--k-ink) / .025); }
+    .st-row__cover { width: 52px; aspect-ratio: 2/3; border-radius: 8px; overflow: hidden; background: var(--k-surface-2); display: grid; place-items: center; font: 900 16px var(--k-font-display); color: var(--k-text-3); text-decoration: none; }
+    .st-row__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .st-row__main { min-width: 0; display: grid; gap: 6px; }
+    .st-row__title { display: flex; align-items: center; gap: var(--k-2); flex-wrap: wrap; }
+    .st-row__title a { color: var(--k-text); font-weight: 700; text-decoration: none; font-size: var(--k-fs-md); }
+    .st-row__title a:hover { color: var(--k-accent); }
+    .st-row__meta { display: flex; flex-wrap: wrap; gap: 4px var(--k-4); font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .st-row__meta b { color: var(--k-text-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .st-row__act { display: flex; gap: var(--k-2); flex-wrap: wrap; justify-content: flex-end; }
+    @media (max-width: 640px) { .st-row { grid-template-columns: 44px minmax(0, 1fr); } .st-row__cover { width: 44px; } .st-row__act { grid-column: 1 / -1; justify-content: flex-start; } }
+    .k-badge--comic { --_c: var(--k-info); }
+    .k-badge--novel { --_c: var(--k-violet); }
+
+    /* Crear: dos caminos */
+    .st-create { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+    .st-path { display: grid; gap: var(--k-2); align-content: start; padding: var(--k-5); border-radius: var(--k-r-lg); border: 1px solid var(--k-line-2); background: var(--k-surface-1); text-decoration: none; color: inherit; transition: border-color var(--k-t-fast), transform var(--k-t) var(--k-ease); }
+    .st-path:hover, .st-path:focus-visible { border-color: var(--k-accent-line); transform: translateY(-2px); outline: none; }
+    .st-path__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; font-size: 22px; }
+    .st-path--comic .st-path__icon { background: color-mix(in srgb, var(--k-info) 16%, transparent); color: var(--k-info); }
+    .st-path--novel .st-path__icon { background: color-mix(in srgb, var(--k-violet) 16%, transparent); color: var(--k-violet); }
+    .st-path b { font-size: var(--k-fs-lg); }
+    .st-path span { font-size: var(--k-fs-sm); color: var(--k-text-2); line-height: 1.5; }
+    .st-path small { font-size: var(--k-fs-xs); color: var(--k-text-3); }
+
+    /* Tablón */
+    .st-ann { display: grid; gap: var(--k-2); }
+    .st-ann__item { border: 1px solid var(--k-line); border-radius: var(--k-r-md); background: var(--k-surface-1); }
+    .st-ann__item > button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: var(--k-3); align-items: start; width: 100%; padding: var(--k-4); }
+    .st-ann__item > button:focus-visible { outline: 2px solid var(--k-accent); outline-offset: -2px; border-radius: var(--k-r-md); }
+    .st-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: var(--k-accent); box-shadow: 0 0 8px var(--k-accent); }
+    .st-ann__item.is-read .st-dot { background: transparent; box-shadow: none; }
+    .st-ann__t { display: grid; gap: 4px; min-width: 0; }
+    .st-ann__t b { font-size: var(--k-fs-md); }
+    .st-ann__t span { font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .st-ann__meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .st-ann__body { padding: 0 var(--k-4) var(--k-4) calc(var(--k-4) + 10px + var(--k-3)); color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.65; white-space: pre-line; }
+    .k-badge--novedad { --_c: var(--k-accent); } .k-badge--normas { --_c: var(--k-warn); } .k-badge--programa { --_c: var(--k-gold); } .k-badge--mantenimiento { --_c: var(--k-info); }
+
+    /* Boletín */
+    .st-bul { display: grid; gap: var(--k-4); padding: var(--k-6); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .st-bul h3 { margin: 0; font: 800 var(--k-fs-2xl)/1 var(--k-font-display); text-transform: uppercase; }
+    .st-bul section { display: grid; gap: 4px; padding-top: var(--k-3); border-top: 1px solid var(--k-line); }
+    .st-bul section b { font-size: var(--k-fs-sm); }
+    .st-bul section p { margin: 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.6; }
+
+    /* Obra (hub) */
+    .st-work { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--k-5); align-items: start; }
+    .st-work__cover { width: 96px; aspect-ratio: 2/3; border-radius: var(--k-r-md); overflow: hidden; background: var(--k-surface-2); display: grid; place-items: center; font: 900 28px var(--k-font-display); color: var(--k-text-3); }
+    .st-work__cover img { width: 100%; height: 100%; object-fit: cover; }
+    .st-work__info { display: grid; gap: var(--k-2); min-width: 0; }
+    .st-work__info h1 { margin: 0; font: 800 clamp(1.6rem, 3vw, 2.2rem)/1.05 var(--k-font-display); text-transform: uppercase; }
+    .st-ch { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: var(--k-3); align-items: center; padding: var(--k-3) var(--k-4); border-bottom: 1px solid var(--k-line); }
+    .st-ch:last-child { border-bottom: 0; }
+    .st-ch__n { font: 600 var(--k-fs-sm) var(--k-font-mono); color: var(--k-text-3); }
+    .st-ch__t { min-width: 0; display: grid; gap: 4px; }
+    .st-ch__t b { font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .st-ch__t span { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: var(--k-fs-xs); color: var(--k-text-3); align-items: center; }
+    @media (max-width: 640px) { .st-ch { grid-template-columns: 40px minmax(0, 1fr); } .st-ch .st-row__act { grid-column: 1 / -1; justify-content: flex-start; } }
+
+    /* Comentarios */
+    .st-com { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--k-3); padding: var(--k-3) var(--k-4); border-bottom: 1px solid var(--k-line); }
+    .st-com:last-child { border-bottom: 0; }
+    .st-com__h { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: var(--k-fs-xs); color: var(--k-text-3); align-items: center; }
+    .st-com__h b { color: var(--k-text); font-size: var(--k-fs-sm); }
+    .st-com__h a { color: var(--k-text-2); }
+    .st-com p { margin: 4px 0 0; font-size: var(--k-fs-sm); line-height: 1.55; color: var(--k-text-2); word-wrap: break-word; }
+
+    /* Estadísticas */
+    .st-bars { display: grid; gap: var(--k-3); }
+    .st-bar { display: grid; grid-template-columns: minmax(120px, 220px) minmax(0, 1fr) 64px; gap: var(--k-3); align-items: center; font-size: var(--k-fs-sm); }
+    .st-bar__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--k-text-2); }
+    .st-bar__track { height: 10px; border-radius: 6px; background: rgb(var(--k-ink) / .06); overflow: hidden; }
+    .st-bar__fill { height: 100%; border-radius: 6px; background: var(--k-accent); }
+    .st-bar__fill.novel { background: var(--k-violet); } .st-bar__fill.comic { background: var(--k-info); }
+    .st-bar__v { text-align: right; font: 600 var(--k-fs-sm) var(--k-font-mono); font-variant-numeric: tabular-nums; }
+    .st-legend { display: flex; gap: var(--k-4); font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .st-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+    /* Contrato */
+    .st-tiers { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+    .st-tier { display: grid; gap: var(--k-3); align-content: start; padding: var(--k-6); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .st-tier.is-current { border-color: var(--k-ok); box-shadow: 0 0 0 1px color-mix(in srgb, var(--k-ok) 40%, transparent); }
+    .st-tier h3 { margin: 0; font: 800 var(--k-fs-2xl)/1 var(--k-font-display); text-transform: uppercase; }
+    .st-tier ul { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--k-2); font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .st-tier li { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 6px; }
+    .st-tier li i { color: var(--k-ok); }
+
+    .st-guides { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+    .st-guide details { border: 1px solid var(--k-line); border-radius: var(--k-r-md); background: var(--k-surface-1); }
+    .st-guide summary { cursor: pointer; padding: var(--k-4); font-weight: 700; list-style: none; display: flex; gap: var(--k-3); align-items: center; }
+    .st-guide summary::-webkit-details-marker { display: none; }
+    .st-guide summary i { color: var(--k-accent); font-size: 20px; }
+    .st-guide ol, .st-guide ul { margin: 0; padding: 0 var(--k-5) var(--k-5) calc(var(--k-5) + 18px); color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.65; display: grid; gap: 4px; }
+    .st-muted-card { opacity: .6; }
+    [hidden] { display: none !important; }
+  </style>
 </head>
-
 <body>
-<div class="container">
-        <div class="page-header">
-            <div>
-                <div class="page-title">PANEL DE EDICIÓN</div>
-                <div class="page-subtitle">Busca mangas existentes para editar o añade uno nuevo al catálogo</div>
-            </div>
-            <a href="/estudio/nueva" class="btn-add">+ AÑADIR MANGA</a>
-        </div>
+<div class="st">
+  <aside class="st-side" aria-label="Secciones del Estudio">
+    <div class="st-side__head"><b>Estudio</b><span id="st-who">Tu espacio de autor</span></div>
+    <button type="button" class="k-btn k-btn--primary k-btn--block" data-new><i class="ti ti-plus" aria-hidden="true"></i>Nueva obra</button>
+    <nav class="st-group" aria-label="General"><span>General</span>
+      <a class="st-link" href="#inicio"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Inicio</a>
+      <a class="st-link" href="#obras"><i class="ti ti-books" aria-hidden="true"></i>Mis obras</a>
+      <a class="st-link" href="#comentarios"><i class="ti ti-messages" aria-hidden="true"></i>Comentarios</a>
+      <a class="st-link" href="#estadisticas"><i class="ti ti-chart-bar" aria-hidden="true"></i>Estadísticas</a>
+    </nav>
+    <nav class="st-group" aria-label="Negocio"><span>Negocio</span>
+      <a class="st-link" href="#ingresos"><i class="ti ti-coin-euro" aria-hidden="true"></i>Ingresos</a>
+      <a class="st-link" href="#contrato"><i class="ti ti-file-certificate" aria-hidden="true"></i>Contrato</a>
+    </nav>
+    <nav class="st-group" aria-label="KamiTales"><span>KamiTales</span>
+      <a class="st-link" href="#anuncios"><i class="ti ti-speakerphone" aria-hidden="true"></i>Tablón de anuncios<span class="k-count" data-unread hidden></span></a>
+      <a class="st-link" href="#boletines"><i class="ti ti-news" aria-hidden="true"></i>Boletines</a>
+      <a class="st-link" href="#guias"><i class="ti ti-help-circle" aria-hidden="true"></i>Guías</a>
+    </nav>
+  </aside>
 
-        <div class="search-section">
-            <div class="search-bar">
-                <input type="text" class="search-input" id="search-input" placeholder="Busca un manga por nombre, autor o título alternativo…" autocomplete="off">
-                <button class="btn-search" id="btn-search">Buscar</button>
-            </div>
-        </div>
+  <div style="min-width:0">
+    <nav class="st-mtabs" aria-label="Secciones del Estudio">
+      <a class="k-chip" href="#inicio">Inicio</a><a class="k-chip" href="#obras">Obras</a><a class="k-chip" href="#comentarios">Comentarios</a><a class="k-chip" href="#estadisticas">Estadísticas</a><a class="k-chip" href="#ingresos">Ingresos</a><a class="k-chip" href="#contrato">Contrato</a><a class="k-chip" href="#anuncios">Anuncios</a><a class="k-chip" href="#boletines">Boletines</a><a class="k-chip" href="#guias">Guías</a>
+    </nav>
+    <main class="st-main" id="k-main"><div class="st-view" id="st-view" aria-live="polite"></div></main>
+  </div>
+</div>
 
-        <div id="results-area">
-            <div class="empty-state" id="empty-state">
-                <span class="empty-icon">🔍</span>
-                <div class="empty-title">BUSCA UN MANGA</div>
-                <div class="empty-desc">Escribe el nombre del manga que quieras editar. Los resultados aparecerán aquí en formato cartelera.</div>
-            </div>
-            <div id="results-content" style="display:none;">
-                <div class="results-header">
-                    <div class="results-count" id="results-count"></div>
-                </div>
-                <div class="kmi-grid" id="manga-grid"></div>
-            </div>
-            <div class="loading-state" id="loading-state" style="display:none;">
-                <div class="spinner"></div>
-                <div class="loading-text">Buscando mangas…</div>
-            </div>
-        </div>
+<!-- Nueva obra: elegir formato -->
+<dialog class="k-modal" id="st-new" aria-labelledby="st-new-t" style="width:min(640px,calc(100vw - 32px))">
+  <div class="k-modal__head"><h2 class="k-h2" id="st-new-t">¿Qué vas a publicar?</h2><button type="button" class="k-btn k-btn--quiet k-btn--icon" data-close aria-label="Cerrar"><i class="ti ti-x" aria-hidden="true"></i></button></div>
+  <div class="k-modal__body">
+    <div class="st-create">
+      <a class="st-path st-path--comic" href="/estudio/nueva?tipo=comic"><span class="st-path__icon"><i class="ti ti-brush" aria-hidden="true"></i></span><b>Cómic</b><span>Manga, manhwa, manhua o one-shot. Subes cada capítulo como páginas de imagen.</span><small>Se abre el editor de cómic</small></a>
+      <a class="st-path st-path--novel" href="/estudio/nueva?tipo=novel"><span class="st-path__icon"><i class="ti ti-book-2" aria-hidden="true"></i></span><b>Novela</b><span>Historia en texto por capítulos, con editor de escritura y lector ajustable.</span><small>Se abre el editor de novela</small></a>
     </div>
+  </div>
+</dialog>
 
-    <script>
-        var searchInput = document.getElementById('search-input');
-        var btnSearch = document.getElementById('btn-search');
-        var mangaGrid = document.getElementById('manga-grid');
-        var resultsCount = document.getElementById('results-count');
-        var emptyState = document.getElementById('empty-state');
-        var resultsContent = document.getElementById('results-content');
-        var loadingState = document.getElementById('loading-state');
-        var debounceTimer = null;
+<!-- Confirmación en la página -->
+<dialog class="k-modal" id="st-confirm" aria-labelledby="st-confirm-t">
+  <div class="k-modal__head"><h2 class="k-h3" id="st-confirm-t">¿Eliminar?</h2></div>
+  <div class="k-modal__body"><p class="k-muted" id="st-confirm-msg" style="margin:0"></p></div>
+  <div class="k-modal__foot"><button type="button" class="k-btn k-btn--quiet" data-close>Cancelar</button><button type="button" class="k-btn k-btn--danger" id="st-confirm-ok">Eliminar</button></div>
+</dialog>
 
-        function getQueryParam(name) {
-            var params = new URLSearchParams(window.location.search);
-            return params.get(name) || '';
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var view = $('st-view');
+  var TYPE = { manga: 'Manga', manhwa: 'Manhwa', manhua: 'Manhua', oneshot: 'One-shot', novel: 'Novela' };
+  var STATUS = { ongoing: 'En curso', completed: 'Completa', hiatus: 'En pausa', cancelled: 'Cancelada' };
+  var CAT = { novedad: 'Novedad', normas: 'Normas', programa: 'Programa', mantenimiento: 'Mantenimiento' };
+  var nf = new Intl.NumberFormat('es');
+  var dShort = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+  var dLong = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'long', year: 'numeric' });
+  var dTime = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  var cache = {};
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
+  function user() { try { return JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch (e) { return null; } }
+  function api(url, opts) {
+    return fetch(url, opts).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); });
+  }
+  function load(key, url) { if (!cache[key]) cache[key] = api(url).catch(function (e) { delete cache[key]; throw e; }); return cache[key]; }
+  function relDate(iso) { if (!iso) return '—'; var d = new Date(iso), days = Math.floor((Date.now() - d) / 864e5); return days <= 0 ? 'hoy' : days === 1 ? 'ayer' : days < 7 ? 'hace ' + days + ' días' : dShort.format(d); }
+  function formatBadge(w) { return w.format === 'novel' ? '<span class="k-badge k-badge--novel">Novela</span>' : '<span class="k-badge k-badge--comic">Cómic · ' + esc(TYPE[w.type] || w.type) + '</span>'; }
+  function cover(w, cls) { return w.cover ? '<img src="' + esc(w.cover) + '" alt="" loading="lazy" width="96" height="144">' : esc((w.title || '?').slice(0, 2)); }
+  function editorFor(w, n) { return w.format === 'novel' ? '/obra/' + encodeURIComponent(w.id) + '/escribir' + (n ? '/' + n : '') : '/obra/' + encodeURIComponent(w.id) + '/nuevo-capitulo'; }
+  function empty(icon, title, text, cta) { return '<div class="k-card"><div class="k-empty"><i class="ti ' + icon + '" aria-hidden="true"></i><h3>' + title + '</h3><p>' + text + '</p>' + (cta || '') + '</div></div>'; }
+  function head(title, sub, actions) { return '<header class="st-head"><div><h1>' + title + '</h1>' + (sub ? '<p>' + sub + '</p>' : '') + '</div>' + (actions || '') + '</header>'; }
+  function loading() { view.innerHTML = '<div class="k-skeleton" style="height:42px;width:40%"></div><div class="st-kpis">' + '<div class="k-skeleton" style="height:84px"></div>'.repeat(4) + '</div><div class="k-skeleton" style="height:240px"></div>'; }
+  function fail(e) { view.innerHTML = empty('ti-alert-triangle', 'No se pudo cargar', esc(e.message || 'Comprueba tu conexión y vuelve a intentarlo.'), '<button type="button" class="k-btn k-btn--primary" onclick="location.reload()">Reintentar</button>'); }
+
+  /* ── Leídos del tablón ─────────────────────────────────────── */
+  function readSet() { try { return JSON.parse(localStorage.getItem('kt_studio_read') || '[]'); } catch (e) { return []; } }
+  function markRead(id) { var s = readSet(); if (s.indexOf(id) < 0) { s.push(id); try { localStorage.setItem('kt_studio_read', JSON.stringify(s)); } catch (e) {} } paintUnread(); }
+  function paintUnread() {
+    load('content', '/api/studio/content').then(function (c) {
+      var r = readSet(), n = c.announcements.filter(function (a) { return r.indexOf(a.id) < 0; }).length;
+      document.querySelectorAll('[data-unread]').forEach(function (b) { b.textContent = n; b.hidden = !n; });
+    }).catch(function () {});
+  }
+
+  /* ── Piezas ────────────────────────────────────────────────── */
+  function workRow(w, compact) {
+    var meta = [
+      '<span><b>' + w.published + '</b> publicados</span>',
+      w.drafts ? '<span><b>' + w.drafts + '</b> en borrador</span>' : '',
+      w.scheduled ? '<span><b>' + w.scheduled + '</b> programados</span>' : '',
+      '<span><b>' + nf.format(w.reads) + '</b> lecturas</span>',
+      compact ? '' : '<span><b>' + (w.rating ? w.rating.toFixed(1).replace('.', ',') : '—') + '</b> valoración</span>',
+      compact ? '' : '<span><b>' + w.members + '</b> en la comunidad</span>',
+      '<span>Actualizada ' + relDate(w.updatedAt) + '</span>',
+    ].filter(Boolean).join('');
+    return '<div class="st-row"><a class="st-row__cover" href="#obra-' + esc(w.id) + '" aria-hidden="true" tabindex="-1">' + cover(w) + '</a>' +
+      '<div class="st-row__main"><div class="st-row__title"><a href="#obra-' + esc(w.id) + '">' + esc(w.title) + '</a>' + formatBadge(w) + (STATUS[w.status] ? '<span class="k-badge">' + STATUS[w.status] + '</span>' : '') + '</div><div class="st-row__meta">' + meta + '</div></div>' +
+      '<div class="st-row__act"><a class="k-btn k-btn--primary k-btn--sm" href="' + editorFor(w) + '"><i class="ti ti-' + (w.format === 'novel' ? 'pencil' : 'photo-plus') + '" aria-hidden="true"></i>Nuevo capítulo</a><a class="k-btn k-btn--secondary k-btn--sm" href="#obra-' + esc(w.id) + '">Gestionar</a></div></div>';
+  }
+  function createPaths() {
+    return '<div class="st-create">' + $('st-new').querySelector('.st-create').innerHTML + '</div>';
+  }
+  function annItem(a, open) {
+    var read = readSet().indexOf(a.id) >= 0;
+    return '<div class="st-ann__item' + (read ? ' is-read' : '') + '" data-ann="' + esc(a.id) + '"><button type="button" aria-expanded="' + (open ? 'true' : 'false') + '"><span class="st-dot" aria-hidden="true"></span><span class="st-ann__t"><span class="st-ann__meta"><span class="k-badge k-badge--' + esc(a.category) + '">' + esc(CAT[a.category] || a.category) + '</span>' + (a.pinned ? '<span class="k-badge k-badge--solid">Fijado</span>' : '') + '<span>' + dLong.format(new Date(a.date)) + '</span>' + (read ? '' : '<span class="k-visually-hidden">sin leer</span>') + '</span><b>' + esc(a.title) + '</b><span>' + esc(a.summary) + '</span></span><i class="ti ti-chevron-down" aria-hidden="true"></i></button>' +
+      '<div class="st-ann__body"' + (open ? '' : ' hidden') + '>' + esc(a.body) + '</div></div>';
+  }
+  view.addEventListener('click', function (e) {
+    var b = e.target.closest('.st-ann__item > button'); if (!b) return;
+    var item = b.parentNode, body = item.querySelector('.st-ann__body'), open = body.hidden;
+    body.hidden = !open; b.setAttribute('aria-expanded', String(open));
+    if (open) { item.classList.add('is-read'); markRead(item.dataset.ann); }
+  });
+  function comRow(c) {
+    var href = '/leer/' + encodeURIComponent(c.workId) + '/' + c.chapter + (c.paragraphId ? '#p-' + c.paragraphId : '');
+    var av = c.avatar && /^(\/|https?:|data:image)/.test(c.avatar) ? '<span class="k-avatar k-avatar--sm"><img src="' + esc(c.avatar) + '" alt=""></span>' : '<span class="k-avatar k-avatar--sm">' + esc((c.username || '?').charAt(0).toUpperCase()) + '</span>';
+    return '<div class="st-com">' + av + '<div style="min-width:0"><div class="st-com__h"><b>' + esc(c.username) + '</b><span>en</span><a href="' + href + '">' + esc(c.workTitle) + ' · cap. ' + c.chapter + (c.paragraphId ? ' · párrafo' : '') + '</a><span>' + relDate(c.createdAt) + '</span>' + (c.spoiler ? '<span class="k-badge k-badge--warn">Spoiler</span>' : '') + '</div><p>' + esc(c.text) + '</p></div></div>';
+  }
+
+  /* ── Vistas ────────────────────────────────────────────────── */
+  var VIEWS = {
+    inicio: function () {
+      return Promise.all([load('works', '/api/studio/works'), load('summary', '/api/studio/summary'), load('content', '/api/studio/content')]).then(function (r) {
+        var works = r[0].works, s = r[1], c = r[2], u = user();
+        var draft = s.lastDraft ? '<a class="k-card k-card--interactive" href="' + (s.lastDraft.format === 'novel' ? '/obra/' + encodeURIComponent(s.lastDraft.workId) + '/escribir/' + s.lastDraft.number : '#obra-' + esc(s.lastDraft.workId)) + '" style="text-decoration:none;color:inherit;display:grid;gap:6px"><span class="k-eyebrow">Retoma tu borrador</span><b>' + esc(s.lastDraft.workTitle) + ' · capítulo ' + s.lastDraft.number + (s.lastDraft.title ? ': ' + esc(s.lastDraft.title) : '') + '</b><span class="k-faint" style="font-size:13px">' + nf.format(s.lastDraft.words) + ' palabras · editado ' + relDate(s.lastDraft.updatedAt) + '</span></a>' : '';
+        var latest = c.bulletins[0];
+        return head('Hola, ' + esc((u && u.username) || 'autor'), 'Esto es lo que pasa con tus obras.', '<button type="button" class="k-btn k-btn--primary" data-new><i class="ti ti-plus" aria-hidden="true"></i>Nueva obra</button>') +
+          '<div class="st-kpis"><div class="st-kpi"><span>Obras</span><b>' + s.works + '</b></div><div class="st-kpi"><span>Capítulos publicados</span><b>' + nf.format(s.published) + '</b></div><div class="st-kpi"><span>Lecturas</span><b>' + nf.format(s.reads) + '</b></div><div class="st-kpi"><span>Comentarios · 7 días</span><b>' + nf.format(s.comments_7d) + '</b></div></div>' +
+          '<div class="st-cols"><div class="st-sec">' + draft +
+            '<h2>Tus obras <a class="k-btn k-btn--quiet k-btn--sm" href="#obras">Ver todas</a></h2>' +
+            (works.length ? '<div class="st-table">' + works.slice(0, 4).map(function (w) { return workRow(w, true); }).join('') + '</div>' : createPaths()) +
+          '</div><div class="st-sec">' +
+            '<h2>Tablón de anuncios <a class="k-btn k-btn--quiet k-btn--sm" href="#anuncios">Ver todo</a></h2><div class="st-ann">' + c.announcements.slice(0, 3).map(function (a) { return annItem(a, false); }).join('') + '</div>' +
+            (latest ? '<a class="k-card k-card--interactive" href="#boletines" style="text-decoration:none;color:inherit;display:grid;gap:6px"><span class="k-eyebrow">Último boletín</span><b>' + esc(latest.title) + '</b><span class="k-muted" style="font-size:13px">' + esc(latest.intro) + '</span></a>' : '') +
+            '<a class="k-card k-card--interactive" href="#contrato" style="text-decoration:none;color:inherit;display:grid;gap:6px"><span class="k-eyebrow">Tu contrato</span><b>Sin contrato · publicación no exclusiva</b><span class="k-muted" style="font-size:13px">Tus obras son tuyas y puedes publicarlas también fuera de KamiTales.</span></a>' +
+          '</div></div>';
+      });
+    },
+    obras: function (arg) {
+      return load('works', '/api/studio/works').then(function (r) {
+        var f = arg || 'all', works = r.works.filter(function (w) { return f === 'all' || w.format === f; });
+        var tabs = '<div class="k-segmented" role="group" aria-label="Formato">' + [['all', 'Todas'], ['comic', 'Cómics'], ['novel', 'Novelas']].map(function (t) { return '<button type="button" data-filter="' + t[0] + '" aria-pressed="' + (f === t[0]) + '">' + t[1] + ' <span class="k-faint">' + r.works.filter(function (w) { return t[0] === 'all' || w.format === t[0]; }).length + '</span></button>'; }).join('') + '</div>';
+        return head('Mis obras', r.isAdmin ? 'Como administrador ves también las obras que todavía no tienen dueño.' : 'Cómics y novelas en un solo sitio. Cada formato abre su propio editor.', '<button type="button" class="k-btn k-btn--primary" data-new><i class="ti ti-plus" aria-hidden="true"></i>Nueva obra</button>') +
+          tabs + (works.length ? '<div class="st-table">' + works.map(function (w) { return workRow(w, false); }).join('') + '</div>'
+            : (r.works.length ? empty('ti-filter-off', 'Nada en este formato', 'No tienes obras de este tipo todavía.') : '<div class="st-sec"><h2>Empieza tu primera obra</h2>' + createPaths() + '</div>'));
+      });
+    },
+    obra: function (id, tab) {
+      return load('works', '/api/studio/works').then(function (r) {
+        var w = r.works.filter(function (x) { return x.id === id; })[0];
+        if (!w) return empty('ti-file-off', 'No encontramos esta obra', 'Puede que no sea tuya o que se haya eliminado.', '<a class="k-btn k-btn--primary" href="#obras">Volver a mis obras</a>');
+        tab = tab || 'capitulos';
+        var tabs = '<div class="k-tabs" role="tablist">' + [['capitulos', 'Capítulos'], ['detalles', 'Detalles'], ['comunidad', 'Comunidad']].map(function (t) { return '<a role="tab" class="k-tab" href="#obra-' + esc(w.id) + (t[0] === 'capitulos' ? '' : '/' + t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</a>'; }).join('') + '</div>';
+        var top = '<a class="k-btn k-btn--quiet k-btn--sm" href="#obras" style="justify-self:start"><i class="ti ti-arrow-left" aria-hidden="true"></i>Mis obras</a>' +
+          '<div class="st-work"><div class="st-work__cover">' + cover(w) + '</div><div class="st-work__info"><div class="k-row">' + formatBadge(w) + (STATUS[w.status] ? '<span class="k-badge">' + STATUS[w.status] + '</span>' : '') + '</div><h1>' + esc(w.title) + '</h1>' +
+          '<div class="k-row"><a class="k-btn k-btn--primary" href="' + editorFor(w) + '"><i class="ti ti-' + (w.format === 'novel' ? 'pencil' : 'photo-plus') + '" aria-hidden="true"></i>' + (w.format === 'novel' ? 'Escribir capítulo' : 'Subir capítulo') + '</a><a class="k-btn k-btn--secondary" href="/obra/' + encodeURIComponent(w.id) + '"><i class="ti ti-eye" aria-hidden="true"></i>Ver ficha pública</a></div></div></div>' +
+          '<div class="st-kpis"><div class="st-kpi"><span>Lecturas</span><b>' + nf.format(w.reads) + '</b></div><div class="st-kpi"><span>Capítulos</span><b>' + w.chapters + '</b></div><div class="st-kpi"><span>Valoración</span><b>' + (w.rating ? w.rating.toFixed(1).replace('.', ',') : '—') + '</b></div><div class="st-kpi"><span>' + (w.format === 'novel' ? 'Palabras' : 'Comunidad') + '</span><b>' + nf.format(w.format === 'novel' ? w.words : w.members) + '</b></div></div>' + tabs;
+        if (tab === 'detalles') {
+          return top + '<div class="k-card k-stack"><div class="k-row k-row--between"><b>Ficha de la obra</b><a class="k-btn k-btn--secondary k-btn--sm" href="/obra/' + encodeURIComponent(w.id) + '/editar"><i class="ti ti-edit" aria-hidden="true"></i>Editar ficha y portada</a></div>' +
+            '<div class="st-row__meta" style="font-size:14px"><span>Formato: <b>' + esc(TYPE[w.type] || w.type) + '</b></span><span>Estado: <b>' + esc(STATUS[w.status] || w.status) + '</b></span><span>Géneros: <b>' + esc((w.genres || []).join(', ') || '—') + '</b></span><span>ID: <b class="k-num">' + esc(w.id) + '</b></span></div>' +
+            (w.owned ? '' : '<div class="k-alert k-alert--warn"><i class="ti ti-alert-triangle" aria-hidden="true"></i><div>Esta obra todavía no tiene dueño asignado: solo un administrador puede editarla.</div></div>') + '</div>';
         }
-
-        var initialQuery = getQueryParam('q');
-        if (initialQuery) {
-            searchInput.value = initialQuery;
-            doSearch(initialQuery);
+        if (tab === 'comunidad') {
+          return api('/api/studio/comments?limit=20&work=' + encodeURIComponent(w.id)).then(function (d) {
+            return top + '<div class="st-sec"><h2>Últimos comentarios <a class="k-btn k-btn--secondary k-btn--sm" href="/comunidad">Ir a la comunidad</a></h2>' +
+              (d.comments.length ? '<div class="st-table">' + d.comments.map(comRow).join('') + '</div>' : empty('ti-message-off', 'Sin comentarios todavía', 'Cuando tus lectores comenten tus capítulos aparecerán aquí.')) + '</div>';
+          });
         }
-
-        function doSearchFromInput() {
-            var q = searchInput.value.trim();
-            if (q.length < 1) return;
-            var newUrl = q ? '?q=' + encodeURIComponent(q) : window.location.pathname;
-            window.history.replaceState(null, '', newUrl);
-            doSearch(q);
-        }
-
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') doSearchFromInput();
+        return api('/api/chapters/' + encodeURIComponent(w.id) + '?limit=100').then(function (d) {
+          var chs = (d.chapters || []).slice().sort(function (a, b) { return b.number - a.number; });
+          var rows = chs.map(function (c) {
+            var st = c.status || 'published', early = c.freeAt && new Date(c.freeAt) > new Date();
+            var badge = st === 'draft' ? '<span class="k-badge">Borrador</span>' : st === 'scheduled' ? '<span class="k-badge k-badge--info">Programado</span>' : '<span class="k-badge k-badge--ok">Publicado</span>';
+            var info = w.format === 'novel' ? (c.wordCount ? nf.format(c.wordCount) + ' palabras' : '') : (c.pages ? c.pages + ' páginas' : '');
+            var edit = w.format === 'novel' ? '<a class="k-btn k-btn--secondary k-btn--sm" href="' + editorFor(w, c.number) + '"><i class="ti ti-pencil" aria-hidden="true"></i>Editar</a>' : '<a class="k-btn k-btn--secondary k-btn--sm" href="/obra/' + encodeURIComponent(w.id) + '/editar"><i class="ti ti-edit" aria-hidden="true"></i>Datos</a>';
+            return '<div class="st-ch"><span class="st-ch__n">#' + String(c.number).padStart(3, '0') + '</span><div class="st-ch__t"><b>' + esc(c.title || 'Capítulo ' + c.number) + '</b><span>' + badge + (early ? '<span class="k-badge k-badge--gold">Adelanto hasta ' + dShort.format(new Date(c.freeAt)) + '</span>' : '') + (info ? '<span>' + info + '</span>' : '') + '<span>' + relDate(c.createdAt || c.releaseDate) + '</span>' + (c.commentCount ? '<span>' + c.commentCount + ' comentarios</span>' : '') + '</span></div>' +
+              '<div class="st-row__act">' + edit + '<a class="k-btn k-btn--quiet k-btn--sm" href="/leer/' + encodeURIComponent(w.id) + '/' + c.number + (w.format === 'novel' && st !== 'published' ? '?vista=previa' : '') + '"><i class="ti ti-eye" aria-hidden="true"></i>Ver</a><button type="button" class="k-btn k-btn--quiet k-btn--sm" data-del-ch="' + c.number + '" data-work="' + esc(w.id) + '" aria-label="Eliminar capítulo ' + c.number + '"><i class="ti ti-trash" aria-hidden="true"></i></button></div></div>';
+          }).join('');
+          return top + '<div class="st-sec"><h2>' + chs.length + (chs.length === 1 ? ' capítulo' : ' capítulos') + '<a class="k-btn k-btn--primary k-btn--sm" href="' + editorFor(w) + '"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo capítulo</a></h2>' +
+            (chs.length ? '<div class="st-table">' + rows + '</div>' : empty(w.format === 'novel' ? 'ti-pencil' : 'ti-photo-plus', 'Todavía no hay capítulos', w.format === 'novel' ? 'Escribe el primero en el editor de novela. Se guarda solo mientras escribes.' : 'Sube el primero desde el editor de cómic: arrastra las páginas y ordénalas antes de publicar.', '<a class="k-btn k-btn--primary" href="' + editorFor(w) + '">' + (w.format === 'novel' ? 'Escribir el capítulo 1' : 'Subir el capítulo 1') + '</a>')) + '</div>';
         });
+      });
+    },
+    comentarios: function () {
+      return api('/api/studio/comments?limit=50').then(function (d) {
+        return head('Comentarios', 'Lo último que dicen tus lectores, en todas tus obras.') +
+          (d.comments.length ? '<div class="st-table">' + d.comments.map(comRow).join('') + '</div>' : empty('ti-message-off', 'Sin comentarios todavía', 'Cuando tus lectores comenten tus capítulos aparecerán aquí, con enlace al párrafo o a la página.'));
+      });
+    },
+    estadisticas: function () {
+      return load('works', '/api/studio/works').then(function (r) {
+        var works = r.works.slice().sort(function (a, b) { return b.reads - a.reads; });
+        var max = Math.max(1, works.reduce(function (m, w) { return Math.max(m, w.reads); }, 0));
+        var total = works.reduce(function (s, w) { return s + w.reads; }, 0);
+        var bars = works.map(function (w) { return '<div class="st-bar"><span class="st-bar__label" title="' + esc(w.title) + '">' + esc(w.title) + '</span><div class="st-bar__track"><div class="st-bar__fill ' + w.format + '" style="width:' + Math.max(1, Math.round(w.reads / max * 100)) + '%"></div></div><span class="st-bar__v">' + nf.format(w.reads) + '</span></div>'; }).join('');
+        return head('Estadísticas', 'Lecturas totales por obra.') +
+          '<div class="st-kpis"><div class="st-kpi"><span>Lecturas totales</span><b>' + nf.format(total) + '</b></div><div class="st-kpi"><span>Obra más leída</span><b style="font-size:20px;line-height:1.1">' + esc(works[0] ? works[0].title : '—') + '</b></div><div class="st-kpi"><span>Capítulos publicados</span><b>' + works.reduce(function (s, w) { return s + w.published; }, 0) + '</b></div></div>' +
+          (works.length ? '<div class="k-card k-stack"><div class="k-row k-row--between"><b>Lecturas por obra</b><span class="st-legend"><span><i style="background:var(--k-info)"></i>Cómic</span><span><i style="background:var(--k-violet)"></i>Novela</span></span></div><div class="st-bars">' + bars + '</div></div>' : '') +
+          '<div class="k-alert"><i class="ti ti-info-circle" aria-hidden="true"></i><div>Las estadísticas por capítulo (lecturas, retención y dónde abandonan los lectores) llegarán en la próxima fase.</div></div>';
+      });
+    },
+    ingresos: function () {
+      var card = function (icon, t, d) { return '<div class="k-card st-muted-card k-stack--sm k-stack"><i class="ti ' + icon + '" style="font-size:24px;color:var(--k-accent)" aria-hidden="true"></i><b>' + t + '</b><span class="k-muted" style="font-size:13px">' + d + '</span><span class="k-badge">Próximamente</span></div>'; };
+      return Promise.resolve(head('Ingresos', 'Lo que ganes con tus obras aparecerá aquí, céntimo a céntimo.') +
+        '<div class="k-alert k-alert--accent"><i class="ti ti-clock" aria-hidden="true"></i><div><b>Los pagos todavía no están activos.</b> Tus adelantos ya pueden programarse; el cobro se activará con la verificación de autores y los pagos por transferencia.</div></div>' +
+        '<div class="st-kpis">' + card('ti-lock-open', 'Capítulos adelantados', 'Venta de capítulos antes de su fecha de liberación.') + card('ti-heart-handshake', 'Suscripción a tu obra', 'Mecenas mensuales con niveles que tú defines.') + card('ti-coin', 'Propinas', 'Apoyo puntual desde el final de cada capítulo.') + card('ti-crown', 'Reparto Premium', 'Parte de la suscripción Premium según el tiempo de lectura.') + '</div>');
+    },
+    contrato: function () {
+      var li = function (t) { return '<li><i class="ti ti-check" aria-hidden="true"></i><span>' + t + '</span></li>'; };
+      return Promise.resolve(head('Contrato', 'Tu relación con KamiTales, por escrito y sin letra pequeña.') +
+        '<div class="st-tiers"><div class="st-tier is-current"><span class="k-badge k-badge--ok">Tu situación actual</span><h3>Sin contrato</h3><p class="k-muted" style="margin:0;font-size:14px">Publicas sin exclusividad. Es el punto de partida de todos los autores.</p><ul>' +
+        li('Tu obra sigue siendo tuya: puedes publicarla también en otras plataformas.') + li('Enlaces externos (Patreon, Ko-fi, tu tienda) sin comisión.') + li('Tu obra no se usa para entrenar inteligencia artificial.') + li('Puedes borrar o retirar tu obra cuando quieras.') + '</ul></div>' +
+        '<div class="st-tier"><span class="k-badge k-badge--gold">Opcional</span><h3>Exclusivo</h3><p class="k-muted" style="margin:0;font-size:14px">Más promoción a cambio de publicar los mismos capítulos solo en KamiTales.</p><ul>' +
+        li('Duración de 2 años, renovable solo si las dos partes quieren.') + li('Salida con 90 días de aviso, sin penalizaciones multiplicadas.') + li('Adaptaciones y traducciones se negocian aparte y puedes vetarlas.') + li('Los derechos vuelven a ti si la obra no se explota en 12 meses.') + '</ul><button type="button" class="k-btn k-btn--secondary" disabled>Solicitar contrato · Próximamente</button></div></div>' +
+        '<div class="k-alert"><i class="ti ti-info-circle" aria-hidden="true"></i><div>Las condiciones del programa de contratos están en revisión legal. Cuando se abra, podrás solicitarlo desde aquí y ver el contrato completo antes de firmar.</div></div>');
+    },
+    anuncios: function (cat) {
+      return load('content', '/api/studio/content').then(function (c) {
+        var f = cat || 'all', list = c.announcements.filter(function (a) { return f === 'all' || a.category === f; });
+        var chips = '<div class="k-chips">' + [['all', 'Todos']].concat(Object.keys(CAT).map(function (k) { return [k, CAT[k]]; })).map(function (t) { return '<button type="button" class="k-chip" data-cat="' + t[0] + '" aria-pressed="' + (f === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+        return head('Tablón de anuncios', 'Novedades, normas y programas de KamiTales para autores.', '<button type="button" class="k-btn k-btn--quiet k-btn--sm" data-mark-all>Marcar todo como leído</button>') + chips +
+          (list.length ? '<div class="st-ann">' + list.map(function (a, i) { return annItem(a, false); }).join('') + '</div>' : empty('ti-speakerphone', 'Nada por aquí', 'No hay anuncios de esta categoría.'));
+      });
+    },
+    boletines: function () {
+      return load('content', '/api/studio/content').then(function (c) {
+        return head('Boletines', 'El resumen mensual para autores: lo nuevo, consejos y lo que viene.') +
+          c.bulletins.map(function (b, i) {
+            return '<article class="st-bul"><span class="k-eyebrow">' + dLong.format(new Date(b.date)) + (i === 0 ? ' · Último' : '') + '</span><h3>' + esc(b.title) + '</h3><p class="k-muted" style="margin:0">' + esc(b.intro) + '</p>' + b.sections.map(function (s) { return '<section><b>' + esc(s.title) + '</b><p>' + esc(s.body) + '</p></section>'; }).join('') + '</article>';
+          }).join('');
+      });
+    },
+    guias: function () {
+      var g = function (icon, t, items, ordered) { var tag = ordered ? 'ol' : 'ul'; return '<div class="st-guide"><details><summary><i class="ti ' + icon + '" aria-hidden="true"></i>' + t + '</summary><' + tag + '>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</' + tag + '></details></div>'; };
+      return Promise.resolve(head('Guías', 'Lo esencial para publicar en KamiTales.') + '<div class="st-guides">' +
+        g('ti-brush', 'Publicar un cómic', ['Crea la obra eligiendo «Cómic» y su formato (manga, manhwa, manhua o one-shot).', 'Abre «Subir capítulo» y arrastra las páginas. Puedes reordenarlas antes de publicar.', 'Formatos JPG, PNG o WEBP, hasta 10 MB por página y 200 páginas por capítulo.', 'Para manhwa vertical, usa un ancho de 800 a 1.200 px.'], true) +
+        g('ti-book-2', 'Publicar una novela', ['Crea la obra eligiendo «Novela».', 'Escribe en el editor: se guarda solo y puedes pegar desde Word o Google Docs.', 'Un guion al empezar un párrafo se convierte en raya de diálogo.', 'Desde «Publicar» eliges borrador, programado o publicar ahora.'], true) +
+        g('ti-calendar-time', 'Adelantos y programación', ['Programa un capítulo para que se publique solo en una fecha.', 'Marca un capítulo como adelanto y elige cuándo pasa a ser gratis.', 'Tus lectores ven siempre la fecha de liberación.']) +
+        g('ti-shield-check', 'Normas de contenido', ['Marca los avisos de contenido que correspondan a cada capítulo.', 'Solo puedes publicar obras propias o con permiso del autor.', 'El contenido para adultos requiere el aviso correspondiente.']) +
+        '</div>');
+    },
+  };
 
-        searchInput.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            var q = this.value.trim();
-            if (q.length < 1) { showEmpty(); return; }
-            debounceTimer = setTimeout(function() { doSearchFromInput(); }, 400);
-        });
+  /* ── Router por hash ───────────────────────────────────────── */
+  var renderId = 0;
+  function route() {
+    var h = (location.hash || '#inicio').slice(1), name = h, arg = null, m;
+    if ((m = h.match(/^obra-(.+?)(?:\/(capitulos|detalles|comunidad))?$/))) { name = 'obra'; arg = decodeURIComponent(m[1]); }
+    if (!VIEWS[name]) name = 'inicio';
+    var link = name === 'obra' ? 'obras' : name;
+    document.querySelectorAll('.st-link, .st-mtabs a').forEach(function (a) { var on = a.getAttribute('href') === '#' + link; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); a.classList.toggle('is-active', on); });
+    var id = ++renderId; loading();
+    var p = name === 'obra' ? VIEWS.obra(arg, m && m[2]) : VIEWS[name](state[name]);
+    Promise.resolve(p).then(function (html) { if (id === renderId) { view.innerHTML = html; window.scrollTo(0, 0); } }).catch(function (e) { if (id === renderId) fail(e); });
+  }
+  var state = {};
+  view.addEventListener('click', function (e) {
+    var f = e.target.closest('[data-filter]'); if (f) { state.obras = f.dataset.filter; route(); return; }
+    var c = e.target.closest('[data-cat]'); if (c) { state.anuncios = c.dataset.cat; route(); return; }
+    if (e.target.closest('[data-mark-all]')) { load('content', '/api/studio/content').then(function (d) { d.announcements.forEach(function (a) { markRead(a.id); }); route(); }); return; }
+    var del = e.target.closest('[data-del-ch]'); if (del) { confirmDelete(del.dataset.work, del.dataset.delCh); }
+  });
 
-        btnSearch.addEventListener('click', doSearchFromInput);
+  /* ── Diálogos ──────────────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-new]')) { $('st-new').showModal(); return; }
+    var close = e.target.closest('[data-close]'); if (close) close.closest('dialog').close();
+  });
+  ['st-new', 'st-confirm'].forEach(function (id) { $(id).addEventListener('click', function (e) { if (e.target === this) this.close(); }); });
+  function confirmDelete(workId, num) {
+    $('st-confirm-t').textContent = '¿Eliminar el capítulo ' + num + '?';
+    $('st-confirm-msg').textContent = 'Se borrarán el capítulo, sus páginas o su texto y sus comentarios. No se puede deshacer.';
+    $('st-confirm').showModal();
+    $('st-confirm-ok').onclick = function () {
+      var b = this; b.disabled = true; b.textContent = 'Eliminando…';
+      api('/api/chapters/' + encodeURIComponent(workId) + '/' + num, { method: 'DELETE' }).then(function () {
+        $('st-confirm').close(); KAMI.toast('Capítulo ' + num + ' eliminado', 'ok'); delete cache.works; delete cache.summary; route();
+      }).catch(function (er) { KAMI.toast(er.message, 'bad'); }).then(function () { b.disabled = false; b.textContent = 'Eliminar'; });
+    };
+  }
 
-        async function doSearch(q) {
-            if (!q || q.length < 1) { showEmpty(); return; }
-
-            emptyState.style.display = 'none';
-            resultsContent.style.display = 'none';
-            loadingState.style.display = 'block';
-
-            try {
-                var result = await kamiOffline.safeFetch('/api/manga/search?q=' + encodeURIComponent(q) + '&limit=50', {}, { cacheKey: 'search_' + q, maxAge: 60000 });
-                var results = result.ok ? (result.data.results || []) : [];
-
-                loadingState.style.display = 'none';
-
-                if (results.length === 0) {
-                    emptyState.querySelector('.empty-icon').textContent = result.fromCache ? '⚠️' : '📭';
-                    emptyState.querySelector('.empty-title').textContent = result.fromCache ? 'SIN CONEXIÓN' : 'SIN RESULTADOS';
-                    emptyState.querySelector('.empty-desc').textContent = result.fromCache ? 'No hay datos guardados localmente. Conéctate al servidor e intenta de nuevo.' : 'No se encontraron mangas para "' + q + '". Prueba con otro t\u00e9rmino.';
-                    emptyState.style.display = 'block';
-                    return;
-                }
-
-                resultsCount.textContent = results.length + ' manga' + (results.length !== 1 ? 's' : '') + ' encontrado' + (results.length !== 1 ? 's' : '');
-                mangaGrid.innerHTML = results.map(function(m) {
-                    return window.kamiMangaCard(m, { link: '/obra/' + m.id + '/editar' });
-                }).join('');
-                resultsContent.style.display = 'block';
-            } catch (err) {
-                loadingState.style.display = 'none';
-                emptyState.querySelector('.empty-icon').textContent = '⚠️';
-                emptyState.querySelector('.empty-title').textContent = 'ERROR';
-                emptyState.querySelector('.empty-desc').textContent = err.message || 'Error al buscar. Verifica que el servidor est\u00e9 corriendo en localhost:4000.';
-                emptyState.style.display = 'block';
-            }
-        }
-
-        function showEmpty() {
-            loadingState.style.display = 'none';
-            resultsContent.style.display = 'none';
-            emptyState.querySelector('.empty-icon').textContent = '🔍';
-            emptyState.querySelector('.empty-title').textContent = 'BUSCA UN MANGA';
-            emptyState.querySelector('.empty-desc').textContent = 'Escribe el nombre del manga que quieras editar. Los resultados aparecer\u00e1n aqu\u00ed en formato cartelera.';
-            emptyState.style.display = 'block';
-        }
-    </script>
-  <script src="/js/offline.js?v=2"></script>
-  <script src="/js/notifications.js"></script>
+  /* ── Arranque ──────────────────────────────────────────────── */
+  if (!token()) {
+    view.innerHTML = empty('ti-lock', 'Inicia sesión para entrar al Estudio', 'El Estudio es tu espacio de autor: tus obras, capítulos, comentarios y contrato.', '<a class="k-btn k-btn--primary" href="/acceder?return=/estudio">Acceder</a>');
+    return;
+  }
+  var u = user(); if (u && u.username) $('st-who').textContent = '@' + u.username;
+  window.addEventListener('hashchange', route);
+  route(); paintUnread();
+})();
+</script>
 </body>
 </html>

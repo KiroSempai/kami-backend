@@ -1,0 +1,73 @@
+{
+  "_info": "Contenido del Estudio de KamiTales: tablón de anuncios para autores y boletines. Se edita a mano; el servidor lo relee en cada petición. Categorías de anuncio: novedad, normas, programa, mantenimiento.",
+  "announcements": [
+    {
+      "id": "2026-11-novelas",
+      "date": "2026-11-12",
+      "category": "novedad",
+      "pinned": true,
+      "title": "Ya puedes publicar novelas",
+      "summary": "KamiTales abre las novelas por capítulos, con editor propio y lector de texto.",
+      "body": "Desde hoy puedes crear obras de tipo Novela. Tienen su propio editor, con guardado automático, tipografía de diálogo automática (raya, comillas «» y puntos suspensivos) y publicación programada.\n\nTus lectores tendrán comentarios por párrafo, progreso exacto y ajustes de lectura. Para empezar, pulsa «Nueva obra» y elige Novela."
+    },
+    {
+      "id": "2026-11-estudio",
+      "date": "2026-11-12",
+      "category": "novedad",
+      "pinned": false,
+      "title": "Nuevo Estudio para autores",
+      "summary": "Todo en un sitio: tus obras, capítulos, comentarios, estadísticas y contrato.",
+      "body": "El Estudio reúne en una sola página todo lo que necesitas como autor. Cómics y novelas comparten el panel, pero cada formato abre su propio editor: el de cómic trabaja con páginas e imágenes, y el de novela con texto."
+    },
+    {
+      "id": "2026-11-adelantos",
+      "date": "2026-11-10",
+      "category": "programa",
+      "pinned": false,
+      "title": "Capítulos adelantados con fecha de liberación",
+      "summary": "Marca un capítulo como adelanto y elige cuándo pasa a ser gratis para todos.",
+      "body": "Al publicar un capítulo puedes activar «Adelanto de pago» y elegir la fecha en que se libera. Los lectores ven esa fecha en la lista de capítulos. El cobro de adelantos se activará junto con los pagos; mientras tanto, el capítulo queda bloqueado hasta su fecha."
+    },
+    {
+      "id": "2026-11-normas",
+      "date": "2026-11-08",
+      "category": "normas",
+      "pinned": false,
+      "title": "Avisos de contenido obligatorios",
+      "summary": "Si tu capítulo incluye violencia explícita, contenido sexual o autolesión, márcalo.",
+      "body": "Cada capítulo tiene avisos de contenido (violencia, contenido sexual, lenguaje fuerte, autolesión, drogas y terror). Los lectores los ven antes de empezar. Un capítulo sin los avisos que le corresponden puede ocultarse hasta que se corrijan."
+    },
+    {
+      "id": "2026-11-mantenimiento",
+      "date": "2026-11-05",
+      "category": "mantenimiento",
+      "pinned": false,
+      "title": "Mejoras de seguridad en la subida de capítulos",
+      "summary": "Ahora solo el autor de una obra (o un administrador) puede editarla o subirle capítulos.",
+      "body": "Hemos reforzado los permisos: cada obra tiene un dueño y solo esa cuenta puede editarla, borrarla o subirle capítulos. Si una obra tuya aparece sin dueño, escríbenos para asignártela."
+    }
+  ],
+  "bulletins": [
+    {
+      "id": "boletin-2026-11",
+      "date": "2026-11-12",
+      "title": "Boletín de autores · Noviembre 2026",
+      "intro": "Este mes llegan las novelas, el nuevo Estudio y los capítulos adelantados.",
+      "sections": [
+        { "title": "Lo nuevo", "body": "Novelas por capítulos con editor propio, Estudio unificado para cómics y novelas, y lector de novelas con la misma interfaz de cristal que el de cómics." },
+        { "title": "Consejo del mes", "body": "Publica con un ritmo que puedas mantener. En KamiTales las pausas anunciadas no penalizan tu obra en los rankings: avisa a tus lectores desde la nota del autor." },
+        { "title": "Próximamente", "body": "Pagos para autores, programa de contratos exclusivos y estadísticas por capítulo (lecturas, retención y abandono)." }
+      ]
+    },
+    {
+      "id": "boletin-2026-10",
+      "date": "2026-10-30",
+      "title": "Boletín de autores · Octubre 2026",
+      "intro": "Preparamos el cambio a KamiTales y un sistema de diseño nuevo.",
+      "sections": [
+        { "title": "Nueva imagen", "body": "La plataforma pasa a llamarse KamiTales y estrena navegación común, temas personalizables y modo claro." },
+        { "title": "Tu opinión", "body": "Estamos definiendo las condiciones para autores. La propuesta: no exclusivo por defecto, exclusiva opcional de 2 años y enlaces externos sin comisión." }
+      ]
+    }
+  ]
+}

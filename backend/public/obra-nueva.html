@@ -142,9 +142,9 @@
 
 <body>
 <div style="max-width:1100px;margin:40px auto;padding:0 24px;">
-    <div class="prov-badge">⚠ Acceso provisional — Solo scans autorizados</div>
-    <h1 class="section-header">AÑADIR MANGA AL CATÁLOGO</h1>
-    <p class="section-sub">Completa todos los campos obligatorios. El ID se genera automáticamente como número de serie (KMI-0000001).</p>
+    <a class="k-btn k-btn--quiet k-btn--sm" href="/estudio#obras"><i class="ti ti-arrow-left" aria-hidden="true"></i>Volver al Estudio</a>
+    <h1 class="section-header" id="nw-title">NUEVA OBRA</h1>
+    <p class="section-sub" id="nw-sub">Completa la ficha. Después podrás subir o escribir el primer capítulo desde el Estudio.</p>
 </div>
 
 <div class="editor-wrap">
@@ -564,7 +564,7 @@ async function executeSubmit(formData, btn) {
 
         showStatus('success', `✅ ${data.message}`, data.manga.id);
         setTimeout(() => {
-            window.location.href = `/obra/${data.manga.id}/edit`;
+            window.location.href = `/estudio#obra-${data.manga.id}`;
         }, 1500);
     } catch (err) {
         showStatus('error', `❌ ${err.message}`);
@@ -581,5 +581,21 @@ function showStatus(type, msg, id) {
 }
 </script>
   <script src="/js/notifications.js"></script>
+<script>
+  // Formato elegido en el Estudio: cómic (imágenes) o novela (texto)
+  (function () {
+    var tipo = new URLSearchParams(location.search).get('tipo');
+    var sel = document.getElementById('f-type'); if (!sel || !tipo) return;
+    var novel = tipo === 'novel';
+    Array.from(sel.options).forEach(function (o) { if (o.value && (o.value === 'novel') !== novel) o.remove(); });
+    if (novel) sel.value = 'novel';
+    document.getElementById('nw-title').textContent = novel ? 'NUEVA NOVELA' : 'NUEVO CÓMIC';
+    document.getElementById('nw-sub').textContent = novel
+      ? 'Completa la ficha de tu novela. Al terminar irás a tu obra en el Estudio para escribir el primer capítulo.'
+      : 'Completa la ficha de tu cómic y elige su formato. Al terminar irás a tu obra en el Estudio para subir el primer capítulo.';
+    document.title = (novel ? 'Nueva novela' : 'Nuevo cómic') + ' · KamiTales';
+    sel.dispatchEvent(new Event('change'));
+  })();
+</script>
 </body>
 </html>

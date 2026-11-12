@@ -100,13 +100,15 @@ Red social de manga estilo X.com con feed algorítmico, composer profesional, in
 |------|---------|
 | `/`, `/explorar` | `explorar.html` (cómics y novelas) |
 | `/comunidad` | `comunidad.html` |
-| `/obra/:id` · `/obra/:id/editar` · `/obra/:id/nuevo-capitulo` | `obra.html` · `obra-editar.html` · `capitulo-nuevo.html` |
+| `/obra/:id` · `/obra/:id/editar` · `/obra/:id/nuevo-capitulo` | `obra.html` · `obra-editar.html` · `capitulo-nuevo.html` (editor de cómic: páginas, orden, vista previa) |
 | `/leer/:id/:cap` | `lector.html` (cómic) o `lector-novela.html` (novela), según el tipo de obra |
 | `/obra/:id/escribir` · `/obra/:id/escribir/:num` | `escribir.html` (editor de novelas) |
-| `/estudio` · `/estudio/nueva` | `estudio.html` · `obra-nueva.html` |
+| `/estudio` | `estudio.html`: Estudio de autores (una página, rutas por hash: #inicio, #obras, #obra-ID[/detalles|/comunidad], #comentarios, #estadisticas, #ingresos, #contrato, #anuncios, #boletines, #guias). API en `routes/routes-studio.js` (`/api/studio`); tablón y boletines en `backend/data/estudio-contenido.json` |
+| `/estudio/nueva?tipo=comic|novel` | `obra-nueva.html` (el formato filtra los tipos) |
 | `/acceder` · `/registro` · `/ajustes` · `/mensajes` | `acceder.html` · `registro.html` · `ajustes.html` · `mensajes.html` |
 | `/perfil`, `/perfil/:usuario` · `/perfil-editar/:usuario` | `perfil.html` · `perfil-editar.html` |
 | `/premium` · `/premium/exito` · `/admin/analiticas` | `premium.html` · `premium-exito.html` · `admin-analiticas.html` |
 
+- Lectores: `css/reader-glass.css` es la interfaz de cristal común a `lector.html` (cómic) y `lector-novela.html`.
 - Seguridad: `backend/middleware/auth.js` (sesión y dueño de la obra). Migraciones: `migrate-ownership.sql` y `migrate-novels.sql` (aplicadas), `migrate-novel-reader.sql` (texto de capítulos, comentarios por párrafo, progreso por párrafo, reacciones).
 - Novelas: API en `backend/routes/routes-novel.js` (`/api/novel`). Cada capítulo guarda bloques `{id, type: p|quote|scene, html}`; el id de párrafo no cambia al editar. `backend/schema.js` permite que el código funcione antes de aplicar una migración.

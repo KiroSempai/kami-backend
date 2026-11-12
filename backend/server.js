@@ -180,6 +180,7 @@ const feedRoutes         = require('./routes/routes-feed');
 const communityRoutes    = require('./routes/routes-communities');
 const adminRoutes        = require('./routes/routes-admin');
 const novelRoutes        = require('./routes/routes-novel');
+const studioRoutes       = require('./routes/routes-studio');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🚀 App Express
@@ -408,6 +409,7 @@ app.use('/api/communities',  communityRoutes);
 app.use('/api/dms',          dmRoutes);
 app.use('/api/admin',        adminRoutes);
 app.use('/api/novel',        novelRoutes);
+app.use('/api/studio',       studioRoutes);
 
 // Rutas sueltas que no encajan en los groups anteriores
 

@@ -2,481 +2,343 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nuevo capítulo · KamiTales</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/common.css?v=9">
-  <link rel="stylesheet" href="/css/kmi-card.css">
-    <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg-base); color: var(--text-primary); font-family: var(--font-body); min-height: 100vh; }
-
-    .upload-layout { display: flex; max-width: 1400px; margin: 64px auto 0; min-height: calc(100vh - 64px); }
-
-    /* ── SIDEBAR ── */
-    .upload-sidebar { width: 280px; flex-shrink: 0; padding: 24px 20px; border-right: 1px solid var(--border); position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; }
-    .upload-sidebar-title { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; margin-bottom: 4px; }
-    .upload-sidebar-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
-    .upload-sidebar-section { margin-bottom: 20px; }
-    .upload-sidebar-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .upload-sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border); margin-bottom: 6px; font-size: 13px; color: var(--text-secondary); cursor: default; }
-    .upload-sidebar-item.active { background: color-mix(in srgb, var(--k-accent) 8%, transparent); border-color: var(--accent); color: var(--accent); }
-    .upload-sidebar-item .step-num { width: 22px; height: 22px; border-radius: 50%; background: rgb(var(--k-ink) / 0.06); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-    .upload-sidebar-item.active .step-num { background: var(--accent); color: var(--k-text); }
-    .upload-sidebar-item.completed .step-num { background: var(--green); color: var(--k-text); }
-
-    /* ── MAIN ── */
-    .upload-main { flex: 1; padding: 32px 40px; max-width: 860px; }
-
-    .upload-section { display: none; margin-bottom: 40px; }
-    .upload-section.active { display: block; }
-
-    .upload-section-title { font-family: var(--font-display); font-size: 28px; letter-spacing: 1px; margin-bottom: 4px; }
-    .upload-section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
-
-    .upload-field { margin-bottom: 20px; }
-    .upload-field-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .upload-field-label .required { color: var(--accent); }
-    .upload-field input, .upload-field select, .upload-field textarea {
-      width: 100%; padding: 10px 14px; background: rgb(var(--k-ink) / 0.04); border: 1px solid var(--border);
-      border-radius: 8px; color: var(--text-primary); font-family: var(--font-body); font-size: 14px; outline: none; transition: border-color .2s;
-    }
-    .upload-field input:focus, .upload-field select:focus, .upload-field textarea:focus { border-color: var(--accent); }
-    .upload-field textarea { resize: vertical; min-height: 80px; }
-    .upload-field select { cursor: pointer; appearance: none; }
-    .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    /* ── DRAG & DROP ── */
-    .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 60px 40px; text-align: center; cursor: pointer; transition: all .2s; background: rgb(var(--k-ink) / 0.02); }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: color-mix(in srgb, var(--k-accent) 5%, transparent); }
-    .upload-zone-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-    .upload-zone-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .upload-zone-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-    .upload-zone-btn { display: inline-flex; padding: 10px 24px; background: var(--accent); color: var(--k-text); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
-    .upload-zone-btn:hover { opacity: .9; }
-    .upload-zone-hint { font-size: 11px; color: var(--text-muted); margin-top: 12px; }
-
-    /* ── PAGE PREVIEW GRID ── */
-    .page-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 24px; }
-    .page-item { position: relative; border-radius: 6px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border); aspect-ratio: 2/3; cursor: grab; }
-    .page-item:active { cursor: grabbing; }
-    .page-item img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-    .page-item .page-num { position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 90%, transparent); color: var(--k-text); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); z-index: 2; }
-    .page-item .page-remove { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 90%, transparent); color: var(--k-text); border: none; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; }
-    .page-item:hover .page-remove { opacity: 1; }
-    .page-empty { grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
-
-    /* ── PROGRESS BAR ── */
-    .upload-progress { margin-top: 24px; display: none; }
-    .upload-progress.show { display: block; }
-    .upload-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .upload-progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .3s; width: 0%; }
-    .upload-progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
-
-    /* ── ACTIONS ── */
-    .upload-actions { display: flex; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
-    .btn-upload-primary { padding: 12px 32px; background: var(--accent); color: var(--k-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .2s; }
-    .btn-upload-primary:hover { opacity: .9; }
-    .btn-upload-primary:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-upload-secondary { padding: 12px 24px; background: rgb(var(--k-ink) / 0.06); color: var(--text-secondary); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .2s; }
-    .btn-upload-secondary:hover { background: rgb(var(--k-ink) / 0.1); color: var(--text-primary); }
-
-    /* ── FEEDBACK ── */
-    .upload-feedback { display: none; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; }
-    .upload-feedback.error { background: color-mix(in srgb, var(--k-accent) 10%, transparent); border: 1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color: var(--k-accent); display: flex; }
-    .upload-feedback.success { background: color-mix(in srgb, var(--k-ok) 10%, transparent); border: 1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color: var(--k-ok); display: flex; }
-
-    /* ── RESPONSIVE ── */
-    @media(max-width:900px) {
-      .upload-layout { flex-direction: column; }
-      .upload-sidebar { width: 100%; position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 16px 20px; }
-      .upload-main { padding: 24px 20px; }
-      .upload-row { grid-template-columns: 1fr; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Editor de cómic · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Editor de cómic: se trabaja con páginas de imagen. Mesa de luz a la izquierda,
+       datos y publicación a la derecha. */
+    :root { --ce-bar-h: 56px; }
+    .ce-bar { position: sticky; top: calc(var(--k-nav-h) + env(safe-area-inset-top, 0px)); z-index: 40; display: flex; align-items: center; gap: var(--k-2); flex-wrap: wrap; min-height: var(--ce-bar-h); padding: var(--k-2) max(16px, env(safe-area-inset-right, 0px)) var(--k-2) max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--k-bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--k-line); }
+    .ce-bar__work { display: grid; margin-right: auto; min-width: 0; }
+    .ce-bar__work span { font-size: var(--k-fs-xs); color: var(--k-text-3); }
+    .ce-bar__work b { font-size: var(--k-fs-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 36ch; }
+    .ce-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 1100px) { .ce-layout { grid-template-columns: minmax(0, 1fr) 360px; } }
+    .ce-main { padding: var(--k-6) max(16px, env(safe-area-inset-right, 0px)) var(--k-12) max(16px, env(safe-area-inset-left, 0px)); min-width: 0; display: grid; gap: var(--k-4); align-content: start; }
+    .ce-side { border-left: 1px solid var(--k-line); background: var(--k-surface-1); padding: var(--k-6) var(--k-5); display: grid; gap: var(--k-6); align-content: start; }
+    @media (min-width: 1100px) { .ce-side { position: sticky; top: calc(var(--k-nav-h) + var(--ce-bar-h)); align-self: start; max-height: calc(100dvh - var(--k-nav-h) - var(--ce-bar-h)); overflow-y: auto; } }
+    @media (max-width: 1099px) { .ce-side { border-left: 0; border-top: 1px solid var(--k-line); } }
+    .ce-side h2 { margin: 0; font: 700 10.5px/1 var(--k-font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--k-text-3); }
+    .ce-grp { display: grid; gap: var(--k-3); }
+    .ce-two { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: var(--k-3); }
+
+    /* Zona de carga */
+    .ce-drop { display: grid; place-items: center; gap: var(--k-3); text-align: center; padding: var(--k-10) var(--k-6); border: 2px dashed var(--k-line-2); border-radius: var(--k-r-lg); background: rgb(var(--k-ink) / .02); cursor: pointer; transition: border-color var(--k-t-fast), background var(--k-t-fast); }
+    .ce-drop:hover, .ce-drop:focus-visible, .ce-drop.is-over { border-color: var(--k-accent); background: var(--k-accent-soft); outline: none; }
+    .ce-drop i { font-size: 44px; color: var(--k-accent); }
+    .ce-drop b { font-size: var(--k-fs-lg); }
+    .ce-drop span { color: var(--k-text-2); font-size: var(--k-fs-sm); }
+    .ce-drop.is-compact { padding: var(--k-4); grid-auto-flow: column; justify-content: center; }
+    .ce-drop.is-compact i { font-size: 22px; } .ce-drop.is-compact span { display: none; }
+
+    .ce-tools { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; }
+    .ce-tools .ce-count { margin-right: auto; font-size: var(--k-fs-sm); color: var(--k-text-2); }
+    .ce-tools .ce-count b { color: var(--k-text); font-variant-numeric: tabular-nums; }
+
+    /* Mesa de luz */
+    .ce-grid { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
+    .ce-page { position: relative; display: grid; gap: 6px; padding: 8px; border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: var(--k-surface-1); cursor: grab; transition: border-color var(--k-t-fast), transform var(--k-t-fast), opacity var(--k-t-fast); }
+    .ce-page:focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+    .ce-page.is-drag { opacity: .35; }
+    .ce-page.is-target { border-color: var(--k-accent); transform: scale(1.02); }
+    .ce-page.is-bad { border-color: var(--k-bad); }
+    .ce-page__img { aspect-ratio: 2 / 3; border-radius: 6px; overflow: hidden; background: rgb(var(--k-ink) / .05); display: grid; place-items: center; }
+    .ce-page__img img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+    .ce-page__n { position: absolute; top: 14px; left: 14px; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 6px; display: grid; place-items: center; background: var(--k-accent-fill); color: var(--k-on-accent); font: 700 11px/1 var(--k-font-mono); box-shadow: var(--k-shadow-1); }
+    .ce-page__meta { display: grid; gap: 2px; font-size: 11px; color: var(--k-text-3); min-width: 0; }
+    .ce-page__meta b { color: var(--k-text-2); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ce-page__warn { color: var(--k-warn); } .ce-page__err { color: var(--k-bad); }
+    .ce-page__act { display: flex; gap: 2px; justify-content: space-between; }
+    .ce-page__act .k-btn { min-height: 28px; width: 28px; }
+
+    /* Vista previa */
+    .ce-prev { position: fixed; inset: 0; z-index: 850; display: none; grid-template-rows: auto 1fr; background: rgb(5 5 12 / .92); backdrop-filter: blur(6px); }
+    .ce-prev.is-open { display: grid; }
+    .ce-prev__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--k-3); flex-wrap: wrap; padding: var(--k-3) max(16px, env(safe-area-inset-right, 0px)) var(--k-3) max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid rgb(255 255 255 / .08); color: #f1f0f7; }
+    .ce-prev__stage { overflow: auto; display: grid; justify-items: center; padding: var(--k-4) 0 var(--k-10); }
+    .ce-prev__col { width: min(var(--ce-pw, 720px), 100%); display: grid; gap: var(--ce-gap, 0px); }
+    .ce-prev__col img { width: 100%; display: block; }
+    .ce-prev[data-mode="pages"] .ce-prev__col img { display: none; }
+    .ce-prev[data-mode="pages"] .ce-prev__col img.is-on { display: block; max-height: calc(100dvh - 140px); object-fit: contain; }
+    .ce-prev__pg { color: #b4b1c6; font-size: var(--k-fs-sm); min-width: 90px; text-align: center; }
+
+    .ce-upload { display: grid; gap: var(--k-2); }
+    .ce-upload__bar { height: 8px; border-radius: 6px; background: rgb(var(--k-ink) / .08); overflow: hidden; }
+    .ce-upload__bar i { display: block; height: 100%; width: 0; background: var(--k-accent); box-shadow: 0 0 10px var(--k-accent); transition: width .2s linear; }
+    .ed-radio { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: var(--k-3); align-items: start; padding: var(--k-3); border: 1px solid var(--k-line-2); border-radius: var(--k-r-md); cursor: pointer; }
+    .ed-radio:has(input:checked) { border-color: var(--k-accent); background: var(--k-accent-soft); }
+    .ed-radio input { accent-color: var(--k-accent); margin-top: 3px; }
+    .ed-radio b { display: block; font-size: var(--k-fs-sm); } .ed-radio span { font-size: var(--k-fs-xs); color: var(--k-text-2); }
+    .ce-gate { max-width: 560px; margin: 12vh auto; }
+    [hidden] { display: none !important; }
+  </style>
 </head>
-<body>
-<div class="upload-layout">
-    <!-- SIDEBAR -->
-    <aside class="upload-sidebar">
-      <div class="upload-sidebar-title">SUBIR CAPÍTULO</div>
-      <div class="upload-sidebar-sub" id="upload-manga-name">Cargando manga...</div>
+<body data-shell="minimal" data-shell-back="/estudio#obras">
 
-      <div class="upload-sidebar-section">
-        <div class="upload-sidebar-label">Progreso</div>
-        <div class="upload-sidebar-item active" data-step="1">
-          <span class="step-num">1</span>
-          Configuración del capítulo
-        </div>
-        <div class="upload-sidebar-item" data-step="2">
-          <span class="step-num">2</span>
-          Subir páginas
-        </div>
-        <div class="upload-sidebar-item" data-step="3">
-          <span class="step-num">3</span>
-          Visibilidad y publicación
-        </div>
-      </div>
-
-      <div class="upload-sidebar-section">
-        <div class="upload-sidebar-label">Manga</div>
-        <div class="upload-sidebar-item">
-          <span style="font-size:16px;">📖</span>
-          <span id="upload-manga-title">-</span>
-        </div>
-      </div>
-    </aside>
-
-    <!-- MAIN -->
-    <main class="upload-main">
-
-      <!-- STEP 1: Config -->
-      <div class="upload-section active" data-section="1">
-        <div class="upload-section-title">📝 Configuración</div>
-        <div class="upload-section-desc">Define los datos básicos del capítulo antes de subir las páginas.</div>
-
-        <div class="upload-row">
-          <div class="upload-field">
-            <label class="upload-field-label">Número <span class="required">*</span></label>
-            <input type="number" id="ch-number" min="1" step="1" placeholder="Ej: 1">
-          </div>
-          <div class="upload-field">
-            <label class="upload-field-label">Volumen</label>
-            <input type="number" id="ch-volume" min="0" placeholder="Ej: 1 (opcional)">
-          </div>
-        </div>
-
-        <div class="upload-field">
-          <label class="upload-field-label">Título del capítulo</label>
-          <input type="text" id="ch-title" placeholder="Ej: El despertar del héroe (opcional)">
-        </div>
-
-        <div class="upload-row">
-          <div class="upload-field">
-            <label class="upload-field-label">Idioma</label>
-            <select id="ch-lang">
-              <option value="es">Español</option>
-              <option value="en">Inglés</option>
-              <option value="pt">Portugués</option>
-              <option value="ja">Japonés (raw)</option>
-              <option value="other">Otro</option>
-            </select>
-          </div>
-          <div class="upload-field">
-            <label class="upload-field-label">Grupo traductor</label>
-            <input type="text" id="ch-scan" placeholder="Ej: Estudio Sakura">
-          </div>
-        </div>
-
-        <div class="upload-field">
-          <label class="upload-field-label">Nota del autor / del grupo</label>
-          <textarea id="ch-notes" placeholder="Notas sobre el capítulo, créditos, avisos..."></textarea>
-        </div>
-      </div>
-
-      <!-- STEP 2: Upload pages -->
-      <div class="upload-section" data-section="2">
-        <div class="upload-section-title">🖼️ Subir páginas</div>
-        <div class="upload-section-desc">Arrastra o selecciona las imágenes del capítulo en orden.</div>
-
-        <div class="upload-zone" id="upload-zone">
-          <div class="upload-zone-icon">📂</div>
-          <div class="upload-zone-title">Arrastra tus imágenes aquí</div>
-          <div class="upload-zone-desc">O haz clic para seleccionar los archivos</div>
-          <button class="upload-zone-btn" onclick="document.getElementById('file-input').click()">Seleccionar archivos</button>
-          <a href="/preview" target="_blank" class="upload-zone-btn" style="background:color-mix(in srgb, var(--k-info) 20%, transparent);color:var(--k-info);border:1px solid color-mix(in srgb, var(--k-info) 30%, transparent);margin-left:8px;text-decoration:none;">🧪 Probar mejora</a>
-          <div class="upload-zone-hint">JPG, PNG, WebP · Tamaño máx: 20MB por imagen</div>
-          <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
-        </div>
-
-        <div class="upload-progress" id="upload-progress">
-          <div class="upload-progress-bar"><div class="upload-progress-fill" id="progress-fill"></div></div>
-          <div class="upload-progress-text">
-            <span id="progress-status">Preparando...</span>
-            <span id="progress-pct">0%</span>
-          </div>
-        </div>
-
-        <div class="page-grid" id="page-grid">
-          <div class="page-empty">Aún no hay páginas. Arrastra imágenes para empezar.</div>
-        </div>
-      </div>
-
-      <!-- STEP 3: Visibility -->
-      <div class="upload-section" data-section="3">
-        <div class="upload-section-title">👁️ Visibilidad</div>
-        <div class="upload-section-desc">Configura cómo y cuándo se publicará este capítulo.</div>
-
-        <div class="upload-field">
-          <label class="upload-field-label">Estado de publicación</label>
-          <select id="ch-status">
-            <option value="published">Publicado — visible para todos</option>
-            <option value="draft">Borrador — solo visible para editores</option>
-            <option value="scheduled">Programado — publicar automáticamente</option>
-          </select>
-        </div>
-
-        <div id="schedule-section" style="display:none;">
-          <div class="upload-row">
-            <div class="upload-field">
-              <label class="upload-field-label">Fecha de publicación</label>
-              <input type="date" id="ch-schedule-date">
-            </div>
-            <div class="upload-field">
-              <label class="upload-field-label">Hora</label>
-              <input type="time" id="ch-schedule-time" value="12:00">
-            </div>
-          </div>
-        </div>
-
-        <div class="upload-field">
-          <label class="upload-field-label">Notas internas</label>
-          <textarea id="ch-internal-notes" placeholder="Notas solo para el equipo editorial (no visible para lectores)"></textarea>
-        </div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div id="upload-feedback" class="upload-feedback"></div>
-      <div class="upload-actions">
-        <button class="btn-upload-primary" id="btn-publish" onclick="publishChapter()">Publicar capítulo</button>
-        <button class="btn-upload-secondary" onclick="saveDraft()">Guardar borrador</button>
-        <button class="btn-upload-secondary" onclick="history.back()">Cancelar</button>
-      </div>
-    </main>
+<div id="ce-gate" class="ce-gate" hidden></div>
+<div id="ce-app" hidden>
+  <div class="ce-bar" role="toolbar" aria-label="Editor de cómic">
+    <div class="ce-bar__work"><span>Editor de cómic</span><b id="ce-work">Obra</b></div>
+    <span class="k-faint" id="ce-state" style="font-size:12px" role="status" aria-live="polite"></span>
+    <button type="button" class="k-btn k-btn--secondary k-btn--sm" id="ce-preview-btn" disabled><i class="ti ti-eye" aria-hidden="true"></i>Vista previa</button>
+    <button type="button" class="k-btn k-btn--primary k-btn--sm" id="ce-publish" disabled><i class="ti ti-upload" aria-hidden="true"></i><span id="ce-publish-l">Publicar</span></button>
   </div>
 
-  <script src="/js/offline.js?v=2"></script>
-  <script>
-    var mangaId = window.location.pathname.split('/')[2];
-    var uploadedFiles = [];
+  <div class="ce-layout">
+    <main class="ce-main" id="k-main">
+      <div class="ce-drop" id="ce-drop" role="button" tabindex="0" aria-describedby="ce-drop-help">
+        <i class="ti ti-photo-plus" aria-hidden="true"></i>
+        <b>Arrastra aquí las páginas del capítulo</b>
+        <span id="ce-drop-help">O pulsa para elegirlas. JPG, PNG o WEBP · hasta 10 MB por página · máximo 200 páginas.</span>
+      </div>
+      <input type="file" id="ce-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <div class="ce-tools" id="ce-tools" hidden>
+        <span class="ce-count" id="ce-count"></span>
+        <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ce-sort"><i class="ti ti-sort-ascending-numbers" aria-hidden="true"></i>Ordenar por nombre</button>
+        <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ce-reverse"><i class="ti ti-arrows-sort" aria-hidden="true"></i>Invertir orden</button>
+        <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ce-clear"><i class="ti ti-trash" aria-hidden="true"></i>Quitar todas</button>
+      </div>
+      <p class="k-help" id="ce-order-help" hidden>Arrastra las miniaturas para cambiar el orden, o selecciona una y usa Alt + ← / → .</p>
+      <div class="ce-grid" id="ce-grid" role="list" aria-label="Páginas del capítulo"></div>
+    </main>
 
-    // ── Load manga info ──
-    async function loadMangaInfo() {
-      var r = await fetch('/api/manga/' + mangaId);
-      var d = await r.json();
-      var m = d.manga || {};
-      document.getElementById('upload-manga-name').textContent = 'ID: ' + (m.id || mangaId);
-      document.getElementById('upload-manga-title').textContent = m.title || 'Manga';
-      document.title = 'Subir cap\u00edtulo - ' + (m.title || ' · KamiTales');
-    }
-    loadMangaInfo();
+    <aside class="ce-side" aria-label="Datos y publicación">
+      <div class="ce-grp">
+        <h2>Capítulo</h2>
+        <div class="ce-two">
+          <div class="k-field"><label class="k-label" for="ce-num">Número</label><input class="k-input" id="ce-num" type="number" min="1" step="1" inputmode="numeric"></div>
+          <div class="k-field"><label class="k-label" for="ce-title">Título</label><input class="k-input" id="ce-title" type="text" maxlength="200" placeholder="Opcional…" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="ce-grp">
+        <h2>Publicación</h2>
+        <div class="ce-grp" id="ce-status-opts">
+          <label class="ed-radio"><input type="radio" name="ce-status" value="published" checked><div><b>Publicar ahora</b><span>Tus lectores lo verán en cuanto termine la subida.</span></div></label>
+          <label class="ed-radio" data-needs-status><input type="radio" name="ce-status" value="scheduled"><div><b>Programar</b><span>Se publica solo en la fecha que elijas.</span></div></label>
+          <label class="ed-radio" data-needs-status><input type="radio" name="ce-status" value="draft"><div><b>Guardar como borrador</b><span>Solo lo ves tú hasta que lo publiques.</span></div></label>
+        </div>
+        <div class="k-field" id="ce-when-wrap" hidden><label class="k-label" for="ce-when">Fecha y hora</label><input class="k-input" type="datetime-local" id="ce-when"></div>
+        <div data-needs-status class="ce-grp">
+          <label class="k-switch"><input type="checkbox" id="ce-early">Adelanto de pago</label>
+          <div class="k-field" id="ce-free-wrap" hidden><label class="k-label" for="ce-free">Se libera gratis el</label><input class="k-input" type="datetime-local" id="ce-free"></div>
+        </div>
+        <p class="k-help" id="ce-status-note" hidden>La programación, los borradores y los adelantos para cómics se activan cuando se aplique la última migración de la base de datos. Por ahora el capítulo se publica al subirlo.</p>
+      </div>
+      <div class="ce-grp" data-needs-status>
+        <h2>Notas y avisos</h2>
+        <div class="k-field"><label class="k-label" for="ce-note-after">Nota del autor (al final)</label><textarea class="k-textarea" id="ce-note-after" rows="3" placeholder="Opcional. Cuándo sale el siguiente, agradecimientos…"></textarea></div>
+        <div class="k-chips" id="ce-warnings" role="group" aria-label="Avisos de contenido">
+          <button type="button" class="k-chip" aria-pressed="false" value="violencia">Violencia</button>
+          <button type="button" class="k-chip" aria-pressed="false" value="sexual">Contenido sexual</button>
+          <button type="button" class="k-chip" aria-pressed="false" value="lenguaje">Lenguaje fuerte</button>
+          <button type="button" class="k-chip" aria-pressed="false" value="autolesion">Autolesión</button>
+          <button type="button" class="k-chip" aria-pressed="false" value="drogas">Drogas</button>
+          <button type="button" class="k-chip" aria-pressed="false" value="terror">Terror</button>
+        </div>
+      </div>
+      <div class="ce-upload" id="ce-upload" hidden>
+        <div class="k-row k-row--between" style="font-size:13px"><span id="ce-upload-l">Subiendo…</span><b class="k-num" id="ce-upload-p">0 %</b></div>
+        <div class="ce-upload__bar"><i id="ce-upload-bar"></i></div>
+      </div>
+      <div class="k-error" id="ce-err" role="alert"></div>
+    </aside>
+  </div>
+</div>
 
-    // ── Steps navigation ──
-    document.querySelectorAll('.upload-sidebar-item[data-step]').forEach(function(item) {
-      item.addEventListener('click', function() {
-        var step = this.dataset.step;
-        document.querySelectorAll('.upload-sidebar-item').forEach(function(s) { s.classList.remove('active'); });
-        this.classList.add('active');
-        document.querySelectorAll('.upload-section').forEach(function(s) { s.classList.remove('active'); });
-        document.querySelector('[data-section="' + step + '"]').classList.add('active');
-      });
+<!-- Vista previa -->
+<div class="ce-prev" id="ce-prev" data-mode="vertical" role="dialog" aria-modal="true" aria-label="Vista previa del capítulo">
+  <div class="ce-prev__bar">
+    <div class="k-segmented" role="group" aria-label="Modo" id="ce-prev-mode" style="background:rgb(255 255 255 / .08)">
+      <button type="button" value="vertical" aria-pressed="true">Vertical</button>
+      <button type="button" value="pages" aria-pressed="false">Por páginas</button>
+    </div>
+    <div class="k-row" id="ce-prev-nav" hidden>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon" id="ce-prev-prev" aria-label="Página anterior" style="--_fg:#f1f0f7"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+      <span class="ce-prev__pg" id="ce-prev-pg"></span>
+      <button type="button" class="k-btn k-btn--quiet k-btn--icon" id="ce-prev-next" aria-label="Página siguiente" style="--_fg:#f1f0f7"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+    </div>
+    <button type="button" class="k-btn k-btn--secondary k-btn--sm" id="ce-prev-close" style="--_fg:#f1f0f7">Cerrar vista previa</button>
+  </div>
+  <div class="ce-prev__stage"><div class="ce-prev__col" id="ce-prev-col"></div></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var parts = location.pathname.split('/');            // /obra/:id/nuevo-capitulo
+  var mangaId = decodeURIComponent(parts[2] || '');
+  document.body.setAttribute('data-shell-back', '/estudio#obra-' + mangaId);
+  var $ = function (id) { return document.getElementById(id); };
+  var MAX = 10 * 1024 * 1024, MAXN = 200, OK = /^image\/(jpeg|png|webp)$/;
+  var pages = [];       // { id, file, url, w, h }
+  var features = { chapterStatus: false };
+  var busy = false, dragId = null, focusId = null;
+  var mb = function (b) { return (b / 1048576).toLocaleString('es', { maximumFractionDigits: 1 }) + ' MB'; };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
+  function api(url) { return fetch(url).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); }); }
+  function gate(icon, title, text, cta) { $('ce-gate').innerHTML = '<div class="k-card"><div class="k-empty"><i class="ti ' + icon + '" aria-hidden="true"></i><h3>' + title + '</h3><p>' + text + '</p>' + (cta || '') + '</div></div>'; $('ce-gate').hidden = false; $('ce-app').hidden = true; }
+
+  /* ── Añadir páginas ────────────────────────────────────────── */
+  function addFiles(list) {
+    var files = Array.from(list || []), skipped = [];
+    files.forEach(function (f) {
+      if (pages.length >= MAXN) { skipped.push(f.name + ' (máximo ' + MAXN + ' páginas)'); return; }
+      if (!OK.test(f.type)) { skipped.push(f.name + ' (formato no admitido)'); return; }
+      var p = { id: Math.random().toString(36).slice(2, 10), file: f, url: URL.createObjectURL(f), w: 0, h: 0 };
+      pages.push(p);
+      var img = new Image(); img.onload = function () { p.w = img.naturalWidth; p.h = img.naturalHeight; render(); }; img.src = p.url;
     });
+    if (skipped.length) KAMI.toast('No se añadieron ' + skipped.length + ': ' + skipped.slice(0, 2).join(', ') + (skipped.length > 2 ? '…' : ''), 'bad');
+    render();
+  }
+  $('ce-drop').addEventListener('click', function () { $('ce-files').click(); });
+  $('ce-drop').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('ce-files').click(); } });
+  $('ce-files').addEventListener('change', function (e) { addFiles(e.target.files); e.target.value = ''; });
+  ['dragenter', 'dragover'].forEach(function (ev) { document.addEventListener(ev, function (e) { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') >= 0) { e.preventDefault(); $('ce-drop').classList.add('is-over'); } }); });
+  ['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { if (ev === 'dragleave' && e.relatedTarget) return; $('ce-drop').classList.remove('is-over'); }); });
+  document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length && !dragId) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
 
-    // ── Schedule toggle ──
-    document.getElementById('ch-status').addEventListener('change', function() {
-      document.getElementById('schedule-section').style.display = this.value === 'scheduled' ? 'block' : 'none';
-    });
+  /* ── Mesa de luz ───────────────────────────────────────────── */
+  function issues(p) {
+    if (p.file.size > MAX) return { err: 'Pesa ' + mb(p.file.size) + ': el máximo es 10 MB.' };
+    if (p.w && p.w < 600) return { warn: 'Solo ' + p.w + ' px de ancho: se verá borrosa.' };
+    return {};
+  }
+  function render() {
+    var total = pages.reduce(function (s, p) { return s + p.file.size; }, 0);
+    var bad = pages.filter(function (p) { return issues(p).err; }).length;
+    $('ce-drop').classList.toggle('is-compact', pages.length > 0);
+    $('ce-drop').querySelector('b').textContent = pages.length ? 'Añadir más páginas' : 'Arrastra aquí las páginas del capítulo';
+    $('ce-tools').hidden = $('ce-order-help').hidden = !pages.length;
+    $('ce-count').innerHTML = '<b>' + pages.length + '</b> ' + (pages.length === 1 ? 'página' : 'páginas') + ' · ' + mb(total) + (bad ? ' · <span style="color:var(--k-bad)">' + bad + ' con error</span>' : '');
+    $('ce-grid').innerHTML = pages.map(function (p, i) {
+      var is = issues(p);
+      return '<div class="ce-page' + (is.err ? ' is-bad' : '') + '" role="listitem" tabindex="0" draggable="true" data-id="' + p.id + '" aria-label="Página ' + (i + 1) + ', ' + esc(p.file.name) + '">' +
+        '<span class="ce-page__n">' + (i + 1) + '</span><div class="ce-page__img"><img src="' + p.url + '" alt=""></div>' +
+        '<div class="ce-page__meta"><b title="' + esc(p.file.name) + '">' + esc(p.file.name) + '</b><span>' + (p.w ? p.w + '×' + p.h + ' · ' : '') + mb(p.file.size) + '</span>' +
+        (is.err ? '<span class="ce-page__err">' + is.err + '</span>' : is.warn ? '<span class="ce-page__warn">' + is.warn + '</span>' : '') + '</div>' +
+        '<div class="ce-page__act"><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="-1" aria-label="Mover antes"' + (i === 0 ? ' disabled' : '') + '><i class="ti ti-chevron-left" aria-hidden="true"></i></button><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-rm aria-label="Quitar página ' + (i + 1) + '"><i class="ti ti-x" aria-hidden="true"></i></button><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="1" aria-label="Mover después"' + (i === pages.length - 1 ? ' disabled' : '') + '><i class="ti ti-chevron-right" aria-hidden="true"></i></button></div></div>';
+    }).join('');
+    if (focusId) { var f = $('ce-grid').querySelector('[data-id="' + focusId + '"]'); if (f) f.focus(); focusId = null; }
+    var ready = pages.length > 0 && !bad && !busy;
+    $('ce-publish').disabled = !ready; $('ce-preview-btn').disabled = !pages.length;
+    $('ce-state').textContent = pages.length ? (bad ? 'Corrige las páginas marcadas' : 'Listo para publicar') : '';
+  }
+  function move(id, delta) {
+    var i = pages.findIndex(function (p) { return p.id === id; }), j = i + delta;
+    if (i < 0 || j < 0 || j >= pages.length) return;
+    var x = pages.splice(i, 1)[0]; pages.splice(j, 0, x); focusId = id; render();
+  }
+  $('ce-grid').addEventListener('click', function (e) {
+    var card = e.target.closest('.ce-page'); if (!card) return;
+    var mv = e.target.closest('[data-move]'); if (mv) { move(card.dataset.id, +mv.dataset.move); return; }
+    if (e.target.closest('[data-rm]')) { var i = pages.findIndex(function (p) { return p.id === card.dataset.id; }); URL.revokeObjectURL(pages[i].url); pages.splice(i, 1); render(); }
+  });
+  $('ce-grid').addEventListener('keydown', function (e) {
+    var card = e.target.closest('.ce-page'); if (!card || e.target !== card) return;
+    if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); move(card.dataset.id, e.key === 'ArrowLeft' ? -1 : 1); }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); card.querySelector('[data-rm]').click(); }
+  });
+  // Reordenar arrastrando
+  $('ce-grid').addEventListener('dragstart', function (e) { var c = e.target.closest('.ce-page'); if (!c) return; dragId = c.dataset.id; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); });
+  $('ce-grid').addEventListener('dragover', function (e) { var c = e.target.closest('.ce-page'); if (!c || !dragId) return; e.preventDefault(); $('ce-grid').querySelectorAll('.is-target').forEach(function (x) { if (x !== c) x.classList.remove('is-target'); }); c.classList.add('is-target'); });
+  $('ce-grid').addEventListener('drop', function (e) {
+    var c = e.target.closest('.ce-page'); if (!c || !dragId) return; e.preventDefault(); e.stopPropagation();
+    var from = pages.findIndex(function (p) { return p.id === dragId; }), to = pages.findIndex(function (p) { return p.id === c.dataset.id; });
+    if (from >= 0 && to >= 0 && from !== to) { var x = pages.splice(from, 1)[0]; pages.splice(to, 0, x); }
+    dragId = null; render();
+  });
+  $('ce-grid').addEventListener('dragend', function () { dragId = null; render(); });
+  $('ce-sort').addEventListener('click', function () { var coll = new Intl.Collator('es', { numeric: true, sensitivity: 'base' }); pages.sort(function (a, b) { return coll.compare(a.file.name, b.file.name); }); render(); KAMI.toast('Páginas ordenadas por nombre de archivo', 'ok'); });
+  $('ce-reverse').addEventListener('click', function () { pages.reverse(); render(); });
+  $('ce-clear').addEventListener('click', function () { pages.forEach(function (p) { URL.revokeObjectURL(p.url); }); pages = []; render(); });
 
-    // ── Drag & Drop (zona de subida) ──
-    var zone = document.getElementById('upload-zone');
-    zone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
-    zone.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
-    zone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('dragover');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
-    });
+  /* ── Publicación ───────────────────────────────────────────── */
+  function toLocalInput(d) { d = new Date(d); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
+  document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.addEventListener('change', function () {
+    var st = document.querySelector('[name="ce-status"]:checked').value;
+    $('ce-when-wrap').hidden = st !== 'scheduled';
+    if (st === 'scheduled' && !$('ce-when').value) { var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(18, 0, 0, 0); $('ce-when').value = toLocalInput(d); }
+    $('ce-publish-l').textContent = st === 'draft' ? 'Guardar borrador' : st === 'scheduled' ? 'Programar' : 'Publicar';
+  }); });
+  $('ce-early').addEventListener('change', function (e) { $('ce-free-wrap').hidden = !e.target.checked; if (e.target.checked && !$('ce-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ce-free').value = toLocalInput(d); } });
+  $('ce-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); });
 
-    // ── Handle files (acumulativo) ──
-    function handleFiles(files) {
-      var grid = document.getElementById('page-grid');
-      var isEmpty = document.querySelector('.page-empty');
-      if (isEmpty) isEmpty.remove();
-
-      // Ordenar por nombre de archivo (numérico natural, ej: 00001 < 00002 < 00010)
-      var sorted = [];
-      for (var fi = 0; fi < files.length; fi++) { sorted.push(files[fi]); }
-      sorted.sort(function(a, b) {
-        var na = a.name.replace(/\.[^.]+$/, ''); // quitar extensión
-        var nb = b.name.replace(/\.[^.]+$/, '');
-        // Extraer el primer número del nombre
-        var ma = na.match(/(\d+)/);
-        var mb = nb.match(/(\d+)/);
-        if (ma && mb) {
-          var numA = parseInt(ma[1], 10);
-          var numB = parseInt(mb[1], 10);
-          if (numA !== numB) return numA - numB;
-        }
-        // Fallback a comparación de texto
-        return na < nb ? -1 : na > nb ? 1 : 0;
-      });
-
-      var progress = document.getElementById('upload-progress');
-      progress.classList.add('show');
-      var fill = document.getElementById('progress-fill');
-      var status = document.getElementById('progress-status');
-      var pct = document.getElementById('progress-pct');
-
-      var total = sorted.length;
-      var loaded = 0;
-      var base = uploadedFiles.length;
-
-      for (var i = 0; i < total; i++) {
-        uploadedFiles.push(sorted[i]);
-        (function(file, idx) {
-          var reader = new FileReader();
-          reader.onload = function(e) {
-            var item = document.createElement('div');
-            item.className = 'page-item';
-            item.draggable = true;
-            item.dataset.idx = base + idx;
-            item.innerHTML =
-              '<div class="page-num">' + (base + idx + 1) + '</div>' +
-              '<img src="' + e.target.result + '" alt="P\u00e1gina ' + (base + idx + 1) + '">' +
-              '<button class="page-remove" onclick="removePage(this)">\u00d7</button>';
-            makeDraggable(item);
-            grid.appendChild(item);
-
-            loaded++;
-            var p = Math.round((loaded / total) * 100);
-            fill.style.width = p + '%';
-            pct.textContent = p + '%';
-            status.textContent = 'Procesando ' + loaded + ' de ' + total + ' p\u00e1ginas...';
-
-            if (loaded === total) {
-              status.textContent = '\u2713 Listo \u2014 ' + uploadedFiles.length + ' p\u00e1gina' + (uploadedFiles.length !== 1 ? 's' : '') + ' cargada' + (uploadedFiles.length !== 1 ? 's' : '');
-              document.getElementById('btn-publish').disabled = false;
-            }
-          };
-          reader.readAsDataURL(file);
-        })(files[i], i);
-      }
+  $('ce-publish').addEventListener('click', function () {
+    $('ce-err').textContent = '';
+    var num = parseInt($('ce-num').value, 10);
+    if (!num || num < 1) { $('ce-err').textContent = 'Indica el número del capítulo.'; $('ce-num').focus(); return; }
+    var st = features.chapterStatus ? document.querySelector('[name="ce-status"]:checked').value : 'published';
+    var when = $('ce-when').value ? new Date($('ce-when').value).toISOString() : null;
+    if (st === 'scheduled' && (!when || new Date(when) <= new Date())) { $('ce-err').textContent = 'Elige una fecha futura para programar el capítulo.'; return; }
+    var fd = new FormData();
+    fd.append('chapterNumber', num); fd.append('title', $('ce-title').value.trim());
+    if (features.chapterStatus) {
+      fd.append('status', st); if (st === 'scheduled') fd.append('publishAt', when);
+      if ($('ce-early').checked && $('ce-free').value) fd.append('freeAt', new Date($('ce-free').value).toISOString());
+      fd.append('noteAfter', $('ce-note-after').value.trim());
+      fd.append('warnings', JSON.stringify(Array.from($('ce-warnings').querySelectorAll('[aria-pressed="true"]')).map(function (c) { return c.value; })));
     }
+    pages.forEach(function (p) { fd.append('pages', p.file, p.file.name); });
+    busy = true; render();
+    $('ce-upload').hidden = false; $('ce-upload-l').textContent = 'Subiendo ' + pages.length + ' páginas…';
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/chapters/' + encodeURIComponent(mangaId));
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token());
+    xhr.upload.onprogress = function (e) { if (!e.lengthComputable) return; var pc = Math.round(e.loaded / e.total * 100); $('ce-upload-bar').style.width = pc + '%'; $('ce-upload-p').textContent = pc + ' %'; if (pc >= 100) $('ce-upload-l').textContent = 'Procesando páginas…'; };
+    xhr.onload = function () {
+      var d = {}; try { d = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status >= 200 && xhr.status < 300) {
+        pages = []; busy = false;
+        KAMI.toast(st === 'draft' ? 'Borrador guardado' : st === 'scheduled' ? 'Capítulo programado' : 'Capítulo publicado', 'ok');
+        setTimeout(function () { location.href = '/estudio#obra-' + encodeURIComponent(mangaId); }, 700);
+      } else { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = d.error || 'No se pudo subir el capítulo (error ' + xhr.status + ').'; render(); }
+    };
+    xhr.onerror = function () { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = 'Se cortó la conexión durante la subida. Tus páginas siguen aquí: vuelve a pulsar Publicar.'; render(); };
+    xhr.send(fd);
+  });
+  window.addEventListener('beforeunload', function (e) { if (pages.length && !busy) { e.preventDefault(); e.returnValue = ''; } });
 
-    // ── Drag to reorder ──
-    var dragSrc = null;
+  /* ── Vista previa ──────────────────────────────────────────── */
+  var pv = 0;
+  function showPv() { var imgs = $('ce-prev-col').querySelectorAll('img'); imgs.forEach(function (im, i) { im.classList.toggle('is-on', i === pv); }); $('ce-prev-pg').textContent = 'Página ' + (pv + 1) + ' de ' + imgs.length; }
+  $('ce-preview-btn').addEventListener('click', function () {
+    $('ce-prev-col').innerHTML = pages.map(function (p, i) { return '<img src="' + p.url + '" alt="Página ' + (i + 1) + '">'; }).join('');
+    pv = 0; showPv(); $('ce-prev').classList.add('is-open'); $('ce-prev-close').focus();
+  });
+  $('ce-prev-close').addEventListener('click', function () { $('ce-prev').classList.remove('is-open'); $('ce-preview-btn').focus(); });
+  $('ce-prev-mode').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    this.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    $('ce-prev').dataset.mode = b.value; $('ce-prev-nav').hidden = b.value !== 'pages'; showPv();
+  });
+  $('ce-prev-prev').addEventListener('click', function () { pv = Math.max(0, pv - 1); showPv(); });
+  $('ce-prev-next').addEventListener('click', function () { pv = Math.min(pages.length - 1, pv + 1); showPv(); });
+  document.addEventListener('keydown', function (e) {
+    if (!$('ce-prev').classList.contains('is-open')) return;
+    if (e.key === 'Escape') $('ce-prev-close').click();
+    if ($('ce-prev').dataset.mode === 'pages') { if (e.key === 'ArrowRight') $('ce-prev-next').click(); if (e.key === 'ArrowLeft') $('ce-prev-prev').click(); }
+  });
 
-    function makeDraggable(el) {
-      el.addEventListener('dragstart', function(e) {
-        dragSrc = this;
-        this.style.opacity = '0.4';
-        e.dataTransfer.effectAllowed = 'move';
-      });
-      el.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = 'var(--accent)';
-      });
-      el.addEventListener('dragleave', function() {
-        this.style.borderColor = '';
-      });
-      el.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '';
-        if (dragSrc && dragSrc !== this) {
-          var grid = document.getElementById('page-grid');
-          var allItems = Array.from(grid.querySelectorAll('.page-item'));
-          var fromIdx = allItems.indexOf(dragSrc);
-          var toIdx = allItems.indexOf(this);
-          if (fromIdx < toIdx) {
-            this.parentNode.insertBefore(dragSrc, this.nextSibling);
-          } else {
-            this.parentNode.insertBefore(dragSrc, this);
-          }
-          // Reordenar array de archivos
-          var movedFile = uploadedFiles.splice(fromIdx, 1)[0];
-          uploadedFiles.splice(toIdx, 0, movedFile);
-          renumberPages();
-        }
-        dragSrc = null;
-      });
-      el.addEventListener('dragend', function() {
-        this.style.opacity = '';
-        dragSrc = null;
-      });
-    }
-
-    function renumberPages() {
-      var items = document.querySelectorAll('.page-item');
-      items.forEach(function(el, i) {
-        el.querySelector('.page-num').textContent = i + 1;
-        el.dataset.idx = i;
-      });
-    }
-
-    function removePage(btn) {
-      var item = btn.parentElement;
-      var idx = Array.from(item.parentElement.querySelectorAll('.page-item')).indexOf(item);
-      item.remove();
-      uploadedFiles.splice(idx, 1);
-      renumberPages();
-      if (uploadedFiles.length === 0) {
-        document.getElementById('page-grid').innerHTML = '<div class="page-empty">A\u00fan no hay p\u00e1ginas. Arrastra im\u00e1genes para empezar.</div>';
-        document.getElementById('upload-progress').classList.remove('show');
-        document.getElementById('btn-publish').disabled = true;
-      }
-    }
-
-    // ── Feedback ──
-    function showFeedback(msg, type) {
-      var el = document.getElementById('upload-feedback');
-      el.className = 'upload-feedback ' + type;
-      el.textContent = msg;
-      el.style.display = 'flex';
-      if (type === 'success') {
-        setTimeout(function() { el.style.display = 'none'; }, 5000);
-      }
-    }
-
-    // ── Publish chapter ──
-    async function publishChapter() {
-      var num = document.getElementById('ch-number').value;
-      if (!num) { showFeedback('El n\u00famero de cap\u00edtulo es obligatorio', 'error'); return; }
-      if (uploadedFiles.length === 0) { showFeedback('Debes subir al menos una p\u00e1gina', 'error'); return; }
-
-      var btn = document.getElementById('btn-publish');
-      btn.textContent = 'Subiendo...';
-      btn.disabled = true;
-      showFeedback('', '');
-
-      var form = new FormData();
-      form.append('chapterNumber', num);
-      form.append('title', document.getElementById('ch-title').value || '');
-      form.append('scanGroup', document.getElementById('ch-scan').value || '');
-      for (var i = 0; i < uploadedFiles.length; i++) {
-        form.append('pages', uploadedFiles[i]);
-      }
-
-      var token = localStorage.getItem('kami_token');
-      try {
-        var res = await fetch('/api/chapters/' + mangaId, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token },
-          body: form
-        });
-        var data = await res.json();
-        if (data.success) {
-          showFeedback('Cap\u00edtulo ' + num + ' subido correctamente', 'success');
-          uploadedFiles = [];
-          document.querySelectorAll('.page-item').forEach(function(el) { el.remove(); });
-          document.getElementById('page-grid').innerHTML = '<div class="page-empty">A\u00fan no hay p\u00e1ginas. Arrastra im\u00e1genes para empezar.</div>';
-          document.getElementById('upload-progress').classList.remove('show');
-        } else {
-          showFeedback(data.error || 'Error al subir cap\u00edtulo', 'error');
-        }
-      } catch(e) {
-        showFeedback('Error de conexi\u00f3n', 'error');
-      }
-      btn.textContent = 'Publicar cap\u00edtulo';
-      btn.disabled = false;
-    }
-
-    function saveDraft() {
-      showFeedback('Guardar borrador pr\u00f3ximamente', 'error');
-    }
-  </script>
+  /* ── Arranque ──────────────────────────────────────────────── */
+  if (!token()) { gate('ti-lock', 'Inicia sesión para subir capítulos', 'Solo el autor de una obra puede subirle capítulos.', '<a class="k-btn k-btn--primary" href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Acceder</a>'); return; }
+  Promise.all([api('/api/manga/' + encodeURIComponent(mangaId)), api('/api/chapters/' + encodeURIComponent(mangaId) + '?limit=1'), api('/api/studio/features').catch(function () { return {}; })]).then(function (r) {
+    var m = r[0].manga || r[0];
+    if (m.type === 'novel') { gate('ti-book-2', 'Esta obra es una novela', 'Los capítulos de novela se escriben en el editor de texto.', '<a class="k-btn k-btn--primary" href="/obra/' + encodeURIComponent(mangaId) + '/escribir">Abrir el editor de novela</a>'); return; }
+    features = r[2] || {};
+    $('ce-work').textContent = m.title; document.title = m.title + ' · Editor de cómic · KamiTales';
+    var last = (r[1].chapters || [])[0]; $('ce-num').value = last ? last.number + 1 : 1;
+    if (!features.chapterStatus) { document.querySelectorAll('[data-needs-status]').forEach(function (x) { x.hidden = true; }); $('ce-status-note').hidden = false; }
+    $('ce-app').hidden = false; render();
+  }).catch(function (e) {
+    if (e.status === 404) gate('ti-file-off', 'Esta obra no existe', 'Vuelve al Estudio y elige una de tus obras.', '<a class="k-btn k-btn--primary" href="/estudio#obras">Ir al Estudio</a>');
+    else gate('ti-wifi-off', 'No se pudo abrir el editor', 'Comprueba tu conexión y recarga la página.');
+  });
+})();
+</script>
 </body>
 </html>

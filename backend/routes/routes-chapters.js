@@ -240,12 +240,30 @@ router.post('/:mangaId', requireAuth, requireMangaEditor, upload.array('pages', 
 
         const totalPages = files.length;
 
-        const result = await pool.query(
-            `INSERT INTO chapters (manga_id, chapter_number, title, pages, scan_group, release_date)
-             VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-             RETURNING id, chapter_number, title, pages, scan_group, release_date, created_at`,
-            [mangaId, num, title || `Capítulo ${num}`, totalPages, scanGroup || '']
-        );
+        // Publicación (si la migración de capítulos está aplicada): borrador, programado o ya, y adelanto
+        let result;
+        if (await hasColumn('chapters', 'status')) {
+            const st = ['draft', 'scheduled', 'published'].includes(req.body.status) ? req.body.status : 'published';
+            const when = req.body.publishAt && !isNaN(new Date(req.body.publishAt)) ? new Date(req.body.publishAt).toISOString() : null;
+            if (st === 'scheduled' && !when) return res.status(400).json({ error: 'Elige la fecha de publicación.' });
+            const free = req.body.freeAt && !isNaN(new Date(req.body.freeAt)) ? new Date(req.body.freeAt).toISOString() : null;
+            const WARN = ['violencia', 'sexual', 'lenguaje', 'autolesion', 'drogas', 'terror'];
+            let warnings = []; try { warnings = JSON.parse(req.body.warnings || '[]').filter(w => WARN.includes(w)); } catch { /* sin avisos */ }
+            result = await pool.query(
+                `INSERT INTO chapters (manga_id, chapter_number, title, pages, scan_group, release_date, status, publish_at, free_at, note_before, note_after, content_warnings)
+                 VALUES ($1, $2, $3, $4, $5, COALESCE($7, CURRENT_TIMESTAMP), $6, $7, $8, $9, $10, $11)
+                 RETURNING id, chapter_number, title, pages, scan_group, release_date, created_at`,
+                [mangaId, num, title || `Capítulo ${num}`, totalPages, scanGroup || '', st, st === 'scheduled' ? when : null, free,
+                 String(req.body.noteBefore || '').slice(0, 4000), String(req.body.noteAfter || '').slice(0, 4000), warnings]
+            );
+        } else {
+            result = await pool.query(
+                `INSERT INTO chapters (manga_id, chapter_number, title, pages, scan_group, release_date)
+                 VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+                 RETURNING id, chapter_number, title, pages, scan_group, release_date, created_at`,
+                [mangaId, num, title || `Capítulo ${num}`, totalPages, scanGroup || '']
+            );
+        }
 
         await pool.query(
             `UPDATE mangas SET

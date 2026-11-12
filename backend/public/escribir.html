@@ -182,6 +182,7 @@
   var parts = location.pathname.split('/');            // /obra/:id/escribir/:num
   var mangaId = decodeURIComponent(parts[2] || '');
   var num = parseInt(parts[4], 10) || null;
+  document.body.setAttribute('data-shell-back', '/estudio#obra-' + mangaId);
   var $ = function (id) { return document.getElementById(id); };
   var ed = $('ed-text'), titleIn = $('ed-title');
   var meta = { status: 'draft', publishAt: null, freeAt: null, noteBefore: '', noteAfter: '', warnings: [] };

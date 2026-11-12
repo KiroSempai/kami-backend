@@ -364,7 +364,7 @@ body {
 /* Pestañas --------------------------------------------------------- */
 .k-tabs { display: flex; gap: var(--k-1); border-bottom: 1px solid var(--k-line); overflow-x: auto; scrollbar-width: none; }
 .k-tabs::-webkit-scrollbar { display: none; }
-.k-tab { position: relative; flex: none; padding: var(--k-3) var(--k-4); font: 600 var(--k-fs-sm)/1 var(--k-font-body); color: var(--k-text-3); background: none; border: 0; cursor: pointer; white-space: nowrap; transition: color var(--k-t-fast); }
+.k-tab { text-decoration: none; position: relative; flex: none; padding: var(--k-3) var(--k-4); font: 600 var(--k-fs-sm)/1 var(--k-font-body); color: var(--k-text-3); background: none; border: 0; cursor: pointer; white-space: nowrap; transition: color var(--k-t-fast); }
 .k-tab:hover { color: var(--k-text); }
 .k-tab[aria-selected="true"], .k-tab.is-active { color: var(--k-text); }
 .k-tab[aria-selected="true"]::after, .k-tab.is-active::after { content: ""; position: absolute; left: var(--k-3); right: var(--k-3); bottom: -1px; height: 2px; border-radius: 2px; background: var(--k-accent); box-shadow: 0 0 12px var(--k-accent); }

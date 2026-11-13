@@ -1,0 +1,76 @@
+/* KamiTales — Acceder y Registro. Sobre kami.css (tokens --k-*). */
+[hidden] { display: none !important; }
+.au { min-height: calc(100dvh - var(--k-nav-h, 64px)); display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 960px) { .au { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); } }
+
+/* ── Panel de arte (solo escritorio) ─────────────────────── */
+.au-art { display: none; position: relative; overflow: hidden; isolation: isolate; background: var(--k-surface-1); border-right: 1px solid var(--k-line); }
+@media (min-width: 960px) { .au-art { display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(32px, 4vw, 56px); } }
+.au-wall { position: absolute; inset: -12% -8%; z-index: -2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; transform: rotate(-8deg); opacity: .55; }
+.au-col { display: grid; gap: 14px; align-content: start; animation: au-drift 60s linear infinite alternate; }
+.au-col:nth-child(even) { animation-direction: alternate-reverse; margin-top: -90px; }
+.au-tile { aspect-ratio: 2 / 3; border-radius: 14px; background: var(--k-surface-3) center / cover no-repeat; box-shadow: 0 16px 40px -20px #000; }
+.au-tile.is-ph { background-image: linear-gradient(150deg, color-mix(in srgb, var(--_c, var(--k-accent)) 55%, transparent), transparent 75%); }
+@keyframes au-drift { from { transform: translateY(0); } to { transform: translateY(-22%); } }
+@media (prefers-reduced-motion: reduce) { .au-col { animation: none; } }
+:root[data-motion="reduce"] .au-col { animation: none; }
+.au-art::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top, var(--k-bg) 8%, color-mix(in srgb, var(--k-bg) 82%, transparent) 42%, color-mix(in srgb, var(--k-bg) 35%, transparent) 75%, transparent),
+              radial-gradient(60% 50% at 20% 100%, color-mix(in srgb, var(--k-accent) 28%, transparent), transparent 70%); }
+.au-art h2 { margin: 0 0 var(--k-4); font: 900 clamp(2.6rem, 4.6vw, 4.4rem)/.9 var(--k-font-display); text-transform: uppercase; text-wrap: balance; max-width: 12ch; }
+.au-art h2 span { color: var(--k-accent); text-shadow: var(--k-glow-text); }
+.au-points { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--k-3); max-width: 46ch; }
+.au-points li { display: grid; grid-template-columns: 36px 1fr; gap: var(--k-3); align-items: center; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.45; }
+.au-points .ti { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 19px; color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--k-accent) 25%, transparent); }
+.au-points b { color: var(--k-text); }
+
+/* ── Formulario ──────────────────────────────────────────── */
+.au-main { display: grid; place-items: center; padding: clamp(24px, 5vw, 56px) max(16px, env(safe-area-inset-left, 0px)) clamp(32px, 6vw, 64px); position: relative; isolation: isolate; }
+.au-main::before { content: ""; position: absolute; z-index: -1; inset: 0; pointer-events: none; background: radial-gradient(50% 40% at 80% 0%, color-mix(in srgb, var(--k-accent) 12%, transparent), transparent 70%); }
+.au-box { width: min(420px, 100%); display: grid; gap: var(--k-5); }
+.au-head { display: grid; gap: var(--k-2); }
+.au-mark { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; margin-bottom: var(--k-2); background: var(--k-accent-fill); color: #fff; font: 700 24px/1 "Noto Sans JP", sans-serif; box-shadow: var(--k-glow); }
+.au-head h1 { margin: 0; font: 900 clamp(2.2rem, 7vw, 3rem)/.92 var(--k-font-display); text-transform: uppercase; }
+.au-head p { margin: 0; color: var(--k-text-2); line-height: 1.55; }
+
+.au-google { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 var(--k-4); border-radius: var(--k-r-md); border: 1px solid var(--k-line-2); background: #fff; color: #1f1f1f; font: 600 var(--k-fs-md)/1 var(--k-font-body); text-decoration: none; transition: box-shadow var(--k-t-fast), transform var(--k-t-fast); }
+.au-google:hover { box-shadow: 0 8px 24px -10px rgb(0 0 0 / .6); transform: translateY(-1px); color: #1f1f1f; }
+.au-google:focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+.au-or { display: flex; align-items: center; gap: var(--k-3); color: var(--k-text-3); font-size: var(--k-fs-xs); text-transform: uppercase; letter-spacing: .12em; }
+.au-or::before, .au-or::after { content: ""; flex: 1; height: 1px; background: var(--k-line); }
+
+.au-form { display: grid; gap: var(--k-4); }
+.au-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--k-3); }
+.au-label-row a { font-size: var(--k-fs-xs); color: var(--k-text-2); }
+.au-label-row a:hover { color: var(--k-accent); }
+.au-pw { position: relative; }
+.au-pw .k-input { padding-right: 48px; }
+.au-eye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: var(--k-r-sm); background: none; color: var(--k-text-3); cursor: pointer; font-size: 19px; }
+.au-eye:hover { color: var(--k-text); }
+.au-eye:focus-visible { outline: 2px solid var(--k-accent); outline-offset: -2px; }
+.au-hint { display: flex; align-items: center; gap: 6px; min-height: 18px; font-size: var(--k-fs-xs); color: var(--k-text-3); }
+.au-hint.is-ok { color: var(--k-ok); }
+.au-hint.is-bad { color: var(--k-bad); }
+.au-hint.is-warn { color: var(--k-warn); }
+.au-hint a { color: inherit; font-weight: 700; }
+.k-input[aria-invalid="true"] { border-color: var(--k-bad); box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-bad) 18%, transparent); }
+
+.au-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 2px; }
+.au-meter i { height: 4px; border-radius: 4px; background: rgb(var(--k-ink) / .1); transition: background var(--k-t); }
+.au-meter[data-l="1"] i:nth-child(-n+1) { background: var(--k-bad); }
+.au-meter[data-l="2"] i:nth-child(-n+2) { background: var(--k-warn); }
+.au-meter[data-l="3"] i:nth-child(-n+3) { background: var(--k-ok); }
+.au-meter[data-l="4"] i { background: var(--k-ok); box-shadow: 0 0 8px -1px var(--k-ok); }
+
+.au-submit { min-height: 50px; }
+.au-submit .ti-loader-2 { animation: au-spin 1s linear infinite; }
+@keyframes au-spin { to { transform: rotate(360deg); } }
+.au-alt { margin: 0; text-align: center; color: var(--k-text-2); font-size: var(--k-fs-sm); }
+.au-alt a { font-weight: 700; color: var(--k-accent); }
+.au-fine { margin: 0; text-align: center; color: var(--k-text-3); font-size: var(--k-fs-xs); line-height: 1.6; }
+
+/* Sesión ya iniciada */
+.au-signed { display: grid; gap: var(--k-4); padding: var(--k-5); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+.au-signed .k-row { gap: var(--k-3); }
+.au-signed b { display: block; }
+.au-signed small { color: var(--k-text-3); }

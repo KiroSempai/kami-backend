@@ -1,247 +1,194 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Crear cuenta · KamiTales</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/common.css?v=9">
-  <link rel="stylesheet" href="/css/login.css">
-  <script src="/js/offline.js?v=2"></script>
+  <meta name="description" content="Crea tu cuenta gratis en KamiTales: lee cómics y novelas, guarda tu progreso y únete a la comunidad.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
+  <link rel="stylesheet" href="/css/auth.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/auth.js"></script>
 </head>
+<body data-shell="minimal" data-shell-back="/">
+<div class="au" id="k-main">
+  <aside class="au-art" aria-hidden="true">
+    <div class="au-wall" id="au-wall"></div>
+    <h2>Lee, escribe y <span>comparte</span></h2>
+    <ul class="au-points">
+      <li><i class="ti ti-books"></i><span><b>Tu biblioteca</b> con progreso, estados y favoritas, siempre al día.</span></li>
+      <li><i class="ti ti-pencil"></i><span><b>Publica tus obras</b> desde el Estudio: cómics por páginas o novelas por capítulos.</span></li>
+      <li><i class="ti ti-heart"></i><span><b>Gratis para siempre.</b> Premium solo añade personalización.</span></li>
+    </ul>
+  </aside>
 
-<body>
-<!-- ═══════════ CONTAINER ═══════════ -->
-  <div class="login-container">
+  <main class="au-main">
+    <div class="au-box">
+      <header class="au-head">
+        <span class="au-mark" aria-hidden="true">神</span>
+        <h1>Crea tu cuenta</h1>
+        <p id="au-sub">Es gratis y tardas menos de un minuto.</p>
+      </header>
 
-    <!-- LADO IZQUIERDO: HERO -->
-    <div class="login-left">
-      <div class="login-hero">
-        <div class="login-hero-icon">✨</div>
-        <h1 class="login-hero-title">KamiTales</h1>
-        <p class="login-hero-desc">Únete a la comunidad de lectura de manga más moderna en español</p>
+      <div class="k-alert k-alert--bad" id="au-err" role="alert" hidden><i class="ti ti-alert-circle" aria-hidden="true"></i><div id="au-err-t"></div></div>
 
-        <div class="login-hero-features">
-          <div class="feature">
-            <div class="feature-icon">✓</div>
-            <span>Biblioteca inteligente con progreso</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">✓</div>
-            <span>Sincronización en todos tus dispositivos</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">✓</div>
-            <span>Rachas, logros y estadísticas</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">✓</div>
-            <span>Comunidad activa</span>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">✓</div>
-            <span>100% gratis</span>
-          </div>
+      <a class="au-google" href="/api/auth/google/redirect" id="au-google">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Registrarme con Google
+      </a>
+      <div class="au-or">o con tu correo</div>
+
+      <form class="au-form" id="au-form" novalidate>
+        <div class="k-field">
+          <label class="k-label" for="au-user">Nombre de usuario</label>
+          <input class="k-input" id="au-user" name="username" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="p. ej. lector_nocturno" aria-describedby="au-user-h" required>
+          <span class="au-hint" id="au-user-h" aria-live="polite">De 3 a 30 caracteres: letras, números y _</span>
         </div>
-      </div>
+        <div class="k-field">
+          <label class="k-label" for="au-email">Correo</label>
+          <input class="k-input" id="au-email" name="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" placeholder="nombre@correo.com" aria-describedby="au-email-h" required>
+          <span class="au-hint" id="au-email-h" aria-live="polite">Solo lo usamos para recuperar tu cuenta y los avisos que elijas.</span>
+        </div>
+        <div class="k-field">
+          <label class="k-label" for="au-pass">Contraseña</label>
+          <div class="au-pw">
+            <input class="k-input" id="au-pass" name="password" type="password" autocomplete="new-password" placeholder="Al menos 8 caracteres" aria-describedby="au-pass-h" required>
+            <button type="button" class="au-eye" data-eye="au-pass" aria-pressed="false" aria-label="Mostrar contraseña"><i class="ti ti-eye" aria-hidden="true"></i></button>
+          </div>
+          <div class="au-meter" id="au-meter" data-l="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <span class="au-hint" id="au-pass-h" aria-live="polite">Usa 8 caracteres o más. Una frase larga es más segura que una palabra rara.</span>
+          <span class="au-hint is-warn" id="au-caps" hidden><i class="ti ti-arrow-big-up-line" aria-hidden="true"></i>Bloqueo de mayúsculas activado</span>
+        </div>
+        <button class="k-btn k-btn--primary k-btn--lg k-btn--block au-submit" type="submit" id="au-btn">Crear mi cuenta</button>
+      </form>
+
+      <p class="au-alt">¿Ya tienes cuenta? <a href="/acceder" id="au-to-login">Inicia sesión</a></p>
     </div>
+  </main>
+</div>
 
-    <!-- LADO DERECHO: FORM -->
-    <div class="login-right">
-      <div class="login-form">
-        <h2 class="login-form-title">CREAR CUENTA</h2>
-        <p class="login-form-subtitle">Crea tu cuenta gratuita en KamiTales</p>
+<script>
+(function () {
+  'use strict';
+  var A = window.KAMI_AUTH, $ = function (id) { return document.getElementById(id); };
+  A.rememberReturn();
+  var ret = A.returnTo();
+  if (ret) $('au-to-login').href = '/acceder?return=' + encodeURIComponent(ret);
+  var s = A.session();
+  if (s) { location.replace(ret || '/perfil/' + encodeURIComponent(s.user.username)); return; }
+  A.buildWall($('au-wall'));
+  A.bindEyes();
+  A.bindCaps($('au-pass'), $('au-caps'));
 
-        <!-- Alertas -->
-        <div class="alert" id="form-error" style="display:none; background:color-mix(in srgb, var(--k-accent) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-accent) 30%, transparent); color:var(--accent); padding:12px 14px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; align-items:center; gap:8px;">
-          <span>⚠</span>
-          <span id="form-error-text"></span>
-        </div>
-        <div class="alert" id="form-success" style="display:none; background:color-mix(in srgb, var(--k-ok) 15%, transparent); border:1px solid color-mix(in srgb, var(--k-ok) 30%, transparent); color:var(--green); padding:14px 16px; border-radius:var(--radius-md); font-size:13px; margin-bottom:16px; flex-direction:column; gap:4px;">
-          <strong>✓ ¡Cuenta creada!</strong>
-          <span id="form-success-text">Redirigiendo a tu perfil...</span>
-        </div>
+  function err(html) { $('au-err-t').innerHTML = html; $('au-err').hidden = false; }
+  function hint(id, text, kind, invalid) {
+    var h = $(id + '-h'); h.className = 'au-hint' + (kind ? ' is-' + kind : ''); h.innerHTML = text;
+    if (invalid) $(id).setAttribute('aria-invalid', 'true'); else $(id).removeAttribute('aria-invalid');
+  }
+  var state = { user: null, email: null }; // null = sin comprobar, true = libre, false = ocupado
+  function debounce(fn, ms) { var t; return function () { clearTimeout(t); var a = arguments; t = setTimeout(function () { fn.apply(null, a); }, ms); }; }
 
-        <form id="register-form" autocomplete="off">
+  // Usuario
+  var USER_RE = /^[a-zA-Z0-9_]+$/;
+  function userLocal(v) {
+    if (!v) return 'De 3 a 30 caracteres: letras, números y _';
+    if (/\s/.test(v)) return 'Sin espacios: puedes usar _ para separar palabras.';
+    if (!USER_RE.test(v)) return 'Solo letras sin tilde, números y _.';
+    if (v.length < 3) return 'Un poco más: mínimo 3 caracteres.';
+    return '';
+  }
+  var checkUser = debounce(function (v) {
+    fetch('/api/auth/check-username/' + encodeURIComponent(v)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if ($('au-user').value.trim() !== v || !d) return;
+      state.user = !d.exists;
+      if (d.exists) hint('au-user', '<i class="ti ti-x" aria-hidden="true"></i>«' + v.replace(/[<>&]/g, '') + '» ya está cogido. Prueba con otro.', 'bad', true);
+      else hint('au-user', '<i class="ti ti-check" aria-hidden="true"></i>Disponible · tu perfil será /perfil/' + v, 'ok');
+    }).catch(function () {});
+  }, 400);
+  $('au-user').addEventListener('input', function () {
+    var v = this.value.trim(), m = userLocal(v); state.user = null;
+    if (m) { hint('au-user', m, v && v.length >= 3 ? 'bad' : '', false); return; }
+    hint('au-user', 'Comprobando…', ''); checkUser(v);
+  });
 
-          <!-- Username -->
-          <div class="form-group">
-            <label class="form-label" for="username">Nombre de usuario</label>
-            <input type="text" id="username" class="form-input" placeholder="TuNombreAqui" maxlength="30" autocomplete="off" spellcheck="false">
-            <div class="field-hint" id="username-hint" style="font-size:11px; color:var(--text-muted); margin-top:5px; min-height:16px;">Mínimo 3 caracteres, sin espacios</div>
-          </div>
-
-          <!-- Email -->
-          <div class="form-group">
-            <label class="form-label" for="email">Email</label>
-            <input type="email" id="email" class="form-input" placeholder="tu@email.com" autocomplete="off">
-            <div class="field-hint" id="email-hint" style="font-size:11px; color:var(--text-muted); margin-top:5px; min-height:16px;"></div>
-          </div>
-
-          <!-- Password -->
-          <div class="form-group">
-            <label class="form-label" for="password">Contraseña</label>
-            <input type="password" id="password" class="form-input" placeholder="Mínimo 8 caracteres" autocomplete="new-password">
-            <div class="pw-strength" style="display:flex; gap:4px; margin-top:8px;">
-              <div class="pw-bar" id="bar1" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar2" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar3" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
-              <div class="pw-bar" id="bar4" style="flex:1; height:3px; border-radius:10px; background:rgb(var(--k-ink) / 0.08); transition:background 0.3s;"></div>
-            </div>
-            <div class="pw-label" id="pw-label" style="font-size:10px; color:var(--text-muted); margin-top:4px; text-align:right;"></div>
-          </div>
-
-          <button type="submit" class="form-submit" id="submit-btn">
-            Crear mi cuenta gratis
-          </button>
-
-        </form>
-
-        <div class="form-divider">o regístrate con</div>
-
-        <a href="/api/auth/google/redirect" class="google-btn" id="google-btn">
-          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-          <span>Registrarse con Google</span>
-        </a>
-
-        <div class="form-footer">
-          ¿Ya tienes cuenta? <a href="/acceder">Inicia sesión</a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ═══════════ SCRIPTS ═══════════ -->
-  <script>
-    const API_BASE = '';
-    const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const submitBtn = document.getElementById('submit-btn');
-    const formError = document.getElementById('form-error');
-    const formSuccess = document.getElementById('form-success');
-
-    function showError(msg) {
-      document.getElementById('form-error-text').textContent = msg;
-      formError.style.display = 'flex';
+  // Correo
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var TYPO = { 'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.es': 'gmail.com', 'hotmial.com': 'hotmail.com', 'hotmai.com': 'hotmail.com', 'hotmail.co': 'hotmail.com', 'outlok.com': 'outlook.com', 'yahoo.co': 'yahoo.com', 'yaho.com': 'yahoo.com', 'icloud.co': 'icloud.com' };
+  var checkEmail = debounce(function (v) {
+    fetch('/api/auth/check-email/' + encodeURIComponent(v)).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if ($('au-email').value.trim() !== v || !d) return;
+      state.email = !d.exists;
+      if (d.exists) hint('au-email', 'Ya hay una cuenta con este correo. <a href="/acceder' + (ret ? '?return=' + encodeURIComponent(ret) : '') + '">Inicia sesión</a> o <a href="/recuperar?email=' + encodeURIComponent(v) + '">recupera la contraseña</a>.', 'bad', true);
+    }).catch(function () {});
+  }, 500);
+  $('au-email').addEventListener('input', function () {
+    var v = this.value.trim(); state.email = null;
+    hint('au-email', 'Solo lo usamos para recuperar tu cuenta y los avisos que elijas.', '');
+    if (EMAIL_RE.test(v)) {
+      var dom = v.split('@')[1].toLowerCase();
+      if (TYPO[dom]) hint('au-email', '¿Querías decir <a href="#" data-fix="' + TYPO[dom] + '">' + v.split('@')[0].replace(/[<>&"]/g, '') + '@' + TYPO[dom] + '</a>?', 'warn');
+      checkEmail(v);
     }
-    function hideError() { formError.style.display = 'none'; }
-    function showSuccess(username) {
-      document.getElementById('form-success-text').textContent = `Redirigiendo a tu perfil... ¡Bienvenido, ${username}!`;
-      formSuccess.style.display = 'flex';
-      hideError();
-    }
-    function setLoading(on) {
-      submitBtn.disabled = on;
-      submitBtn.classList.toggle('loading', on);
-    }
+  });
+  $('au-email-h').addEventListener('click', function (e) {
+    var a = e.target.closest('[data-fix]'); if (!a) return; e.preventDefault();
+    var inp = $('au-email'); inp.value = inp.value.split('@')[0] + '@' + a.getAttribute('data-fix');
+    inp.dispatchEvent(new Event('input')); inp.focus();
+  });
 
-    // ── Validación username ──
-    let usernameTimer = null;
-    usernameInput.addEventListener('input', () => {
-      clearTimeout(usernameTimer);
-      const val = usernameInput.value.trim();
-      const hintEl = document.getElementById('username-hint');
+  // Contraseña
+  function strength(pw) {
+    if (!pw) return 0;
+    if (pw.length < 8) return 1;
+    var kinds = [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z0-9]/].filter(function (r) { return r.test(pw); }).length;
+    var u = $('au-user').value.trim().toLowerCase();
+    if (/^(.)\1+$/.test(pw) || /^(12345678|password|contraseña|qwerty)/i.test(pw) || (u.length >= 3 && pw.toLowerCase().indexOf(u) >= 0)) return 1;
+    if (pw.length >= 14 || (pw.length >= 10 && kinds >= 3)) return 4;
+    if (pw.length >= 10 || kinds >= 3) return 3;
+    return 2;
+  }
+  var LABEL = ['', 'Débil', 'Aceptable', 'Buena', 'Muy segura'];
+  $('au-pass').addEventListener('input', function () {
+    var pw = this.value, l = strength(pw);
+    $('au-meter').dataset.l = String(l);
+    if (!pw) { hint('au-pass', 'Usa 8 caracteres o más. Una frase larga es más segura que una palabra rara.', ''); return; }
+    if (pw.length < 8) { hint('au-pass', 'Faltan ' + (8 - pw.length) + (8 - pw.length === 1 ? ' carácter' : ' caracteres') + '.', 'bad'); return; }
+    if (l === 1) { hint('au-pass', 'Débil: es demasiado fácil de adivinar.', 'bad'); return; }
+    hint('au-pass', LABEL[l] + (l < 4 ? ' · alárgala para hacerla más segura.' : '.'), l >= 3 ? 'ok' : 'warn');
+  });
 
-      if (val.length === 0) { hintEl.textContent = 'Mínimo 3 caracteres, sin espacios'; hintEl.style.color = 'var(--text-muted)'; return; }
-      if (val.length < 3) { hintEl.textContent = 'Demasiado corto (mín. 3)'; hintEl.style.color = 'var(--accent)'; return; }
-      if (!/^[a-zA-Z0-9_]+$/.test(val)) { hintEl.textContent = 'Solo letras, números y _'; hintEl.style.color = 'var(--accent)'; return; }
+  // Enviar
+  var busy = false;
+  $('au-form').addEventListener('submit', function (e) {
+    e.preventDefault(); if (busy) return;
+    $('au-err').hidden = true;
+    var user = $('au-user').value.trim(), email = $('au-email').value.trim(), pass = $('au-pass').value, first = null;
+    var um = userLocal(user);
+    if (um || state.user === false) { if (um) hint('au-user', um, 'bad', true); first = first || 'au-user'; }
+    if (!EMAIL_RE.test(email)) { hint('au-email', 'Escribe un correo válido, por ejemplo nombre@correo.com.', 'bad', true); first = first || 'au-email'; }
+    else if (state.email === false) first = first || 'au-email';
+    if (pass.length < 8) { hint('au-pass', 'La contraseña necesita al menos 8 caracteres.', 'bad', true); first = first || 'au-pass'; }
+    else if (strength(pass) === 1) { hint('au-pass', 'Esa contraseña es demasiado fácil de adivinar. Prueba una frase.', 'bad', true); first = first || 'au-pass'; }
+    if (first) { $(first).focus(); return; }
 
-      hintEl.textContent = 'Comprobando...'; hintEl.style.color = 'var(--text-muted)';
-      usernameTimer = setTimeout(async () => {
-        try {
-          const res = await fetch(`${API_BASE}/api/auth/check-username/${encodeURIComponent(val)}`);
-          const data = await res.json();
-          if (data.exists) { hintEl.textContent = 'Ya está en uso'; hintEl.style.color = 'var(--accent)'; }
-          else { hintEl.textContent = '¡Disponible!'; hintEl.style.color = 'var(--green)'; }
-        } catch { hintEl.textContent = 'Formato correcto'; hintEl.style.color = 'var(--green)'; }
-      }, 500);
-    });
-
-    // ── Validación email ──
-    let emailTimer = null;
-    emailInput.addEventListener('input', () => {
-      clearTimeout(emailTimer);
-      const val = emailInput.value.trim();
-      const hintEl = document.getElementById('email-hint');
-      if (val.length === 0) { hintEl.textContent = ''; return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { hintEl.textContent = 'Email no válido'; hintEl.style.color = 'var(--accent)'; return; }
-      emailTimer = setTimeout(async () => {
-        try {
-          const res = await fetch(`${API_BASE}/api/auth/check-email/${encodeURIComponent(val)}`);
-          const data = await res.json();
-          if (data.exists) { hintEl.textContent = 'Ya registrado'; hintEl.style.color = 'var(--accent)'; }
-          else { hintEl.textContent = ''; }
-        } catch { hintEl.textContent = ''; }
-      }, 500);
-    });
-
-    // ── Fuerza de contraseña ──
-    function getStrength(pw) {
-      let score = 0;
-      if (pw.length >= 8) score++;
-      if (pw.length >= 12) score++;
-      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-      if (/[0-9]/.test(pw)) score++;
-      if (/[^a-zA-Z0-9]/.test(pw)) score++;
-      if (score <= 1) return { level: 1, label: 'Débil', color: 'var(--accent)' };
-      if (score <= 2) return { level: 2, label: 'Regular', color: 'var(--k-gold)' };
-      if (score <= 3) return { level: 3, label: 'Buena', color: 'var(--green)' };
-      return { level: 4, label: 'Muy fuerte', color: 'var(--green)' };
-    }
-
-    passwordInput.addEventListener('input', () => {
-      const val = passwordInput.value;
-      const bars = [document.getElementById('bar1'), document.getElementById('bar2'),
-                    document.getElementById('bar3'), document.getElementById('bar4')];
-      const label = document.getElementById('pw-label');
-      bars.forEach(b => { b.style.background = 'rgb(var(--k-ink) / 0.08)'; });
-      if (val.length === 0) { label.textContent = ''; return; }
-      const s = getStrength(val);
-      for (let i = 0; i < s.level; i++) bars[i].style.background = s.color;
-      label.textContent = s.label;
-      label.style.color = s.color;
-    });
-
-    // ── Submit ──
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideError();
-      const username = usernameInput.value.trim();
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-
-      if (!username || !email || !password) { showError('Por favor rellena todos los campos.'); return; }
-      if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres.'); return; }
-
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) { showError(data.error || 'Error al crear la cuenta.'); setLoading(false); return; }
-
-        localStorage.setItem('kami_token', data.token);
-        localStorage.setItem('kami_user', JSON.stringify(data.user));
-        showSuccess(data.user.username);
-        setTimeout(() => { window.location.href = data.redirect || `/perfil/${data.user.username}`; }, 1500);
-      } catch (err) {
-        showError('No se pudo conectar con el servidor.');
-        setLoading(false);
-      }
-    });
-  </script>
-
-  <script src="/js/notifications.js"></script>
+    busy = true;
+    var btn = $('au-btn'); btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>Creando tu cuenta…';
+    fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user, email: email, password: pass }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
+      .then(function (x) {
+        if (x.r.ok && x.d.token) { btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>¡Cuenta creada!'; A.finish(x.d.token, x.d.user); return; }
+        var m = x.d.error || '';
+        if (x.r.status === 429) err('Se han creado demasiadas cuentas desde esta conexión. Espera 15 minutos y vuelve a probar.');
+        else if (/usuario/i.test(m) && x.r.status === 409) { hint('au-user', m + '. Prueba con otro.', 'bad', true); $('au-user').focus(); }
+        else if (/correo|email/i.test(m) && x.r.status === 409) { hint('au-email', 'Ya hay una cuenta con este correo. <a href="/acceder">Inicia sesión</a>.', 'bad', true); $('au-email').focus(); }
+        else err(m || 'No se pudo crear la cuenta. Inténtalo de nuevo en un momento.');
+        reset();
+      })
+      .catch(function () { err('Sin conexión con KamiTales. Revisa tu red e inténtalo de nuevo.'); reset(); });
+    function reset() { busy = false; btn.disabled = false; btn.textContent = 'Crear mi cuenta'; }
+  });
+})();
+</script>
 </body>
-
 </html>

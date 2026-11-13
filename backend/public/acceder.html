@@ -1,218 +1,154 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceder · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <link rel="stylesheet" href="/css/login.css">
-    <script src="/js/offline.js?v=2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Acceder · KamiTales</title>
+  <meta name="description" content="Inicia sesión en KamiTales para seguir leyendo donde lo dejaste.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
+  <link rel="stylesheet" href="/css/auth.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/auth.js"></script>
 </head>
+<body data-shell="minimal" data-shell-back="/">
+<div class="au" id="k-main">
+  <aside class="au-art" aria-hidden="true">
+    <div class="au-wall" id="au-wall"></div>
+    <h2>Tu próxima <span>historia</span> te espera</h2>
+    <ul class="au-points">
+      <li><i class="ti ti-bookmark"></i><span><b>Sigue donde lo dejaste.</b> Tu progreso y tu biblioteca, en todos tus dispositivos.</span></li>
+      <li><i class="ti ti-books"></i><span><b>Cómics y novelas</b> de autores que publican aquí primero.</span></li>
+      <li><i class="ti ti-messages"></i><span><b>Comenta cada capítulo</b> y únete a la comunidad de tus obras favoritas.</span></li>
+    </ul>
+  </aside>
 
-<body>
-<!-- ═══════════ LOGIN CONTAINER ═══════════ -->
-    <div class="login-container">
+  <main class="au-main">
+    <div class="au-box">
+      <header class="au-head">
+        <span class="au-mark" aria-hidden="true">神</span>
+        <h1>Hola de nuevo</h1>
+        <p id="au-sub">Inicia sesión para seguir leyendo.</p>
+      </header>
 
-        <!-- LADO IZQUIERDO: HERO -->
-        <div class="login-left">
-            <div class="login-hero">
-                <div class="login-hero-icon">📚</div>
-                <h1 class="login-hero-title">KamiTales</h1>
-                <p class="login-hero-desc">La plataforma de lectura de manga más moderna en español</p>
+      <!-- Ya hay sesión -->
+      <div class="au-signed" id="au-signed" hidden>
+        <div class="k-row"><span class="k-avatar k-avatar--lg" id="au-signed-ava" aria-hidden="true"></span><div><b id="au-signed-name"></b><small>Ya has iniciado sesión en este navegador.</small></div></div>
+        <a class="k-btn k-btn--primary k-btn--block" id="au-signed-go" href="/">Continuar</a>
+        <button type="button" class="k-btn k-btn--secondary k-btn--block" id="au-signed-other">Usar otra cuenta</button>
+      </div>
 
-                <div class="login-hero-features">
-                    <div class="feature">
-                        <div class="feature-icon">✓</div>
-                        <span>45K+ títulos disponibles</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">✓</div>
-                        <span>Sincronización automática</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">✓</div>
-                        <span>Lector ultra rápido</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">✓</div>
-                        <span>Comunidad activa</span>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">✓</div>
-                        <span>Gratis y legal</span>
-                    </div>
-                </div>
+      <div id="au-flow" class="au-box" style="width:100%">
+        <div class="k-alert k-alert--bad" id="au-err" role="alert" hidden><i class="ti ti-alert-circle" aria-hidden="true"></i><div id="au-err-t"></div></div>
+
+        <a class="au-google" href="/api/auth/google/redirect" id="au-google">
+          <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continuar con Google
+        </a>
+        <div class="au-or">o con tu correo</div>
+
+        <form class="au-form" id="au-form" novalidate>
+          <div class="k-field">
+            <label class="k-label" for="au-email">Correo</label>
+            <input class="k-input" id="au-email" name="email" type="email" autocomplete="username" inputmode="email" spellcheck="false" placeholder="nombre@correo.com" required>
+          </div>
+          <div class="k-field">
+            <div class="au-label-row"><label class="k-label" for="au-pass">Contraseña</label><a href="/recuperar" id="au-forgot">¿La has olvidado?</a></div>
+            <div class="au-pw">
+              <input class="k-input" id="au-pass" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña" required>
+              <button type="button" class="au-eye" data-eye="au-pass" aria-pressed="false" aria-label="Mostrar contraseña"><i class="ti ti-eye" aria-hidden="true"></i></button>
             </div>
-        </div>
+            <span class="au-hint is-warn" id="au-caps" hidden><i class="ti ti-arrow-big-up-line" aria-hidden="true"></i>Bloqueo de mayúsculas activado</span>
+          </div>
+          <button class="k-btn k-btn--primary k-btn--lg k-btn--block au-submit" type="submit" id="au-btn">Iniciar sesión</button>
+        </form>
 
-        <!-- LADO DERECHO: FORM -->
-        <div class="login-right">
-            <div class="login-form">
-                <h2 class="login-form-title">ACCEDER</h2>
-                <p class="login-form-subtitle">Inicia sesión en tu cuenta</p>
-
-                <div id="alert-box" class="alert"></div>
-
-                <form id="login-form" onsubmit="handleLogin(event)">
-
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="email" class="form-input" placeholder="tu@email.com" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Contraseña</label>
-                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-                    </div>
-
-                    <div class="form-remember">
-                        <label class="checkbox">
-                            <input type="checkbox">
-                            <span>Recuérdame</span>
-                        </label>
-                        <a href="/recuperar" class="form-forgot">¿Olvidaste tu contraseña?</a>
-                    </div>
-
-                    <button type="submit" class="form-submit" id="submit-btn">
-                        Acceder
-                    </button>
-
-                </form>
-
-                <div class="form-divider">o continúa con</div>
-
-                <!-- Botón Google custom -->
-                <a href="/api/auth/google/redirect" class="google-btn" id="google-btn">
-                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    <span>Iniciar sesión con Google</span>
-                </a>
-
-                <div class="form-footer">
-                    ¿No tienes cuenta? <a href="/registro">Registrarse</a>
-                </div>
-            </div>
-        </div>
-
+        <p class="au-alt">¿Primera vez en KamiTales? <a href="/registro" id="au-to-reg">Crea tu cuenta gratis</a></p>
+      </div>
     </div>
+  </main>
+</div>
 
-    <!-- ═══════════ SCRIPTS ═══════════ -->
-    <script>
-        // Vuelta tras iniciar sesión: solo rutas internas (?return=/premium)
-        function safeReturn() {
-            const r = new URLSearchParams(location.search).get('return') || '';
-            return /^\/(?![\/\\])[^\s]*$/.test(r) ? r : '';
-        }
-        // ── Google OAuth callback handler ──
-        // El servidor redirige aquí con ?google_token=xxx&google_user=xxx
-        (function() {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('google_token');
-            const userData = params.get('google_user');
-            if (token && userData) {
-                try {
-                    const user = JSON.parse(decodeURIComponent(userData));
-                    localStorage.setItem('kami_token', token);
-                    localStorage.setItem('kami_user', JSON.stringify(user));
-                    window.location.href = `/perfil/${user.username}`;
-                } catch(e) {
-                    console.error('Error procesando Google callback:', e);
-                }
-            }
-        })();
+<script>
+(function () {
+  'use strict';
+  var A = window.KAMI_AUTH, $ = function (id) { return document.getElementById(id); };
+  var GOOGLE_ERR = {
+    google_no_code: 'Google no completó el inicio de sesión. Inténtalo de nuevo.',
+    google_token_failed: 'No pudimos confirmar tu cuenta de Google. Inténtalo de nuevo.',
+    google_callback_failed: 'Algo falló al entrar con Google. Inténtalo de nuevo o usa tu correo.'
+  };
+  function err(html) { $('au-err-t').innerHTML = html; $('au-err').hidden = false; }
+  function clearErr() { $('au-err').hidden = true; ['au-email', 'au-pass'].forEach(function (id) { $(id).removeAttribute('aria-invalid'); }); }
 
+  // 1. Vuelta de Google: el token llega en el fragmento (y, por compatibilidad, en la consulta)
+  var frag = new URLSearchParams(location.hash.slice(1)), qs = new URLSearchParams(location.search);
+  var gTok = frag.get('google_token') || qs.get('google_token'), gUser = frag.get('google_user') || qs.get('google_user');
+  if (gTok && gUser) {
+    history.replaceState(null, '', location.pathname); // fuera de la barra y del historial
+    try { var gu = JSON.parse(gUser); A.finish(gTok, gu); return; }
+    catch (e) { err('No pudimos completar el inicio de sesión con Google. Inténtalo de nuevo.'); }
+  }
+  var ge = qs.get('error'); if (ge && GOOGLE_ERR[ge]) err(GOOGLE_ERR[ge]);
 
-        /**
-         * Manejo del formulario de login
-         * Conecta con /api/auth/login
-         */
+  A.rememberReturn();
+  var ret = A.returnTo();
+  if (ret) {
+    $('au-sub').textContent = ret.indexOf('/premium') === 0 ? 'Inicia sesión para continuar con Premium.' : 'Inicia sesión para continuar donde estabas.';
+    $('au-to-reg').href = '/registro?return=' + encodeURIComponent(ret);
+  }
 
-        async function handleLogin(e) {
-            e.preventDefault();
+  // 2. Ya hay sesión
+  var s = A.session();
+  if (s) {
+    if (ret) { location.replace(ret); return; }
+    $('au-flow').hidden = true; $('au-signed').hidden = false;
+    $('au-signed-name').textContent = s.user.username;
+    var av = $('au-signed-ava'), a = s.user.avatar || '';
+    if (/^(https?:\/\/|\/)/.test(a)) { var img = new Image(); img.alt = ''; img.src = a; img.style.cssText = 'width:100%;height:100%;object-fit:cover'; av.appendChild(img); }
+    else av.textContent = (a && a.length <= 3 ? a : s.user.username.slice(0, 2)).toUpperCase();
+    $('au-signed-go').href = '/perfil/' + encodeURIComponent(s.user.username);
+    $('au-signed-go').textContent = 'Continuar como ' + s.user.username;
+    $('au-signed-other').addEventListener('click', function () {
+      fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + s.token } }).catch(function () {});
+      try { localStorage.removeItem('kami_token'); localStorage.removeItem('kami_user'); sessionStorage.removeItem('kami_plan_checked'); } catch (e) { /* nada */ }
+      $('au-signed').hidden = true; $('au-flow').hidden = false; $('au-email').focus();
+    });
+  }
 
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const submitBtn = document.getElementById('submit-btn');
-            const alertBox = document.getElementById('alert-box');
+  A.buildWall($('au-wall'));
+  A.bindEyes();
+  A.bindCaps($('au-pass'), $('au-caps'));
 
-            // Limpiar alerta previa
-            alertBox.classList.remove('show');
+  // El enlace de recuperar lleva el correo escrito
+  $('au-forgot').addEventListener('click', function () {
+    var v = $('au-email').value.trim(); this.href = '/recuperar' + (v ? '?email=' + encodeURIComponent(v) : '');
+  });
 
-            // Deshabilitar botón
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password }),
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Error en el login');
-                }
-
-                // Guardar token y usuario
-                localStorage.setItem('kami_token', data.token);
-                localStorage.setItem('kami_user', JSON.stringify(data.user));
-
-                // Mostrar éxito
-                alertBox.classList.add('alert-success', 'show');
-                alertBox.textContent = '✓ Login exitoso. Redirigiendo...';
-
-                // Redirigir al perfil
-                setTimeout(() => {
-                    window.location.href = safeReturn() || data.redirect || `/perfil/${data.user.username}`;
-                }, 1500);
-
-            } catch (err) {
-                // Mostrar error
-                alertBox.classList.add('alert-error', 'show');
-                alertBox.textContent = '✗ ' + (err.message || 'Error al iniciar sesión');
-                console.error('Error:', err);
-            } finally {
-                // Re-habilitar botón
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-            }
-        }
-
-        /**
-         * Verificar si ya hay sesión activa
-         * Si la hay, redirigir al perfil
-         */
-        function checkSession() {
-            const token = localStorage.getItem('kami_token');
-            const user = localStorage.getItem('kami_user');
-
-            if (token && user) {
-                try {
-                    const userData = JSON.parse(user);
-                    // Ya estás logueado, redirigir
-                    window.location.href = safeReturn() || `/perfil/${userData.username}`;
-                } catch (err) {
-                    console.error('Error parsing user:', err);
-                }
-            }
-        }
-
-        // Ejecutar al cargar
-        checkSession();
-    </script>
-    <script src="/js/tab-router.js"></script>
-    <script src="/js/notifications.js"></script>
+  // 3. Iniciar sesión
+  var busy = false;
+  $('au-form').addEventListener('submit', function (e) {
+    e.preventDefault(); if (busy) return;
+    clearErr();
+    var email = $('au-email').value.trim(), pass = $('au-pass').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('au-email').setAttribute('aria-invalid', 'true'); err('Escribe tu correo completo, por ejemplo nombre@correo.com.'); $('au-email').focus(); return; }
+    if (!pass) { $('au-pass').setAttribute('aria-invalid', 'true'); err('Escribe tu contraseña.'); $('au-pass').focus(); return; }
+    busy = true;
+    var btn = $('au-btn'); btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>Entrando…';
+    fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, password: pass }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
+      .then(function (x) {
+        if (x.r.ok && x.d.token) { btn.innerHTML = '<i class="ti ti-check" aria-hidden="true"></i>Dentro'; A.finish(x.d.token, x.d.user); return; }
+        if (x.r.status === 429) err('Demasiados intentos seguidos. Espera unos minutos y vuelve a probar, o <a href="/recuperar?email=' + encodeURIComponent(email) + '">recupera tu contraseña</a>.');
+        else if (x.d.code === 'google_only') err('Esta cuenta se creó con Google. Pulsa <b>Continuar con Google</b> o <a href="/recuperar?email=' + encodeURIComponent(email) + '">crea una contraseña</a>.');
+        else if (x.r.status === 401) { $('au-pass').setAttribute('aria-invalid', 'true'); err('El correo o la contraseña no coinciden. <a href="/recuperar?email=' + encodeURIComponent(email) + '">¿La has olvidado?</a>'); $('au-pass').select(); }
+        else err('No se pudo iniciar sesión. Inténtalo de nuevo en un momento.');
+        reset();
+      })
+      .catch(function () { err('Sin conexión con KamiTales. Revisa tu red e inténtalo de nuevo.'); reset(); });
+    function reset() { busy = false; btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
+  });
+})();
+</script>
 </body>
-
 </html>

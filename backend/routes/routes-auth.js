@@ -55,9 +55,10 @@ function extractToken(req) {
 // ══════════════════════════════════════════════════════
 router.post('/register', registerLimiter, async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        let { username, email, password } = req.body || {};
+        if (typeof username === 'string') username = username.trim();
 
-        if (!username || !email || !password) {
+        if (typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string' || !username || !email || !password) {
             return res.status(400).json({
                 error: 'Faltan campos requeridos',
                 required: ['username', 'email', 'password'],
@@ -76,15 +77,23 @@ router.post('/register', registerLimiter, async (req, res) => {
         if (password.length < 8) {
             return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
         }
+        if (password.length > 200) {
+            return res.status(400).json({ error: 'La contraseña es demasiado larga' });
+        }
 
-        // Comprobar si ya existe
+        email = String(email).trim().toLowerCase();
+        if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: 'Escribe un correo válido' });
+        }
+
+        // Comprobar si ya existe (sin distinguir mayúsculas)
         const existing = await pool.query(
-            'SELECT id FROM users WHERE username = $1 OR email = $2',
+            'SELECT LOWER(username) = LOWER($1) AS same_user FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = $2',
             [username, email]
         );
 
         if (existing.rows.length > 0) {
-            return res.status(409).json({ error: 'El usuario o email ya están en uso' });
+            return res.status(409).json({ error: existing.rows.some(r => r.same_user) ? 'Ese nombre de usuario ya está en uso' : 'Ya hay una cuenta con ese correo' });
         }
 
         // Hash de contraseña
@@ -133,15 +142,16 @@ router.post('/register', registerLimiter, async (req, res) => {
 // ══════════════════════════════════════════════════════
 router.post('/login', loginLimiter, async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
 
-        if (!email || !password) {
+        if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password) {
             return res.status(400).json({ error: 'Email y contraseña requeridos' });
         }
 
+        // Si hubiera dos cuentas que solo difieren en mayúsculas, gana la que coincide exactamente
         const result = await pool.query(
-            'SELECT * FROM users WHERE email = $1',
-            [email]
+            'SELECT * FROM users WHERE LOWER(email) = LOWER($1) ORDER BY (email = $1) DESC LIMIT 1',
+            [email.trim()]
         );
 
         if (result.rows.length === 0) {
@@ -150,6 +160,11 @@ router.post('/login', loginLimiter, async (req, res) => {
 
         const user = result.rows[0];
         const role = getRole(user);
+
+        // Cuentas creadas con Google no tienen contraseña propia
+        if (!user.password) {
+            return res.status(401).json({ error: 'Esta cuenta se creó con Google. Usa «Continuar con Google» o crea una contraseña desde «¿La has olvidado?».', code: 'google_only' });
+        }
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
@@ -184,7 +199,7 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     } catch (err) {
         console.error('Error en /login:', err.message, err.stack);
-        res.status(500).json({ error: 'Error interno del servidor', detail: err.message });
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 
@@ -332,7 +347,7 @@ router.get('/check-username/:username', async (req, res) => {
         const { username } = req.params;
 
         const result = await pool.query(
-            'SELECT id FROM users WHERE username = $1',
+            'SELECT id FROM users WHERE LOWER(username) = LOWER($1)',
             [username]
         );
 
@@ -353,8 +368,8 @@ router.get('/check-email/:email', async (req, res) => {
         const { email } = req.params;
 
         const result = await pool.query(
-            'SELECT id FROM users WHERE email = $1',
-            [email]
+            'SELECT id FROM users WHERE LOWER(email) = LOWER($1)',
+            [String(email).trim()]
         );
 
         res.json({ exists: result.rows.length > 0 });
@@ -523,7 +538,7 @@ router.get('/google/callback', async (req, res) => {
         const { code } = req.query;
 
         if (!code) {
-            return res.redirect('/login?error=google_no_code');
+            return res.redirect('/acceder?error=google_no_code');
         }
 
         // 1. Intercambiar code por tokens
@@ -543,7 +558,7 @@ router.get('/google/callback', async (req, res) => {
 
         if (!tokenResponse.ok) {
             console.error('Google token error:', tokenData);
-            return res.redirect('/login?error=google_token_failed');
+            return res.redirect('/acceder?error=google_token_failed');
         }
 
         // 2. Obtener info del usuario con el access_token
@@ -614,11 +629,11 @@ router.get('/google/callback', async (req, res) => {
         }));
 
         // 5. Redirigir al login con token en params
-        res.redirect(`/login?google_token=${token}&google_user=${userData}`);
+        res.redirect(`/acceder#google_token=${token}&google_user=${userData}`);
 
     } catch (err) {
         console.error('Error en Google callback:', err);
-        res.redirect('/login?error=google_callback_failed');
+        res.redirect('/acceder?error=google_callback_failed');
     }
 });
 

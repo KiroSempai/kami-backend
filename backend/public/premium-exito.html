@@ -1,58 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suscripción activada · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <style>
-        .success-page { margin-top: 100px; text-align: center; padding: 40px 24px; }
-        .success-icon { font-size: 80px; margin-bottom: 16px; }
-        .success-title { font-family: var(--font-display); font-size: 42px; letter-spacing: 2px; margin-bottom: 8px; color: var(--accent-gold); }
-        .success-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; }
-        .success-btn { display: inline-block; padding: 12px 28px; background: var(--accent); color: var(--k-text); border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; transition: opacity .2s; }
-        .success-btn:hover { opacity: .9; }
-        .success-note { margin-top: 24px; font-size: 12px; color: var(--text-muted); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Suscripción activada · KamiTales</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    [hidden] { display: none !important; }
+    .ok-page { min-height: calc(100dvh - 160px); display: grid; place-items: center; }
+    .ok-card { position: relative; isolation: isolate; width: min(560px, 100%); display: grid; gap: var(--k-5); justify-items: center; text-align: center; padding: clamp(28px, 6vw, 48px) clamp(20px, 5vw, 40px);
+      border-radius: 26px; border: 1px solid color-mix(in srgb, var(--k-gold) 40%, transparent);
+      background: radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, var(--k-gold) 18%, transparent), transparent 70%), var(--k-surface-1);
+      box-shadow: 0 30px 90px -40px var(--k-gold); overflow: hidden; }
+    .ok-crown { width: 76px; height: 76px; border-radius: 22px; display: grid; place-items: center; font-size: 38px; color: #1a1205;
+      background: linear-gradient(140deg, #ffe08a, var(--k-gold) 55%, #c98a1c); box-shadow: 0 0 0 1px rgb(255 255 255 / .2) inset, 0 14px 44px -8px var(--k-gold);
+      animation: ok-pop .6s cubic-bezier(.2, 1.4, .4, 1) both; }
+    @keyframes ok-pop { from { transform: scale(.4) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+    .ok-card h1 { margin: 0; font: 900 clamp(2.2rem, 8vw, 3.4rem)/.92 var(--k-font-display); text-transform: uppercase; text-wrap: balance; }
+    .ok-card h1 span { color: var(--k-gold); }
+    .ok-card > p { margin: 0; color: var(--k-text-2); line-height: 1.6; max-width: 46ch; }
+    .ok-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--k-2); width: 100%; text-align: left; }
+    .ok-list li { display: grid; grid-template-columns: 36px 1fr; gap: var(--k-3); align-items: center; padding: var(--k-3); border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: rgb(var(--k-ink) / .03); font-size: var(--k-fs-sm); }
+    .ok-list .ti { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 19px; color: var(--k-gold); background: color-mix(in srgb, var(--k-gold) 12%, transparent); }
+    .ok-list b { display: block; }
+    .ok-list small { color: var(--k-text-3); }
+    .ok-actions { display: flex; flex-wrap: wrap; gap: var(--k-2); justify-content: center; }
+    .ok-gold { background: linear-gradient(120deg, #ffe08a, var(--k-gold) 60%, #d99a25); color: #1a1205; border-color: transparent; }
+    .ok-gold:hover { filter: brightness(1.06); color: #1a1205; }
+    .ok-note { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .ok-spin { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--k-line-2); border-top-color: var(--k-gold); animation: ok-spin 1s linear infinite; }
+    @keyframes ok-spin { to { transform: rotate(360deg); } }
+    /* Destellos */
+    .ok-spark { position: absolute; z-index: -1; width: 6px; height: 6px; border-radius: 50%; background: var(--k-gold); box-shadow: 0 0 12px var(--k-gold); opacity: 0; animation: ok-spark 2.4s ease-out infinite; }
+    @keyframes ok-spark { 0% { opacity: 0; transform: translateY(10px) scale(.6); } 30% { opacity: .9; } 100% { opacity: 0; transform: translateY(-60px) scale(1); } }
+    @media (prefers-reduced-motion: reduce) { .ok-crown, .ok-spark, .ok-spin { animation: none; } .ok-spark { display: none; } }
+    :root[data-motion="reduce"] .ok-spark { display: none; }
+  </style>
 </head>
 <body>
-<div class="success-page">
-        <div class="success-icon">🌟</div>
-        <div class="success-title" style="display:flex;align-items:center;justify-content:center;gap:10px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--accent);border-radius:8px;color: var(--k-text);font-size:22px;">神</span> SUSCRIPCIÓN ACTIVADA</div>
-        <div class="success-sub">Gracias por confiar en KamiTales. Tu badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin:0 2px;">神</span> ya está activo en tu perfil.</div>
-        <a href="/perfil/" class="success-btn" id="success-profile-btn">Ir a mi perfil</a>
-        <div class="success-note">Si no ves el cambio, prueba a recargar la página.</div>
+<main class="k-page ok-page" id="k-main">
+  <section class="ok-card" aria-live="polite">
+    <span class="ok-spark" style="left:14%;top:30%"></span><span class="ok-spark" style="left:82%;top:24%;animation-delay:.6s"></span>
+    <span class="ok-spark" style="left:28%;top:62%;animation-delay:1.2s"></span><span class="ok-spark" style="left:70%;top:58%;animation-delay:1.8s"></span>
+
+    <!-- Comprobando -->
+    <div id="ok-wait" class="k-stack" style="justify-items:center;gap:var(--k-4)">
+      <span class="ok-spin" aria-hidden="true"></span>
+      <h1 style="font-size:clamp(1.8rem,6vw,2.4rem)">Confirmando tu pago…</h1>
+      <p class="k-muted" style="margin:0">Suele tardar unos segundos.</p>
     </div>
 
-    <script>
-        const stored = JSON.parse(localStorage.getItem('kami_user') || '{}');
-        const profileBtn = document.getElementById('success-profile-btn');
-        if (stored.username) {
-            profileBtn.href = '/perfil/' + encodeURIComponent(stored.username);
-        }
+    <!-- Activa -->
+    <div id="ok-done" class="k-stack" style="justify-items:center;gap:var(--k-5);width:100%" hidden>
+      <span class="ok-crown" aria-hidden="true"><i class="ti ti-crown"></i></span>
+      <h1>Ya eres <span id="ok-tier">Premium</span></h1>
+      <p id="ok-when">Gracias por apoyar KamiTales.</p>
+      <ul class="ok-list">
+        <li><i class="ti ti-palette" aria-hidden="true"></i><div><b>Ambientes exclusivos</b><small>Aurora, Kin, Neón Tokio y Sakura, ya disponibles.</small></div></li>
+        <li><i class="ti ti-sparkles" aria-hidden="true"></i><div><b>Fondo animado y acento degradado</b><small>Actívalos en Ajustes → Apariencia.</small></div></li>
+        <li><i class="ti ti-photo" aria-hidden="true"></i><div><b>Calidad original</b><small>Los cómics se verán en su máxima resolución.</small></div></li>
+        <li><i class="ti ti-rosette" aria-hidden="true"></i><div><b>Tu insignia</b><small>Ya aparece en tu perfil y en tu avatar.</small></div></li>
+      </ul>
+      <div class="ok-actions">
+        <a class="k-btn k-btn--lg ok-gold" href="/ajustes#apariencia"><i class="ti ti-palette" aria-hidden="true"></i>Elegir mi ambiente</a>
+        <a class="k-btn k-btn--lg k-btn--secondary" href="/perfil" id="ok-profile">Ver mi perfil</a>
+      </div>
+    </div>
 
-        // Refrescar datos del usuario para que recoja el nuevo role
-        const token = localStorage.getItem('kami_token');
-        if (token) {
-            fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.user) {
-                        const st = JSON.parse(localStorage.getItem('kami_user') || '{}');
-                        st.role = data.user.role;
-                        st.premiumExpiresAt = data.user.premiumExpiresAt;
-                        localStorage.setItem('kami_user', JSON.stringify(st));
-                        if (typeof window.kamiRefreshNav === 'function') window.kamiRefreshNav();
-                    }
-                })
-                .catch(() => {});
+    <!-- Aún sin confirmar -->
+    <div id="ok-late" class="k-stack" style="justify-items:center;gap:var(--k-4)" hidden>
+      <span class="ok-crown" aria-hidden="true" style="filter:grayscale(.4)"><i class="ti ti-hourglass"></i></span>
+      <h1 style="font-size:clamp(1.8rem,6vw,2.4rem)">Tu pago está en camino</h1>
+      <p>Todavía no nos ha llegado la confirmación. Puede tardar unos minutos: no hace falta que pagues otra vez.</p>
+      <div class="ok-actions">
+        <button type="button" class="k-btn k-btn--primary" id="ok-retry"><i class="ti ti-refresh" aria-hidden="true"></i>Comprobar de nuevo</button>
+        <a class="k-btn k-btn--secondary" href="/premium">Volver a Premium</a>
+      </div>
+      <p class="ok-note">Si en una hora no se ha activado, escríbenos desde Ajustes y lo revisamos.</p>
+    </div>
+
+    <!-- Sin sesión -->
+    <div id="ok-anon" class="k-stack" style="justify-items:center;gap:var(--k-4)" hidden>
+      <h1 style="font-size:clamp(1.8rem,6vw,2.4rem)">Inicia sesión para verlo</h1>
+      <p>Entra con la cuenta con la que pagaste para ver tu suscripción.</p>
+      <a class="k-btn k-btn--primary" href="/acceder?return=%2Fpremium%2Fexito">Iniciar sesión</a>
+    </div>
+  </section>
+</main>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s) { return document.querySelector(s); };
+  var fmtDate = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  var token = null, user = {};
+  try { token = localStorage.getItem('kami_token'); user = JSON.parse(localStorage.getItem('kami_user') || '{}') || {}; } catch (e) { /* nada */ }
+  function show(id) { ['wait', 'done', 'late', 'anon'].forEach(function (k) { $('#ok-' + k).hidden = k !== id; }); }
+  if (user.username) $('#ok-profile').href = '/perfil/' + encodeURIComponent(user.username);
+  if (!token) { show('anon'); return; }
+
+  var tries = 0;
+  function check() {
+    fetch('/api/premium/status', { headers: { Authorization: 'Bearer ' + token } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.premiumStatus === 'active') {
+          $('#ok-tier').textContent = d.subscriptionTier === 'gold' ? 'Gold' : 'Silver';
+          $('#ok-when').textContent = 'Tu suscripción está activa hasta el ' + fmtDate.format(new Date(d.expiresAt)) + '. Gracias por apoyar KamiTales.';
+          show('done');
+          // Actualiza la sesión guardada para que el modo premium se active ya
+          if (window.KAMI && KAMI.theme && KAMI.theme.refreshPlan) KAMI.theme.refreshPlan(true);
+          return;
         }
-    </script>
-  <script src="/js/notifications.js"></script>
+        // El aviso del proveedor de pago puede llegar unos segundos después
+        if (++tries < 6) setTimeout(check, 2500); else show('late');
+      })
+      .catch(function () { if (++tries < 6) setTimeout(check, 2500); else show('late'); });
+  }
+  $('#ok-retry').addEventListener('click', function () { tries = 0; show('wait'); check(); });
+  check();
+})();
+</script>
 </body>
 </html>

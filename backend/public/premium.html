@@ -1,154 +1,453 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css">
-    <style>
-        .prem-page { margin-top: 60px; padding: 60px 32px; max-width: 900px; margin-left: auto; margin-right: auto; text-align: center; }
-        .prem-title { font-family: var(--font-display); font-size: 52px; letter-spacing: 2px; margin-bottom: 8px; }
-        .prem-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 48px; }
-        .prem-plans { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-        .prem-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 32px; width: 280px; text-align: center; transition: var(--transition); position: relative; }
-        .prem-card:hover { border-color: var(--border-hover); transform: translateY(-4px); }
-        .prem-card.featured { border-color: var(--accent-gold); box-shadow: 0 0 30px color-mix(in srgb, var(--k-gold) 10%, transparent); }
-        .prem-card.featured::before { content: 'MÁS POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-gold); color: #000; font-size: 10px; font-weight: 800; padding: 4px 14px; border-radius: 20px; letter-spacing: 1px; }
-        .prem-plan-name { font-family: var(--font-display); font-size: 28px; letter-spacing: 1px; margin-bottom: 4px; }
-        .prem-plan-price { font-size: 40px; font-family: var(--font-display); color: var(--accent-gold); letter-spacing: 1px; margin-bottom: 4px; }
-        .prem-plan-period { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
-        .prem-plan-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px; }
-        .prem-btn { display: inline-block; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: var(--transition); font-family: var(--font-body); text-decoration: none; }
-        .prem-btn.primary { background: var(--accent-gold); color: #000; }
-        .prem-btn.primary:hover { opacity: .9; transform: translateY(-1px); }
-        .prem-btn.secondary { background: rgb(var(--k-ink) / 0.06); border: 1px solid var(--border); color: var(--text-secondary); }
-        .prem-btn.secondary:hover { background: rgb(var(--k-ink) / 0.1); color: var(--text-primary); }
-        .prem-benefits { margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; text-align: left; }
-        .prem-benefit { padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); }
-        .prem-benefit-icon { font-size: 28px; margin-bottom: 8px; }
-        .prem-benefit-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-        .prem-benefit-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
-        .prem-footer-note { margin-top: 40px; font-size: 12px; color: var(--text-muted); }
-        .prem-loading { padding: 60px; color: var(--text-muted); font-size: 15px; }
-        .prem-logged-out { padding: 40px; color: var(--text-muted); }
-        .prem-logged-out a { color: var(--accent); text-decoration: underline; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Premium · KamiTales</title>
+  <meta name="description" content="KamiTales Premium: ambientes exclusivos, fondo animado, imágenes en calidad original e insignia en tu perfil.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    [hidden] { display: none !important; }
+    .pm { display: grid; gap: clamp(48px, 8vw, 88px); }
+
+    /* ── Portada ─────────────────────────────────────────── */
+    .pm-hero { position: relative; display: grid; gap: var(--k-5); justify-items: center; text-align: center; padding-top: var(--k-6); isolation: isolate; }
+    .pm-hero::before { content: ""; position: absolute; z-index: -1; inset: -40px 0 auto; height: 420px; pointer-events: none;
+      background: radial-gradient(40% 60% at 30% 40%, color-mix(in srgb, var(--k-gold) 20%, transparent), transparent 70%),
+                  radial-gradient(40% 60% at 70% 30%, color-mix(in srgb, var(--k-accent) 22%, transparent), transparent 70%);
+      filter: blur(10px); }
+    .pm-crown { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 32px; color: #1a1205;
+      background: linear-gradient(140deg, #ffe08a, var(--k-gold) 55%, #c98a1c); box-shadow: 0 0 0 1px rgb(255 255 255 / .2) inset, 0 12px 40px -8px var(--k-gold); }
+    .pm-hero h1 { margin: 0; font: 900 clamp(2.6rem, 9vw, 5.2rem)/.9 var(--k-font-display); text-transform: uppercase; text-wrap: balance; max-width: 14ch; }
+    .pm-hero h1 span { background: linear-gradient(100deg, #ffe08a, var(--k-gold) 45%, var(--k-accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .pm-lede { margin: 0; max-width: 58ch; color: var(--k-text-2); font-size: var(--k-fs-lg); line-height: 1.6; }
+
+    /* Estado de la suscripción */
+    .pm-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--k-3) var(--k-4); padding: var(--k-4) var(--k-5); border-radius: var(--k-r-lg);
+      border: 1px solid color-mix(in srgb, var(--k-gold) 40%, transparent); background: color-mix(in srgb, var(--k-gold) 8%, var(--k-surface-1)); text-align: left; max-width: 100%; }
+    .pm-status > .ti { font-size: 26px; color: var(--k-gold); }
+    .pm-status b { display: block; font-size: var(--k-fs-md); }
+    .pm-status small { color: var(--k-text-3); font-size: var(--k-fs-sm); }
+
+    /* ── Planes ──────────────────────────────────────────── */
+    .pm-sec-head { display: grid; gap: var(--k-3); justify-items: center; text-align: center; margin-bottom: var(--k-6); }
+    .pm-sec-head h2 { margin: 0; font: 800 clamp(1.8rem, 5vw, 2.8rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .pm-sec-head p { margin: 0; color: var(--k-text-3); max-width: 56ch; }
+    .pm-cycle { display: inline-flex; padding: 4px; gap: 4px; border-radius: var(--k-r-pill); background: rgb(var(--k-ink) / .06); border: 1px solid var(--k-line); }
+    .pm-cycle button { min-height: 40px; padding: 0 var(--k-5); border: 0; border-radius: var(--k-r-pill); background: none; color: var(--k-text-2); font: 700 var(--k-fs-sm)/1 var(--k-font-body); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .pm-cycle button[aria-pressed="true"] { background: var(--k-surface-1); color: var(--k-text); box-shadow: var(--k-shadow-1); }
+    .pm-cycle .k-badge { font-size: 10px; }
+
+    .pm-plans { display: grid; gap: var(--k-5) var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); align-items: stretch; }
+    .pm-plan { position: relative; display: flex; flex-direction: column; gap: var(--k-4); padding: var(--k-6); border-radius: 20px; border: 1px solid var(--k-line); background: var(--k-surface-1); min-width: 0; }
+    .pm-plan h3 { margin: 0; display: flex; align-items: center; gap: var(--k-2); font: 800 var(--k-fs-2xl)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .02em; }
+    .pm-plan .pm-for { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-sm); line-height: 1.5; min-height: 3em; }
+    .pm-price { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .pm-price b { font: 900 clamp(2.6rem, 7vw, 3.4rem)/1 var(--k-font-display); letter-spacing: .01em; }
+    .pm-price span { color: var(--k-text-3); font-size: var(--k-fs-sm); }
+    .pm-price-sub { margin: -8px 0 0; min-height: 1.4em; color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .pm-price-sub strong { color: var(--k-ok); }
+    .pm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: var(--k-fs-sm); line-height: 1.45; }
+    .pm-list li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; }
+    .pm-list .ti { font-size: 18px; color: var(--k-ok); margin-top: 1px; }
+    .pm-list li.is-soon { color: var(--k-text-3); }
+    .pm-list li.is-soon .ti { color: var(--k-text-3); }
+    .pm-soon { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: var(--k-r-pill); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--k-line-2); color: var(--k-text-3); vertical-align: 1px; }
+    .pm-plan > .k-btn { margin-top: auto; }
+
+    .pm-plan--silver h3 .ti { color: #cfd3e0; }
+    .pm-plan--silver { background: radial-gradient(120% 70% at 100% 0%, rgb(207 211 224 / .08), transparent 60%), var(--k-surface-1); }
+    .pm-plan--gold { border-color: color-mix(in srgb, var(--k-gold) 55%, transparent);
+      background: radial-gradient(120% 70% at 100% 0%, color-mix(in srgb, var(--k-gold) 18%, transparent), transparent 60%), var(--k-surface-1);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--k-gold) 25%, transparent), 0 24px 60px -30px var(--k-gold); }
+    .pm-plan--gold h3 .ti, .pm-plan--gold .pm-price b { color: var(--k-gold); }
+    .pm-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 5px 14px; border-radius: var(--k-r-pill); white-space: nowrap;
+      background: linear-gradient(120deg, #ffe08a, var(--k-gold)); color: #1a1205; font: 800 11px/1 var(--k-font-body); letter-spacing: .1em; text-transform: uppercase; }
+    .pm-btn-gold { background: linear-gradient(120deg, #ffe08a, var(--k-gold) 60%, #d99a25); color: #1a1205; border-color: transparent; }
+    .pm-btn-gold:hover { filter: brightness(1.06); color: #1a1205; }
+    .pm-plan.pm-current { border-color: var(--k-ok); }
+    .pm-mine { position: absolute; top: var(--k-4); right: var(--k-4); }
+    .pm-note { margin: var(--k-5) auto 0; max-width: 64ch; text-align: center; color: var(--k-text-3); font-size: var(--k-fs-xs); line-height: 1.6; }
+
+    /* ── Pruébalo: ambientes ─────────────────────────────── */
+    .pm-try-wrap { display: grid; gap: var(--k-6); grid-template-columns: minmax(0, 1fr); align-items: center; }
+    @media (min-width: 900px) { .pm-try-wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); } }
+    .pm-try-copy { display: grid; gap: var(--k-4); }
+    .pm-try-copy h2 { margin: 0; font: 800 clamp(1.8rem, 5vw, 2.8rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .pm-try-copy p { margin: 0; color: var(--k-text-2); line-height: 1.6; }
+    .pm-skins { display: flex; flex-wrap: wrap; gap: var(--k-2); }
+    .pm-skin { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 8px; border-radius: var(--k-r-pill); border: 1px solid var(--k-line); background: rgb(var(--k-ink) / .03); color: var(--k-text-2); font: 600 var(--k-fs-sm)/1 var(--k-font-body); cursor: pointer; }
+    .pm-skin i { width: 24px; height: 24px; border-radius: 50%; background: var(--_sw); box-shadow: 0 0 0 1px rgb(255 255 255 / .15) inset; }
+    .pm-skin[aria-pressed="true"] { color: var(--k-text); border-color: var(--_c); box-shadow: 0 0 0 1px var(--_c), 0 6px 20px -8px var(--_c); }
+    .pm-switches { display: flex; flex-wrap: wrap; gap: var(--k-3) var(--k-5); color: var(--k-text-2); }
+
+    /* La maqueta usa sus propias variables: no toca el tema real de la página */
+    .pm-mock { --m-bg: #0a0912; --m-s1: #13111d; --m-s2: #1b1828; --m-a: #ff3b6b; --m-a2: #f5b83d; --m-1: #ff3b6b; --m-2: #f5b83d; --m-3: #9d7bff;
+      position: relative; overflow: hidden; isolation: isolate; border-radius: 22px; border: 1px solid rgb(255 255 255 / .1); background: var(--m-bg); color: #f3f1f8;
+      aspect-ratio: 16 / 11; padding: 14px; display: grid; grid-template-rows: auto 1fr; gap: 14px; box-shadow: 0 30px 80px -40px #000; transition: background-color .4s; }
+    .pm-mock[data-s="aurora"] { --m-bg: #060a14; --m-s1: #0c1322; --m-s2: #111a2d; --m-a2: #22d3ee; --m-1: #1b6cff; --m-2: #22d3ee; --m-3: #7c3aed; }
+    .pm-mock[data-s="kin"]    { --m-bg: #0d0a06; --m-s1: #17120b; --m-s2: #1f1810; --m-a2: #f5c842; --m-1: #f5c842; --m-2: #c2741d; --m-3: #7a4b12; }
+    .pm-mock[data-s="tokyo"]  { --m-bg: #09061a; --m-s1: #120d28; --m-s2: #191236; --m-a2: #22d3ee; --m-1: #b56bff; --m-2: #22d3ee; --m-3: #ff3b6b; }
+    .pm-mock[data-s="sakura"] { --m-bg: #10070f; --m-s1: #1b0e19; --m-s2: #241322; --m-a2: #ff8fcf; --m-1: #ff8fcf; --m-2: #ff3b6b; --m-3: #9d7bff; }
+    .pm-mock[data-s="tokyo"]::after { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(rgb(181 107 255 / .07) 1px, transparent 1px), linear-gradient(90deg, rgb(181 107 255 / .07) 1px, transparent 1px); background-size: 24px 24px; }
+    .pm-mock::before { content: ""; position: absolute; inset: -30%; z-index: -2; opacity: 0; transition: opacity .5s;
+      background: radial-gradient(30% 30% at 20% 25%, color-mix(in srgb, var(--m-1) 45%, transparent), transparent 70%),
+                  radial-gradient(28% 28% at 80% 30%, color-mix(in srgb, var(--m-2) 38%, transparent), transparent 70%),
+                  radial-gradient(34% 34% at 55% 85%, color-mix(in srgb, var(--m-3) 34%, transparent), transparent 70%);
+      filter: blur(14px); animation: k-ambient 18s ease-in-out infinite alternate; }
+    .pm-mock.is-amb::before { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) { .pm-mock::before { animation: none; } }
+    :root[data-motion="reduce"] .pm-mock::before { animation: none; }
+    .pm-mock__bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--m-s1) 85%, transparent); border: 1px solid rgb(255 255 255 / .06); }
+    .pm-mock__logo { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; background: var(--m-a); font: 700 12px/1 "Noto Sans JP", sans-serif; color: #fff; }
+    .pm-mock__word { font: 900 15px/1 var(--k-font-display); letter-spacing: .06em; text-transform: uppercase; }
+    .pm-mock__word b { color: var(--m-a); font-weight: inherit; }
+    .pm-mock.is-grad .pm-mock__word b { background: linear-gradient(100deg, var(--m-a), var(--m-a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .pm-mock__ava { margin-left: auto; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--m-a), var(--m-a2)); box-shadow: 0 0 0 2px var(--m-bg), 0 0 0 3.5px #f5b83d; }
+    .pm-mock__body { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; min-height: 0; }
+    .pm-mock__feat { border-radius: 14px; padding: 14px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-height: 0;
+      background: linear-gradient(to top, color-mix(in srgb, var(--m-bg) 92%, transparent), transparent 70%), linear-gradient(140deg, var(--m-1), var(--m-3)); }
+    .pm-mock__feat strong { font: 900 clamp(14px, 2.4vw, 22px)/1 var(--k-font-display); text-transform: uppercase; }
+    .pm-mock__btn { align-self: flex-start; padding: 6px 12px; border-radius: 999px; font: 700 11px/1 var(--k-font-body); background: var(--m-a); color: #fff; }
+    .pm-mock.is-grad .pm-mock__btn { background: linear-gradient(120deg, var(--m-a), var(--m-a2)); }
+    .pm-mock__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; align-content: start; }
+    .pm-mock__cov { aspect-ratio: 2 / 3; border-radius: 8px; background: var(--m-s2); border: 1px solid rgb(255 255 255 / .05); position: relative; overflow: hidden; }
+    .pm-mock__cov::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, color-mix(in srgb, var(--_c, var(--m-a)) 55%, transparent), transparent 70%); }
+    .pm-mock__cov:nth-child(3) { --_c: var(--m-2); } .pm-mock__cov:nth-child(4) { --_c: var(--m-3); } .pm-mock__cov:nth-child(5) { --_c: var(--m-a2); } .pm-mock__cov:nth-child(6) { --_c: var(--m-1); }
+    .pm-mock__line { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: rgb(255 255 255 / .08); }
+    .pm-mock__line.is-short { width: 60%; }
+    .pm-mock__tab { grid-column: 1 / -1; height: 3px; width: 40%; border-radius: 2px; background: var(--m-a); box-shadow: 0 0 10px var(--m-a); }
+    .pm-mock.is-grad .pm-mock__tab { background: linear-gradient(90deg, var(--m-a), var(--m-a2)); }
+    .pm-mock__cap { position: absolute; right: 12px; bottom: 10px; font: 600 11px/1 var(--k-font-body); color: rgb(255 255 255 / .55); }
+
+    /* ── Qué incluye ─────────────────────────────────────── */
+    .pm-feats { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); }
+    .pm-feat { display: grid; gap: var(--k-2); align-content: start; padding: var(--k-5); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pm-feat > .ti { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; color: var(--k-gold); background: color-mix(in srgb, var(--k-gold) 12%, transparent); }
+    .pm-feat h3 { margin: 4px 0 0; font-size: var(--k-fs-md); }
+    .pm-feat p { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-sm); line-height: 1.55; }
+
+    /* ── Comparativa ─────────────────────────────────────── */
+    .pm-table-wrap { overflow-x: auto; border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pm-table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: var(--k-fs-sm); }
+    .pm-table th, .pm-table td { padding: 14px 16px; text-align: center; border-bottom: 1px solid var(--k-line); }
+    .pm-table th:first-child { text-align: left; color: var(--k-text-2); font-weight: 500; }
+    .pm-table thead th { font: 800 var(--k-fs-md)/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .03em; background: var(--k-surface-1); }
+    .pm-table thead th.is-gold { color: var(--k-gold); }
+    .pm-table tbody tr:last-child > * { border-bottom: 0; }
+    .pm-table td.is-gold { background: color-mix(in srgb, var(--k-gold) 5%, transparent); }
+    .pm-table .ti-check { color: var(--k-ok); font-size: 18px; }
+    .pm-table .ti-minus { color: var(--k-text-3); }
+    .pm-table small { color: var(--k-text-3); }
+
+    /* ── Preguntas ───────────────────────────────────────── */
+    .pm-faq { display: grid; gap: var(--k-2); max-width: 760px; margin: 0 auto; width: 100%; }
+    .pm-faq details { border-radius: var(--k-r-md); border: 1px solid var(--k-line); background: var(--k-surface-1); }
+    .pm-faq summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: var(--k-3); padding: var(--k-4) var(--k-5); font-weight: 600; }
+    .pm-faq summary::-webkit-details-marker { display: none; }
+    .pm-faq summary .ti { transition: transform .2s; color: var(--k-text-3); flex: none; }
+    .pm-faq details[open] summary .ti { transform: rotate(45deg); color: var(--k-accent); }
+    .pm-faq details p { margin: 0; padding: 0 var(--k-5) var(--k-4); color: var(--k-text-2); line-height: 1.6; font-size: var(--k-fs-sm); }
+
+    /* ── Cierre ──────────────────────────────────────────── */
+    .pm-end { display: grid; gap: var(--k-4); justify-items: center; text-align: center; padding: var(--k-8) var(--k-5); border-radius: 24px; border: 1px solid color-mix(in srgb, var(--k-gold) 35%, transparent);
+      background: radial-gradient(60% 100% at 50% 0%, color-mix(in srgb, var(--k-gold) 16%, transparent), transparent 70%), var(--k-surface-1); }
+    .pm-end h2 { margin: 0; font: 900 clamp(2rem, 6vw, 3.2rem)/.95 var(--k-font-display); text-transform: uppercase; text-wrap: balance; }
+    .pm-end p { margin: 0; color: var(--k-text-2); }
+
+    /* Diálogo de pagos no disponibles */
+    .pm-dlg { border: 1px solid var(--k-line-2); border-radius: 20px; background: var(--k-surface-2); color: var(--k-text); padding: 0; width: min(440px, calc(100vw - 32px)); }
+    .pm-dlg::backdrop { background: rgb(0 0 0 / .6); backdrop-filter: blur(4px); }
+    .pm-dlg__in { display: grid; gap: var(--k-4); padding: var(--k-6); }
+    .pm-dlg h2 { margin: 0; font: 800 var(--k-fs-2xl)/1 var(--k-font-display); text-transform: uppercase; }
+    .pm-dlg p { margin: 0; color: var(--k-text-2); line-height: 1.6; font-size: var(--k-fs-sm); }
+  </style>
 </head>
 <body>
-<div class="prem-page">
-        <div class="prem-title" style="display:flex;align-items:center;justify-content:center;gap:12px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:var(--accent);border-radius:8px;color: var(--k-text);font-size:24px;">神</span> SUSCRIPCIONES</div>
-        <div class="prem-subtitle">Elige tu plan y desbloquea beneficios exclusivos</div>
+<main class="k-page pm" id="k-main">
 
-        <div id="premium-status"></div>
+  <!-- Portada -->
+  <section class="pm-hero" aria-labelledby="pm-title">
+    <span class="pm-crown" aria-hidden="true"><i class="ti ti-crown"></i></span>
+    <span class="k-eyebrow">KamiTales Premium</span>
+    <h1 id="pm-title">Haz que KamiTales <span>sea tuyo</span></h1>
+    <p class="pm-lede">Ambientes exclusivos con fondo animado, cómics en su calidad original y una insignia que se ve en toda la comunidad. Leer sigue siendo gratis: Premium es para quien quiere más y, de paso, apoya la plataforma.</p>
+    <div id="pm-status" hidden></div>
+    <a class="k-btn k-btn--primary k-btn--lg" href="#planes" id="pm-hero-cta"><i class="ti ti-sparkles" aria-hidden="true"></i>Ver los planes</a>
+  </section>
 
-        <div style="margin-bottom:8px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Planes mensuales</div>
-        <div class="prem-plans">
-            <div class="prem-card">
-                <div class="prem-plan-name" style="color:var(--k-text-2);">SILVER</div>
-                <div class="prem-plan-price">3,99€</div>
-                <div class="prem-plan-period">al mes</div>
-                <div class="prem-plan-desc">Sin anuncios · Estadísticas avanzadas · Badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin-right:2px;">神</span> Silver</div>
-                <button class="prem-btn primary" onclick="checkout('silver_monthly')" id="btn-silver-monthly">Elegir Silver</button>
-            </div>
-            <div class="prem-card featured">
-                <div class="prem-plan-name" style="color:var(--accent-gold);">GOLD</div>
-                <div class="prem-plan-price">6,99€</div>
-                <div class="prem-plan-period">al mes</div>
-                <div class="prem-plan-desc">Todo lo de Silver + <strong>50% de descuento en compra de capítulos</strong> · Badge <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:var(--accent);border-radius:4px;color: var(--k-text);font-size:10px;vertical-align:middle;margin-right:2px;">神</span> Gold dorado</div>
-                <button class="prem-btn primary" onclick="checkout('gold_monthly')" id="btn-gold-monthly">Elegir Gold</button>
-            </div>
-        </div>
-
-        <div style="margin:32px 0 8px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;">Planes anuales (ahorra)</div>
-        <div class="prem-plans">
-            <div class="prem-card">
-                <div class="prem-plan-name" style="color:var(--k-text-2);">SILVER</div>
-                <div class="prem-plan-price">26,99€</div>
-                <div class="prem-plan-period">al año (ahorras 21,89€)</div>
-                <div class="prem-plan-desc">Todo lo de Silver mensual · Precio fijo sin sorpresas</div>
-                <button class="prem-btn secondary" onclick="checkout('silver_yearly')" id="btn-silver-yearly">Elegir Silver anual</button>
-            </div>
-            <div class="prem-card featured">
-                <div class="prem-plan-name" style="color:var(--accent-gold);">GOLD</div>
-                <div class="prem-plan-price">49,99€</div>
-                <div class="prem-plan-period">al año (ahorras 33,89€)</div>
-                <div class="prem-plan-desc">Todo lo de Gold mensual + 50% desc. en capítulos · Precio fijo</div>
-                <button class="prem-btn primary" onclick="checkout('gold_yearly')" id="btn-gold-yearly">Elegir Gold anual</button>
-            </div>
-        </div>
-
-        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);font-style:italic;">* Precios provisionales sujetos a cambios.</div>
-
-        <div class="prem-benefits">
-            <div class="prem-benefit"><div class="prem-benefit-icon">🚫</div><div class="prem-benefit-title">Sin anuncios</div><div class="prem-benefit-desc">Lectura sin interrupciones publicitarias en toda la plataforma.</div></div>
-            <div class="prem-benefit"><div class="prem-benefit-icon">📊</div><div class="prem-benefit-title">Estadísticas avanzadas</div><div class="prem-benefit-desc">Gráficos detallados de tu lectura, heatmaps, informes semanales.</div></div>
-            <div class="prem-benefit"><div class="prem-benefit-icon" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</div><div class="prem-benefit-title">Badge exclusivo</div><div class="prem-benefit-desc">Silver o Gold con el logo de KamiTales en tu perfil y en toda la plataforma.</div></div>
-            <div class="prem-benefit"><div class="prem-benefit-icon">💰</div><div class="prem-benefit-title">Descuento en capítulos</div><div class="prem-benefit-desc">Gold obtiene 20% de descuento en compra de capítulos sueltos y packs.</div></div>
-        </div>
-
-        <div class="prem-footer-note">Los pagos se procesan a través de Stripe · Cancela cuando quieras · Sin permanencia</div>
+  <!-- Planes -->
+  <section id="planes" aria-labelledby="pm-plans-t">
+    <div class="pm-sec-head">
+      <h2 id="pm-plans-t">Elige tu plan</h2>
+      <p>Sin permanencia: lo cancelas cuando quieras y conservas Premium hasta el final del periodo pagado.</p>
+      <div class="pm-cycle" role="group" aria-label="Periodo de pago">
+        <button type="button" data-cycle="monthly" aria-pressed="false">Mensual</button>
+        <button type="button" data-cycle="yearly" aria-pressed="true">Anual <span class="k-badge k-badge--ok" id="pm-save-max">Ahorra</span></button>
+      </div>
     </div>
-    <script>
-        async function loadPremiumStatus() {
-            const token = localStorage.getItem('kami_token');
-            if (!token) return;
 
-            try {
-                const r = await fetch('/api/premium/status', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!r.ok) return;
-                const data = await r.json();
-                const statusEl = document.getElementById('premium-status');
-                const tier = data.subscriptionTier || 'none';
+    <div class="pm-plans">
+      <article class="pm-plan" data-plan="free">
+        <h3><i class="ti ti-book" aria-hidden="true"></i>Gratis</h3>
+        <p class="pm-for">Todo lo necesario para leer, escribir y participar.</p>
+        <div class="pm-price"><b>0 €</b><span>siempre</span></div>
+        <p class="pm-price-sub">&nbsp;</p>
+        <ul class="pm-list">
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Todas las obras gratuitas, cómics y novelas</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Biblioteca, progreso y estadísticas de lectura</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Comunidad, mensajes y comentarios</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Tema claro u oscuro y 6 colores de acento</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Imágenes de cómic hasta 1080p</span></li>
+        </ul>
+        <a class="k-btn k-btn--secondary k-btn--block" href="/explorar" data-free-btn>Empezar a leer</a>
+      </article>
 
-                if (data.premiumStatus === 'active') {
-                    const isGold = tier === 'gold';
-                    const color = isGold ? 'var(--accent-gold)' : 'var(--k-text-2)';
-                    const label = isGold ? 'Gold' : 'Silver';
-                    statusEl.innerHTML = `
-                        <div style="padding:20px 24px;background:${isGold ? 'color-mix(in srgb, var(--k-gold) 8%, transparent)' : 'rgba(192,192,200,0.08)'};border:1px solid ${isGold ? 'color-mix(in srgb, var(--k-gold) 20%, transparent)' : 'rgba(192,192,200,0.2)'};border-radius:12px;margin-bottom:36px;display:inline-flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
-                            <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--accent);border-radius:6px;color: var(--k-text);font-size:18px;">神</span>
-                            <span style="font-size:15px;font-weight:700;color:${color};">${label} activo</span>
-                            <span style="font-size:13px;color:var(--text-muted);">${data.daysRemaining} días restantes · Expira el ${new Date(data.expiresAt).toLocaleDateString('es-ES')}</span>
-                        </div>
-                        <div style="font-size:13px;color:var(--text-muted);margin-bottom:32px;">¿Quieres ampliar o cambiar tu plan?</div>
-                    `;
-                }
-            } catch {}
+      <article class="pm-plan pm-plan--silver" data-plan="silver">
+        <h3><i class="ti ti-diamond" aria-hidden="true"></i>Silver</h3>
+        <p class="pm-for">Toda la experiencia premium para personalizar tu lectura.</p>
+        <div class="pm-price"><b data-price>—</b><span data-per>al mes</span></div>
+        <p class="pm-price-sub" data-sub>&nbsp;</p>
+        <ul class="pm-list">
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Todo lo del plan gratuito</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>4 ambientes exclusivos: Aurora, Kin, Neón Tokio y Sakura</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Fondo animado y acento degradado</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Cómics en calidad original, sin reducir</span></li>
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Insignia Premium y aro dorado en tu avatar</span></li>
+        </ul>
+        <button type="button" class="k-btn k-btn--primary k-btn--block" data-buy="silver">Elegir Silver</button>
+      </article>
+
+      <article class="pm-plan pm-plan--gold" data-plan="gold">
+        <span class="pm-tag">Para quien lee mucho</span>
+        <h3><i class="ti ti-crown" aria-hidden="true"></i>Gold</h3>
+        <p class="pm-for">Todo Silver, más ventajas para quien sigue muchas obras.</p>
+        <div class="pm-price"><b data-price>—</b><span data-per>al mes</span></div>
+        <p class="pm-price-sub" data-sub>&nbsp;</p>
+        <ul class="pm-list">
+          <li><i class="ti ti-check" aria-hidden="true"></i><span>Todo lo de Silver</span></li>
+          <li class="is-soon"><i class="ti ti-clock" aria-hidden="true"></i><span>Insignia Gold en tu perfil <span class="pm-soon">Próximamente</span></span></li>
+          <li class="is-soon"><i class="ti ti-clock" aria-hidden="true"></i><span>Descuento en capítulos de pago <span class="pm-soon">Próximamente</span></span></li>
+        </ul>
+        <button type="button" class="k-btn k-btn--block pm-btn-gold" data-buy="gold">Elegir Gold</button>
+      </article>
+    </div>
+    <p class="pm-note">Precios provisionales, IVA incluido. El pago se hará con tarjeta a través de Stripe: KamiTales nunca ve los datos de tu tarjeta.</p>
+  </section>
+
+  <!-- Pruébalo -->
+  <section class="pm-try-wrap" aria-labelledby="pm-try-t">
+    <div class="pm-try-copy">
+      <span class="k-eyebrow">Pruébalo antes</span>
+      <h2 id="pm-try-t">Cuatro ambientes, una sola KamiTales</h2>
+      <p>Cada ambiente cambia el fondo, las superficies y el segundo color de toda la web. Elige uno y enciende el fondo animado o el acento degradado para ver cómo queda.</p>
+      <div class="pm-skins" role="group" aria-label="Ambiente de la vista previa" id="pm-skins"></div>
+      <div class="pm-switches">
+        <label class="k-switch"><input type="checkbox" id="pm-amb" checked> Fondo animado</label>
+        <label class="k-switch"><input type="checkbox" id="pm-grad" checked> Acento degradado</label>
+      </div>
+      <p class="k-muted" style="font-size:var(--k-fs-sm)" id="pm-try-own" hidden><i class="ti ti-circle-check" aria-hidden="true" style="color:var(--k-ok)"></i> Ya los tienes: elígelos en <a href="/ajustes#apariencia">Ajustes → Apariencia</a>.</p>
+    </div>
+    <div class="pm-mock is-amb is-grad" id="pm-mock" data-s="aurora" role="img" aria-label="Vista previa de KamiTales con el ambiente Aurora">
+      <div class="pm-mock__bar"><span class="pm-mock__logo">神</span><span class="pm-mock__word">Kami<b>Tales</b></span><span class="pm-mock__ava"></span></div>
+      <div class="pm-mock__body">
+        <div class="pm-mock__feat"><strong>El torii apagado</strong><span class="pm-mock__btn">Seguir leyendo</span></div>
+        <div class="pm-mock__grid">
+          <span class="pm-mock__tab"></span>
+          <span class="pm-mock__cov"></span><span class="pm-mock__cov"></span><span class="pm-mock__cov"></span>
+          <span class="pm-mock__cov"></span><span class="pm-mock__cov"></span><span class="pm-mock__cov"></span>
+          <span class="pm-mock__line"></span><span class="pm-mock__line is-short"></span>
+        </div>
+      </div>
+      <span class="pm-mock__cap" id="pm-mock-cap">Aurora</span>
+    </div>
+  </section>
+
+  <!-- Qué incluye -->
+  <section aria-labelledby="pm-feats-t">
+    <div class="pm-sec-head"><h2 id="pm-feats-t">Qué desbloqueas</h2></div>
+    <div class="pm-feats">
+      <div class="pm-feat"><i class="ti ti-palette" aria-hidden="true"></i><h3>Ambientes exclusivos</h3><p>Aurora, Kin, Neón Tokio y Sakura recolorean toda la web en modo oscuro, no solo un botón.</p></div>
+      <div class="pm-feat"><i class="ti ti-sparkles" aria-hidden="true"></i><h3>Fondo animado</h3><p>Luces suaves que se mueven detrás del contenido. Se detiene si tienes activado reducir movimiento.</p></div>
+      <div class="pm-feat"><i class="ti ti-photo" aria-hidden="true"></i><h3>Calidad original</h3><p>Las páginas de cómic se sirven tal como las subió su autor, sin reducirlas a 1080p.</p></div>
+      <div class="pm-feat"><i class="ti ti-rosette" aria-hidden="true"></i><h3>Tu insignia</h3><p>Insignia en tu perfil y un aro dorado en tu avatar que se ve en toda la web.</p></div>
+      <div class="pm-feat"><i class="ti ti-heart-handshake" aria-hidden="true"></i><h3>Apoyas a KamiTales</h3><p>Tu suscripción ayuda a pagar los servidores y a seguir mejorando la plataforma para autores y lectores.</p></div>
+    </div>
+  </section>
+
+  <!-- Comparativa -->
+  <section aria-labelledby="pm-cmp-t">
+    <div class="pm-sec-head"><h2 id="pm-cmp-t">Compara los planes</h2></div>
+    <div class="pm-table-wrap" tabindex="0" role="region" aria-labelledby="pm-cmp-t">
+      <table class="pm-table">
+        <thead><tr><th scope="col"><span class="k-visually-hidden">Ventaja</span></th><th scope="col">Gratis</th><th scope="col">Silver</th><th scope="col" class="is-gold">Gold</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Leer obras gratuitas</th><td><i class="ti ti-check" aria-label="Sí"></i></td><td><i class="ti ti-check" aria-label="Sí"></i></td><td class="is-gold"><i class="ti ti-check" aria-label="Sí"></i></td></tr>
+          <tr><th scope="row">Biblioteca, comunidad y mensajes</th><td><i class="ti ti-check" aria-label="Sí"></i></td><td><i class="ti ti-check" aria-label="Sí"></i></td><td class="is-gold"><i class="ti ti-check" aria-label="Sí"></i></td></tr>
+          <tr><th scope="row">Tema y colores de acento</th><td><i class="ti ti-check" aria-label="Sí"></i></td><td><i class="ti ti-check" aria-label="Sí"></i></td><td class="is-gold"><i class="ti ti-check" aria-label="Sí"></i></td></tr>
+          <tr><th scope="row">Calidad de imagen en cómics</th><td>1080p</td><td>Original</td><td class="is-gold">Original</td></tr>
+          <tr><th scope="row">Ambientes premium</th><td><i class="ti ti-minus" aria-label="No"></i></td><td>4</td><td class="is-gold">4</td></tr>
+          <tr><th scope="row">Fondo animado y acento degradado</th><td><i class="ti ti-minus" aria-label="No"></i></td><td><i class="ti ti-check" aria-label="Sí"></i></td><td class="is-gold"><i class="ti ti-check" aria-label="Sí"></i></td></tr>
+          <tr><th scope="row">Insignia en el perfil</th><td><i class="ti ti-minus" aria-label="No"></i></td><td>Premium</td><td class="is-gold">Gold <small>(pronto)</small></td></tr>
+          <tr><th scope="row">Descuento en capítulos de pago</th><td><i class="ti ti-minus" aria-label="No"></i></td><td><i class="ti ti-minus" aria-label="No"></i></td><td class="is-gold"><small>Próximamente</small></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Preguntas -->
+  <section aria-labelledby="pm-faq-t">
+    <div class="pm-sec-head"><h2 id="pm-faq-t">Preguntas frecuentes</h2></div>
+    <div class="pm-faq">
+      <details><summary>¿Tengo que pagar para leer?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>No. Todas las obras gratuitas, la biblioteca y la comunidad son gratis para siempre. Premium solo añade personalización y mejor calidad de imagen.</p></details>
+      <details><summary>¿Puedo cancelar cuando quiera?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>Sí, sin permanencia. Al cancelar no se renueva y conservas Premium hasta el último día del periodo que ya pagaste.</p></details>
+      <details><summary>¿Qué pasa con mi apariencia cuando termina?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>La web vuelve al ambiente clásico, pero tus preferencias se guardan: si vuelves a Premium, recuperas tu ambiente tal como lo dejaste.</p></details>
+      <details><summary>¿Qué diferencia hay entre Silver y Gold?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>Silver incluye toda la experiencia premium actual. Gold añadirá la insignia Gold y, cuando lleguen los capítulos de pago, un descuento en ellos.</p></details>
+      <details><summary>¿Cómo se paga?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>Con tarjeta, a través de Stripe. KamiTales no ve ni guarda los datos de tu tarjeta. El plan anual se cobra de una vez y sale más barato que doce meses sueltos.</p></details>
+      <details><summary>¿Puedo cambiar de plan?<i class="ti ti-plus" aria-hidden="true"></i></summary><p>Sí. Si contratas otro plan mientras tienes uno activo, el tiempo nuevo se suma al que te queda.</p></details>
+    </div>
+  </section>
+
+  <!-- Cierre -->
+  <section class="pm-end" id="pm-end">
+    <h2>¿Le das tu toque?</h2>
+    <p>Elige un plan y estrena tu ambiente hoy mismo.</p>
+    <a class="k-btn k-btn--lg pm-btn-gold" href="#planes"><i class="ti ti-crown" aria-hidden="true"></i>Ver los planes</a>
+  </section>
+</main>
+
+<dialog class="pm-dlg" id="pm-dlg" aria-labelledby="pm-dlg-t">
+  <form method="dialog" class="pm-dlg__in">
+    <span class="pm-crown" aria-hidden="true" style="width:48px;height:48px;font-size:24px;border-radius:14px"><i class="ti ti-crown"></i></span>
+    <h2 id="pm-dlg-t">Muy pronto</h2>
+    <p id="pm-dlg-p">Los pagos de KamiTales todavía no están abiertos. En cuanto se activen podrás suscribirte desde aquí mismo.</p>
+    <button class="k-btn k-btn--primary k-btn--block" value="ok">Entendido</button>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+  var PRICES = { silver: { monthly: 3.99, yearly: 26.99 }, gold: { monthly: 6.99, yearly: 49.99 } };
+  var eur = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  var fmtDate = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var token = function () { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } };
+  var user = function () { try { return JSON.parse(localStorage.getItem('kami_user') || 'null'); } catch (e) { return null; } };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var toast = function (m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); };
+
+  /* Periodo de pago */
+  var cycle = 'yearly';
+  try { if (localStorage.getItem('kami_pm_cycle') === 'monthly') cycle = 'monthly'; } catch (e) { /* nada */ }
+  var maxSave = 0;
+  Object.keys(PRICES).forEach(function (k) { var p = PRICES[k]; maxSave = Math.max(maxSave, Math.round((1 - p.yearly / (p.monthly * 12)) * 100)); });
+  $('#pm-save-max').textContent = '−' + maxSave + ' %';
+
+  function renderPrices() {
+    $$('.pm-cycle button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.cycle === cycle)); });
+    Object.keys(PRICES).forEach(function (k) {
+      var card = $('[data-plan="' + k + '"]'), p = PRICES[k];
+      if (cycle === 'monthly') {
+        $('[data-price]', card).textContent = eur.format(p.monthly);
+        $('[data-sub]', card).textContent = 'o ' + eur.format(p.yearly) + ' al año';
+      } else {
+        $('[data-price]', card).textContent = eur.format(p.yearly / 12);
+        $('[data-sub]', card).innerHTML = eur.format(p.yearly) + ' al año · <strong>ahorras ' + eur.format(p.monthly * 12 - p.yearly) + '</strong>';
+      }
+    });
+  }
+  $('.pm-cycle').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cycle]'); if (!b) return;
+    cycle = b.dataset.cycle; renderPrices();
+    try { localStorage.setItem('kami_pm_cycle', cycle); } catch (err) { /* nada */ }
+  });
+  renderPrices();
+
+  /* Vista previa de ambientes (no cambia el tema real) */
+  var SKINS = [
+    { id: 'aurora', name: 'Aurora', c: '#22d3ee', sw: 'linear-gradient(135deg,#1b6cff,#22d3ee)' },
+    { id: 'kin', name: 'Kin', c: '#f5c842', sw: 'linear-gradient(135deg,#7a4b12,#f5c842)' },
+    { id: 'tokyo', name: 'Neón Tokio', c: '#b56bff', sw: 'linear-gradient(135deg,#b56bff,#22d3ee)' },
+    { id: 'sakura', name: 'Sakura', c: '#ff8fcf', sw: 'linear-gradient(135deg,#9d7bff,#ff8fcf)' }
+  ];
+  var mock = $('#pm-mock');
+  $('#pm-skins').innerHTML = SKINS.map(function (s, i) {
+    return '<button type="button" class="pm-skin" data-skin="' + s.id + '" aria-pressed="' + (i === 0) + '" style="--_c:' + s.c + ';--_sw:' + s.sw + '"><i aria-hidden="true"></i>' + s.name + '</button>';
+  }).join('');
+  $('#pm-skins').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-skin]'); if (!b) return;
+    var s = SKINS.filter(function (x) { return x.id === b.dataset.skin; })[0];
+    $$('.pm-skin').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    mock.dataset.s = s.id; $('#pm-mock-cap').textContent = s.name;
+    mock.setAttribute('aria-label', 'Vista previa de KamiTales con el ambiente ' + s.name);
+  });
+  $('#pm-amb').addEventListener('change', function () { mock.classList.toggle('is-amb', this.checked); });
+  $('#pm-grad').addEventListener('change', function () { mock.classList.toggle('is-grad', this.checked); });
+
+  /* Estado de la cuenta */
+  var isStaff = false;
+  function markCurrent(tier) {
+    var card = $('[data-plan="' + tier + '"]'); if (!card) return;
+    card.classList.add('pm-current');
+    card.insertAdjacentHTML('afterbegin', '<span class="k-badge k-badge--ok pm-mine">Tu plan</span>');
+    $('[data-buy]', card).innerHTML = '<i class="ti ti-calendar-plus" aria-hidden="true"></i>Añadir más tiempo';
+  }
+  function showStatus(html) { var el = $('#pm-status'); el.innerHTML = html; el.hidden = false; }
+  function loadStatus() {
+    var u = user();
+    if (!token() || !u) return;
+    if (u.isOwner || u.role === 'admin') {
+      isStaff = true;
+      showStatus('<div class="pm-status"><i class="ti ti-shield-star" aria-hidden="true"></i><div><b>Tu cuenta ya lo incluye todo</b><small>Las cuentas de administración tienen Premium sin suscripción.</small></div><a class="k-btn k-btn--secondary k-btn--sm" href="/ajustes#apariencia">Elegir ambiente</a></div>');
+      $('#pm-try-own').hidden = false;
+    }
+    fetch('/api/premium/status', { headers: { Authorization: 'Bearer ' + token() } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d) return;
+        if (d.premiumStatus === 'active') {
+          var tier = d.subscriptionTier === 'gold' ? 'gold' : 'silver', days = d.daysRemaining;
+          markCurrent(tier);
+          showStatus('<div class="pm-status"><i class="ti ti-crown" aria-hidden="true"></i><div><b>' + (tier === 'gold' ? 'Gold' : 'Silver') + ' activo</b><small>' +
+            (days === 0 ? 'Termina hoy' : 'Te quedan ' + days + (days === 1 ? ' día' : ' días')) + ' · hasta el ' + esc(fmtDate.format(new Date(d.expiresAt))) +
+            '</small></div><a class="k-btn k-btn--secondary k-btn--sm" href="/ajustes#apariencia">Elegir ambiente</a></div>');
+          $('#pm-try-own').hidden = false;
+          $('#pm-hero-cta').innerHTML = '<i class="ti ti-calendar-plus" aria-hidden="true"></i>Ampliar o cambiar de plan';
+        } else if (d.premiumStatus === 'expired' && !isStaff) {
+          showStatus('<div class="pm-status" style="border-color:var(--k-line-2);background:var(--k-surface-1)"><i class="ti ti-hourglass-empty" aria-hidden="true" style="color:var(--k-text-3)"></i><div><b>Tu Premium terminó</b><small>El ' + esc(fmtDate.format(new Date(d.expiresAt))) + '. Tus preferencias siguen guardadas.</small></div></div>');
         }
+      }).catch(function () { /* sin conexión: la página sigue funcionando */ });
+  }
+  loadStatus();
 
-        async function checkout(plan) {
-            const token = localStorage.getItem('kami_token');
-            if (!token) { window.location.href = '/acceder?return=/premium'; return; }
-            try {
-                const r = await fetch('/api/premium/create-checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ plan }),
-                });
-                const data = await r.json();
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert('Sistema de pago no conectado aún. (Placeholder — funcionará cuando se integre Stripe)');
-                }
-            } catch (e) {
-                alert('Error: ' + e.message);
-            }
-        }
+  /* Contratar */
+  var dlg = $('#pm-dlg');
+  function soon() { if (dlg.showModal) dlg.showModal(); else toast('Los pagos todavía no están abiertos.'); }
+  $$('[data-buy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var plan = btn.dataset.buy + '_' + cycle;
+      if (!token()) { location.href = '/acceder?return=' + encodeURIComponent('/premium'); return; }
+      var label = btn.innerHTML;
+      btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>Abriendo el pago…';
+      fetch('/api/premium/create-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() }, body: JSON.stringify({ plan: plan }) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (res) {
+          if (res.ok && res.d.url && /^https:\/\//.test(res.d.url)) { location.href = res.d.url; return; }
+          if (res.ok) soon();
+          else toast(res.d.error || 'No se pudo abrir el pago. Inténtalo de nuevo.', 'bad');
+        })
+        .catch(function () { toast('Sin conexión. Revisa tu red e inténtalo de nuevo.', 'bad'); })
+        .then(function () { btn.disabled = false; btn.innerHTML = label; });
+    });
+  });
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadPremiumStatus);
-        } else {
-            loadPremiumStatus();
-        }
-    </script>
-  <script src="/js/notifications.js"></script>
+  // Con sesión, el plan gratuito lleva a tu biblioteca
+  if (token()) { var fb = $('[data-free-btn]'); fb.href = '/biblioteca'; fb.textContent = 'Ir a mi biblioteca'; }
+})();
+</script>
 </body>
 </html>

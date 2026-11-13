@@ -105,6 +105,11 @@
 
     <!-- ═══════════ SCRIPTS ═══════════ -->
     <script>
+        // Vuelta tras iniciar sesión: solo rutas internas (?return=/premium)
+        function safeReturn() {
+            const r = new URLSearchParams(location.search).get('return') || '';
+            return /^\/(?![\/\\])[^\s]*$/.test(r) ? r : '';
+        }
         // ── Google OAuth callback handler ──
         // El servidor redirige aquí con ?google_token=xxx&google_user=xxx
         (function() {
@@ -169,7 +174,7 @@
 
                 // Redirigir al perfil
                 setTimeout(() => {
-                    window.location.href = data.redirect || `/perfil/${data.user.username}`;
+                    window.location.href = safeReturn() || data.redirect || `/perfil/${data.user.username}`;
                 }, 1500);
 
             } catch (err) {
@@ -196,7 +201,7 @@
                 try {
                     const userData = JSON.parse(user);
                     // Ya estás logueado, redirigir
-                    window.location.href = `/perfil/${userData.username}`;
+                    window.location.href = safeReturn() || `/perfil/${userData.username}`;
                 } catch (err) {
                     console.error('Error parsing user:', err);
                 }

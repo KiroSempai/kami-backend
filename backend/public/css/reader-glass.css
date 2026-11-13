@@ -4,6 +4,9 @@
    (lector-novela.html): barras superior e inferior translúcidas, botones
    redondos, paneles laterales de comentarios y ajustes, modos y switches.
    ═══════════════════════════════════════════════════════════════════ */
+/* Bebas Neue para el logo (KAMITALES): la cargaban las páginas antiguas y sin ella
+   el navegador ponía una letra genérica. Va aquí para que la tengan los dos lectores. */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 /* ── UI Superior: Cristal (efecto frosted glass) ── */
 #reader-topbar {
   position:fixed; top:0; left:0; right:0; z-index:10;

@@ -16,8 +16,7 @@
     [hidden] { display: none !important; }
     html, body { background: var(--cr-bg); }
     body { color: var(--k-text); font-family: var(--k-font-body); -webkit-tap-highlight-color: transparent; }
-    #reader-topbar, #reader-bottombar { background: color-mix(in srgb, var(--cr-bg) 62%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    #comments-panel, #settings-panel { background: color-mix(in srgb, var(--cr-bg) 82%, transparent); }
+    /* Barras y paneles: los del cristal original (reader-glass.css), casi transparentes. No se sobrescriben aquí. */
     body.ui-off #reader-topbar { transform: translateY(-100%); }
     body.ui-off #reader-bottombar { transform: translateY(100%); }
     #reader-topbar .chapter-select { max-width: 200px; }
@@ -931,7 +930,7 @@
         var now = Date.now();
         $('chapter-select').innerHTML = list.map(function (c) {
           var lock = c.freeAt && new Date(c.freeAt).getTime() > now;
-          return '<option value="' + c.number + '"' + (c.number === chapterNum ? ' selected' : '') + '>Cap. ' + c.number + (c.title && !/^cap[ií]tulo\s*\d+$/i.test(c.title) ? ' · ' + esc(c.title) : '') + (lock ? ' (adelanto)' : '') + '</option>';
+          return '<option value="' + c.number + '"' + (c.number === chapterNum ? ' selected' : '') + '>#' + String(c.number).padStart(3, '0') + (lock ? ' · adelanto' : '') + '</option>';
         }).join('');
       }).catch(function () {});
   }

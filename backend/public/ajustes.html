@@ -535,6 +535,23 @@
   $('nv-pc').addEventListener('change', function () { nv.pc = this.checked; saveNv(); });
 
   // ── Premium ─────────────────────────────────────────────
+  // Con suscripción de Stripe: fecha de renovación y acceso directo a su portal
+  function loadSubscription() {
+    var H = { Authorization: 'Bearer ' + store.get('kami_token') };
+    fetch('/api/premium/status', { headers: H }).then(function (r) { return r.ok ? r.json() : null; }).then(function (st) {
+      var s = st && st.subscription; if (!s) return;
+      var when = new Date(s.renewsAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+      $('plan-desc').textContent = s.status === 'past_due' ? 'No pudimos cobrar la renovación. Revisa tu tarjeta para no perder Premium.'
+        : s.cancelAtPeriodEnd ? 'Cancelada: sigue activa hasta el ' + when + ' y no se renovará.'
+        : 'Se renueva el ' + when + ' · pago ' + (s.interval === 'year' ? 'anual' : 'mensual') + '.';
+      $('plan-cta').addEventListener('click', function (e) {
+        e.preventDefault();
+        fetch('/api/premium/portal', { method: 'POST', headers: H }).then(function (r) { return r.json(); })
+          .then(function (d) { location.href = d && /^https:\/\//.test(d.url || '') ? d.url : '/premium'; })
+          .catch(function () { location.href = '/premium'; });
+      });
+    }).catch(function () { /* sin datos: el enlace lleva a /premium */ });
+  }
   function renderPlan() {
     var p = D.plan;
     var names = { silver: 'Premium Silver', gold: 'Premium Gold', free: 'Plan gratuito' };
@@ -543,6 +560,7 @@
       $('plan-desc').textContent = p.expiresAt ? 'Activo hasta el ' + new Date(p.expiresAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) + '.' : 'Activo.';
       $('plan-cta').innerHTML = '<i class="ti ti-settings" aria-hidden="true"></i>Gestionar mi plan';
       $('nav-plan').textContent = 'Activo';
+      loadSubscription();
     } else if (p.viaStaff) {
       $('plan-name').textContent = 'Premium del equipo';
       $('plan-desc').textContent = 'Como parte del equipo de KamiTales tienes todas las ventajas de Premium.';

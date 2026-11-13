@@ -1,155 +1,92 @@
 /**
- * KAMI — routes-premium.js
- * ESQUELETO para sistema de suscripción Silver/Gold.
- * Pendiente de conectar con Stripe/PayPal/Mercado Pago.
+ * KamiTales — routes-premium.js
+ * Suscripciones Silver y Gold con Stripe.
  *
- * Planes:
- *   silver_monthly  → 3,99€/mes
- *   silver_yearly   → 26,99€/año
- *   gold_monthly    → 6,99€/mes
- *   gold_yearly     → 49,99€/año
+ *   POST /api/premium/create-checkout  → abre el pago (o el portal si ya hay suscripción)
+ *   POST /api/premium/portal           → portal de Stripe: cancelar, cambiar de plan o de tarjeta
+ *   POST /api/premium/webhook          → aviso firmado de Stripe; lo único que activa Premium
+ *   GET  /api/premium/status           → plan del usuario
  *
- * Endpoints:
- *   POST /api/premium/create-checkout  → Crear sesión de pago (placeholder)
- *   POST /api/premium/webhook          → Recibir confirmación del provider (placeholder)
- *   GET  /api/premium/status           → Consultar suscripción activa
+ * Mientras falten las claves de Stripe o la migración (migrate-payments.sql),
+ * create-checkout responde { url: null } y la página muestra «Muy pronto».
  */
-
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
-const { pool } = require('../db');
-const { verifyToken } = require('../config');
+const { requireAuth } = require('../middleware/auth');
+const S = require('../payments/stripe');
+const subs = require('../payments/subscriptions');
 
-const VALID_PLANS = ['silver_monthly', 'silver_yearly', 'gold_monthly', 'gold_yearly'];
+// Dirección a la que Stripe devuelve al usuario. PUBLIC_URL manda si está definida.
+function baseUrl(req) {
+  if (process.env.PUBLIC_URL) return process.env.PUBLIC_URL.replace(/\/+$/, '');
+  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http').split(',')[0].trim();
+  return proto + '://' + req.headers.host;
+}
 
-// ── Auth middleware ──────────────────────────────
-const authMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'No autorizado' });
+const payLimiter = rateLimit({
+  windowMs: 60_000, limit: 10, standardHeaders: true, legacyHeaders: false,
+  keyGenerator: (req) => 'pay:' + (req.user ? req.user.userId : 'anon'),
+  message: { error: 'Demasiados intentos. Espera un minuto y vuelve a probar.' },
+});
+
+function fail(res, err, fallback) {
+  if (err && err.status && err.status < 500) return res.status(err.status).json({ error: err.message });
+  if (err && err.status === 503) return res.status(503).json({ error: err.message });
+  console.error('[pagos]', fallback, '—', (err && err.type) || '', err && err.message);
+  return res.status(502).json({ error: fallback });
+}
+
+router.post('/create-checkout', requireAuth, payLimiter, async (req, res) => {
+  const plan = req.body && req.body.plan;
+  if (typeof plan !== 'string' || !Object.prototype.hasOwnProperty.call(S.PLANS, plan)) return res.status(400).json({ error: 'Plan no válido.' });
   try {
-    req.user = await verifyToken(token);
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
+    if (!(await subs.ready())) return res.json({ success: true, url: null }); // pagos aún sin abrir
+    const out = await subs.createCheckout(req.user.userId, plan, baseUrl(req));
+    res.json({ success: true, url: out.url, portal: out.portal });
+  } catch (err) { fail(res, err, 'No se pudo abrir el pago. Inténtalo de nuevo.'); }
+});
 
-// ══════════════════════════════════════════════════
-// POST /api/premium/create-checkout
-// ══════════════════════════════════════════════════
-router.post('/create-checkout', authMiddleware, async (req, res) => {
+router.post('/portal', requireAuth, payLimiter, async (req, res) => {
   try {
-    const { plan } = req.body;
-    if (!plan || !VALID_PLANS.includes(plan)) {
-      return res.status(400).json({ error: 'Plan inválido. Usa: silver_monthly, silver_yearly, gold_monthly, gold_yearly' });
-    }
+    if (!(await subs.ready())) return res.json({ success: true, url: null });
+    res.json({ success: true, url: await subs.createPortal(req.user.userId, baseUrl(req)) });
+  } catch (err) { fail(res, err, 'No se pudo abrir la gestión de tu plan.'); }
+});
 
-    // ── TODO: Integrar con proveedor de pagos ──
-    // const session = await stripe.checkout.sessions.create({
-    //   customer_email: req.user.email,
-    //   mode: 'subscription',
-    //   line_items: [{ price: PRICES[plan], quantity: 1 }],
-    //   success_url: `${BASE_URL}/premium/success?session_id={CHECKOUT_SESSION_ID}&tier=${plan.split('_')[0]}`,
-    //   cancel_url: `${BASE_URL}/premium`,
-    //   metadata: { userId: req.user.userId, tier: plan.split('_')[0] },
-    // });
-    // return res.json({ url: session.url });
-
-    res.json({
-      success: true,
-      message: `Checkout para ${plan} creado (placeholder)`,
-      url: null,
-    });
-
+// El cuerpo llega sin tocar (server.js no lo convierte a JSON en esta ruta):
+// la firma de Stripe se calcula sobre el texto exacto.
+router.post('/webhook', express.raw({ type: '*/*', limit: '1mb' }), async (req, res) => {
+  const stripe = S.getStripe(), secret = S.webhookSecret();
+  if (!stripe || !secret) return res.status(503).json({ error: 'Pagos sin configurar' });
+  let event;
+  try {
+    if (!Buffer.isBuffer(req.body)) throw new Error('cuerpo ya interpretado');
+    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'] || '', secret);
   } catch (err) {
-    console.error('Error en create-checkout:', err);
-    res.status(500).json({ error: 'Error al crear sesión de pago' });
+    return res.status(400).json({ error: 'Firma no válida' });
+  }
+  // Un aviso de pruebas nunca toca una instalación con clave real, ni al revés.
+  if (!!event.livemode !== S.isLiveKey()) return res.json({ received: true, ignored: 'modo distinto' });
+  try {
+    if (!(await subs.ready())) return res.status(503).json({ error: 'Falta la migración de pagos' });
+    const result = await subs.processEvent(event);
+    res.json({ received: true, result });
+  } catch (err) {
+    console.error('[pagos] aviso', event.id, event.type, 'falló:', err.message);
+    res.status(500).json({ error: 'No se pudo procesar; se reintentará' }); // Stripe lo reenvía
   }
 });
 
-// ══════════════════════════════════════════════════
-// POST /api/premium/webhook
-// ══════════════════════════════════════════════════
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+router.get('/status', requireAuth, async (req, res) => {
   try {
-    const sig = req.headers['stripe-signature'] || req.headers['x-webhook-signature'];
-
-    // ── TODO: Validar firma + activar suscripción ──
-    // const event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_SECRET);
-    // if (event.type === 'checkout.session.completed') {
-    //   const session = event.data.object;
-    //   const userId = session.metadata.userId;
-    //   const tier = session.metadata.tier; // 'silver' | 'gold'
-    //   const isYearly = session.mode === 'subscription' && session.amount_total > 10000;
-    //   await activateSubscription(userId, tier, isYearly);
-    // }
-
-    res.json({ received: true });
-
+    const st = await subs.statusOf(req.user.userId);
+    if (!st) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json(st);
   } catch (err) {
-    console.error('Error en webhook:', err);
-    res.status(400).json({ error: 'Firma inválida' });
-  }
-});
-
-// ══════════════════════════════════════════════════
-// GET /api/premium/status
-// ══════════════════════════════════════════════════
-router.get('/status', authMiddleware, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `SELECT premium_expires_at, subscription_tier,
-              CASE
-                WHEN premium_expires_at > NOW() THEN 'active'
-                WHEN premium_expires_at IS NOT NULL THEN 'expired'
-                ELSE 'none'
-              END AS premium_status,
-              CASE
-                WHEN premium_expires_at > NOW()
-                  THEN EXTRACT(EPOCH FROM premium_expires_at - NOW())::INTEGER
-                ELSE 0
-              END AS seconds_remaining
-       FROM users WHERE id = $1`,
-      [req.user.userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    const row = result.rows[0];
-    res.json({
-      premiumStatus: row.premium_status,
-      subscriptionTier: row.subscription_tier,
-      expiresAt: row.premium_expires_at,
-      daysRemaining: row.premium_status === 'active'
-        ? Math.floor(row.seconds_remaining / 86400)
-        : 0,
-      secondsRemaining: row.seconds_remaining,
-    });
-
-  } catch (err) {
-    console.error('Error en premium/status:', err);
+    console.error('Error en premium/status:', err.message);
     res.status(500).json({ error: 'Error al consultar estado' });
   }
 });
-
-// ══════════════════════════════════════════════════
-// (Interno) Activar suscripción — llamado por webhook
-// ══════════════════════════════════════════════════
-async function activateSubscription(userId, tier, isYearly) {
-  const duration = isYearly ? '1 year' : '30 days';
-  await pool.query(
-    `UPDATE users SET
-       subscription_tier = $1,
-       premium_expires_at = CASE
-         WHEN premium_expires_at IS NULL OR premium_expires_at < NOW()
-           THEN NOW() + INTERVAL '${duration}'
-         ELSE premium_expires_at + INTERVAL '${duration}'
-       END
-     WHERE id = $2`,
-    [tier, userId]
-  );
-}
 
 module.exports = router;

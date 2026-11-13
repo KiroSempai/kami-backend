@@ -225,7 +225,8 @@ app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'production') res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
   next();
 });
-app.use(express.json({ limit: '1mb' })); // las fotos de perfil van como data URL comprimida
+// JSON en todas las rutas menos el aviso de Stripe, que necesita el cuerpo intacto.
+app.use(require('./middleware/json-body'));
 // Al terminar cada petición se borran los archivos subidos que la ruta no se haya llevado
 // (errores, validaciones fallidas, capítulo repetido…). Si ya se movieron, no pasa nada.
 app.use((req, res, next) => {

@@ -390,11 +390,18 @@
 
   /* Estado de la cuenta */
   var isStaff = false;
-  function markCurrent(tier) {
+  // Con suscripción de Stripe, los botones llevan a su portal: ahí se cancela,
+  // se cambia de plan o de tarjeta. Sin ella (Premium regalado), se puede contratar.
+  function markCurrent(tier, sub) {
     var card = $('[data-plan="' + tier + '"]'); if (!card) return;
     card.classList.add('pm-current');
     card.insertAdjacentHTML('afterbegin', '<span class="k-badge k-badge--ok pm-mine">Tu plan</span>');
-    $('[data-buy]', card).innerHTML = '<i class="ti ti-calendar-plus" aria-hidden="true"></i>Añadir más tiempo';
+    if (!sub) return;
+    $$('[data-buy]').forEach(function (b) {
+      b.dataset.manage = '1';
+      b.innerHTML = b.dataset.buy === tier ? '<i class="ti ti-settings" aria-hidden="true"></i>Gestionar mi plan'
+        : '<i class="ti ti-arrows-exchange" aria-hidden="true"></i>Cambiar a ' + (b.dataset.buy === 'gold' ? 'Gold' : 'Silver');
+    });
   }
   function showStatus(html) { var el = $('#pm-status'); el.innerHTML = html; el.hidden = false; }
   function loadStatus() {
@@ -411,12 +418,16 @@
         if (!d) return;
         if (d.premiumStatus === 'active') {
           var tier = d.subscriptionTier === 'gold' ? 'gold' : 'silver', days = d.daysRemaining;
-          markCurrent(tier);
-          showStatus('<div class="pm-status"><i class="ti ti-crown" aria-hidden="true"></i><div><b>' + (tier === 'gold' ? 'Gold' : 'Silver') + ' activo</b><small>' +
-            (days === 0 ? 'Termina hoy' : 'Te quedan ' + days + (days === 1 ? ' día' : ' días')) + ' · hasta el ' + esc(fmtDate.format(new Date(d.expiresAt))) +
+          var sub = d.subscription, when = esc(fmtDate.format(new Date((sub && sub.renewsAt) || d.expiresAt)));
+          markCurrent(tier, sub);
+          var line = !sub ? (days === 0 ? 'Termina hoy' : 'Te quedan ' + days + (days === 1 ? ' día' : ' días')) + ' · hasta el ' + when
+            : sub.status === 'past_due' ? 'No pudimos cobrar la renovación. Revisa tu tarjeta en «Gestionar mi plan» para no perder Premium.'
+            : sub.cancelAtPeriodEnd ? 'Cancelada: sigue activa hasta el ' + when + ' y no se renovará.'
+            : 'Se renueva el ' + when + ' · pago ' + (sub.interval === 'year' ? 'anual' : 'mensual');
+          showStatus('<div class="pm-status"><i class="ti ti-crown" aria-hidden="true"></i><div><b>' + (tier === 'gold' ? 'Gold' : 'Silver') + ' activo</b><small>' + line +
             '</small></div><a class="k-btn k-btn--secondary k-btn--sm" href="/ajustes#apariencia">Elegir ambiente</a></div>');
           $('#pm-try-own').hidden = false;
-          $('#pm-hero-cta').innerHTML = '<i class="ti ti-calendar-plus" aria-hidden="true"></i>Ampliar o cambiar de plan';
+          $('#pm-hero-cta').innerHTML = '<i class="ti ti-settings" aria-hidden="true"></i>Gestionar o cambiar de plan';
         } else if (d.premiumStatus === 'expired' && !isStaff) {
           showStatus('<div class="pm-status" style="border-color:var(--k-line-2);background:var(--k-surface-1)"><i class="ti ti-hourglass-empty" aria-hidden="true" style="color:var(--k-text-3)"></i><div><b>Tu Premium terminó</b><small>El ' + esc(fmtDate.format(new Date(d.expiresAt))) + '. Tus preferencias siguen guardadas.</small></div></div>');
         }
@@ -432,8 +443,9 @@
       var plan = btn.dataset.buy + '_' + cycle;
       if (!token()) { location.href = '/acceder?return=' + encodeURIComponent('/premium'); return; }
       var label = btn.innerHTML;
-      btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>Abriendo el pago…';
-      fetch('/api/premium/create-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() }, body: JSON.stringify({ plan: plan }) })
+      var manage = btn.dataset.manage === '1';
+      btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>' + (manage ? 'Abriendo tu plan…' : 'Abriendo el pago…');
+      fetch(manage ? '/api/premium/portal' : '/api/premium/create-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() }, body: JSON.stringify({ plan: plan }) })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, d: d }; }); })
         .then(function (res) {
           if (res.ok && res.d.url && /^https:\/\//.test(res.d.url)) { location.href = res.d.url; return; }

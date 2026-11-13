@@ -29,9 +29,10 @@ router.use(auth);
 const PREMIUM_TIERS = ['silver', 'gold'];
 function planOf(u) {
   const active = !!(u.premium_expires_at && new Date(u.premium_expires_at) > new Date());
-  const tier = PREMIUM_TIERS.includes(u.subscription_tier) ? u.subscription_tier : (active ? 'silver' : 'free');
+  // El plan solo cuenta mientras la fecha siga vigente: un nivel sin fecha activa no da Premium.
+  const tier = !active ? 'free' : (PREMIUM_TIERS.includes(u.subscription_tier) ? u.subscription_tier : 'silver');
   const staff = !!u.is_owner || !!u.is_admin;
-  return { tier, active, expiresAt: u.premium_expires_at, isPremium: active || PREMIUM_TIERS.includes(u.subscription_tier) || staff, viaStaff: staff && !active };
+  return { tier, active, expiresAt: u.premium_expires_at, isPremium: active || staff, viaStaff: staff && !active };
 }
 
 router.get('/', async (req, res) => {
@@ -48,7 +49,7 @@ router.get('/', async (req, res) => {
         securityChangedAt: u.password_changed_at,
       },
       plan: planOf(u),
-      quality: { selected: u.image_quality || '1080', allowed: getAllowedQualities(u.subscription_tier || (u.is_admin ? 'admin' : 'user')) },
+      quality: { selected: u.image_quality || '1080', allowed: getAllowedQualities((planOf(u).active && u.subscription_tier) || (u.is_admin ? 'admin' : 'user')) },
       notifications: { available: await hasColumn('users', 'notification_prefs'), prefs: await notifyPrefs.getPrefs(u.id) },
       deletion: { available: await hasColumn('users', 'deleted_at'), blockedBy: u.is_owner ? 'owner' : ((await hasColumn('mangas', 'created_by')) && (await pool.query('SELECT 1 FROM mangas WHERE created_by = $1 LIMIT 1', [u.id])).rows.length ? 'works' : null) },
     });
@@ -63,7 +64,7 @@ router.put('/quality', async (req, res) => {
     const q = String(req.body?.quality || '');
     const r = await pool.query('SELECT subscription_tier, is_admin FROM users WHERE id = $1', [req.user.userId]);
     const u = r.rows[0]; if (!u) return res.status(404).json({ error: 'Usuario no encontrado' });
-    const allowed = getAllowedQualities(u.subscription_tier || (u.is_admin ? 'admin' : 'user'));
+    const allowed = getAllowedQualities((planOf(u).active && u.subscription_tier) || (u.is_admin ? 'admin' : 'user'));
     if (!allowed.includes(q)) return res.status(403).json({ error: q === 'master' ? 'La calidad Master es para Premium.' : 'Calidad no válida.' });
     await setUserQuality(req.user.userId, q);
     res.json({ success: true, quality: q });

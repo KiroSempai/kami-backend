@@ -79,4 +79,17 @@ CREATE INDEX IF NOT EXISTS idx_payments_user ON payments(user_id, paid_at DESC);
 CREATE INDEX IF NOT EXISTS idx_payments_charge ON payments(stripe_charge_id);
 CREATE INDEX IF NOT EXISTS idx_payments_intent ON payments(stripe_payment_intent_id);
 
+-- Supabase publica por su API cualquier tabla del esquema public. Estas tres solo
+-- las toca el servidor (que se conecta como dueño y no se ve afectado): se cierran
+-- al resto con seguridad por filas sin ninguna regla y retirando los permisos.
+ALTER TABLE payment_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments       ENABLE ROW LEVEL SECURITY;
+DO $lock$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON payment_events, subscriptions, payments FROM anon, authenticated;
+    REVOKE ALL ON SEQUENCE subscriptions_id_seq, payments_id_seq FROM anon, authenticated;
+  END IF;
+END $lock$;
+
 COMMIT;

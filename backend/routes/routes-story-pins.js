@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const { verifyToken } = require('../config');
+const { requireAuth, requireNotBanned } = require('../middleware/auth');
 
 // GET /api/story-pins/:mangaId/:chapterNum/:pageIndex — get pins for a page
 router.get('/:mangaId/:chapterNum/:pageIndex', async (req, res) => {
@@ -50,145 +51,104 @@ router.get('/:mangaId/:chapterNum/:pageIndex', async (req, res) => {
   }
 });
 
-// POST /api/story-pins — create a pin
-router.post('/', async (req, res) => {
+// Reglas comunes de los StoryPins
+const EMOJIS = ['💀', '😭', '🔥', '❤️', '😂', '😮', '👀', '✨'];
+const VIS = ['public', 'friends', 'private'];
+const clamp01 = v => Math.max(0, Math.min(1, Number(v)));
+const cleanMsg = m => String(m == null ? '' : m).replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+
+// POST /api/story-pins — crear un pin
+router.post('/', requireAuth, requireNotBanned, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Debes iniciar sesión' });
-    const decoded = await verifyToken(token);
-    const userId = decoded.userId;
-
-    const { mangaId, chapterNumber, pageIndex, x, y, message, visibility, emoji } = req.body;
-
-    if (!mangaId || chapterNumber === undefined || pageIndex === undefined || x === undefined || y === undefined) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    const userId = req.user.userId;
+    const { mangaId, chapterNumber, pageIndex, x, y } = req.body || {};
+    const message = cleanMsg(req.body?.message);
+    const emoji = EMOJIS.includes(req.body?.emoji) ? req.body.emoji : null;
+    const visibility = VIS.includes(req.body?.visibility) ? req.body.visibility : 'public';
+    const ch = parseInt(chapterNumber, 10), pg = parseInt(pageIndex, 10);
+    if (!mangaId || !Number.isFinite(ch) || !Number.isFinite(pg) || pg < 0 || !Number.isFinite(Number(x)) || !Number.isFinite(Number(y))) {
+      return res.status(400).json({ error: 'Faltan datos del pin.' });
     }
+    if (!message && !emoji) return res.status(400).json({ error: 'Escribe un mensaje o elige una reacción.' });
+    if (message.length > 180) return res.status(400).json({ error: 'El mensaje puede tener 180 caracteres como máximo.' });
 
-    if (message && message.length > 180) {
-      return res.status(400).json({ error: 'Mensaje demasiado largo (max 180 caracteres)' });
-    }
-
-    const result = await pool.query(`
-      INSERT INTO story_pins (user_id, manga_id, chapter_number, page_index, x, y, message, visibility, emoji)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING id, x, y, message, visibility, emoji, likes, created_at
-    `, [userId, mangaId, parseInt(chapterNumber), parseInt(pageIndex),
-        parseFloat(x), parseFloat(y), message || '', visibility || 'public', emoji || null]);
-
-    const pin = result.rows[0];
-    // Return user info too
-    const userResult = await pool.query('SELECT username, avatar FROM users WHERE id = $1', [userId]);
-
-    res.status(201).json({
-      success: true,
-      pin: {
-        ...pin,
-        user_id: userId,
-        username: userResult.rows[0]?.username || 'Anónimo',
-        avatar: userResult.rows[0]?.avatar || '',
-        liked_by_me: false,
-      }
-    });
-  } catch (err) {
-    console.error('Error creating story pin:', err);
-    res.status(500).json({ error: 'Error al crear pin' });
-  }
-});
-
-// PUT /api/story-pins/:id — update pin message/visibility
-router.put('/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Debes iniciar sesión' });
-    const decoded = await verifyToken(token);
-
-    const { id } = req.params;
-    const { message, visibility } = req.body;
-
-    if (message && message.length > 180) {
-      return res.status(400).json({ error: 'Mensaje demasiado largo (max 180 caracteres)' });
-    }
-
-    const result = await pool.query(`
-      UPDATE story_pins SET
-        message = COALESCE($1, message),
-        visibility = COALESCE($2, visibility)
-      WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
-      RETURNING id, message, visibility, emoji, likes
-    `, [message !== undefined ? message : null, visibility || null, id, decoded.userId]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pin no encontrado o no tienes permiso' });
-    }
-
-    res.json({ success: true, pin: result.rows[0] });
-  } catch (err) {
-    console.error('Error updating story pin:', err);
-    res.status(500).json({ error: 'Error al actualizar pin' });
-  }
-});
-
-// DELETE /api/story-pins/:id — soft delete (owner or admin)
-router.delete('/:id', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Debes iniciar sesión' });
-    const decoded = await verifyToken(token);
-
-    // Check if user is admin
-    const user = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.userId]);
-    const isAdmin = user.rows[0]?.role === 'admin';
+    // Freno al spam: 20 pines cada 10 minutos por cuenta
+    const recent = await pool.query("SELECT COUNT(*)::int AS n FROM story_pins WHERE user_id = $1 AND created_at > NOW() - INTERVAL '10 minutes'", [userId]);
+    if (recent.rows[0].n >= 20) return res.status(429).json({ error: 'Has dejado muchos pines seguidos. Espera unos minutos.' });
 
     const result = await pool.query(
-      isAdmin
-        ? 'UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL RETURNING id'
-        : 'UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL RETURNING id',
-      isAdmin ? [req.params.id] : [req.params.id, decoded.userId]
+      `INSERT INTO story_pins (user_id, manga_id, chapter_number, page_index, x, y, message, visibility, emoji)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, x, y, message, visibility, emoji, likes, created_at`,
+      [userId, String(mangaId).slice(0, 64), ch, pg, clamp01(x), clamp01(y), message, visibility, emoji]
     );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pin no encontrado o no tienes permiso' });
-    }
-
-    res.json({ success: true, deleted: true });
+    const u = await pool.query('SELECT username, avatar FROM users WHERE id = $1', [userId]);
+    res.status(201).json({ success: true, pin: { ...result.rows[0], user_id: userId, username: u.rows[0]?.username || 'Anónimo', avatar: u.rows[0]?.avatar || '', liked_by_me: false } });
   } catch (err) {
-    console.error('Error deleting story pin:', err);
-    res.status(500).json({ error: 'Error al eliminar pin' });
+    console.error('[story-pins] crear:', err.message);
+    res.status(500).json({ error: 'No se pudo crear el pin.' });
   }
 });
 
-// POST /api/story-pins/:id/like — toggle like
-router.post('/:id/like', async (req, res) => {
+// PUT /api/story-pins/:id — editar el mensaje (solo quien lo creó)
+router.put('/:id', requireAuth, requireNotBanned, async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Debes iniciar sesión' });
-    const decoded = await verifyToken(token);
-    const userId = decoded.userId;
-    const pinId = parseInt(req.params.id);
-
-    // Check if already liked
-    const existing = await pool.query(
-      'SELECT id FROM pin_likes WHERE pin_id = $1 AND user_id = $2',
-      [pinId, userId]
+    const id = parseInt(req.params.id, 10);
+    const message = req.body?.message !== undefined ? cleanMsg(req.body.message) : null;
+    const visibility = VIS.includes(req.body?.visibility) ? req.body.visibility : null;
+    if (message !== null && message.length > 180) return res.status(400).json({ error: 'El mensaje puede tener 180 caracteres como máximo.' });
+    const result = await pool.query(
+      `UPDATE story_pins SET message = COALESCE($1, message), visibility = COALESCE($2, visibility)
+       WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL AND (COALESCE($1, message) <> '' OR emoji IS NOT NULL)
+       RETURNING id, message, visibility, emoji, likes`,
+      [message, visibility, id, req.user.userId]
     );
-
-    let liked;
-    if (existing.rows.length > 0) {
-      await pool.query('DELETE FROM pin_likes WHERE pin_id = $1 AND user_id = $2', [pinId, userId]);
-      await pool.query('UPDATE story_pins SET likes = GREATEST(likes - 1, 0) WHERE id = $1', [pinId]);
-      liked = false;
-    } else {
-      await pool.query('INSERT INTO pin_likes (pin_id, user_id) VALUES ($1, $2)', [pinId, userId]);
-      await pool.query('UPDATE story_pins SET likes = likes + 1 WHERE id = $1', [pinId]);
-      liked = true;
-    }
-
-    const count = await pool.query('SELECT likes FROM story_pins WHERE id = $1', [pinId]);
-    res.json({ success: true, liked, likes: count.rows[0]?.likes || 0 });
+    if (!result.rows.length) return res.status(404).json({ error: 'No puedes editar este pin (o se quedaría vacío).' });
+    res.json({ success: true, pin: result.rows[0] });
   } catch (err) {
-    console.error('Error toggling pin like:', err);
-    res.status(500).json({ error: 'Error al dar like' });
+    console.error('[story-pins] editar:', err.message);
+    res.status(500).json({ error: 'No se pudo editar el pin.' });
   }
+});
+
+// DELETE /api/story-pins/:id — borrado suave (quien lo creó o administración)
+router.delete('/:id', requireAuth, requireNotBanned, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const admin = ['admin', 'moderator'].includes(req.user.role);
+    const result = await pool.query(
+      admin
+        ? 'UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL RETURNING id'
+        : 'UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL RETURNING id',
+      admin ? [id] : [id, req.user.userId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'No puedes borrar este pin.' });
+    res.json({ success: true, deleted: true });
+  } catch (err) {
+    console.error('[story-pins] borrar:', err.message);
+    res.status(500).json({ error: 'No se pudo borrar el pin.' });
+  }
+});
+
+// POST /api/story-pins/:id/like — dar o quitar «me gusta»
+router.post('/:id/like', requireAuth, requireNotBanned, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const userId = req.user.userId, pinId = parseInt(req.params.id, 10);
+    await client.query('BEGIN');
+    const pin = await client.query('SELECT id FROM story_pins WHERE id = $1 AND deleted_at IS NULL FOR UPDATE', [pinId]);
+    if (!pin.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Este pin ya no existe.' }); }
+    const del = await client.query('DELETE FROM pin_likes WHERE pin_id = $1 AND user_id = $2 RETURNING pin_id', [pinId, userId]);
+    let liked = false;
+    if (!del.rows.length) { await client.query('INSERT INTO pin_likes (pin_id, user_id) VALUES ($1, $2)', [pinId, userId]); liked = true; }
+    const r = await client.query('UPDATE story_pins SET likes = (SELECT COUNT(*) FROM pin_likes WHERE pin_id = $1) WHERE id = $1 RETURNING likes', [pinId]);
+    await client.query('COMMIT');
+    res.json({ success: true, liked, likes: r.rows[0].likes });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('[story-pins] me gusta:', err.message);
+    res.status(500).json({ error: 'No se pudo dar me gusta.' });
+  } finally { client.release(); }
 });
 
 module.exports = router;

@@ -170,49 +170,78 @@
     #reader-shield { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
 
     /* ── StoryPins ─────────────────────────────────────────── */
-    .story-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+    .story-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: visible; }
     .story-layer .story-pin { pointer-events: auto; }
     .story-layer.active { pointer-events: auto; }
     body.ink-mode, body.ink-mode .story-layer.active { cursor: crosshair; }
+    body.ink-mode .reader-page img { filter: brightness(.82); transition: filter .2s; }
     body.pins-off .story-pin { display: none !important; }
-    .draft-pin { position: fixed; z-index: 3; width: 42px; height: 42px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 20%, transparent); border: 2px solid color-mix(in srgb, var(--k-accent) 60%, transparent); transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 16px color-mix(in srgb, var(--k-accent) 30%, transparent); }
-    .draft-pin::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 25%, transparent); animation: pinPulse 1.2s ease-in-out infinite; }
-    @keyframes pinPulse { 0%,100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.15); opacity: 1; } }
-    .story-pin { position: absolute; z-index: 3; width: 36px; height: 36px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; opacity: .8; transition: opacity .2s, box-shadow .2s; border: 1.5px solid rgb(var(--k-ink) / 0.2); background: color-mix(in srgb, var(--k-accent) 20%, transparent); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: visible; }
-    .story-pin.has-message::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--k-accent) 30%, transparent); animation: pinGlow 2s ease-in-out infinite; }
-    @keyframes pinGlow { 0%,100% { opacity: .3; } 50% { opacity: .8; } }
-    .story-pin .pin-bubble { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-    .story-pin .pin-avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0; }
-    .story-pin .pin-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .story-pin .pin-emoji { font-size: 16px; line-height: 1; }
-    .story-pin.popular { border-color: color-mix(in srgb, var(--k-gold) 50%, transparent); }
-    .story-pin .pin-card { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 80px; max-width: 280px; width: max-content; white-space: normal; word-break: break-word; background: rgba(8,8,18,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgb(var(--k-ink) / 0.1); border-radius: 10px; padding: 6px 10px; box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 5; }
-    .story-pin:hover, .story-pin.is-open { opacity: 1; z-index: 6; }
-    .story-pin:hover .pin-bubble, .story-pin.is-open .pin-bubble { display: none; }
-    .story-pin:hover .pin-card, .story-pin.is-open .pin-card { display: block; }
-    .pin-card .pc-user { font-size: 11px; font-weight: 600; }
-    .pin-card .pc-user-link { color: rgb(var(--k-ink) / 0.5); cursor: pointer; }
-    .pin-card .pc-user-link:hover { color: var(--k-accent); }
-    .pin-card .pc-text { font-size: 13px; color: var(--k-text); line-height: 1.35; margin-top: 1px; }
-    .pin-card .pc-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
-    .pin-card button { border: 0; background: none; padding: 2px 4px; border-radius: 4px; font: 600 11px var(--k-font-body); color: rgb(var(--k-ink) / .5); cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
-    .pin-card button:hover { color: var(--k-accent); background: rgb(var(--k-ink) / .06); }
+    .draft-pin { position: absolute; z-index: 4; width: 40px; height: 40px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; background: color-mix(in srgb, var(--k-accent) 25%, transparent); border: 2px solid var(--k-accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--k-accent) 18%, transparent), 0 0 24px var(--k-accent); }
+    .draft-pin::after { content: ''; position: absolute; inset: 9px; border-radius: 50%; background: var(--k-accent); animation: pinPulse 1.2s ease-in-out infinite; }
+    .draft-pin.is-hover { position: fixed; opacity: .75; }
+    @keyframes pinPulse { 0%,100% { transform: scale(.85); opacity: .7; } 50% { transform: scale(1.1); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .draft-pin::after, .story-pin.is-new { animation: none; } }
+    .story-pin { position: absolute; z-index: 3; transform: translate(-50%, -50%); width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 2px solid rgb(255 255 255 / .85); background: rgb(12 12 20 / .55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 4px 14px rgb(0 0 0 / .45); cursor: pointer; display: grid; place-items: center; color: #fff; transition: transform .15s, box-shadow .15s; }
+    .story-pin:hover, .story-pin:focus-visible { transform: translate(-50%, -50%) scale(1.12); box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-accent) 45%, transparent), 0 6px 18px rgb(0 0 0 / .5); outline: none; }
+    .story-pin.is-popular { border-color: var(--k-gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-gold) 30%, transparent), 0 4px 14px rgb(0 0 0 / .45); }
+    .story-pin.is-mine { border-color: var(--k-accent); }
+    .story-pin.is-new { animation: pinIn .45s cubic-bezier(.2, 1.5, .4, 1) both; }
+    @keyframes pinIn { from { transform: translate(-50%, -50%) scale(.2); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+    .story-pin .pin-face { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font: 700 10px/1 var(--k-font-body); }
+    .story-pin .pin-face img { width: 100%; height: 100%; object-fit: cover; }
+    .story-pin .pin-face.is-emoji { font-size: 17px; background: none; }
+    .story-pin .pin-dot { position: absolute; right: -3px; top: -3px; width: 12px; height: 12px; border-radius: 50%; background: var(--k-accent); border: 2px solid #fff; }
+    .pin-card { position: absolute; z-index: 8; transform: translate(-50%, calc(-100% - 26px)); width: max-content; max-width: min(280px, 80vw); padding: 10px 12px; border-radius: 14px; background: rgba(10,10,18,.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgb(255 255 255 / .12); box-shadow: 0 14px 40px rgb(0 0 0 / .55); color: #f3f1f8; text-align: left; pointer-events: auto; cursor: default; animation: crIn .15s ease; }
+    .pin-card.below { transform: translate(-50%, 26px); }
+    .pin-card::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; background: inherit; border-right: 1px solid rgb(255 255 255 / .12); border-bottom: 1px solid rgb(255 255 255 / .12); transform: translateX(-50%) rotate(45deg); }
+    .pin-card.below::after { bottom: auto; top: -6px; transform: translateX(-50%) rotate(225deg); }
+    .pin-card .pc-head { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgb(255 255 255 / .55); margin-bottom: 4px; }
+    .pin-card .pc-head a { color: #fff; font-weight: 700; text-decoration: none; }
+    .pin-card .pc-head a:hover { color: var(--k-accent); }
+    .pin-card .pc-text { font-size: 14px; line-height: 1.4; word-break: break-word; }
+    .pin-card .pc-text.is-emoji { font-size: 26px; line-height: 1.1; }
+    .pin-card .pc-foot { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+    .pin-card .pc-foot .sp { flex: 1; }
+    .pin-card button { display: inline-flex; align-items: center; gap: 4px; min-height: 30px; padding: 0 10px; border: 1px solid rgb(255 255 255 / .12); border-radius: 999px; background: rgb(255 255 255 / .06); color: rgb(255 255 255 / .8); font: 600 12px var(--k-font-body); cursor: pointer; }
+    .pin-card button:hover { color: #fff; border-color: rgb(255 255 255 / .3); }
+    .pin-card button[aria-pressed="true"] { color: var(--k-accent); border-color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 14%, transparent); }
+    .pin-card button.is-danger { color: var(--k-bad); border-color: color-mix(in srgb, var(--k-bad) 50%, transparent); }
+    /* Editor: globo junto al punto en escritorio, hoja inferior en el móvil */
     #pin-editor { position: fixed; z-index: 30; display: none; }
     #pin-editor.open { display: block; }
-    #pin-editor .pe-inner { background: rgba(10,10,22,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgb(var(--k-ink) / 0.1); border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,.5); padding: 14px; width: 260px; }
-    #pin-editor .pe-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--k-text-2); font-weight: 600; }
-    #pin-editor .pe-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--k-accent); font-size: 10px; font-weight: 700; color: #fff; }
-    #pin-editor .pe-input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgb(var(--k-ink) / 0.1); background: rgb(var(--k-ink) / 0.05); color: var(--k-text); font: 13px var(--k-font-body); outline: none; }
+    #pin-editor .pe-inner { width: 300px; padding: 14px; border-radius: 16px; background: rgba(10,10,20,.94); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgb(255 255 255 / .12); box-shadow: 0 18px 50px rgb(0 0 0 / .55); color: #f3f1f8; display: grid; gap: 10px; }
+    #pin-editor .pe-header { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgb(255 255 255 / .6); font-weight: 600; }
+    #pin-editor .pe-header b { color: #fff; }
+    #pin-editor .pe-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--k-accent); font-size: 10px; font-weight: 700; color: #fff; overflow: hidden; flex: none; }
+    #pin-editor .pe-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    #pin-editor .pe-input { width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgb(255 255 255 / .14); background: rgb(255 255 255 / .06); color: #fff; font: 14px var(--k-font-body); outline: none; resize: none; }
     #pin-editor .pe-input:focus { border-color: var(--k-accent); }
-    #pin-editor .pe-actions { display: flex; align-items: center; gap: 6px; margin-top: 8px; justify-content: space-between; }
-    #pin-editor .pe-emoji-row { display: flex; gap: 4px; }
-    #pin-editor .pe-emoji { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgb(var(--k-ink) / 0.08); background: rgb(var(--k-ink) / 0.04); cursor: pointer; font-size: 14px; display: grid; place-items: center; padding: 0; }
-    #pin-editor .pe-emoji.selected { border-color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 15%, transparent); }
-    #pin-editor .pe-submit { padding: 6px 14px; border-radius: 8px; border: 0; background: var(--k-accent-fill, var(--k-accent)); color: #fff; cursor: pointer; font: 600 12px var(--k-font-body); }
+    #pin-editor .pe-emoji-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    #pin-editor .pe-emoji { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgb(255 255 255 / .12); background: rgb(255 255 255 / .05); cursor: pointer; font-size: 16px; display: grid; place-items: center; padding: 0; }
+    #pin-editor .pe-emoji[aria-pressed="true"] { border-color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 18%, transparent); }
+    #pin-editor .pe-foot { display: flex; align-items: center; gap: 8px; }
+    #pin-editor .pe-len { flex: 1; font-size: 11px; color: rgb(255 255 255 / .4); font-variant-numeric: tabular-nums; }
+    #pin-editor .pe-vis { min-height: 32px; border-radius: 8px; border: 1px solid rgb(255 255 255 / .14); background: rgb(255 255 255 / .06); color: #fff; font: 600 12px var(--k-font-body); padding: 0 6px; }
+    #pin-editor .pe-vis option { background: #14121c; }
+    #pin-editor .pe-cancel { min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgb(255 255 255 / .14); background: transparent; color: rgb(255 255 255 / .75); font: 600 13px var(--k-font-body); cursor: pointer; }
+    #pin-editor .pe-submit { min-height: 34px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--k-accent-fill, var(--k-accent)); color: #fff; font: 700 13px var(--k-font-body); cursor: pointer; }
     #pin-editor .pe-submit:disabled { opacity: .4; cursor: default; }
-    #pin-editor .pe-cancel { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgb(var(--k-ink) / 0.1); background: transparent; color: var(--k-text-2); cursor: pointer; }
-    #pin-editor .pe-timer { font-size: 10px; color: rgb(var(--k-ink) / .35); text-align: right; margin-top: 4px; }
-    .ink-hint { position: fixed; z-index: 12; left: 50%; bottom: calc(var(--rd-bottom) + 12px); transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: var(--k-accent-fill, var(--k-accent)); color: #fff; font: 600 12px var(--k-font-body); box-shadow: 0 10px 30px rgb(0 0 0 / .5); }
+    @media (max-width: 768px) {
+      #pin-editor { left: 0 !important; right: 0; top: auto !important; bottom: 0; transform: none !important; }
+      #pin-editor .pe-inner { width: auto; border-radius: 18px 18px 0 0; padding: 16px max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)); }
+      #pin-editor .pe-emoji-row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+      #pin-editor .pe-emoji { width: 100%; height: auto; aspect-ratio: 1; max-width: 42px; justify-self: center; font-size: 18px; }
+    }
+    .ink-hint { position: fixed; z-index: 12; left: 50%; bottom: calc(var(--rd-bottom) + 12px); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--k-accent-fill, var(--k-accent)); color: #fff; font: 600 12px var(--k-font-body); box-shadow: 0 10px 30px rgb(0 0 0 / .5); max-width: calc(100vw - 24px); }
+    .ink-hint button { min-height: 30px; padding: 0 12px; border-radius: 999px; border: 0; background: rgb(255 255 255 / .2); color: #fff; font: 700 12px var(--k-font-body); cursor: pointer; }
+    body.ui-off .ink-hint { bottom: 16px; }
+    /* Botón de StoryPins en la barra inferior */
+    #reader-bottombar .left { display: flex; align-items: center; gap: 14px; }
+    .cr-pins-btn { position: relative; width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgb(var(--k-ink) / 0.08); background: rgb(var(--k-ink) / 0.04); color: rgb(var(--k-ink) / .8); display: grid; place-items: center; cursor: pointer; font-size: 19px; }
+    .cr-pins-btn:hover { color: var(--k-text); }
+    .cr-pins-btn[aria-pressed="false"] { opacity: .55; }
+    .cr-pins-btn .n { position: absolute; top: -5px; right: -6px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--k-gold); color: #1a1205; font: 700 10px/18px var(--k-font-body); text-align: center; }
+    @media (max-width: 768px) { .cr-pins-btn { width: 38px; height: 38px; font-size: 17px; } }
   </style>
 </head>
 <body data-shell="none" data-mode="scroll" data-dir="ltr">
@@ -241,6 +270,7 @@
     <div class="comments-btn" id="btn-comments" role="button" tabindex="0" aria-label="Comentarios del capítulo" aria-controls="comments-panel">
       <span class="icon-wrap"><i class="ti ti-message" style="font-size:28px" aria-hidden="true"></i><span class="count" id="comments-count">0</span></span>
     </div>
+    <button type="button" class="cr-pins-btn" id="cr-pins" aria-pressed="true" title="Mostrar u ocultar StoryPins"></button>
   </div>
   <div class="center">
     <button type="button" class="cr-count" id="progress-indicator" aria-live="polite" aria-label="Página actual. Toca para ir a otra" aria-expanded="false" aria-controls="cr-jump">—</button>
@@ -359,21 +389,20 @@
 </div>
 
 <!-- Editor de StoryPin -->
-<div id="pin-editor" role="dialog" aria-label="Nuevo StoryPin">
-  <div class="pe-inner">
-    <div class="pe-header"><span class="pe-avatar" id="pe-avatar">?</span><span id="pe-username">Tú</span></div>
-    <input class="pe-input" id="pe-input" placeholder="¿Qué quieres dejar aquí?" maxlength="180">
-    <div class="pe-actions">
-      <div class="pe-emoji-row">
-        <button type="button" class="pe-emoji" data-emoji="💀">💀</button><button type="button" class="pe-emoji" data-emoji="😭">😭</button><button type="button" class="pe-emoji" data-emoji="🔥">🔥</button><button type="button" class="pe-emoji" data-emoji="❤️">❤️</button><button type="button" class="pe-emoji" data-emoji="😂">😂</button>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button type="button" class="pe-cancel" id="pe-cancel" aria-label="Cancelar"><i class="ti ti-x" aria-hidden="true"></i></button>
-        <button type="button" class="pe-submit" id="pe-submit">Publicar</button>
-      </div>
+<div id="pin-editor" role="dialog" aria-modal="false" aria-labelledby="pe-title">
+  <form class="pe-inner" id="pe-form">
+    <div class="pe-header"><span class="pe-avatar" id="pe-avatar">?</span><span id="pe-title"><b id="pe-username">Tú</b> · <span id="pe-what">nuevo StoryPin</span></span></div>
+    <label class="k-visually-hidden" for="pe-input">Mensaje</label>
+    <textarea class="pe-input" id="pe-input" rows="2" placeholder="Deja una nota en este punto… (opcional si eliges una reacción)" maxlength="180"></textarea>
+    <div class="pe-emoji-row" role="group" aria-label="Reacción" id="pe-emojis"></div>
+    <div class="pe-foot">
+      <span class="pe-len" id="pe-len">0 / 180</span>
+      <label class="k-visually-hidden" for="pe-vis">Quién lo ve</label>
+      <select class="pe-vis" id="pe-vis"><option value="public">Todos</option><option value="private">Solo yo</option></select>
+      <button type="button" class="pe-cancel" id="pe-cancel">Cancelar</button>
+      <button type="submit" class="pe-submit" id="pe-submit">Publicar</button>
     </div>
-    <div class="pe-timer" id="pe-timer"></div>
-  </div>
+  </form>
 </div>
 
 <script>
@@ -750,6 +779,7 @@
     saveT = setTimeout(function () { saveProgress(atEnd ? total - 1 : i, false); }, 1200);
     if (atEnd || i >= total - 1) markRead();
     if (i >= Math.floor(total * 0.7)) preloadNext();
+    updatePinBadge();
   }
   function saveProgress(p, keepalive) {
     var pos = lsGet('kt_comic_pos', {}); pos[mangaId] = { chapter: chapterNum, page: p }; lsSet('kt_comic_pos', pos);
@@ -799,7 +829,7 @@
   }
   var ptrs = {}, gesture = null, lastTap = 0, tapTimer = null;
   function paged() { return effectiveMode() !== 'scroll'; }
-  function uiTarget(t) { return t.closest && t.closest('#reader-topbar, #reader-bottombar, #settings-panel, #comments-panel, #pin-editor, .cr-end a, .cr-end button, .ph button, .story-pin, .cr-resume'); }
+  function uiTarget(t) { return t.closest && t.closest('#reader-topbar, #reader-bottombar, #settings-panel, #comments-panel, #pin-editor, .cr-end a, .cr-end button, .ph button, .story-pin, .pin-card, .cr-resume, .cr-pins-btn'); }
   stage.addEventListener('pointerdown', function (e) {
     if (!paged() || inkMode || uiTarget(e.target)) return;
     ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
@@ -869,7 +899,7 @@
   /* ════════════════ Teclado ════════════════ */
   document.addEventListener('keydown', function (e) {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
-    if (e.key === 'Escape') { if (pinOpen()) cancelDraft(); else if (inkMode) toggleInkMode(); else { closeComments(); closeSettings(); resetZoom(); } return; }
+    if (e.key === 'Escape') { if (pinOpen()) cancelDraft(); else if (inkMode) toggleInkMode(); else { closeCard(); closeComments(); closeSettings(); resetZoom(); } return; }
     if (e.altKey || e.ctrlKey || e.metaKey || !total) return;
     var m = effectiveMode(), rtl = dir === 'rtl' && m !== 'scroll', k = e.key, d = 0;
     if (m === 'scroll') {
@@ -938,7 +968,7 @@
   $('chk-preload').addEventListener('change', function () { settings.preload = this.checked; lsSet('kt_comic', settings); });
   $('chk-storypins').checked = settings.pins !== false;
   document.body.classList.toggle('pins-off', settings.pins === false);
-  $('chk-storypins').addEventListener('change', function () { settings.pins = this.checked; lsSet('kt_comic', settings); document.body.classList.toggle('pins-off', !this.checked); });
+  $('chk-storypins').addEventListener('change', function () { setPinsVisible(this.checked); });
 
   function setupQuality() {
     var s = $('sel-quality'), q = M.quality || {}, prem = !!q.isPremium;
@@ -1029,115 +1059,203 @@
   $('cp-input').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('cp-form').requestSubmit(); } });
 
   /* ════════════════ StoryPins ════════════════ */
-  var inkMode = false, editPin = null, editingId = null, cancelTimer = null, secs = 10, loadedPins = {}, draftEl = null;
+  // Notas que los lectores dejan en un punto exacto de una página.
+  var PIN_EMOJIS = ['💀', '😭', '🔥', '❤️', '😂', '😮', '👀', '✨'];
+  var inkMode = false, editPin = null, editingId = null, loadedPins = {}, pinCounts = {}, hoverEl = null, draftEl = null, openCard = null;
+  $('pe-emojis').innerHTML = PIN_EMOJIS.map(function (e) { return '<button type="button" class="pe-emoji" data-emoji="' + e + '" aria-pressed="false">' + e + '</button>'; }).join('');
   function pinOpen() { return !!(editPin || editingId); }
   function syncStoryLayers() { document.querySelectorAll('.story-layer').forEach(function (l) { l.classList.toggle('active', inkMode); }); }
+  function setInkHint() {
+    var h = $('ink-hint');
+    h.innerHTML = '<span>' + (window.matchMedia('(hover: none)').matches ? 'Toca' : 'Haz clic en') + ' el punto de la página donde quieras dejar tu StoryPin</span><button type="button" id="ink-exit">Salir</button>';
+    $('ink-exit').addEventListener('click', function (e) { e.stopPropagation(); toggleInkMode(); });
+  }
   function toggleInkMode() {
     if (!inkMode && !token()) { toast('Inicia sesión para dejar un StoryPin.'); return; }
     inkMode = !inkMode;
     document.body.classList.toggle('ink-mode', inkMode);
     $('btn-story-pin').classList.toggle('active', inkMode);
     $('btn-story-pin').setAttribute('aria-pressed', String(inkMode));
+    if (inkMode) { setInkHint(); resetZoom(); closeCard(); setPinsVisible(true); setUI(true); }
     $('ink-hint').hidden = !inkMode;
-    if (inkMode) { resetZoom(); if (!settings.pins) { $('chk-storypins').checked = true; $('chk-storypins').dispatchEvent(new Event('change')); } }
     syncStoryLayers();
-    if (!inkMode) { hideDraft(); cancelDraft(); }
+    if (!inkMode) { hideHover(); cancelDraft(); }
   }
   $('btn-story-pin').addEventListener('click', toggleInkMode);
-  function draft() { if (!draftEl) { draftEl = document.createElement('div'); draftEl.className = 'draft-pin'; draftEl.hidden = true; document.body.appendChild(draftEl); } return draftEl; }
-  function hideDraft() { draft().hidden = true; }
+
+  /* Visibilidad: botón de la barra inferior y ajuste del panel (son el mismo) */
+  function setPinsVisible(on) {
+    settings.pins = on; lsSet('kt_comic', settings);
+    document.body.classList.toggle('pins-off', !on);
+    $('chk-storypins').checked = on;
+    $('cr-pins').setAttribute('aria-pressed', String(on));
+    $('cr-pins').setAttribute('aria-label', on ? 'Ocultar StoryPins' : 'Mostrar StoryPins');
+    $('cr-pins').innerHTML = '<i class="ti ti-' + (on ? 'pin' : 'pinned-off') + '" aria-hidden="true"></i><span class="n" id="cr-pins-n" hidden></span>';
+    if (!on) closeCard();
+    updatePinBadge();
+  }
+  $('cr-pins').addEventListener('click', function () { setPinsVisible(!(settings.pins !== false)); });
+  // Contador: pines de la página (o páginas) que se ven ahora
+  function updatePinBadge() {
+    var n = 0, v = effectiveMode() === 'scroll' ? [cur] : (views[vi] || [cur]);
+    v.forEach(function (p) { if (typeof p === 'number') n += pinCounts[p] || 0; });
+    var b = $('cr-pins-n'); if (!b) return;
+    b.textContent = n; b.hidden = !n || settings.pins === false;
+  }
+
+  /* Colocar un pin */
+  function hideHover() { if (hoverEl) hoverEl.hidden = true; }
+  function placeDraft(layer, x, y) {
+    if (!draftEl) { draftEl = document.createElement('div'); draftEl.className = 'draft-pin'; }
+    draftEl.style.left = (x * 100) + '%'; draftEl.style.top = (y * 100) + '%';
+    layer.appendChild(draftEl);
+  }
+  function removeDraft() { if (draftEl && draftEl.parentNode) draftEl.parentNode.removeChild(draftEl); }
   function bindPinEvents(pageEl, i) {
-    pageEl.addEventListener('mousemove', function (e) { if (!inkMode || pinOpen()) return; var d = draft(); d.hidden = false; d.style.left = e.clientX + 'px'; d.style.top = e.clientY + 'px'; });
-    pageEl.addEventListener('mouseleave', hideDraft);
+    pageEl.addEventListener('mousemove', function (e) {
+      if (!inkMode || pinOpen()) return;
+      if (!hoverEl) { hoverEl = document.createElement('div'); hoverEl.className = 'draft-pin is-hover'; document.body.appendChild(hoverEl); }
+      hoverEl.hidden = false; hoverEl.style.left = e.clientX + 'px'; hoverEl.style.top = e.clientY + 'px';
+    });
+    pageEl.addEventListener('mouseleave', hideHover);
     pageEl.addEventListener('click', function (e) {
-      if (!inkMode || e.target.closest('.story-pin') || e.target.closest('#pin-editor')) return;
+      if (!inkMode || e.target.closest('.story-pin, .pin-card, #pin-editor, .ph')) return;
+      e.stopPropagation();
       var layer = pageEl.querySelector('.story-layer'), r = layer.getBoundingClientRect();
       var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
       editPin = { pageIndex: i, x: x, y: y }; editingId = null;
-      showEditor(e.clientX, e.clientY, '', '');
+      hideHover(); placeDraft(layer, x, y);
+      showEditor(e.clientX, e.clientY, '', '', 'public');
     });
   }
-  function showEditor(sx, sy, msg, emoji) {
+
+  /* Editor */
+  function showEditor(sx, sy, msg, emoji, vis) {
     var ed = $('pin-editor'), u = me();
-    $('pe-avatar').textContent = (u.username || 'Tú').slice(0, 2).toUpperCase(); $('pe-username').textContent = u.username || 'Tú';
+    var av = u.avatar && /^(https?:\/\/|\/)/.test(u.avatar) ? '<img src="' + esc(u.avatar) + '" alt="">' : esc((u.username || 'Tú').slice(0, 2).toUpperCase());
+    $('pe-avatar').innerHTML = av; $('pe-username').textContent = u.username || 'Tú';
+    $('pe-what').textContent = editingId ? 'editar StoryPin' : 'nuevo StoryPin en la página ' + ((editPin ? editPin.pageIndex : cur) + 1);
     $('pe-input').value = msg || '';
-    document.querySelectorAll('.pe-emoji').forEach(function (b) { b.classList.toggle('selected', b.dataset.emoji === emoji); });
-    ed.className = 'open';
-    if (sx != null) { ed.style.transform = ''; ed.style.left = Math.max(10, Math.min(sx, innerWidth - 280)) + 'px'; ed.style.top = Math.max(70, Math.min(sy + 16, innerHeight - 180)) + 'px'; }
-    else { ed.style.left = '50%'; ed.style.top = '50%'; ed.style.transform = 'translate(-50%,-50%)'; }
+    $('pe-vis').value = vis || 'public'; $('pe-vis').disabled = !!editingId && false;
+    document.querySelectorAll('.pe-emoji').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.emoji === emoji)); b.disabled = !!editingId; });
     $('pe-submit').textContent = editingId ? 'Guardar' : 'Publicar';
-    $('pe-input').focus(); startTimer();
+    peLen();
+    ed.className = 'open';
+    if (window.innerWidth > 768 && sx != null) {
+      var w = 300, h = 210;
+      var left = Math.max(12, Math.min(sx - w / 2, innerWidth - w - 12));
+      var top = sy + 28 + h > innerHeight - 12 ? sy - h - 28 : sy + 28;
+      ed.style.transform = ''; ed.style.left = left + 'px'; ed.style.top = Math.max(12, top) + 'px';
+    } else if (window.innerWidth > 768) { ed.style.left = '50%'; ed.style.top = '50%'; ed.style.transform = 'translate(-50%,-50%)'; }
+    setTimeout(function () { $('pe-input').focus(); }, 30);
   }
-  document.querySelector('.pe-emoji-row').addEventListener('click', function (e) {
-    var b = e.target.closest('.pe-emoji'); if (!b) return;
-    document.querySelectorAll('.pe-emoji').forEach(function (x) { x.classList.toggle('selected', x === b); });
-    startTimer();
+  function peLen() {
+    var n = $('pe-input').value.length, emoji = document.querySelector('.pe-emoji[aria-pressed="true"]');
+    $('pe-len').textContent = n + ' / 180';
+    $('pe-submit').disabled = !$('pe-input').value.trim() && !emoji;
+  }
+  $('pe-emojis').addEventListener('click', function (e) {
+    var b = e.target.closest('.pe-emoji'); if (!b || b.disabled) return;
+    var on = b.getAttribute('aria-pressed') !== 'true';
+    document.querySelectorAll('.pe-emoji').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b && on)); });
+    peLen();
   });
-  $('pe-input').addEventListener('input', startTimer);
-  $('pe-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); publishPin(); } });
+  $('pe-input').addEventListener('input', peLen);
+  $('pe-input').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('pe-form').requestSubmit(); } });
   $('pe-cancel').addEventListener('click', cancelDraft);
-  $('pe-submit').addEventListener('click', publishPin);
-  function startTimer() {
-    clearInterval(cancelTimer); secs = 15; $('pe-timer').textContent = 'Se cierra en ' + secs + ' s';
-    cancelTimer = setInterval(function () { secs--; if (secs <= 0) { cancelDraft(); return; } $('pe-timer').textContent = 'Se cierra en ' + secs + ' s'; }, 1000);
-  }
-  function cancelDraft() { $('pin-editor').className = ''; editPin = null; editingId = null; clearInterval(cancelTimer); $('pe-timer').textContent = ''; }
+  $('pe-form').addEventListener('submit', function (e) { e.preventDefault(); publishPin(); });
+  function cancelDraft() { $('pin-editor').className = ''; editPin = null; editingId = null; removeDraft(); }
   function publishPin() {
     if (!pinOpen()) return;
-    var msg = $('pe-input').value.trim(), sel = document.querySelector('.pe-emoji.selected'), emoji = sel ? sel.dataset.emoji : null;
+    var msg = $('pe-input').value.trim(), sel = document.querySelector('.pe-emoji[aria-pressed="true"]'), emoji = sel ? sel.dataset.emoji : null;
     if (!msg && !emoji) { $('pe-input').focus(); return; }
     var editing = editingId, create = editPin, btn = $('pe-submit');
-    clearInterval(cancelTimer); btn.disabled = true;
+    btn.disabled = true;
     var req = editing
-      ? fetch('/api/story-pins/' + editing, { method: 'PUT', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ message: msg }) })
-      : fetch('/api/story-pins', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ mangaId: mangaId, chapterNumber: chapterNum, pageIndex: create.pageIndex, x: create.x, y: create.y, message: msg, emoji: emoji, visibility: 'public' }) });
-    req.then(function (r) { return r.json(); })
+      ? fetch('/api/story-pins/' + editing, { method: 'PUT', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ message: msg, visibility: $('pe-vis').value }) })
+      : fetch('/api/story-pins', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ mangaId: mangaId, chapterNumber: chapterNum, pageIndex: create.pageIndex, x: create.x, y: create.y, message: msg, emoji: emoji, visibility: $('pe-vis').value }) });
+    req.then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok || !d.success) throw new Error(d.error || 'No se pudo guardar el StoryPin.'); return d; }); })
       .then(function (d) {
-        if (!d.success) { toast(d.error || 'No se pudo guardar el StoryPin.', 'bad'); return; }
+        var page = editing ? findPinPage(editing) : create.pageIndex;
         cancelDraft();
-        if (editing) { loadedPins = {}; pageEls.forEach(function (el, i) { if (blobs[i]) loadPinsForPage(i); }); }
-        else { loadedPins[create.pageIndex] = false; loadPinsForPage(create.pageIndex); toast('StoryPin publicado.', 'ok'); }
+        if (!editing && inkMode) toggleInkMode();
+        loadedPins[page] = false; loadPinsForPage(page, editing ? null : (d.pin && d.pin.id));
+        toast(editing ? 'StoryPin actualizado.' : 'StoryPin publicado.', 'ok');
       })
-      .catch(function () { toast('Sin conexión.', 'bad'); })
-      .then(function () { btn.disabled = false; });
+      .catch(function (er) { toast(er.message === 'Failed to fetch' ? 'Sin conexión.' : er.message, 'bad'); })
+      .then(function () { btn.disabled = false; peLen(); });
   }
-  document.addEventListener('click', function (e) {
-    if (pinOpen() && !e.target.closest('#pin-editor') && !e.target.closest('.story-layer')) cancelDraft();
-    if (!e.target.closest('.story-pin')) document.querySelectorAll('.story-pin.is-open').forEach(function (p) { p.classList.remove('is-open'); });
-  });
-  function loadPinsForPage(i) {
+  function findPinPage(id) { var el = document.querySelector('.story-pin[data-id="' + id + '"]'); return el ? +el.closest('.story-layer').dataset.pageIndex : cur; }
+
+  /* Mostrar pines */
+  function loadPinsForPage(i, newId) {
     if (loadedPins[i] === true) return; loadedPins[i] = true;
     fetch('/api/story-pins/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/' + i, { headers: authH() })
       .then(function (r) { return r.ok ? r.json() : { pins: [] }; })
-      .then(function (d) { renderPins(i, d.pins || []); }).catch(function () {});
+      .then(function (d) { renderPins(i, d.pins || [], newId); }).catch(function () { loadedPins[i] = false; });
   }
-  function renderPins(i, pins) {
+  function renderPins(i, pins, newId) {
     var layer = document.querySelector('.story-layer[data-page-index="' + i + '"]'); if (!layer) return;
     layer.querySelectorAll('.story-pin').forEach(function (el) { el.remove(); });
+    if (openCard && openCard.layer === layer) closeCard();
     var u = me();
     pins.forEach(function (pin) {
-      var el = document.createElement('div');
-      el.className = 'story-pin' + (pin.message ? ' has-message' : '') + (pin.likes > 2 ? ' popular' : '');
-      el.style.left = (pin.x * 100) + '%'; el.style.top = (pin.y * 100) + '%';
-      var name = pin.username || 'Anónimo', av = pin.avatar && /^(https?:\/\/|\/)/.test(pin.avatar) ? '<img src="' + esc(pin.avatar) + '" alt="">' : esc(name.slice(0, 2).toUpperCase());
-      var own = u.id && pin.user_id === u.id, admin = u.role === 'admin';
-      el.innerHTML = '<span class="pin-bubble">' + (pin.emoji ? '<span class="pin-emoji">' + esc(pin.emoji) + '</span>' : '<span class="pin-avatar" style="background:' + colorFor(name) + '">' + av + '</span>') + '</span>' +
-        '<div class="pin-card"><div class="pc-user"><a class="pc-user-link" href="/perfil/' + encodeURIComponent(name) + '">' + esc(name) + '</a></div>' +
-        (pin.message ? '<div class="pc-text">' + esc(pin.message) + '</div>' : pin.emoji ? '<div class="pc-text">' + esc(pin.emoji) + '</div>' : '') +
-        '<div class="pc-footer"><button type="button" data-a="like"><i class="ti ti-heart" aria-hidden="true"></i><span>' + (pin.likes || 0) + '</span></button><span>' +
-        (own ? '<button type="button" data-a="edit" aria-label="Editar"><i class="ti ti-pencil" aria-hidden="true"></i></button>' : '') +
-        (own || admin ? '<button type="button" data-a="del" aria-label="Eliminar"><i class="ti ti-trash" aria-hidden="true"></i></button>' : '') + '</span></div></div>';
-      el.addEventListener('click', function (e) {
-        e.stopPropagation();
-        var a = e.target.closest('[data-a]');
-        if (!a) { el.classList.toggle('is-open'); return; }
-        if (a.dataset.a === 'like') { if (!token()) { toast('Inicia sesión para dar me gusta.'); return; } fetch('/api/story-pins/' + pin.id + '/like', { method: 'POST', headers: authH() }).then(function (r) { return r.json(); }).then(function (d) { if (d.success) a.querySelector('span').textContent = d.likes; }).catch(function () {}); }
-        if (a.dataset.a === 'edit') { editingId = pin.id; editPin = null; showEditor(null, null, pin.message || '', pin.emoji || ''); }
-        if (a.dataset.a === 'del') { if (!confirm('¿Eliminar este StoryPin?')) return; fetch('/api/story-pins/' + pin.id, { method: 'DELETE', headers: authH() }).then(function (r) { return r.json(); }).then(function (d) { if (d.success) el.remove(); else toast(d.error || 'No se pudo eliminar.', 'bad'); }).catch(function () { toast('Sin conexión.', 'bad'); }); }
-      });
-      layer.appendChild(el);
+      var name = pin.username || 'Anónimo', mine = !!u.id && pin.user_id === u.id;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'story-pin' + (pin.likes >= 3 ? ' is-popular' : '') + (mine ? ' is-mine' : '') + (newId && pin.id === newId ? ' is-new' : '');
+      b.dataset.id = pin.id;
+      b.style.left = (pin.x * 100) + '%'; b.style.top = (pin.y * 100) + '%';
+      b.setAttribute('aria-label', 'StoryPin de ' + name + (pin.message ? ': ' + pin.message : pin.emoji ? ' ' + pin.emoji : ''));
+      var face = pin.emoji && !pin.message ? '<span class="pin-face is-emoji">' + esc(pin.emoji) + '</span>'
+        : '<span class="pin-face" style="background:' + colorFor(name) + '">' + (pin.avatar && /^(https?:\/\/|\/)/.test(pin.avatar) ? '<img src="' + esc(pin.avatar) + '" alt="">' : esc(name.slice(0, 2).toUpperCase())) + '</span>';
+      b.innerHTML = face + (pin.message ? '<span class="pin-dot" aria-hidden="true"></span>' : '');
+      b.addEventListener('click', function (e) { e.stopPropagation(); if (inkMode) return; openPinCard(layer, b, pin, mine); });
+      layer.appendChild(b);
+    });
+    pinCounts[i] = pins.length;
+    updatePinBadge();
+  }
+  function closeCard() { if (openCard) { openCard.el.remove(); openCard = null; } }
+  function openPinCard(layer, btn, pin, mine) {
+    var same = openCard && openCard.id === pin.id; closeCard(); if (same) return;
+    var u = me(), admin = u.role === 'admin' || u.role === 'moderator' || u.isOwner;
+    var c = document.createElement('div');
+    c.className = 'pin-card'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-label', 'StoryPin');
+    c.style.left = btn.style.left; c.style.top = btn.style.top;
+    var name = pin.username || 'Anónimo';
+    c.innerHTML = '<div class="pc-head"><a href="/perfil/' + encodeURIComponent(name) + '">' + esc(name) + '</a><span>' + esc(ago(pin.created_at)) + '</span>' + (pin.visibility === 'private' ? '<span>· solo tú</span>' : '') + '</div>' +
+      (pin.message ? '<div class="pc-text">' + esc(pin.message) + (pin.emoji ? ' ' + esc(pin.emoji) : '') + '</div>' : '<div class="pc-text is-emoji">' + esc(pin.emoji || '') + '</div>') +
+      '<div class="pc-foot"><button type="button" data-a="like" aria-pressed="' + (!!pin.liked_by_me) + '" aria-label="Me gusta"><i class="ti ti-heart' + (pin.liked_by_me ? '-filled' : '') + '" aria-hidden="true"></i><span>' + (pin.likes || 0) + '</span></button><span class="sp"></span>' +
+      (mine ? '<button type="button" data-a="edit" aria-label="Editar"><i class="ti ti-pencil" aria-hidden="true"></i></button>' : '') +
+      (mine || admin ? '<button type="button" data-a="del" aria-label="Borrar"><i class="ti ti-trash" aria-hidden="true"></i></button>' : '') + '</div>';
+    layer.appendChild(c);
+    // Si no cabe por arriba, la tarjeta se abre por debajo del pin
+    if (c.getBoundingClientRect().top < (document.body.classList.contains('ui-off') ? 8 : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rd-top'), 10) + 8)) c.classList.add('below');
+    openCard = { el: c, id: pin.id, layer: layer };
+    c.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var a = e.target.closest('[data-a]'); if (!a) return;
+      if (a.dataset.a === 'like') {
+        if (!token()) { toast('Inicia sesión para dar me gusta.'); return; }
+        fetch('/api/story-pins/' + pin.id + '/like', { method: 'POST', headers: authH() }).then(function (r) { return r.json(); })
+          .then(function (d) { if (!d.success) return; pin.liked_by_me = d.liked; pin.likes = d.likes; a.setAttribute('aria-pressed', String(d.liked)); a.innerHTML = '<i class="ti ti-heart' + (d.liked ? '-filled' : '') + '" aria-hidden="true"></i><span>' + d.likes + '</span>'; btn.classList.toggle('is-popular', d.likes >= 3); })
+          .catch(function () { toast('Sin conexión.', 'bad'); });
+      }
+      if (a.dataset.a === 'edit') { closeCard(); editingId = pin.id; editPin = null; var r = btn.getBoundingClientRect(); showEditor(r.left + r.width / 2, r.top + r.height / 2, pin.message || '', pin.emoji || '', pin.visibility); }
+      if (a.dataset.a === 'del') {
+        if (!a.classList.contains('is-danger')) { a.classList.add('is-danger'); a.innerHTML = '<i class="ti ti-trash" aria-hidden="true"></i>¿Borrar?'; return; }
+        fetch('/api/story-pins/' + pin.id, { method: 'DELETE', headers: authH() }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo borrar.'); }); })
+          .then(function () { closeCard(); btn.remove(); var p = +layer.dataset.pageIndex; pinCounts[p] = Math.max(0, (pinCounts[p] || 1) - 1); updatePinBadge(); toast('StoryPin borrado.', 'ok'); })
+          .catch(function (er) { toast(er.message, 'bad'); });
+      }
     });
   }
+  document.addEventListener('click', function (e) {
+    if (pinOpen() && !e.target.closest('#pin-editor') && !e.target.closest('.story-layer')) cancelDraft();
+    if (openCard && !e.target.closest('.pin-card, .story-pin')) closeCard();
+  });
+  setPinsVisible(settings.pins !== false);
 
   init();
 })();

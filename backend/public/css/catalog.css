@@ -1,0 +1,79 @@
+/* KamiTales — Buscar y Géneros. Sobre kami.css (tokens --k-*). */
+[hidden] { display: none !important; }
+.ct { display: grid; gap: var(--k-6); padding-bottom: var(--k-12); }
+.ct .k-count:empty { display: none; }
+.ct .k-tab { display: inline-flex; align-items: center; gap: 6px; }
+.ct-hero { display: grid; gap: var(--k-4); padding-top: var(--k-4); }
+.ct-hero h1 { margin: 0; font: 900 clamp(2.2rem, 6vw, 3.4rem)/.92 var(--k-font-display); text-transform: uppercase; }
+.ct-hero p { margin: 0; color: var(--k-text-2); max-width: 60ch; }
+
+/* Campo de búsqueda grande */
+.ct-search { position: relative; max-width: 760px; }
+.ct-search > .ti { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 22px; color: var(--k-text-3); pointer-events: none; }
+.ct-search input { width: 100%; min-height: 58px; padding: 0 52px 0 54px; border-radius: 16px; border: 1px solid var(--k-line-2); background: var(--k-surface-1); color: var(--k-text); font: 500 var(--k-fs-lg) var(--k-font-body); outline: none; transition: border-color var(--k-t-fast), box-shadow var(--k-t-fast); }
+.ct-search input::placeholder { color: var(--k-text-3); }
+.ct-search input:focus { border-color: var(--k-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--k-accent) 18%, transparent), var(--k-glow); }
+.ct-search input::-webkit-search-cancel-button { display: none; }
+.ct-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 12px; border: 0; background: none; color: var(--k-text-3); font-size: 20px; cursor: pointer; display: grid; place-items: center; }
+.ct-clear:hover { color: var(--k-text); background: rgb(var(--k-ink) / .06); }
+.ct-recent { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; font-size: var(--k-fs-sm); color: var(--k-text-3); }
+.ct-recent .k-chip i { font-size: 14px; }
+
+/* Barra de filtros */
+.ct-filters { display: flex; flex-wrap: wrap; gap: var(--k-3) var(--k-4); align-items: center; }
+.ct-filters .k-select { min-height: 38px; width: auto; padding-right: 32px; font-size: var(--k-fs-sm); }
+.ct-filters label.k-visually-hidden + .k-select { margin: 0; }
+.ct-genres { display: flex; gap: var(--k-2); overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.ct-genres .k-chip { flex: none; }
+.ct-genres .k-chip small { color: var(--k-text-3); font-weight: 600; margin-left: 2px; }
+.ct-genres .k-chip[aria-pressed="true"] small { color: inherit; opacity: .8; }
+.ct-active { display: flex; flex-wrap: wrap; gap: var(--k-2); align-items: center; font-size: var(--k-fs-sm); color: var(--k-text-2); }
+
+/* Cabecera de resultados */
+.ct-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--k-2) var(--k-4); }
+.ct-head h2 { margin: 0; font: 800 var(--k-fs-xl)/1 var(--k-font-display); text-transform: uppercase; display: flex; align-items: baseline; gap: var(--k-2); }
+.ct-head h2 small { font: 600 var(--k-fs-sm) var(--k-font-body); text-transform: none; color: var(--k-text-3); }
+.ct-sec { display: grid; gap: var(--k-4); }
+.ct-more { justify-self: center; }
+.ct-count { color: var(--k-text-3); font-size: var(--k-fs-sm); }
+
+/* Portadas */
+.ct-ph { position: absolute; inset: 0; display: grid; place-items: center; font: 900 2rem/1 var(--k-font-display); text-transform: uppercase; color: rgb(var(--k-ink) / .35); background: linear-gradient(150deg, color-mix(in srgb, var(--_c, var(--k-accent)) 35%, var(--k-surface-2)), var(--k-surface-2)); }
+.k-cover mark, .ct-person mark, .ct-comm mark { background: color-mix(in srgb, var(--k-accent) 28%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+/* Personas y comunidades */
+.ct-people, .ct-comms { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.ct-person, .ct-comm { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: var(--k-3); align-items: center; padding: var(--k-4); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); background: var(--k-surface-1); color: inherit; text-decoration: none; transition: border-color var(--k-t-fast), transform var(--k-t-fast); min-width: 0; }
+.ct-person:hover, .ct-comm:hover { border-color: var(--k-accent-line); transform: translateY(-2px); }
+.ct-person .k-avatar { --_s: 52px; }
+.ct-comm__img { width: 52px; height: 52px; border-radius: 14px; overflow: hidden; background: var(--k-surface-2) center / cover no-repeat; display: grid; place-items: center; font-weight: 800; color: var(--k-text-3); }
+.ct-person b, .ct-comm b { display: block; font-size: var(--k-fs-md); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-person p, .ct-comm p { margin: 2px 0 0; color: var(--k-text-2); font-size: var(--k-fs-sm); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ct-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: var(--k-fs-xs); color: var(--k-text-3); }
+
+/* Tarjetas de género */
+.ct-ggrid { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.ct-gcard { position: relative; isolation: isolate; overflow: hidden; display: grid; align-content: end; gap: 4px; min-height: 168px; padding: var(--k-4); border-radius: 18px; border: 1px solid var(--k-line); color: inherit; text-decoration: none;
+  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--_g) 34%, transparent), transparent 60%), var(--k-surface-1); transition: transform var(--k-t-fast), border-color var(--k-t-fast), box-shadow var(--k-t-fast); }
+.ct-gcard:hover, .ct-gcard:focus-visible { transform: translateY(-3px); border-color: color-mix(in srgb, var(--_g) 60%, transparent); box-shadow: 0 18px 40px -24px var(--_g); outline: none; }
+.ct-gcard b { font: 900 1.7rem/1 var(--k-font-display); text-transform: uppercase; letter-spacing: .01em; position: relative; }
+.ct-gcard span { font-size: var(--k-fs-xs); color: var(--k-text-2); position: relative; }
+.ct-fan { position: absolute; z-index: -1; right: 10px; top: 12px; width: 120px; height: 120px; }
+.ct-fan i { position: absolute; top: 0; width: 64px; aspect-ratio: 2 / 3; border-radius: 8px; background: var(--k-surface-2) center / cover no-repeat; box-shadow: 0 10px 24px -8px rgb(0 0 0 / .6); border: 1px solid rgb(255 255 255 / .1); transition: transform .25s; }
+.ct-fan i:nth-child(1) { right: 0; transform: rotate(8deg); }
+.ct-fan i:nth-child(2) { right: 28px; transform: rotate(-2deg); top: 6px; }
+.ct-fan i:nth-child(3) { right: 56px; transform: rotate(-12deg); top: 14px; }
+.ct-gcard:hover .ct-fan i:nth-child(1) { transform: rotate(12deg) translateY(-4px); }
+.ct-gcard:hover .ct-fan i:nth-child(3) { transform: rotate(-16deg) translateY(-4px); }
+.ct-fan i.is-empty { background: linear-gradient(150deg, color-mix(in srgb, var(--_g) 40%, var(--k-surface-2)), var(--k-surface-2)); }
+
+/* Cabecera de un género */
+.ct-ghero { position: relative; isolation: isolate; overflow: hidden; display: grid; gap: var(--k-3); padding: var(--k-8) var(--k-6); border-radius: 24px; border: 1px solid color-mix(in srgb, var(--_g) 40%, transparent);
+  background: radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--_g) 30%, transparent), transparent 60%), var(--k-surface-1); }
+.ct-ghero .ct-fan { width: 220px; height: 200px; right: 24px; top: 24px; opacity: .9; }
+.ct-ghero .ct-fan i { width: 110px; }
+.ct-ghero .ct-fan i:nth-child(2) { right: 50px; } .ct-ghero .ct-fan i:nth-child(3) { right: 100px; }
+.ct-ghero h1 { margin: 0; font: 900 clamp(2.4rem, 8vw, 4.4rem)/.9 var(--k-font-display); text-transform: uppercase; max-width: 12ch; }
+.ct-ghero p { margin: 0; color: var(--k-text-2); }
+@media (max-width: 640px) { .ct-ghero .ct-fan { opacity: .35; } .ct-ghero { padding: var(--k-6) var(--k-5); } }
+.ct-back { justify-self: start; }

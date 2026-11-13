@@ -414,6 +414,7 @@ app.use('/api/settings',     settingsRoutes);
 app.use('/api/profile',      profileRoutes);
 app.use('/api/library',      libraryRoutes);
 app.use('/api/manga',        mangaRoutes);
+app.use('/api/search',       require('./routes/routes-search'));
 app.use('/api/chapters',     chapterRoutes);
 app.use('/api/premium',      premiumRoutes);
 app.use('/api/moderation',   moderationRoutes);

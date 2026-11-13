@@ -443,7 +443,7 @@
     if (!syn) $('ob-syn').style.color = 'var(--k-text-3)';
     requestAnimationFrame(function () { $('ob-syn-more').hidden = $('ob-syn').scrollHeight <= $('ob-syn').clientHeight + 4; });
     var g = (m.genres || []).map(fix), tags = (m.tags || []).map(fix);
-    $('ob-genres').innerHTML = g.map(function (x) { return '<a class="k-chip" href="/?genero=' + encodeURIComponent(x) + '">' + esc(x) + '</a>'; }).join('') + tags.map(function (x) { return '<span class="k-chip" style="cursor:default">#' + esc(x) + '</span>'; }).join('');
+    $('ob-genres').innerHTML = g.map(function (x) { return '<a class="k-chip" href="/generos?g=' + encodeURIComponent(x) + '">' + esc(x) + '</a>'; }).join('') + tags.map(function (x) { return '<a class="k-chip" href="/buscar?q=' + encodeURIComponent(x) + '&amp;tipo=works">#' + esc(x) + '</a>'; }).join('');
     $('sec-genres').hidden = !g.length && !tags.length;
     var kv = [['Formato', TYPE[m.type] || m.type], ['Estado', STATE[m.status] || m.status], ['Idioma', LANG[m.language] || m.language], ['Edad', AGE[m.contentRating] || 'Todos los públicos'], ['Origen', ORIGIN[m.origin] || 'Obra original']];
     if (m.demographicTarget) kv.push(['Demografía', m.demographicTarget.charAt(0).toUpperCase() + m.demographicTarget.slice(1)]);

@@ -105,15 +105,30 @@ router.get('/', async (req, res) => {
         if (req.query.format === 'novel') sql += ` AND type = 'novel'`;
         else if (req.query.format === 'comic') sql += ` AND type <> 'novel'`;
         if (status) { sql += ` AND status = $${idx++}`; params.push(status); }
-        if (genre) { sql += ` AND $${idx++} = ANY(genres)`; params.push(genre); }
-        if (q) { sql += ` AND (title ILIKE $${idx} OR EXISTS(SELECT 1 FROM unnest(alternative_titles) t WHERE t ILIKE $${idx}))`; params.push(`%${q}%`); idx++; }
+        // Géneros: genre=Acción (uno) o genres=Acción,Misterio (todos a la vez)
+        const genreList = []
+            .concat(genre ? [genre] : [])
+            .concat(typeof req.query.genres === 'string' ? req.query.genres.split(',') : Array.isArray(req.query.genres) ? req.query.genres : [])
+            .map(g => String(g).trim()).filter(Boolean).slice(0, 10);
+        if (genreList.length) { sql += ` AND genres @> $${idx++}::text[]`; params.push(genreList); }
+        // Texto: título, títulos alternativos, autor y etiquetas, sin distinguir mayúsculas ni tildes
+        if (q && String(q).trim()) {
+            const { norm, N } = require('./routes-search');
+            sql += ` AND (${N('title')} LIKE $${idx} OR ${N("COALESCE(author, '')")} LIKE $${idx}
+                     OR EXISTS(SELECT 1 FROM unnest(COALESCE(alternative_titles, '{}')) t WHERE ${N('t')} LIKE $${idx})
+                     OR EXISTS(SELECT 1 FROM unnest(COALESCE(tags, '{}')) t WHERE ${N('t')} LIKE $${idx})
+                     OR EXISTS(SELECT 1 FROM unnest(COALESCE(genres, '{}')) t WHERE ${N('t')} LIKE $${idx}))`;
+            params.push('%' + norm(String(q).trim().slice(0, 100)).replace(/[\\%_]/g, m => '\\' + m) + '%'); idx++;
+        }
 
         switch (sort) {
-            case 'rating': sql += ' ORDER BY rating DESC'; break;
-            case 'latest': sql += ' ORDER BY updated_at DESC'; break;
-            case 'popular': sql += ' ORDER BY total_reads DESC'; break;
+            case 'rating': sql += ' ORDER BY rating DESC NULLS LAST, total_reads DESC NULLS LAST'; break;
+            case 'latest': sql += ' ORDER BY updated_at DESC NULLS LAST'; break;
+            case 'new': sql += ' ORDER BY created_at DESC NULLS LAST'; break;
+            case 'chapters': sql += ' ORDER BY total_chapters DESC NULLS LAST'; break;
+            case 'popular': sql += ' ORDER BY total_reads DESC NULLS LAST'; break;
             case 'az': sql += ' ORDER BY title ASC'; break;
-            default: sql += ' ORDER BY total_reads DESC';
+            default: sql += ' ORDER BY total_reads DESC NULLS LAST';
         }
 
         const countResult = await pool.query(`SELECT COUNT(*) FROM (${sql}) AS sub`, params);
@@ -134,7 +149,7 @@ router.get('/', async (req, res) => {
                 id: m.id, title: m.title, cover: m.cover,
                 type: m.type, status: m.status, genres: m.genres,
                 rating: parseFloat(m.rating), totalChapters: m.total_chapters,
-                updatedAt: m.updated_at,
+                updatedAt: m.updated_at, author: m.author || '', totalReads: m.total_reads || 0,
             })),
             pagination: { page: pageNum, limit: limitNum, total, totalPages },
         });
@@ -217,13 +232,17 @@ router.get('/search', async (req, res) => {
 
 router.get('/genres', async (req, res) => {
     try {
+        // Por género: cuántas obras, cuántas son novela y las portadas de las 3 más leídas (para la página Géneros)
         const result = await pool.query(`
-            SELECT unnest(genres) AS name, COUNT(*) AS count
-            FROM mangas
-            GROUP BY name
-            ORDER BY count DESC
+            SELECT g.name, COUNT(*)::int AS count,
+                   COUNT(*) FILTER (WHERE m.type = 'novel')::int AS novels,
+                   (ARRAY_AGG(m.cover ORDER BY m.total_reads DESC NULLS LAST) FILTER (WHERE COALESCE(m.cover, '') <> ''))[1:3] AS covers
+            FROM mangas m CROSS JOIN LATERAL unnest(COALESCE(m.genres, '{}')) AS g(name)
+            WHERE g.name <> ''
+            GROUP BY g.name
+            ORDER BY count DESC, g.name
         `);
-        res.json({ genres: result.rows });
+        res.json({ genres: result.rows.map(r => ({ name: r.name, count: r.count, novels: r.novels, comics: r.count - r.novels, covers: r.covers || [] })) });
     } catch (err) {
         res.status(500).json({ error: 'Error al obtener géneros' });
     }

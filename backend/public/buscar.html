@@ -2,66 +2,241 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Buscar · KamiTales</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <link rel="stylesheet" href="/css/common.css">
-  <style>
-    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-    body { background:var(--k-bg); color:var(--k-text); font-family:'Plus Jakarta Sans',sans-serif; }
-    .buscar-layout { display: flex; max-width: 800px; margin: 0 auto; min-height: calc(100vh - 64px); flex-direction: column; }
-    .buscar-header { padding: 20px 24px; border-bottom: 1px solid rgb(var(--k-ink) / 0.06); }
-    .buscar-query { font-size: 20px; font-weight: 700; color: var(--k-text); }
-    .buscar-result-count { font-size: 13px; color: rgb(var(--k-ink) / 0.3); margin-top: 4px; }
-    .buscar-tabs { display: flex; border-bottom: 1px solid rgb(var(--k-ink) / 0.06); }
-    .buscar-tab { flex: 1; padding: 14px 0; text-align: center; font-size: 13px; font-weight: 500; color: rgb(var(--k-ink) / 0.4); cursor: pointer; border-bottom: 2px solid transparent; transition: .15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
-    .buscar-tab:hover { color: var(--k-text); background: rgb(var(--k-ink) / 0.03); }
-    .buscar-tab.active { color: var(--k-text); border-bottom-color: var(--k-accent); font-weight: 600; }
-    .buscar-content { padding: 24px; flex: 1; }
-    .buscar-empty { text-align: center; padding: 60px 20px; color: rgb(var(--k-ink) / 0.15); font-size: 14px; }
-    .buscar-empty i { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.3; }
-  </style>
+  <meta name="description" content="Busca cómics, novelas, autores y comunidades en KamiTales.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
+  <link rel="stylesheet" href="/css/catalog.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/catalog.js"></script>
 </head>
 <body>
+<main class="k-page ct" id="k-main">
+  <header class="ct-hero">
+    <h1 id="ct-title">Buscar</h1>
+    <form class="ct-search" id="ct-form" role="search">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <label class="k-visually-hidden" for="ct-q">Buscar obras, autores y comunidades</label>
+      <input id="ct-q" type="search" name="q" placeholder="Título, autor, etiqueta, persona o comunidad…" autocomplete="off" spellcheck="false" enterkeyhint="search" maxlength="100">
+      <button type="button" class="ct-clear" id="ct-clear" aria-label="Borrar la búsqueda" hidden><i class="ti ti-x" aria-hidden="true"></i></button>
+    </form>
+    <div class="ct-recent" id="ct-recent" hidden></div>
+  </header>
 
-  <div class="buscar-layout">
-    <div class="buscar-header">
-      <div class="buscar-query" id="buscar-query">—</div>
-      <div class="buscar-result-count" id="buscar-count">0 resultados</div>
-    </div>
-    <div class="buscar-tabs">
-      <button class="buscar-tab active" data-tab="top" onclick="switchTab('top')">Destacados</button>
-      <button class="buscar-tab" data-tab="latest" onclick="switchTab('latest')">Más recientes</button>
-      <button class="buscar-tab" data-tab="people" onclick="switchTab('people')">Personas</button>
-      <button class="buscar-tab" data-tab="photos" onclick="switchTab('photos')">Fotos</button>
-      <button class="buscar-tab" data-tab="videos" onclick="switchTab('videos')">Videos</button>
-    </div>
-    <div class="buscar-content" id="buscar-content">
-      <div class="buscar-empty"><i class="ti ti-search"></i>Resultados de búsqueda aparecerán aquí</div>
-    </div>
+  <div class="k-tabs" role="tablist" aria-label="Tipo de resultado" id="ct-tabs" hidden>
+    <button class="k-tab" role="tab" data-tab="all" aria-selected="true">Todo</button>
+    <button class="k-tab" role="tab" data-tab="works" aria-selected="false">Obras <span class="k-count" data-n="works"></span></button>
+    <button class="k-tab" role="tab" data-tab="people" aria-selected="false">Personas <span class="k-count" data-n="people"></span></button>
+    <button class="k-tab" role="tab" data-tab="communities" aria-selected="false">Comunidades <span class="k-count" data-n="communities"></span></button>
   </div>
 
-  <script>
-    function qs(name) { var m = location.search.match(new RegExp('[?&]' + name + '=([^&]+)')); return m ? decodeURIComponent(m[1]) : ''; }
+  <!-- Filtros de obras (pestaña Obras y catálogo sin búsqueda) -->
+  <section class="ct-sec" id="ct-filters-wrap" aria-label="Filtros">
+    <div class="ct-filters">
+      <div class="k-segmented" role="group" aria-label="Formato" id="ct-format">
+        <button type="button" value="all" aria-pressed="true">Todo</button>
+        <button type="button" value="comic" aria-pressed="false">Cómics</button>
+        <button type="button" value="novel" aria-pressed="false">Novelas</button>
+      </div>
+      <label class="k-visually-hidden" for="ct-status">Estado</label>
+      <select class="k-select" id="ct-status">
+        <option value="">Cualquier estado</option>
+        <option value="ongoing">En curso</option>
+        <option value="completed">Completas</option>
+        <option value="hiatus">En pausa</option>
+      </select>
+      <label class="k-visually-hidden" for="ct-sort">Orden</label>
+      <select class="k-select" id="ct-sort">
+        <option value="relevance">Más relevantes</option>
+        <option value="popular">Más leídas</option>
+        <option value="rating">Mejor valoradas</option>
+        <option value="latest">Actualizadas</option>
+        <option value="new">Más nuevas</option>
+        <option value="az">A–Z</option>
+      </select>
+      <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ct-reset" hidden><i class="ti ti-filter-off" aria-hidden="true"></i>Quitar filtros</button>
+    </div>
+    <div class="ct-genres" id="ct-genres" role="group" aria-label="Géneros"></div>
+  </section>
 
-    var query = qs('q');
-    if (query) {
-      document.getElementById('buscar-query').textContent = query;
-      document.getElementById('buscar-count').textContent = 'Mostrando resultados';
+  <div id="ct-results" aria-live="polite"></div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var K = window.KCAT, $ = function (id) { return document.getElementById(id); };
+  var RKEY = 'kt_recent_search';
+  var S = { q: '', tab: 'all', format: 'all', status: '', sort: 'relevance', genres: [], page: 1 };
+  var GENRES = [], seq = 0, timer = null;
+
+  /* ── Estado ⇄ dirección (se puede compartir y volver atrás) ── */
+  function readURL() {
+    var p = new URLSearchParams(location.search);
+    S.q = (p.get('q') || '').trim().slice(0, 100);
+    S.tab = ['all', 'works', 'people', 'communities'].indexOf(p.get('tipo')) >= 0 ? p.get('tipo') : 'all';
+    S.format = ['comic', 'novel'].indexOf(p.get('formato')) >= 0 ? p.get('formato') : 'all';
+    S.status = ['ongoing', 'completed', 'hiatus'].indexOf(p.get('estado')) >= 0 ? p.get('estado') : '';
+    S.sort = ['relevance', 'popular', 'rating', 'latest', 'new', 'az'].indexOf(p.get('orden')) >= 0 ? p.get('orden') : (S.q ? 'relevance' : 'popular');
+    S.genres = (p.get('genero') || '').split(',').map(function (g) { return g.trim(); }).filter(Boolean).slice(0, 10);
+    if (!S.q && S.sort === 'relevance') S.sort = 'popular';
+  }
+  function writeURL(push) {
+    var p = new URLSearchParams();
+    if (S.q) p.set('q', S.q);
+    if (S.q && S.tab !== 'all') p.set('tipo', S.tab);
+    if (S.format !== 'all') p.set('formato', S.format);
+    if (S.status) p.set('estado', S.status);
+    if (S.sort !== (S.q ? 'relevance' : 'popular')) p.set('orden', S.sort);
+    if (S.genres.length) p.set('genero', S.genres.join(','));
+    var url = location.pathname + (p.toString() ? '?' + p.toString() : '');
+    if (url !== location.pathname + location.search) history[push ? 'pushState' : 'replaceState'](null, '', url);
+    var nav = document.getElementById('k-nav-q'); if (nav) nav.value = S.q;
+  }
+  function hasFilters() { return S.format !== 'all' || !!S.status || S.genres.length > 0; }
+
+  /* ── Búsquedas recientes (solo en este navegador) ── */
+  function recent() { try { return JSON.parse(localStorage.getItem(RKEY) || '[]').slice(0, 6); } catch (e) { return []; } }
+  function remember(q) {
+    if (!q || q.length < 2) return;
+    var r = recent().filter(function (x) { return K.norm(x) !== K.norm(q); }); r.unshift(q);
+    try { localStorage.setItem(RKEY, JSON.stringify(r.slice(0, 6))); } catch (e) { /* nada */ }
+  }
+  function paintRecent() {
+    var r = recent(), box = $('ct-recent');
+    box.hidden = !!S.q || !r.length;
+    if (box.hidden) return;
+    box.innerHTML = '<span>Recientes:</span>' + r.map(function (x) { return '<button type="button" class="k-chip" data-recent="' + K.esc(x) + '"><i class="ti ti-history" aria-hidden="true"></i>' + K.esc(x) + '</button>'; }).join('') +
+      '<button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ct-recent-clear">Borrar</button>';
+  }
+  $('ct-recent').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-recent]'); if (b) { $('ct-q').value = b.dataset.recent; submit(true); return; }
+    if (e.target.closest('#ct-recent-clear')) { try { localStorage.removeItem(RKEY); } catch (er) { /* nada */ } paintRecent(); }
+  });
+
+  /* ── Controles ── */
+  function paintControls() {
+    $('ct-q').value = S.q; $('ct-clear').hidden = !S.q;
+    $('ct-title').textContent = S.q ? 'Resultados' : 'Buscar';
+    document.title = (S.q ? '«' + S.q + '» · ' : '') + 'Buscar · KamiTales';
+    $('ct-tabs').hidden = !S.q;
+    Array.prototype.forEach.call($('ct-tabs').querySelectorAll('[data-tab]'), function (t) { t.setAttribute('aria-selected', String(t.dataset.tab === S.tab)); });
+    // Los filtros de obras se ven sin búsqueda (catálogo) o en la pestaña Obras
+    $('ct-filters-wrap').hidden = !!S.q && S.tab !== 'works';
+    Array.prototype.forEach.call($('ct-format').children, function (b) { b.setAttribute('aria-pressed', String(b.value === S.format)); });
+    $('ct-status').value = S.status;
+    $('ct-sort').querySelector('[value="relevance"]').hidden = !S.q;
+    $('ct-sort').value = S.sort;
+    $('ct-reset').hidden = !hasFilters();
+    paintGenres(); paintRecent();
+  }
+  function paintGenres() {
+    $('ct-genres').innerHTML = GENRES.map(function (g) {
+      var on = S.genres.indexOf(g.name) >= 0;
+      return '<button type="button" class="k-chip" aria-pressed="' + on + '" data-genre="' + K.esc(g.name) + '">' + K.esc(g.name) + ' <small>' + g.count + '</small></button>';
+    }).join('');
+  }
+  $('ct-form').addEventListener('submit', function (e) { e.preventDefault(); submit(true); });
+  $('ct-q').addEventListener('input', function () {
+    $('ct-clear').hidden = !this.value;
+    clearTimeout(timer); timer = setTimeout(function () { submit(false); }, 320);
+  });
+  $('ct-clear').addEventListener('click', function () { $('ct-q').value = ''; submit(true); $('ct-q').focus(); });
+  function submit(push) {
+    clearTimeout(timer);
+    var q = $('ct-q').value.trim().slice(0, 100);
+    if (q === S.q && !push) return;
+    var was = S.q; S.q = q; S.page = 1;
+    if (!q) { S.tab = 'all'; if (S.sort === 'relevance') S.sort = 'popular'; }
+    else if (!was && S.sort === 'popular') S.sort = 'relevance';
+    if (push) remember(q);
+    writeURL(push); run();
+  }
+  $('ct-tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; S.tab = t.dataset.tab; S.page = 1; writeURL(true); run(); });
+  $('ct-format').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; S.format = b.value; S.page = 1; writeURL(false); run(); });
+  $('ct-status').addEventListener('change', function () { S.status = this.value; S.page = 1; writeURL(false); run(); });
+  $('ct-sort').addEventListener('change', function () { S.sort = this.value; S.page = 1; writeURL(false); run(); });
+  $('ct-genres').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-genre]'); if (!b) return;
+    var g = b.dataset.genre, i = S.genres.indexOf(g);
+    if (i >= 0) S.genres.splice(i, 1); else S.genres.push(g);
+    S.page = 1; writeURL(false); run();
+  });
+  $('ct-reset').addEventListener('click', function () { S.format = 'all'; S.status = ''; S.genres = []; S.page = 1; writeURL(false); run(); });
+  window.addEventListener('popstate', function () { readURL(); run(); });
+
+  /* ── Resultados ── */
+  var out = $('ct-results');
+  function head(title, n, more) { return '<div class="ct-head"><h2>' + title + (n != null ? ' <small>' + K.nf.format(n) + '</small>' : '') + '</h2>' + (more || '') + '</div>'; }
+  function run() {
+    paintControls();
+    var my = ++seq;
+    if (!S.q || S.tab === 'works') return runWorks(my, false);
+    out.innerHTML = '<div class="k-grid k-grid--covers">' + K.skeleton(8) + '</div>';
+    K.getJSON('/api/search?q=' + encodeURIComponent(S.q) + '&type=' + S.tab + (S.tab === 'all' ? '' : '&limit=24'))
+      .then(function (d) { if (my !== seq) return; counts(d); renderSearch(d); })
+      .catch(function () { if (my === seq) out.innerHTML = K.empty('ti-wifi-off', 'No se pudo buscar', 'Comprueba tu conexión y vuelve a intentarlo.'); });
+  }
+  function counts(d) {
+    ['works', 'people', 'communities'].forEach(function (k) { var el = $('ct-tabs').querySelector('[data-n="' + k + '"]'); if (d[k]) el.textContent = d[k].total ? K.nf.format(d[k].total) : ''; });
+  }
+  function renderSearch(d) {
+    var q = S.q, html = '';
+    var w = d.works || { items: [], total: 0 }, p = d.people || { items: [], total: 0 }, c = d.communities || { items: [], total: 0 };
+    if (S.tab === 'all') {
+      if (!w.total && !p.total && !c.total) { out.innerHTML = noResults(); return; }
+      if (w.total) html += '<section class="ct-sec">' + head('Obras', w.total, w.total > w.items.length ? '<button type="button" class="k-btn k-btn--quiet k-btn--sm" data-go="works">Ver todas <i class="ti ti-arrow-right" aria-hidden="true"></i></button>' : '') + '<div class="k-grid k-grid--covers">' + w.items.map(function (m) { return K.work(m, q); }).join('') + '</div></section>';
+      if (p.total) html += '<section class="ct-sec">' + head('Personas', p.total, p.total > p.items.length ? '<button type="button" class="k-btn k-btn--quiet k-btn--sm" data-go="people">Ver todas <i class="ti ti-arrow-right" aria-hidden="true"></i></button>' : '') + '<div class="ct-people">' + p.items.map(function (u) { return K.person(u, q); }).join('') + '</div></section>';
+      if (c.total) html += '<section class="ct-sec">' + head('Comunidades', c.total, c.total > c.items.length ? '<button type="button" class="k-btn k-btn--quiet k-btn--sm" data-go="communities">Ver todas <i class="ti ti-arrow-right" aria-hidden="true"></i></button>' : '') + '<div class="ct-comms">' + c.items.map(function (x) { return K.community(x, q); }).join('') + '</div></section>';
+      out.innerHTML = '<div class="ct" style="padding:0">' + html + '</div>';
+    } else if (S.tab === 'people') {
+      out.innerHTML = p.total ? '<section class="ct-sec">' + head('Personas', p.total) + '<div class="ct-people">' + p.items.map(function (u) { return K.person(u, q); }).join('') + '</div></section>' : noResults('personas');
+    } else {
+      out.innerHTML = c.total ? '<section class="ct-sec">' + head('Comunidades', c.total) + '<div class="ct-comms">' + c.items.map(function (x) { return K.community(x, q); }).join('') + '</div></section>' : noResults('comunidades');
     }
+  }
+  out.addEventListener('click', function (e) {
+    var g = e.target.closest('[data-go]'); if (g) { S.tab = g.dataset.go; writeURL(true); run(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (e.target.closest('#ct-more')) runWorks(seq, true);
+    var cg = e.target.closest('[data-clear-genres]'); if (cg) $('ct-reset').click();
+  });
 
-    function switchTab(tab) {
-      document.querySelectorAll('.buscar-tab').forEach(function(t) { t.classList.toggle('active', t.dataset.tab === tab); });
-      document.getElementById('buscar-content').innerHTML = '<div class="buscar-empty"><i class="ti ti-' + tabIcon(tab) + '"></i>Resultados de <strong>' + tabLabel(tab) + '</strong> para «' + query + '»</div>';
-    }
+  // Obras: con texto y sin filtros, por relevancia; si no, el catálogo filtrado
+  function runWorks(my, more) {
+    if (more) S.page++; else { S.page = 1; out.innerHTML = '<div class="k-grid k-grid--covers">' + K.skeleton(12) + '</div>'; }
+    var useRelevance = S.q && S.sort === 'relevance' && !hasFilters();
+    var req = useRelevance
+      ? K.getJSON('/api/search?q=' + encodeURIComponent(S.q) + '&type=works&limit=24&offset=' + (S.page - 1) * 24).then(function (d) { return { items: d.works.items, total: d.works.total }; })
+      : K.fetchWorks({ q: S.q, format: S.format, status: S.status, genres: S.genres, sort: S.sort === 'relevance' ? 'popular' : S.sort, page: S.page, limit: 24 }).then(function (d) { return { items: d.mangas || [], total: (d.pagination || {}).total || 0 }; });
+    var btn = $('ct-more'); if (btn) { btn.disabled = true; btn.textContent = 'Cargando…'; }
+    req.then(function (r) {
+      if (my !== seq) return;
+      if (S.q) { var el = $('ct-tabs').querySelector('[data-n="works"]'); if (el && !hasFilters()) el.textContent = r.total ? K.nf.format(r.total) : ''; }
+      var cards = r.items.map(function (m) { return K.work(m, S.q); }).join('');
+      var shown = (S.page - 1) * 24 + r.items.length;
+      if (!more) {
+        if (!r.total) { out.innerHTML = S.q ? noResults('obras') : K.empty('ti-filter-off', 'Nada con estos filtros', 'Prueba con menos géneros o con otro estado.', '<button type="button" class="k-btn k-btn--secondary" data-clear-genres>Quitar filtros</button>'); return; }
+        out.innerHTML = '<section class="ct-sec">' + head(S.q ? 'Obras' : (hasFilters() ? 'Obras con estos filtros' : 'Todo el catálogo'), r.total) +
+          '<div class="k-grid k-grid--covers" id="ct-grid">' + cards + '</div>' + moreBtn(shown, r.total) + '</section>';
+      } else {
+        $('ct-grid').insertAdjacentHTML('beforeend', cards);
+        var old = $('ct-more'); if (old) old.outerHTML = moreBtn(shown, r.total);
+      }
+    }).catch(function () { if (my === seq && !more) out.innerHTML = K.empty('ti-wifi-off', 'No se pudo cargar', 'Comprueba tu conexión y vuelve a intentarlo.'); });
+  }
+  function moreBtn(shown, total) { return shown < total ? '<button type="button" class="k-btn k-btn--secondary ct-more" id="ct-more">Ver más <span class="ct-count">(' + K.nf.format(total - shown) + ' más)</span></button>' : ''; }
+  function noResults(kind) {
+    var tips = '<ul style="text-align:left;margin:0;padding-left:18px;color:var(--k-text-2);line-height:1.7"><li>Revisa cómo está escrito o prueba con menos palabras.</li><li>Busca por el autor o por una etiqueta.</li><li>Explora por <a href="/generos">géneros</a>.</li></ul>';
+    return K.empty('ti-mood-empty', 'Nada con «' + S.q + '»' + (kind ? ' en ' + kind : ''), tips, S.tab !== 'all' ? '<button type="button" class="k-btn k-btn--secondary" data-go="all">Buscar en todo</button>' : '<a class="k-btn k-btn--secondary" href="/">Ir a Explorar</a>');
+  }
 
-    function tabIcon(t) { return { top:'stars', latest:'clock', people:'users', photos:'photo', videos:'video' }[t] || 'search'; }
-    function tabLabel(t) { return { top:'Destacados', latest:'Más recientes', people:'Personas', photos:'Fotos', videos:'Videos' }[t] || t; }
-  </script>
+  /* ── Arranque ── */
+  readURL();
+  K.getJSON('/api/manga/genres').then(function (d) { GENRES = (d.genres || []).slice(0, 30); paintGenres(); }).catch(function () {});
+  run();
+  if (!S.q) $('ct-q').focus();
+})();
+</script>
 </body>
 </html>

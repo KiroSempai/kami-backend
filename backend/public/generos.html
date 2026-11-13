@@ -1,89 +1,156 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Géneros · KamiTales</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/css/common.css?v=9">
-    <link rel="stylesheet" href="/css/generos.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Géneros · KamiTales</title>
+  <meta name="description" content="Explora los cómics y novelas de KamiTales por género.">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/kami.css">
+  <link rel="stylesheet" href="/css/catalog.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/catalog.js"></script>
 </head>
-
 <body>
-<div id="page-loader">
-      <div class="spinner"></div>
-      <p style="color:var(--text-muted);font-size:14px;">Cargando géneros...</p>
+<main class="k-page ct" id="k-main">
+
+  <!-- Todos los géneros -->
+  <div id="gv-all" class="ct" style="padding:0" hidden>
+    <header class="ct-hero">
+      <h1>Géneros</h1>
+      <p>Del misterio a la fantasía oscura: elige un género y descubre sus cómics y novelas.</p>
+    </header>
+    <div class="ct-filters">
+      <div class="ct-search" style="flex:1 1 280px;max-width:420px">
+        <i class="ti ti-search" aria-hidden="true" style="font-size:18px;left:14px"></i>
+        <label class="k-visually-hidden" for="gv-filter">Filtrar géneros</label>
+        <input id="gv-filter" type="search" placeholder="Filtrar géneros…" autocomplete="off" style="min-height:44px;font-size:var(--k-fs-md);padding-left:42px;border-radius:12px">
+      </div>
+      <div class="k-segmented" role="group" aria-label="Formato" id="gv-format">
+        <button type="button" value="all" aria-pressed="true">Todo</button>
+        <button type="button" value="comic" aria-pressed="false">Cómics</button>
+        <button type="button" value="novel" aria-pressed="false">Novelas</button>
+      </div>
+      <label class="k-visually-hidden" for="gv-order">Orden</label>
+      <select class="k-select" id="gv-order"><option value="count">Con más obras</option><option value="az">A–Z</option></select>
     </div>
+    <div class="ct-ggrid" id="gv-grid" aria-live="polite"></div>
+  </div>
 
-    <div id="page-content">
-    <!-- ═══════════ MAIN CONTENT ═══════════ -->
-    <div class="main-content">
-
-        <div class="page-header">
-            <h1 class="page-title">GÉNEROS</h1>
-            <p class="page-subtitle">Explora todos los géneros disponibles en KamiTales</p>
-        </div>
-
-        <div class="genres-grid" id="genres-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;">
-        </div>
-
+  <!-- Un género -->
+  <div id="gv-one" class="ct" style="padding:0" hidden>
+    <a class="k-btn k-btn--quiet k-btn--sm ct-back" href="/generos"><i class="ti ti-arrow-left" aria-hidden="true"></i>Todos los géneros</a>
+    <header class="ct-ghero" id="gv-hero"></header>
+    <div class="ct-filters">
+      <div class="k-segmented" role="group" aria-label="Formato" id="go-format">
+        <button type="button" value="all" aria-pressed="true">Todo</button>
+        <button type="button" value="comic" aria-pressed="false">Cómics</button>
+        <button type="button" value="novel" aria-pressed="false">Novelas</button>
+      </div>
+      <label class="k-visually-hidden" for="go-status">Estado</label>
+      <select class="k-select" id="go-status"><option value="">Cualquier estado</option><option value="ongoing">En curso</option><option value="completed">Completas</option><option value="hiatus">En pausa</option></select>
+      <label class="k-visually-hidden" for="go-sort">Orden</label>
+      <select class="k-select" id="go-sort"><option value="popular">Más leídas</option><option value="rating">Mejor valoradas</option><option value="latest">Actualizadas</option><option value="new">Más nuevas</option><option value="az">A–Z</option></select>
     </div>
+    <div class="ct-sec" id="go-combine-wrap" hidden>
+      <span class="ct-count">Combinar con otro género:</span>
+      <div class="ct-genres" id="go-combine" role="group" aria-label="Combinar con otro género"></div>
     </div>
+    <div id="go-results" aria-live="polite"></div>
+  </div>
+</main>
 
-    <!-- ═══════════ SCRIPTS ═══════════ -->
-    <script src="/js/offline.js?v=2"></script>
-    <script>
-        async function loadGenres() {
-            const grid = document.getElementById('genres-grid');
-            const result = await kamiOffline.safeFetch('/api/manga/genres', {}, { cacheKey: 'kami_genres', maxAge: 24*60*60*1000 });
-            const genres = result.ok ? (result.data.genres || []) : [];
+<script>
+(function () {
+  'use strict';
+  var K = window.KCAT, $ = function (id) { return document.getElementById(id); };
+  var GENRES = [], loaded = null;
+  function loadGenres() { if (!loaded) loaded = K.getJSON('/api/manga/genres').then(function (d) { GENRES = d.genres || []; return GENRES; }); return loaded; }
+  function colorIndex(name) { var i = GENRES.findIndex(function (g) { return g.name === name; }); return i < 0 ? 0 : i; }
 
-            if (genres.length === 0) {
-                grid.innerHTML = '<p style="color:var(--text-muted);padding:40px;text-align:center;grid-column:1/-1;">No hay géneros disponibles</p>';
-                kamiOffline.showContent();
-                return;
-            }
+  /* ═════════ Todos los géneros ═════════ */
+  var A = { fmt: 'all', order: 'count', filter: '' };
+  function paintAll() {
+    var list = GENRES.map(function (g, i) { return { g: g, i: i }; })
+      .filter(function (x) { return (A.fmt === 'all' || (A.fmt === 'novel' ? x.g.novels : x.g.comics) > 0) && (!A.filter || K.norm(x.g.name).indexOf(K.norm(A.filter)) >= 0); });
+    if (A.order === 'az') list.sort(function (a, b) { return a.g.name.localeCompare(b.g.name, 'es'); });
+    else if (A.fmt !== 'all') list.sort(function (a, b) { var k = A.fmt === 'novel' ? 'novels' : 'comics'; return b.g[k] - a.g[k]; });
+    $('gv-grid').innerHTML = list.length ? list.map(function (x) { return K.genreCard(x.g, x.i, A.fmt); }).join('')
+      : K.empty('ti-tags-off', GENRES.length ? 'Ningún género coincide' : 'Aún no hay géneros', GENRES.length ? 'Prueba con otra palabra o cambia el formato.' : 'Aparecerán cuando haya obras publicadas.');
+    Array.prototype.forEach.call($('gv-format').children, function (b) { b.setAttribute('aria-pressed', String(b.value === A.fmt)); });
+  }
+  $('gv-filter').addEventListener('input', function () { A.filter = this.value.trim(); paintAll(); });
+  $('gv-format').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { A.fmt = b.value; paintAll(); } });
+  $('gv-order').addEventListener('change', function () { A.order = this.value; paintAll(); });
 
-            grid.innerHTML = genres.map(g => {
-                const emojiMap = {
-                    'accion': '⚔️', 'aventura': '🗺️', 'artes marciales': '🥋',
-                    'militar': '🎖️', 'drama': '🎭', 'romance': '💕',
-                    'slice of life': '☕', 'tragedia': '💔', 'fantasia': '✨',
-                    'isekai': '🌀', 'ciencia ficcion': '🤖', 'mecha': '⚙️',
-                    'sistema': '📊', 'dark fantasy': '🌑', 'comedia': '😂',
-                    'escolar': '🎒', 'recuentos de la vida': '🌱', 'deportes': '⚽',
-                    'horror': '👻', 'misterio': '🔍', 'thriller': '🔪',
-                    'psicologico': '🧠', 'sobrenatural': '👁️', 'historico': '🏯',
-                    'historia': '📜', 'musica': '🎵', 'seinen': '🗡️',
-                    'shonen': '⚡', 'shoujo': '🌸', 'josei': '💄',
-                    'ecchi': '🔞', 'harem': '👥', 'manga': '📘',
-                    'manhwa': '📗', 'manhua': '📙'
-                };
-                const name = g.name || g;
-                const key = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                const emoji = emojiMap[key] || '🏷️';
-                const count = g.count || '';
-                return `
-                    <a href="/biblioteca?genre=${encodeURIComponent(name)}" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:12px;padding:28px 16px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);transition:.2s;cursor:pointer;">
-                        <span style="font-size:36px;">${emoji}</span>
-                        <span style="font-weight:600;font-size:14px;text-align:center;">${name.charAt(0).toUpperCase() + name.slice(1)}</span>
-                        ${count ? `<span style="font-size:11px;color:var(--text-muted);">${count} títulos</span>` : ''}
-                    </a>
-                `;
-            }).join('');
-        }
+  /* ═════════ Un género ═════════ */
+  var G = { name: '', extra: [], fmt: 'all', status: '', sort: 'popular', page: 1 }, seq = 0;
+  function paintHero() {
+    var g = GENRES.find(function (x) { return x.name === G.name; });
+    var col = K.COLORS[colorIndex(G.name) % K.COLORS.length];
+    $('gv-hero').style.setProperty('--_g', col);
+    var covers = ((g && g.covers) || []).filter(Boolean).slice(0, 3);
+    while (covers.length < 3) covers.push('');
+    $('gv-hero').innerHTML = '<span class="ct-fan" aria-hidden="true">' + covers.map(function (c) { return c ? '<i style="background-image:url(\'' + K.esc(c) + '\')"></i>' : '<i class="is-empty"></i>'; }).reverse().join('') + '</span>' +
+      '<span class="k-eyebrow" style="color:' + col + '">Género</span><h1>' + K.esc(G.name) + '</h1>' +
+      '<p>' + (g ? g.count + (g.count === 1 ? ' obra' : ' obras') + (g.novels ? ' · ' + g.comics + (g.comics === 1 ? ' cómic' : ' cómics') + ' y ' + g.novels + (g.novels === 1 ? ' novela' : ' novelas') : '') : 'Obras de este género') + '</p>';
+    document.title = G.name + ' · Géneros · KamiTales';
+  }
+  function paintCombine() {
+    var others = GENRES.filter(function (x) { return x.name !== G.name; }).slice(0, 20);
+    $('go-combine-wrap').hidden = !others.length;
+    $('go-combine').innerHTML = others.map(function (x) { return '<button type="button" class="k-chip" aria-pressed="' + (G.extra.indexOf(x.name) >= 0) + '" data-g="' + K.esc(x.name) + '">' + K.esc(x.name) + '</button>'; }).join('');
+    [['go-format', G.fmt]].forEach(function (p) { Array.prototype.forEach.call($(p[0]).children, function (b) { b.setAttribute('aria-pressed', String(b.value === p[1])); }); });
+    $('go-status').value = G.status; $('go-sort').value = G.sort;
+  }
+  function runOne(more) {
+    var my = more ? seq : ++seq, out = $('go-results');
+    if (more) G.page++; else { G.page = 1; out.innerHTML = '<div class="k-grid k-grid--covers">' + K.skeleton(12) + '</div>'; }
+    var btn = $('go-more'); if (btn) { btn.disabled = true; btn.textContent = 'Cargando…'; }
+    K.fetchWorks({ format: G.fmt, status: G.status, genres: [G.name].concat(G.extra), sort: G.sort, page: G.page, limit: 24 }).then(function (d) {
+      if (my !== seq) return;
+      var items = d.mangas || [], total = (d.pagination || {}).total || 0, shown = (G.page - 1) * 24 + items.length;
+      var more2 = shown < total ? '<button type="button" class="k-btn k-btn--secondary ct-more" id="go-more">Ver más <span class="ct-count">(' + (total - shown) + ' más)</span></button>' : '';
+      var cards = items.map(function (m) { return K.work(m); }).join('');
+      if (!more) {
+        out.innerHTML = total ? '<section class="ct-sec"><div class="ct-head"><h2>' + (G.extra.length ? K.esc([G.name].concat(G.extra).join(' + ')) : 'Obras') + ' <small>' + total + '</small></h2></div><div class="k-grid k-grid--covers" id="go-grid">' + cards + '</div>' + more2 + '</section>'
+          : K.empty('ti-filter-off', 'Nada con estos filtros', 'Prueba con otro formato, otro estado o sin combinar géneros.');
+      } else { $('go-grid').insertAdjacentHTML('beforeend', cards); var old = $('go-more'); if (old) old.outerHTML = more2; }
+    }).catch(function () { if (my === seq && !more) out.innerHTML = K.empty('ti-wifi-off', 'No se pudo cargar', 'Comprueba tu conexión y vuelve a intentarlo.'); });
+  }
+  function writeOne() {
+    var p = new URLSearchParams(); p.set('g', G.name);
+    if (G.extra.length) p.set('y', G.extra.join(','));
+    if (G.fmt !== 'all') p.set('formato', G.fmt);
+    if (G.status) p.set('estado', G.status);
+    if (G.sort !== 'popular') p.set('orden', G.sort);
+    history.replaceState(null, '', '/generos?' + p.toString());
+  }
+  function changed() { writeOne(); paintCombine(); runOne(false); }
+  $('go-format').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { G.fmt = b.value; changed(); } });
+  $('go-status').addEventListener('change', function () { G.status = this.value; changed(); });
+  $('go-sort').addEventListener('change', function () { G.sort = this.value; changed(); });
+  $('go-combine').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-g]'); if (!b) return;
+    var i = G.extra.indexOf(b.dataset.g); if (i >= 0) G.extra.splice(i, 1); else G.extra.push(b.dataset.g);
+    changed();
+  });
+  $('go-results').addEventListener('click', function (e) { if (e.target.closest('#go-more')) runOne(true); });
 
-        loadGenres().finally(() => kamiOffline.showContent());
-    </script>
-
-  <script src="/js/notifications.js"></script>
+  /* ═════════ Arranque ═════════ */
+  var p = new URLSearchParams(location.search), g = (p.get('g') || '').trim();
+  loadGenres().catch(function () { return []; }).then(function () {
+    if (!g) { $('gv-all').hidden = false; paintAll(); return; }
+    // Coincidencia sin distinguir mayúsculas ni tildes (los enlaces antiguos pueden venir en minúsculas)
+    var real = GENRES.find(function (x) { return K.norm(x.name) === K.norm(g); });
+    G.name = real ? real.name : g;
+    G.extra = (p.get('y') || '').split(',').map(function (x) { return x.trim(); }).filter(function (x) { return x && x !== G.name; }).slice(0, 5);
+    G.fmt = ['comic', 'novel'].indexOf(p.get('formato')) >= 0 ? p.get('formato') : 'all';
+    G.status = ['ongoing', 'completed', 'hiatus'].indexOf(p.get('estado')) >= 0 ? p.get('estado') : '';
+    G.sort = ['popular', 'rating', 'latest', 'new', 'az'].indexOf(p.get('orden')) >= 0 ? p.get('orden') : 'popular';
+    $('gv-one').hidden = false; paintHero(); paintCombine(); runOne(false);
+  });
+})();
+</script>
 </body>
-
 </html>

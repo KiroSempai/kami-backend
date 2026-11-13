@@ -102,14 +102,28 @@ function fallbackOriginal(mangaId, chapterNum, pageNum) {
 
 // ── Background batch ──
 
+// Versión de cada capítulo: al editar o borrar se incrementa, y un procesado anterior que siga
+// en marcha deja de escribir (si no, colaría imágenes viejas en la caché recién limpiada).
+const generations = {};
+function bumpGeneration(mangaId, chapterNum) {
+  const k = mangaId + '/' + chapterNum;
+  generations[k] = (generations[k] || 0) + 1;
+}
+
 async function processChapterImages(chapterDir, mangaId, chapterNum) {
+  const k = mangaId + '/' + chapterNum, gen = generations[k] || 0;
   const files = fs.readdirSync(chapterDir).filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
   for (const file of files) {
+    if ((generations[k] || 0) !== gen) return;          // el capítulo cambió: este procesado ya no vale
     const match = file.match(/page-(\d+)/);
     if (!match) continue;
     const pageNum = parseInt(match[1]);
     try {
       await processImage(path.join(chapterDir, file), mangaId, chapterNum, pageNum);
+      if ((generations[k] || 0) !== gen) {                // cambió mientras se procesaba: se descarta
+        try { fs.unlinkSync(path.join(getOutputDir(mangaId, chapterNum), pageFilename(pageNum, 'master'))); } catch { /* nada */ }
+        return;
+      }
     } catch (err) {
       console.error(`[image-processor] Error en ${file}:`, err.message);
     }
@@ -139,6 +153,7 @@ module.exports = {
   getImagePath,
   getImagePathReady,
   getOutputDir,
+  bumpGeneration,
   QUALITIES,
   QUALITY_ORDER,
 };

@@ -24,7 +24,7 @@ async function visibilityFilter(req, mangaId) {
     return " AND (c.status = 'published' OR (c.status = 'scheduled' AND c.publish_at <= NOW()))";
 }
 const { signURL } = require('../url-signer');
-const { getOutputDir } = require('../image-processor');
+const { getOutputDir, bumpGeneration } = require('../image-processor');
 
 const CHAPTERS_PER_PAGE = 50;
 
@@ -57,6 +57,7 @@ function findPageFile(dir, n) {
 }
 // Borra las versiones procesadas (master y calidades) para que no se sirvan imágenes viejas
 function clearProcessed(mangaId, num) {
+    bumpGeneration(mangaId, num);
     try { fs.rmSync(getOutputDir(mangaId, num), { recursive: true, force: true }); } catch { /* nada */ }
 }
 function readChapterMeta(body) {
@@ -565,8 +566,9 @@ router.delete('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, async (r
         if (fs.existsSync(chapterDir)) {
             fs.rmSync(chapterDir, { recursive: true, force: true });
         }
-        // Y sus versiones procesadas: si no, reaparecerían en otro capítulo con el mismo número
+        // Y sus versiones procesadas y sus StoryPins: si no, reaparecerían en otro capítulo con el mismo número
         clearProcessed(mangaId, num);
+        await pool.query('UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE manga_id = $1 AND chapter_number = $2 AND deleted_at IS NULL', [mangaId, num]).catch(() => {});
 
         await pool.query(
             `UPDATE mangas SET

@@ -40,7 +40,13 @@ async function auth(req, res, next) {
 // 📤 Respuesta: { success, communities[] }
 // 📝 Lista las últimas 50 comunidades con conteo de miembros y rol del usuario.
 // ═══════════════════════════════════════════════════════════════════════════════
-router.get('/', auth, async (req, res) => {
+// Pública: sin sesión se listan igual (my_role vacío); con sesión se marca a cuáles perteneces
+async function optionalAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) { try { req.user = await verifyToken(token); } catch { /* sin sesión válida */ } }
+  next();
+}
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const r = await pool.query(`
       SELECT c.*, m.cover AS manga_cover,
@@ -49,7 +55,7 @@ router.get('/', auth, async (req, res) => {
       FROM communities c
       LEFT JOIN mangas m ON m.id = c.manga_id
       ORDER BY c.created_at DESC LIMIT 50
-    `, [req.user.userId]);
+    `, [req.user ? req.user.userId : null]);
     res.json({ success: true, communities: r.rows });
   } catch (err) {
     console.error('[communities] Error:', err.message);

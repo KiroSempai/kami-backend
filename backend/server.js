@@ -472,11 +472,20 @@ global.io.on('connection', (socket) => {
   socket.on('leave-post', (postId) => {
     socket.leave(`post:${postId}`);
   });
-  socket.on('join-dm', (userId) => {
-    if (userId) socket.join('dm:' + userId);
+  // Canal privado de mensajes: solo el propio usuario, con su token (antes cualquiera podía
+  // unirse al canal de otra persona enviando su id y leer sus mensajes en directo)
+  socket.on('join-dm', async (payload) => {
+    try {
+      const token = (payload && payload.token) || (socket.handshake.auth && socket.handshake.auth.token);
+      if (!token) return;
+      const { verifyToken } = require('./config');
+      const decoded = await verifyToken(token);
+      socket.data.userId = decoded.userId;
+      socket.join('dm:' + decoded.userId);
+    } catch { /* token inválido: no se une */ }
   });
-  socket.on('leave-dm', (userId) => {
-    if (userId) socket.leave('dm:' + userId);
+  socket.on('leave-dm', () => {
+    if (socket.data.userId) socket.leave('dm:' + socket.data.userId);
   });
 });
 

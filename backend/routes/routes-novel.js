@@ -201,7 +201,7 @@ router.post('/:mangaId', ready, requireAuth, requireMangaEditor, async (req, res
     }
     const r = await pool.query(
       `INSERT INTO chapters (manga_id, chapter_number, title, pages, content, word_count, status, publish_at, free_at, note_before, note_after, content_warnings, release_date)
-       VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($7, CURRENT_TIMESTAMP))
+       VALUES ($1, $2, $3, 0, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($7::timestamptz, CURRENT_TIMESTAMP))
        ON CONFLICT (manga_id, chapter_number) DO NOTHING
        RETURNING *`,
       [mangaId, num, d.title, JSON.stringify(d.blocks), d.words, d.status, d.publishAt, d.freeAt, d.noteBefore, d.noteAfter, d.warnings]
@@ -222,10 +222,11 @@ router.put('/:mangaId/:num', ready, requireAuth, requireMangaEditor, async (req,
     const d = readBody(req.body);
     if (d.status === 'scheduled' && !d.publishAt) return res.status(400).json({ error: 'Elige la fecha de publicación.' });
     const r = await pool.query(
-      `UPDATE chapters SET title = $3, content = $4, word_count = $5, status = $6, publish_at = $7, free_at = $8,
+      // Tipos explícitos: $6 y $7 aparecen en dos sitios y Postgres no puede deducir un tipo único
+      `UPDATE chapters SET title = $3, content = $4, word_count = $5, status = $6::varchar, publish_at = $7::timestamptz, free_at = $8,
          note_before = $9, note_after = $10, content_warnings = $11, updated_at = CURRENT_TIMESTAMP,
-         release_date = CASE WHEN $6 = 'published' AND status <> 'published' THEN CURRENT_TIMESTAMP
-                             WHEN $6 = 'scheduled' THEN $7 ELSE release_date END
+         release_date = CASE WHEN $6::varchar = 'published' AND status <> 'published' THEN CURRENT_TIMESTAMP
+                             WHEN $6::varchar = 'scheduled' THEN $7::timestamptz ELSE release_date END
        WHERE manga_id = $1 AND chapter_number = $2 RETURNING *`,
       [mangaId, num, d.title, JSON.stringify(d.blocks), d.words, d.status, d.publishAt, d.freeAt, d.noteBefore, d.noteAfter, d.warnings]
     );

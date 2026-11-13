@@ -26,26 +26,23 @@
 
     /* Barra inferior: comentarios · barra de páginas · botones */
     #reader-bottombar { gap: 16px; }
-    #reader-bottombar .center { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; max-width: 720px; margin: 0 auto; letter-spacing: 0; }
-    #reader-bottombar .right { width: auto; min-width: 80px; display: flex; justify-content: flex-end; gap: 8px; }
+    #reader-bottombar .left, #reader-bottombar .right { flex: 1 1 0; min-width: 0; }
+    #reader-bottombar .center { flex: none; display: flex; align-items: center; justify-content: center; position: relative; letter-spacing: 0; }
+    #reader-bottombar .right { width: auto; display: flex; justify-content: flex-end; gap: 8px; }
     #reader-bottombar .right button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgb(var(--k-ink) / 0.08); background: rgb(var(--k-ink) / 0.04); color: var(--k-text); display: grid; place-items: center; cursor: pointer; font-size: 20px; }
     #reader-bottombar .right button:hover:not(:disabled) { background: rgb(var(--k-ink) / 0.1); }
     #reader-bottombar .right button:disabled { opacity: .3; cursor: default; }
-    .cr-count { flex: none; font: 600 14px/1 var(--k-font-body); color: rgb(var(--k-ink) / .8); font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
-    .cr-scrub { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
-    .cr-scrub input { width: 100%; accent-color: var(--k-accent); cursor: pointer; height: 28px; }
-    body[data-dir="rtl"][data-mode="paged"] .cr-scrub input, body[data-dir="rtl"][data-mode="double"] .cr-scrub input { direction: rtl; }
-    .cr-thumb { position: absolute; bottom: 38px; transform: translateX(-50%); display: grid; gap: 6px; justify-items: center; padding: 6px; border-radius: 12px; background: color-mix(in srgb, var(--cr-bg) 88%, transparent); border: 1px solid rgb(var(--k-ink) / .1); box-shadow: 0 12px 30px rgb(0 0 0 / .5); pointer-events: none; }
-    .cr-thumb i { display: block; width: 84px; aspect-ratio: var(--ph-ratio); border-radius: 6px; background: rgb(var(--k-ink) / .06) center / cover no-repeat; }
-    .cr-thumb span { font: 700 12px/1 var(--k-font-body); color: var(--k-text); }
-    .rd-progress { position: absolute; left: 0; right: 0; top: -1px; height: 2px; }
-    .rd-progress i { display: block; height: 100%; width: 0; background: var(--k-accent); box-shadow: 0 0 10px var(--k-accent); transition: width .2s linear; }
-    body[data-dir="rtl"]:not([data-mode="scroll"]) .rd-progress i { margin-left: auto; }
+    /* Número de página (como el lector original): se toca para saltar a otra */
+    .cr-count { font: 500 16px/1 var(--k-font-body); color: rgb(var(--k-ink) / .75); font-variant-numeric: tabular-nums; letter-spacing: 1px; background: none; border: 0; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+    .cr-count:hover { color: var(--k-text); background: rgb(var(--k-ink) / .06); }
+    .cr-jump { position: absolute; bottom: calc(100% + 14px); left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; padding: 10px; border-radius: 14px; background: color-mix(in srgb, var(--cr-bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgb(var(--k-ink) / .12); box-shadow: 0 14px 40px rgb(0 0 0 / .5); white-space: nowrap; font-size: 13px; color: var(--k-text-2); }
+    .cr-jump input { width: 72px; min-height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid rgb(var(--k-ink) / .15); background: rgb(var(--k-ink) / .06); color: var(--k-text); font: 600 15px var(--k-font-body); text-align: center; }
+    .cr-jump button { min-height: 38px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--k-accent-fill, var(--k-accent)); color: #fff; font: 700 13px var(--k-font-body); cursor: pointer; }
     @media (max-width: 768px) {
       #reader-bottombar { gap: 10px; }
       #reader-bottombar .right button { width: 38px; height: 38px; font-size: 18px; }
-      .cr-count { min-width: 52px; font-size: 13px; }
-      #reader-bottombar .right .cr-only-wide { display: none; }
+      .cr-count { font-size: 14px; }
+      .cr-only-wide { display: none !important; }
     }
 
     /* Páginas */
@@ -84,7 +81,7 @@
 
     /* Final de capítulo */
     .cr-end { width: min(520px, calc(100vw - 32px)); margin: 0 auto; padding: 48px 0 calc(var(--rd-bottom) + 48px); display: grid; gap: 14px; text-align: center; justify-items: center; }
-    body:not([data-mode="scroll"]) .cr-end { padding: 0; }
+    body:not([data-mode="scroll"]) .cr-end { padding: calc(var(--rd-top) + 16px) 16px calc(var(--rd-bottom) + 16px); width: min(552px, 100vw); max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; align-content: start; }
     .cr-end__n { font: 600 12px/1 var(--k-font-mono, monospace); letter-spacing: .14em; text-transform: uppercase; color: var(--k-accent); }
     .cr-end h2 { margin: 0; font: 900 clamp(2rem, 7vw, 2.8rem)/.95 var(--k-font-display); text-transform: uppercase; text-wrap: balance; }
     .cr-end p { margin: 0; color: var(--k-text-2); line-height: 1.55; }
@@ -94,6 +91,22 @@
     .cr-next small { display: block; color: var(--k-text-3); font-size: 12px; margin-bottom: 2px; }
     .cr-next b { display: block; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cr-next .ti { font-size: 22px; color: var(--k-accent); }
+    .cr-card > b { font-size: 14px; }
+    .cr-react { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cr-react button { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / 0.1); background: rgb(var(--k-ink) / 0.04); color: var(--k-text); font: 600 16px var(--k-font-body); cursor: pointer; }
+    .cr-react button[aria-pressed="true"] { border-color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 15%, transparent); }
+    .cr-react button span { font: 600 12px var(--k-font-body); color: var(--k-text-2); font-variant-numeric: tabular-nums; }
+    .cr-lib { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+    .cr-lib > .ti { font-size: 24px; color: var(--k-accent); }
+    .cr-lib small { display: block; color: var(--k-text-3); font-size: 12px; line-height: 1.4; }
+    .cr-coms-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .cr-coms { display: grid; gap: 8px; }
+    .cr-com { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; text-align: left; padding: 8px; margin: 0 -8px; border: 0; border-radius: 10px; background: none; color: var(--k-text-2); font: 13px/1.45 var(--k-font-body); cursor: pointer; }
+    .cr-com:hover { background: rgb(var(--k-ink) / .05); }
+    .cr-com .cp-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #fff; overflow: hidden; }
+    .cr-com b { display: block; color: var(--k-text); font-size: 12px; }
+    .cr-muted { color: var(--k-text-3); font-size: 12px; }
+    @media (max-width: 480px) { .cr-lib { grid-template-columns: auto minmax(0, 1fr); } .cr-lib .cr-pill { grid-column: 1 / -1; justify-content: center; } }
     .cr-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
     .cr-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / .12); background: rgb(var(--k-ink) / .05); color: var(--k-text); font: 600 13px var(--k-font-body); text-decoration: none; cursor: pointer; }
     .cr-pill:hover { border-color: var(--k-accent); color: var(--k-accent); }
@@ -111,12 +124,43 @@
     .cr-resume button { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / .14); background: rgb(var(--k-ink) / .06); color: var(--k-text); font: 600 12px var(--k-font-body); cursor: pointer; }
     body.ui-off .cr-resume { top: 12px; }
 
+    /* Comentarios (mismo panel que el lector de novelas) */
+    #comments-panel .cp-body .cp-item .cp-text { font-size: 13px; white-space: pre-wrap; }
+    #comments-panel .cp-body .cp-item .cp-username { font-size: 11px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; color: rgb(var(--k-ink) / .55); }
+    #comments-panel .cp-body .cp-item .cp-username a { color: inherit; text-decoration: none; font-weight: 700; }
+    #comments-panel .cp-body .cp-item .cp-username a:hover { color: var(--k-accent); }
+    #comments-panel .cp-body .cp-item .cp-time { color: rgb(var(--k-ink) / 0.35); font-size: 10px; }
+    #comments-panel .cp-item.is-pinned { padding: 8px; margin: 0 -8px 12px; border-radius: 10px; background: color-mix(in srgb, var(--k-gold) 8%, transparent); }
+    #comments-panel .cp-badge { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--k-gold) 20%, transparent); color: var(--k-gold); }
+    #comments-panel .cp-badge.is-author { background: var(--k-accent-soft); color: var(--k-accent); }
+    #comments-panel .cp-item .is-spoiler { filter: blur(6px); cursor: pointer; user-select: none; transition: filter .2s; }
+    #comments-panel .cp-actions { display: flex; gap: 12px; margin-top: 4px; }
+    #comments-panel .cp-actions button { border: 0; background: none; padding: 0; font: 600 10px var(--k-font-body); color: rgb(var(--k-ink) / 0.45); cursor: pointer; }
+    #comments-panel .cp-actions button:hover { color: var(--k-accent); }
+    #comments-panel .cp-footer { flex-direction: column; gap: 8px; }
+    #comments-panel .cp-footer .row { display: flex; gap: 8px; align-items: center; }
+    #comments-panel .cp-footer label.spoil { font-size: 11px; color: var(--k-text-2); display: inline-flex; gap: 6px; align-items: center; cursor: pointer; margin-right: auto; }
+    #comments-panel .cp-footer textarea { width: 100%; font-size: 13px; max-height: 140px; min-height: 48px; }
+    #comments-panel .cp-len { font-size: 10px; color: rgb(var(--k-ink) / .35); font-variant-numeric: tabular-nums; }
+    #comments-panel .cp-err { color: var(--k-bad); font-size: 11px; min-height: 1em; }
+    .cp-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
     /* Ajustes */
     .mode-grid.three { grid-template-columns: repeat(3, 1fr); }
     .mode-btn { border: 1.5px solid rgb(var(--k-ink) / 0.06); font-family: var(--k-font-body); color: var(--k-text); }
     .mode-btn:focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
     .mode-btn .mode-icon { font-size: 22px; }
     .mode-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .mode-grid.four { grid-template-columns: repeat(4, 1fr); }
+    .mode-btn.swatch { min-height: 52px; justify-content: center; }
+    /* Fondo claro: el cristal y los textos siguen siendo legibles */
+    body.cr-light { --cr-bg: #f2f0ea; }
+    body.cr-light .cr-end, body.cr-light .cr-state { color: #1e1b24; --k-text: #1e1b24; --k-text-2: #4a4552; --k-text-3: #6d6775; }
+    body.cr-light .ph { color: rgb(0 0 0 / .4); }
+    body.cr-light #reader-topbar, body.cr-light #reader-bottombar { background: rgb(10 10 16 / .72); }
+    body.cr-light #comments-panel, body.cr-light #settings-panel { background: rgb(12 12 20 / .9); }
+    body.cr-light .cr-card, body.cr-light .cr-pill, body.cr-light .cr-react button { background: rgb(0 0 0 / .04); border-color: rgb(0 0 0 / .12); color: #1e1b24; }
+    body.cr-light .cr-com:hover { background: rgb(0 0 0 / .05); }
     #settings-panel .group > .hint { font-size: 11px; color: rgb(var(--k-ink) / 0.4); margin-top: 6px; line-height: 1.5; }
     #settings-panel .hint a { color: var(--k-gold); }
     .cr-keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12px; color: var(--k-text-2); }
@@ -193,15 +237,14 @@
 
 <!-- Barra inferior -->
 <footer id="reader-bottombar">
-  <div class="rd-progress" aria-hidden="true"><i id="rd-progress"></i></div>
   <div class="left">
     <div class="comments-btn" id="btn-comments" role="button" tabindex="0" aria-label="Comentarios del capítulo" aria-controls="comments-panel">
       <span class="icon-wrap"><i class="ti ti-message" style="font-size:28px" aria-hidden="true"></i><span class="count" id="comments-count">0</span></span>
     </div>
   </div>
   <div class="center">
-    <div class="cr-scrub"><label class="k-visually-hidden" for="cr-range">Ir a la página</label><input type="range" id="cr-range" min="1" max="1" value="1"><div class="cr-thumb" id="cr-thumb" hidden><i id="cr-thumb-img"></i><span id="cr-thumb-n"></span></div></div>
-    <span class="cr-count" id="progress-indicator" aria-live="polite">—</span>
+    <button type="button" class="cr-count" id="progress-indicator" aria-live="polite" aria-label="Página actual. Toca para ir a otra" aria-expanded="false" aria-controls="cr-jump">—</button>
+    <form class="cr-jump" id="cr-jump" hidden><label for="cr-jump-n">Ir a la página</label><input type="number" id="cr-jump-n" min="1" inputmode="numeric"><button type="submit">Ir</button></form>
   </div>
   <div class="right">
     <button type="button" id="cr-prev" aria-label="Anterior"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
@@ -220,11 +263,17 @@
     <button type="button" id="cp-close" aria-label="Cerrar comentarios"><i class="ti ti-x" aria-hidden="true"></i></button>
   </div>
   <div class="cp-body" id="cp-body"><div class="cp-empty">Cargando comentarios…</div></div>
-  <form class="cp-footer" id="cp-form">
+  <form class="cp-footer" id="cp-form" hidden>
     <label class="k-visually-hidden" for="cp-input">Tu comentario</label>
-    <textarea id="cp-input" placeholder="Escribe un comentario…" rows="1" maxlength="2000"></textarea>
-    <button type="submit" id="cp-btn">Enviar</button>
+    <textarea id="cp-input" placeholder="¿Qué te ha parecido el capítulo?" rows="2" maxlength="2000"></textarea>
+    <div class="row">
+      <label class="spoil"><span class="toggle-switch"><input type="checkbox" id="cp-spoiler"><span class="toggle-slider2"></span></span>Contiene spoilers</label>
+      <span class="cp-len" id="cp-len"></span>
+      <button type="submit" id="cp-btn">Enviar</button>
+    </div>
+    <div class="cp-err" id="cp-err" role="alert"></div>
   </form>
+  <div class="cp-footer" id="cp-login" hidden><a class="cr-pill" id="cp-login-a" href="/acceder" style="justify-content:center;width:100%">Inicia sesión para comentar</a></div>
 </div>
 
 <!-- Ajustes -->
@@ -247,6 +296,32 @@
       <button type="button" class="mode-btn" value="ltr"><span class="mode-icon"><i class="ti ti-arrow-right" aria-hidden="true"></i></span><span class="mode-label">Cómic (izq. → der.)</span></button>
     </div>
   </div>
+  <div class="group" id="st-w-group">
+    <label>Ancho de página</label>
+    <div class="mode-grid four" id="st-width">
+      <button type="button" class="mode-btn" value="640"><span class="mode-label">Estrecho</span></button>
+      <button type="button" class="mode-btn" value="860"><span class="mode-label">Medio</span></button>
+      <button type="button" class="mode-btn" value="1200"><span class="mode-label">Ancho</span></button>
+      <button type="button" class="mode-btn" value="full"><span class="mode-label">Completo</span></button>
+    </div>
+  </div>
+  <div class="group" id="st-g-group">
+    <label>Separación entre páginas</label>
+    <div class="mode-grid three" id="st-gap">
+      <button type="button" class="mode-btn" value="0"><span class="mode-label">Sin espacio</span></button>
+      <button type="button" class="mode-btn" value="8"><span class="mode-label">Pequeña</span></button>
+      <button type="button" class="mode-btn" value="28"><span class="mode-label">Grande</span></button>
+    </div>
+    <div class="hint">En webtoon conviene «Sin espacio» para que las viñetas se unan.</div>
+  </div>
+  <div class="group">
+    <label>Fondo</label>
+    <div class="mode-grid three" id="st-bg">
+      <button type="button" class="mode-btn swatch" value="#050508" style="background:#050508;color:#eee"><span class="mode-label" style="color:inherit">Negro</span></button>
+      <button type="button" class="mode-btn swatch" value="#1c1c22" style="background:#1c1c22;color:#eee"><span class="mode-label" style="color:inherit">Gris</span></button>
+      <button type="button" class="mode-btn swatch" value="#f2f0ea" style="background:#f2f0ea;color:#222"><span class="mode-label" style="color:inherit">Claro</span></button>
+    </div>
+  </div>
   <div class="group" id="st-q-group">
     <label for="sel-quality">Calidad de imagen</label>
     <select id="sel-quality">
@@ -256,6 +331,13 @@
       <option value="480">Baja · 480p (ahorra datos)</option>
     </select>
     <div class="hint" id="st-q-hint"></div>
+  </div>
+  <div class="group">
+    <label style="display:flex;align-items:center;justify-content:space-between">
+      <span>Precargar el siguiente capítulo</span>
+      <span class="toggle-switch"><input type="checkbox" id="chk-preload"><span class="toggle-slider2"></span></span>
+    </label>
+    <div class="hint">Al llegar al final, el siguiente capítulo se abre al instante. Desactívalo para ahorrar datos.</div>
   </div>
   <div class="group">
     <label style="display:flex;align-items:center;justify-content:space-between">
@@ -343,6 +425,12 @@
   }
   function loadManifest(keepPage) {
     if (!keepPage) showState('ti-loader-2', 'Cargando…', '<p>Preparando el capítulo.</p>');
+    // Si el capítulo anterior ya precargó este, se usa su manifiesto (mismas URL: las páginas salen de la caché)
+    try {
+      var pre = JSON.parse(sessionStorage.getItem('kt_comic_next') || 'null');
+      sessionStorage.removeItem('kt_comic_next');
+      if (pre && pre.id === mangaId && pre.n === chapterNum && Date.now() - pre.at < 20 * 60 * 1000 && pre.m && pre.m.pages) return Promise.resolve(pre.m);
+    } catch (e) { /* nada */ }
     return fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/manifest', { headers: authH() })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
       .then(function (x) {
@@ -425,7 +513,6 @@
     endEl.innerHTML = endHTML();
     track.appendChild(endEl);
     bindEnd();
-    $('cr-range').max = String(Math.max(1, total));
     syncStoryLayers();
   }
 
@@ -437,11 +524,78 @@
     if (n && n.locked) h += '<div class="cr-card cr-next"><div><small>Siguiente · adelanto</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b><small>Se libera gratis el ' + esc(fmtDate.format(new Date(n.freeAt))) + '</small></div><i class="ti ti-lock" aria-hidden="true"></i></div>';
     else if (n) h += '<a class="cr-card cr-next" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '" id="cr-next-ch"><div><small>Siguiente</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b></div><i class="ti ti-arrow-right" aria-hidden="true"></i></a>';
     else h += '<p>Estás al día. Te avisaremos cuando salga el siguiente si sigues la obra.</p>';
-    h += '<div class="cr-pills"><button type="button" class="cr-pill" id="cr-end-com"><i class="ti ti-message" aria-hidden="true"></i>Comentar el capítulo</button><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '"><i class="ti ti-list" aria-hidden="true"></i>Todos los capítulos</a>' +
+    h += '<div class="cr-card"><b>¿Qué te ha parecido?</b><div class="cr-react" id="cr-react" role="group" aria-label="Reaccionar al capítulo">' +
+      REACTIONS.map(function (r) { return '<button type="button" data-r="' + r[0] + '" aria-pressed="false" title="' + r[2] + '">' + r[1] + '<span>0</span></button>'; }).join('') + '</div></div>';
+    h += '<div class="cr-card" id="cr-lib"><div class="cr-lib"><i class="ti ti-books" aria-hidden="true"></i><div><b>Tu biblioteca</b><small id="cr-lib-t">Guarda la obra para seguirla y retomarla desde tu biblioteca.</small></div><button type="button" class="cr-pill" id="cr-lib-btn"><i class="ti ti-bookmark-plus" aria-hidden="true"></i>Guardar</button></div></div>';
+    h += '<div class="cr-card" id="cr-end-coms-card"><div class="cr-coms-head"><b>Comentarios</b><button type="button" class="cr-pill" id="cr-end-com"><i class="ti ti-message" aria-hidden="true"></i>Comentar</button></div><div id="cr-end-coms" class="cr-coms"><small class="cr-muted">Cargando…</small></div></div>';
+    h += '<div class="cr-pills"><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '"><i class="ti ti-list" aria-hidden="true"></i>Todos los capítulos</a>' +
       (M.nav && M.nav.prev != null ? '<a class="cr-pill" href="/leer/' + encodeURIComponent(mangaId) + '/' + M.nav.prev + '"><i class="ti ti-arrow-left" aria-hidden="true"></i>Capítulo anterior</a>' : '') + '</div>';
     return h;
   }
-  function bindEnd() { var b = $('cr-end-com'); if (b) b.addEventListener('click', openComments); }
+  var REACTIONS = [['love', '❤️', 'Me encanta'], ['fire', '🔥', 'Épico'], ['sad', '😢', 'Triste'], ['wow', '😮', 'Sorpresa']];
+  function bindEnd() {
+    var b = $('cr-end-com'); if (b) b.addEventListener('click', openComments);
+    $('cr-end-coms').addEventListener('click', function (e) { if (e.target.closest('.cr-com')) openComments(); });
+    // Reacciones
+    function paintReact(d) {
+      Array.prototype.forEach.call($('cr-react').children, function (btn) {
+        var k = btn.dataset.r; btn.setAttribute('aria-pressed', String(d.mine === k)); btn.querySelector('span').textContent = (d.counts && d.counts[k]) || 0;
+      });
+    }
+    var react = { counts: {}, mine: null };
+    fetch(CB() + '/reactions', { headers: authH() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d) { react = d; paintReact(d); } }).catch(function () {});
+    $('cr-react').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-r]'); if (!btn) return;
+      if (!token()) { toast('Inicia sesión para reaccionar.'); return; }
+      var k = btn.dataset.r, prev = react.mine;
+      react.counts = Object.assign({}, react.counts);
+      if (prev) react.counts[prev] = Math.max(0, (react.counts[prev] || 0) - 1);
+      react.mine = prev === k ? null : k;
+      if (react.mine) react.counts[k] = (react.counts[k] || 0) + 1;
+      paintReact(react);
+      fetch(CB() + '/reactions', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ reaction: k }) }).catch(function () {});
+    });
+    // Biblioteca
+    var libBtn = $('cr-lib-btn');
+    function paintLib(inLib, status) {
+      var NAMES = { reading: 'Leyendo', continuing: 'Leyendo', rereading: 'Releyendo', planned: 'Pendiente', completed: 'Completada', dropped: 'Abandonada' };
+      if (inLib) { $('cr-lib-t').textContent = 'En tu biblioteca · ' + (NAMES[status] || 'Guardada'); libBtn.innerHTML = '<i class="ti ti-books" aria-hidden="true"></i>Ver biblioteca'; libBtn.dataset.go = '1'; }
+    }
+    if (token()) fetch('/api/library/check/' + encodeURIComponent(mangaId), { headers: authH() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.inLibrary) paintLib(true, d.status); }).catch(function () {});
+    libBtn.addEventListener('click', function () {
+      if (libBtn.dataset.go) { location.href = '/biblioteca'; return; }
+      if (!token()) { location.href = '/acceder?return=' + encodeURIComponent(location.pathname); return; }
+      libBtn.disabled = true;
+      fetch('/api/library/update', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ manga_id: mangaId, status: 'reading' }) })
+        .then(function (r) { if (!r.ok) throw new Error(); paintLib(true, 'reading'); toast('Guardada en tu biblioteca.', 'ok'); })
+        .catch(function () { toast('No se pudo guardar.', 'bad'); }).then(function () { libBtn.disabled = false; });
+    });
+  }
+  // Últimos comentarios en la tarjeta final
+  function renderEndComments() {
+    var box = $('cr-end-coms'); if (!box) return;
+    var list = comState.list.filter(function (c) { return !c.spoiler; });
+    var top = list.filter(function (c) { return c.pinned; }).concat(list.filter(function (c) { return !c.pinned; }).slice(-2)).slice(0, 2);
+    box.innerHTML = top.length ? top.map(function (c) {
+      var name = c.username || 'Anónimo';
+      return '<button type="button" class="cr-com">' + avatarHTML(name, c.avatar) + '<span><b>' + esc(name) + '</b>' + esc(c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text) + '</span></button>';
+    }).join('') + (comState.list.length > top.length ? '<small class="cr-muted">y ' + (comState.list.length - top.length) + ' más</small>' : '') : '<small class="cr-muted">Nadie ha comentado todavía. ¡Sé la primera persona!</small>';
+  }
+
+  /* Precarga del capítulo siguiente: se guarda su manifiesto y sus primeras páginas quedan en la caché */
+  var preloaded = false;
+  function preloadNext() {
+    if (preloaded || settings.preload === false || !M.nav || !M.nav.next || M.nav.next.locked) return;
+    preloaded = true;
+    var n = M.nav.next.number;
+    fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/' + n + '/manifest', { headers: authH() })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.pages) return;
+        try { sessionStorage.setItem('kt_comic_next', JSON.stringify({ id: mangaId, n: n, at: Date.now(), m: d })); } catch (e) { /* nada */ }
+        d.pages.slice(0, 3).forEach(function (p) { fetch(p.url).catch(function () {}); });
+      }).catch(function () {});
+  }
 
   /* Imágenes: URL firmada del manifiesto, descargada como blob; si caduca, se renueva el manifiesto */
   var refreshing = null;
@@ -515,6 +669,7 @@
     Array.prototype.forEach.call($('st-mode').children, function (b) { b.setAttribute('aria-pressed', String(b.value === mode)); b.classList.toggle('active', b.value === mode); b.disabled = b.value === 'double' && !wide(); });
     Array.prototype.forEach.call($('st-dir').children, function (b) { b.setAttribute('aria-pressed', String(b.value === dir)); b.classList.toggle('active', b.value === dir); });
     $('st-dir-group').hidden = m === 'scroll';
+    $('st-w-group').hidden = $('st-g-group').hidden = m !== 'scroll';
     var rtl = dir === 'rtl' && m !== 'scroll';
     $('cr-prev').innerHTML = '<i class="ti ti-chevron-' + (rtl ? 'right' : 'left') + '" aria-hidden="true"></i>';
     $('cr-next').innerHTML = '<i class="ti ti-chevron-' + (rtl ? 'left' : 'right') + '" aria-hidden="true"></i>';
@@ -588,14 +743,13 @@
     var m = effectiveMode(), v = views[vi] || [i];
     var label = atEnd && m !== 'scroll' ? 'Fin' : (m === 'double' && v.length === 2 ? (v[0] + 1) + '-' + (v[1] + 1) : String(i + 1));
     $('progress-indicator').textContent = label + ' / ' + total;
-    $('cr-range').value = String(i + 1);
-    $('rd-progress').style.width = (total ? Math.round(((atEnd ? total : i + 1) / total) * 100) : 0) + '%';
     $('cr-prev').disabled = m === 'scroll' ? i <= 0 : vi <= 0;
     $('cr-next').disabled = m === 'scroll' ? !!atEnd : (vi >= views.length - 1 && !(M.nav && M.nav.next && !M.nav.next.locked));
     try { history.replaceState(null, '', location.pathname + location.search + (i > 0 ? '#p=' + (i + 1) : '')); } catch (e) { /* nada */ }
     clearTimeout(saveT);
     saveT = setTimeout(function () { saveProgress(atEnd ? total - 1 : i, false); }, 1200);
     if (atEnd || i >= total - 1) markRead();
+    if (i >= Math.floor(total * 0.7)) preloadNext();
   }
   function saveProgress(p, keepalive) {
     var pos = lsGet('kt_comic_pos', {}); pos[mangaId] = { chapter: chapterNum, page: p }; lsSet('kt_comic_pos', pos);
@@ -614,21 +768,19 @@
   function setUI(on) { document.body.classList.toggle('ui-off', !on); }
   function toggleUI() { setUI(document.body.classList.contains('ui-off')); }
 
-  /* Barra de páginas con miniatura */
-  var range = $('cr-range'), thumb = $('cr-thumb');
-  function showThumb() {
-    var n = parseInt(range.value, 10), i = n - 1;
-    var pct = (n - 1) / Math.max(1, total - 1); if (range.style.direction === 'rtl' || getComputedStyle(range).direction === 'rtl') pct = 1 - pct;
-    thumb.style.left = (8 + pct * (range.clientWidth - 16)) + 'px';
-    $('cr-thumb-n').textContent = 'Página ' + n;
-    $('cr-thumb-img').style.backgroundImage = blobs[i] ? 'url(' + blobs[i] + ')' : '';
-    if (!blobs[i]) loadPage(i);
-    thumb.hidden = false;
+  /* Ir a una página concreta: se toca el número */
+  function openJump(open) {
+    var f = $('cr-jump'); f.hidden = !open; $('progress-indicator').setAttribute('aria-expanded', String(open));
+    if (open) { var n = $('cr-jump-n'); n.max = String(total); n.value = String(cur + 1); n.focus(); n.select(); }
   }
-  range.addEventListener('input', showThumb);
-  range.addEventListener('pointerdown', showThumb);
-  range.addEventListener('change', function () { thumb.hidden = true; goTo(parseInt(range.value, 10) - 1, false); });
-  range.addEventListener('blur', function () { thumb.hidden = true; });
+  $('progress-indicator').addEventListener('click', function (e) { e.stopPropagation(); openJump($('cr-jump').hidden); });
+  $('cr-jump').addEventListener('click', function (e) { e.stopPropagation(); });
+  $('cr-jump').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = parseInt($('cr-jump-n').value, 10);
+    if (n >= 1 && n <= total) { openJump(false); goTo(n - 1, false); } else $('cr-jump-n').select();
+  });
+  document.addEventListener('click', function (e) { if (!$('cr-jump').hidden && !e.target.closest('#cr-jump')) openJump(false); });
   $('cr-prev').addEventListener('click', function () { step(-1); });
   $('cr-next').addEventListener('click', function () { step(1); });
 
@@ -763,6 +915,27 @@
   $('settings-overlay').addEventListener('click', closeSettings);
   $('st-mode').addEventListener('click', function (e) { var b = e.target.closest('.mode-btn'); if (b && !b.disabled) setMode(b.value); });
   $('st-dir').addEventListener('click', function (e) { var b = e.target.closest('.mode-btn'); if (b) setDir(b.value); });
+  // Ancho, separación y fondo (se guardan en este navegador)
+  function applyLook() {
+    var root = document.documentElement.style;
+    root.setProperty('--cr-width', settings.width === 'full' ? '100vw' : (settings.width || 860) + 'px');
+    root.setProperty('--cr-gap', (settings.gap || 0) + 'px');
+    root.setProperty('--cr-bg', settings.bg || '#050508');
+    document.body.classList.toggle('cr-light', settings.bg === '#f2f0ea');
+    [['st-width', String(settings.width || 860)], ['st-gap', String(settings.gap || 0)], ['st-bg', settings.bg || '#050508']].forEach(function (g) {
+      Array.prototype.forEach.call($(g[0]).children, function (b) { var on = b.value === g[1]; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
+    });
+  }
+  function pick(id, key, num) {
+    $(id).addEventListener('click', function (e) {
+      var b = e.target.closest('.mode-btn'); if (!b) return;
+      settings[key] = num && b.value !== 'full' ? Number(b.value) : b.value; lsSet('kt_comic', settings); applyLook();
+    });
+  }
+  pick('st-width', 'width', true); pick('st-gap', 'gap', true); pick('st-bg', 'bg', false);
+  applyLook();
+  $('chk-preload').checked = settings.preload !== false;
+  $('chk-preload').addEventListener('change', function () { settings.preload = this.checked; lsSet('kt_comic', settings); });
   $('chk-storypins').checked = settings.pins !== false;
   document.body.classList.toggle('pins-off', settings.pins === false);
   $('chk-storypins').addEventListener('change', function () { settings.pins = this.checked; lsSet('kt_comic', settings); document.body.classList.toggle('pins-off', !this.checked); });
@@ -784,45 +957,73 @@
   });
 
   /* ════════════════ Comentarios ════════════════ */
-  function openComments() { closeSettings(); $('comments-overlay').classList.add('open'); $('comments-panel').classList.add('open'); $('btn-comments').classList.add('active'); loadComments(); setTimeout(function () { $('cp-input').focus(); }, 250); }
+  function openComments() { closeSettings(); $('comments-overlay').classList.add('open'); $('comments-panel').classList.add('open'); $('btn-comments').classList.add('active'); loadComments(); if (token() && window.innerWidth > 768) setTimeout(function () { $('cp-input').focus(); }, 250); }
   function closeComments() { $('comments-overlay').classList.remove('open'); $('comments-panel').classList.remove('open'); $('btn-comments').classList.remove('active'); }
   $('btn-comments').addEventListener('click', function () { $('comments-panel').classList.contains('open') ? closeComments() : openComments(); });
   $('btn-comments').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); } });
   $('comments-overlay').addEventListener('click', closeComments);
   $('cp-close').addEventListener('click', closeComments);
-  function fetchComments() { return fetch('/api/comments/' + encodeURIComponent(mangaId) + '/' + chapterNum, { headers: authH() }).then(function (r) { return r.ok ? r.json() : { comments: [] }; }); }
-  // El servidor solo entrega los comentarios con sesión iniciada
-  function loadCommentCount() {
-    if (!token()) { $('comments-count').hidden = true; return; }
-    fetchComments().then(function (d) { $('comments-count').textContent = (d.comments || []).length; }).catch(function () {});
+  // Mismas rutas que el lector de novelas: comentarios públicos, spoilers, fijados y borrado
+  var CB = function () { return '/api/novel/' + encodeURIComponent(mangaId) + '/' + chapterNum; };
+  var comState = { list: [], isEditor: false };
+  var rtf = window.Intl && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat('es', { numeric: 'auto' }) : null;
+  function ago(iso) {
+    var s = (new Date(iso).getTime() - Date.now()) / 1000, a = Math.abs(s);
+    if (!rtf || isNaN(s)) return '';
+    if (a < 60) return 'ahora mismo';
+    if (a < 3600) return rtf.format(Math.round(s / 60), 'minute');
+    if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour');
+    if (a < 2592000) return rtf.format(Math.round(s / 86400), 'day');
+    return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function fetchComments() {
+    return fetch(CB() + '/comments', { headers: authH() }).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) { comState.list = d.comments || []; comState.isEditor = !!d.isEditor; $('comments-count').textContent = comState.list.length; $('comments-count').hidden = false; return comState.list; });
+  }
+  function loadCommentCount() { fetchComments().then(renderEndComments).catch(function () { $('comments-count').hidden = true; }); }
+  function avatarHTML(name, av) {
+    return '<div class="cp-avatar" style="background:' + colorFor(name) + '">' + (av && /^(https?:\/\/|\/)/.test(av) ? '<img src="' + esc(av) + '" alt="">' : esc(name.slice(0, 2).toUpperCase())) + '</div>';
+  }
+  function commentHTML(c, withActions) {
+    var name = c.username || 'Anónimo';
+    return '<div class="cp-item' + (c.pinned ? ' is-pinned' : '') + '" data-cid="' + c.id + '">' + avatarHTML(name, c.avatar) +
+      '<div class="cp-right"><div class="cp-username"><a href="/perfil/' + encodeURIComponent(name) + '">' + esc(name) + '</a>' + (c.pinned ? '<span class="cp-badge">Fijado</span>' : '') + '<span class="cp-time">' + esc(ago(c.createdAt)) + '</span></div>' +
+      '<div class="cp-text' + (c.spoiler ? ' is-spoiler" title="Spoiler: toca para verlo' : '') + '">' + esc(c.text) + '</div>' +
+      (withActions && (c.mine || comState.isEditor) ? '<div class="cp-actions">' + (comState.isEditor ? '<button type="button" data-ca="pin">' + (c.pinned ? 'Desfijar' : 'Fijar') + '</button>' : '') + '<button type="button" data-ca="del">Borrar</button></div>' : '') +
+      '</div></div>';
   }
   function loadComments() {
-    var body = $('cp-body');
-    if (!token()) {
-      body.innerHTML = '<div class="cp-empty"><a class="cr-pill" href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Inicia sesión para leer y escribir comentarios</a></div>';
-      $('cp-form').hidden = true; return;
-    }
+    var body = $('cp-body'), logged = !!token();
+    $('cp-form').hidden = !logged; $('cp-login').hidden = logged;
+    $('cp-login-a').href = '/acceder?return=' + encodeURIComponent(location.pathname);
     body.innerHTML = '<div class="cp-empty">Cargando…</div>';
-    fetchComments().then(function (d) {
-      var list = d.comments || [];
-      $('comments-count').textContent = list.length;
-      if (!list.length) { body.innerHTML = '<div class="cp-empty">Todavía no hay comentarios. ¡Estrena el hilo!</div>'; return; }
-      body.innerHTML = list.map(function (c) {
-        var name = c.username || 'Anónimo', time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        return '<div class="cp-item"><div class="cp-avatar" style="background:' + colorFor(name) + '">' + esc(name.slice(0, 2).toUpperCase()) + '</div><div class="cp-right"><div class="cp-username">' + esc(name) + '</div><div class="cp-text">' + esc(c.text) + '</div><div class="cp-time">' + esc(time) + '</div></div></div>';
-      }).join('');
+    fetchComments().then(function (list) {
+      body.innerHTML = list.length ? list.map(function (c) { return commentHTML(c, true); }).join('') : '<div class="cp-empty">Todavía no hay comentarios. ¡Estrena el hilo!</div>';
+      renderEndComments();
     }).catch(function () { body.innerHTML = '<div class="cp-empty">No se pudieron cargar los comentarios.</div>'; });
   }
+  $('cp-body').addEventListener('click', function (e) {
+    var sp = e.target.closest('.is-spoiler'); if (sp) { sp.classList.remove('is-spoiler'); sp.removeAttribute('title'); return; }
+    var b = e.target.closest('[data-ca]'); if (!b) return;
+    var cid = b.closest('[data-cid]').dataset.cid;
+    if (b.dataset.ca === 'del') {
+      if (!confirm('¿Borrar este comentario?')) return;
+      fetch(CB() + '/comments/' + cid, { method: 'DELETE', headers: authH() }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo borrar.'); }); })
+        .then(function () { loadComments(); toast('Comentario borrado.', 'ok'); }).catch(function (er) { toast(er.message, 'bad'); });
+    } else {
+      fetch(CB() + '/comments/' + cid + '/pin', { method: 'POST', headers: authH() }).then(function (r) { if (!r.ok) throw new Error('No se pudo fijar.'); }).then(loadComments).catch(function (er) { toast(er.message, 'bad'); });
+    }
+  });
+  $('cp-input').addEventListener('input', function () { var n = this.value.length; $('cp-len').textContent = n > 1600 ? (2000 - n) + '' : ''; $('cp-err').textContent = ''; });
   $('cp-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var input = $('cp-input'), btn = $('cp-btn'), text = input.value.trim();
-    if (!text) return;
-    if (!token()) { toast('Inicia sesión para comentar.'); return; }
+    if (!text) { $('cp-err').textContent = 'Escribe algo antes de enviar.'; input.focus(); return; }
     btn.disabled = true; btn.textContent = 'Enviando…';
-    fetch('/api/comments/' + encodeURIComponent(mangaId) + '/' + chapterNum, { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ text: text }) })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { if (d.success) { input.value = ''; loadComments(); } else toast(d.error || 'No se pudo enviar.', 'bad'); })
-      .catch(function () { toast('Sin conexión.', 'bad'); })
+    fetch(CB() + '/comments', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ text: text, spoiler: $('cp-spoiler').checked }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo enviar.'); return d; }); })
+      .then(function () { input.value = ''; $('cp-spoiler').checked = false; $('cp-len').textContent = ''; loadComments(); })
+      .catch(function (er) { $('cp-err').textContent = er.message === 'Failed to fetch' ? 'Sin conexión.' : er.message; })
       .then(function () { btn.disabled = false; btn.textContent = 'Enviar'; });
   });
   $('cp-input').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('cp-form').requestSubmit(); } });

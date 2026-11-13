@@ -83,6 +83,47 @@ router.get('/:mangaId', async (req, res) => {
     }
 });
 
+// ── Progreso de lectura de cómics (página exacta) ─────────────────────────────
+// Va antes de /:mangaId/:chapterNum para que «progress» no se lea como número de capítulo.
+// GET /api/chapters/:mangaId/progress → { chapter, page, total, percent }
+router.get('/:mangaId/progress', requireAuth, async (req, res) => {
+    try {
+        const r = await pool.query('SELECT last_chapter, last_page, last_percent, updated_at FROM user_reading WHERE user_id = $1 AND manga_id = $2', [req.user.userId, req.params.mangaId]);
+        const row = r.rows[0];
+        res.json(row ? { chapter: row.last_chapter, page: row.last_page || 0, percent: row.last_percent || 0, updatedAt: row.updated_at } : { chapter: null });
+    } catch (err) {
+        console.error('[chapters] leer progreso:', err.message);
+        res.status(500).json({ error: 'No se pudo leer tu progreso.' });
+    }
+});
+// PUT /api/chapters/:mangaId/progress { chapter, page (0-based), total }
+router.put('/:mangaId/progress', requireAuth, async (req, res) => {
+    try {
+        const chapter = parseInt(req.body.chapter, 10);
+        const total = Math.max(1, Math.min(2000, parseInt(req.body.total, 10) || 1));
+        const page = Math.max(0, Math.min(total - 1, parseInt(req.body.page, 10) || 0));
+        if (!chapter || chapter < 0) return res.status(400).json({ error: 'Falta el capítulo.' });
+        const pct = Math.round(((page + 1) / total) * 100);
+        const withPct = await hasColumn('user_reading', 'last_percent');
+        await pool.query(
+            withPct
+                ? `INSERT INTO user_reading (user_id, manga_id, last_chapter, last_page, total_pages_read, last_percent)
+                   VALUES ($1, $2, $3, $4, 1, $5)
+                   ON CONFLICT (user_id, manga_id) DO UPDATE SET last_chapter = EXCLUDED.last_chapter, last_page = EXCLUDED.last_page,
+                     last_percent = EXCLUDED.last_percent, total_pages_read = COALESCE(user_reading.total_pages_read, 0) + 1, updated_at = CURRENT_TIMESTAMP`
+                : `INSERT INTO user_reading (user_id, manga_id, last_chapter, last_page, total_pages_read)
+                   VALUES ($1, $2, $3, $4, 1)
+                   ON CONFLICT (user_id, manga_id) DO UPDATE SET last_chapter = EXCLUDED.last_chapter, last_page = EXCLUDED.last_page,
+                     total_pages_read = COALESCE(user_reading.total_pages_read, 0) + 1, updated_at = CURRENT_TIMESTAMP`,
+            withPct ? [req.user.userId, req.params.mangaId, chapter, page, pct] : [req.user.userId, req.params.mangaId, chapter, page]
+        );
+        res.json({ success: true, percent: pct });
+    } catch (err) {
+        console.error('[chapters] guardar progreso:', err.message);
+        res.status(500).json({ error: 'No se pudo guardar tu progreso.' });
+    }
+});
+
 // GET /api/chapters/:mangaId/:chapterNum - capítulo específico con URLs de páginas
 router.get('/:mangaId/:chapterNum', async (req, res) => {
     try {
@@ -131,10 +172,12 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
         // Obtener calidad preferida del usuario
         let quality = '1080';
         let userRole = 'user';
+        let userId = null;
         const token = req.headers.authorization?.split(' ')[1];
         if (token) {
             try {
                 const decoded = await verifyToken(token);
+                userId = decoded.userId;
                 const { getUserQuality } = require('../image-settings');
                 quality = await getUserQuality(decoded.userId);
                 const r = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
@@ -155,6 +198,30 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
 
         const chapter = result.rows[0];
 
+        // Borradores, programados aún no publicados y adelantos: solo para quien edita la obra
+        const editor = userId ? await canEditManga(userId, mangaId).catch(() => false) : false;
+        const now = new Date();
+        const st = chapter.status || 'published';
+        const visible = st === 'published' || (st === 'scheduled' && chapter.publish_at && new Date(chapter.publish_at) <= now);
+        if (!visible && !editor) return res.status(404).json({ error: 'Capítulo no encontrado' });
+        if (!editor && chapter.free_at && new Date(chapter.free_at) > now) {
+            return res.status(403).json({ error: 'Este capítulo es un adelanto.', locked: true, freeAt: chapter.free_at });
+        }
+
+        // Capítulos vecinos visibles, para navegar sin pedir la lista entera
+        const vis = editor ? '' : ((await hasColumn('chapters', 'status')) ? " AND (status = 'published' OR (status = 'scheduled' AND publish_at <= NOW()))" : '');
+        const nb = await pool.query(
+            `SELECT (SELECT MAX(chapter_number) FROM chapters WHERE manga_id = $1 AND chapter_number < $2${vis}) AS prev,
+                    (SELECT MIN(chapter_number) FROM chapters WHERE manga_id = $1 AND chapter_number > $2${vis}) AS next`,
+            [mangaId, num]
+        );
+        let next = null;
+        if (nb.rows[0].next != null) {
+            const n = await pool.query('SELECT chapter_number, title, free_at FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, nb.rows[0].next]);
+            const row = n.rows[0];
+            next = { number: row.chapter_number, title: row.title || '', freeAt: row.free_at || null, locked: !editor && !!row.free_at && new Date(row.free_at) > now };
+        }
+
         // Construir URLs firmadas para cada página
         const pageCount = chapter.pages;
         const pageUrls = [];
@@ -168,7 +235,7 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
 
         // Obtener datos del manga
         const mangaResult = await pool.query(
-            'SELECT id, title, cover FROM mangas WHERE id = $1',
+            'SELECT id, title, cover, type FROM mangas WHERE id = $1',
             [mangaId]
         );
         const manga = mangaResult.rows[0] || { id: mangaId, title: 'Desconocido' };
@@ -178,7 +245,11 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
                 id: manga.id,
                 title: manga.title,
                 cover: manga.cover || '',
+                type: manga.type || 'manga',
             },
+            nav: { prev: nb.rows[0].prev, next },
+            isEditor: !!editor,
+            status: st,
             chapter: {
                 id: chapter.id,
                 number: chapter.chapter_number,

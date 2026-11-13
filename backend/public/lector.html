@@ -2,1339 +2,944 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Lector · KamiTales</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html { text-size-adjust:none; -webkit-text-size-adjust:none; }
-    body { background:#000; color:var(--k-text); font-family:'Plus Jakarta Sans',sans-serif; }
-
-    .reader-page {
-      width:100%; max-width:70vw; margin:0 auto;
-      min-height:40vh;
-    }
-    .reader-page .ph {
-      width:100%; aspect-ratio:3/4;
-      display:flex; align-items:center; justify-content:center;
-      color:rgb(var(--k-ink) / 0.06); font-size:13px;
-      background:rgb(var(--k-ink) / 0.01);
-    }
-    .reader-page img {
-      width:100%; height:auto; display:block;
-    }
-    .reader-page img.loaded { animation:fadeIn .25s ease; }
-    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-    /* ── Botón "Al capítulo X" al final ── */
-    #next-chapter-cta {
-      display:flex; justify-content:center; padding:40px 0 60px; width:100%;
-    }
-    #next-chapter-cta button {
-      padding:12px 32px; border-radius:10px; border:1px solid rgb(var(--k-ink) / 0.12);
-      background:rgb(var(--k-ink) / 0.04); color:var(--k-text-3); cursor:pointer;
-      font-size:14px; font-family:inherit; font-weight:600; transition:.15s;
-    }
-    #next-chapter-cta button:hover { background:rgb(var(--k-ink) / 0.1); color:var(--k-text); border-color:rgb(var(--k-ink) / 0.2); }
-    #next-chapter-cta button:disabled { opacity:0.2; cursor:default; background:rgb(var(--k-ink) / 0.02); }
-
-    /* ═══════════════════════════════════════════
-       NIVEL 2 — CAPA DE PROTECCIÓN (overlay fijo)
-    ═══════════════════════════════════════════ */
-    #reader-shield {
-      position:fixed; inset:0; z-index:5; pointer-events:none;
-      /* Capa anti-selección + watermark */
-    }
-    #reader-shield::after {
-      content:''; position:absolute; inset:0;
-      background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgb(var(--k-ink) / 0.003) 8px,rgb(var(--k-ink) / 0.003) 9px);
-    }
-
-    /* ═══════════════════════════════════════════
-       NIVEL 1 — UI PRINCIPAL
-    ═══════════════════════════════════════════ */
-
-    /* ═══════════════════════════════════════════
-       STORY PINS
-    ═══════════════════════════════════════════ */
-    .reader-page { position: relative; }
-    .story-layer {
-      position: absolute; inset: 0; z-index: 2;
-      pointer-events: none; overflow: hidden;
-    }
-    .story-layer .story-pin { pointer-events: auto; }
-    .story-layer.active { pointer-events: auto; }
-    body.ink-mode { cursor: crosshair; }
-    body.ink-mode .story-layer.active { cursor: crosshair; }
-
-    /* ── Draft pin (preview que sigue al cursor) ── */
-    .draft-pin {
-      position: absolute; z-index: 3;
-      width: 42px; height: 42px; border-radius: 50%;
-      background: color-mix(in srgb, var(--k-accent) 20%, transparent);
-      border: 2px solid color-mix(in srgb, var(--k-accent) 60%, transparent);
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      transition: width .1s, height .1s;
-      box-shadow: 0 0 16px color-mix(in srgb, var(--k-accent) 30%, transparent);
-    }
-    .draft-pin::after {
-      content: ''; position: absolute; inset: 4px; border-radius: 50%;
-      background: color-mix(in srgb, var(--k-accent) 25%, transparent);
-      animation: pinPulse 1.2s ease-in-out infinite;
-    }
-    @keyframes pinPulse { 0%,100% { transform:scale(1); opacity:0.6; } 50% { transform:scale(1.15); opacity:1; } }
-
-    /* ── Pin bubble published ── */
-    .story-pin {
-      position: absolute; z-index: 3;
-      width: 36px; height: 36px; border-radius: 50%;
-      transform: translate(-50%, -50%);
-      cursor: pointer;
-      opacity: 0.75;
-      transition: opacity .2s, box-shadow .2s;
-      border: 1.5px solid rgb(var(--k-ink) / 0.2);
-      background: color-mix(in srgb, var(--k-accent) 20%, transparent);
-      backdrop-filter: blur(2px);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      overflow: visible;
-    }
-    .story-pin.has-message::before {
-      content: ''; position: absolute; inset: -2px; border-radius: 50%;
-      border: 1.5px solid color-mix(in srgb, var(--k-accent) 30%, transparent);
-      animation: pinGlow 2s ease-in-out infinite;
-    }
-    @keyframes pinGlow { 0%,100% { opacity:0.3; } 50% { opacity:0.8; } }
-    .story-pin .pin-bubble {
-      display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 100%;
-    }
-    .story-pin .pin-avatar {
-      width: 24px; height: 24px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 9px; font-weight: 700; color: var(--k-text);
-      overflow: hidden; flex-shrink: 0;
-    }
-    .story-pin .pin-avatar img { width:100%; height:100%; object-fit:cover; }
-    .story-pin .pin-emoji { font-size:16px; line-height:1; }
-    .story-pin.popular { opacity:0.7; border-color:color-mix(in srgb, var(--k-gold) 50%, transparent); }
-
-    /* ── Pin card (reemplaza la burbuja al hover) ── */
-    .story-pin .pin-card {
-      display: none;
-      position: absolute; left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      min-width: 80px; max-width: 280px;
-      width: max-content;
-      white-space: normal; word-break: break-word;
-      background: rgba(8,8,18,0.9); backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgb(var(--k-ink) / 0.08);
-      border-radius: 10px;
-      padding: 6px 10px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-      z-index: 5;
-      animation: pcIn .12s ease;
-    }
-    @keyframes pcIn { from{transform:translate(-50%,-50%) scale(0.85);opacity:0} to{transform:translate(-50%,-50%) scale(1);opacity:1} }
-    .story-pin:hover { opacity:1; z-index:6; border-color:color-mix(in srgb, var(--k-accent) 30%, transparent); box-shadow:0 0 12px color-mix(in srgb, var(--k-accent) 15%, transparent); }
-    .story-pin:hover .pin-bubble { display: none; }
-    .story-pin:hover .pin-card { display: block; }
-
-    .pin-card .pc-user { font-size:10px; font-weight:600; }
-    .pin-card .pc-user-link { color:rgb(var(--k-ink) / 0.35); cursor:pointer; }
-    .pin-card .pc-user-link:hover { color:var(--k-accent); }
-    .pin-card .pc-text { font-size:12px; color:var(--k-text); line-height:1.3; word-wrap:break-word; margin-top:1px; }
-    .pin-card .pc-footer {
-      display:flex; align-items:center; justify-content:space-between; margin-top:2px;
-    }
-    .pin-card .pc-likes {
-      font-size:9px; color:color-mix(in srgb, var(--k-accent) 50%, transparent); display:flex; align-items:center; gap:2px; cursor:pointer;
-    }
-    .pin-card .pc-likes:hover { color:var(--k-accent); }
-    .pin-card .pc-edit, .pin-card .pc-delete {
-      font-size:9px; color:rgb(var(--k-ink) / 0.15); cursor:pointer; padding:1px 4px;
-      border-radius:4px; transition:.12s;
-    }
-    .pin-card .pc-edit:hover { color:var(--k-info); background:color-mix(in srgb, var(--k-info) 10%, transparent); }
-    .pin-card .pc-delete:hover { color:var(--k-accent); background:color-mix(in srgb, var(--k-accent) 10%, transparent); }
-
-    /* ── Alert / Confirm dialogs (in-page) ── */
-    .kami-overlay {
-      position: fixed; inset:0; z-index:9999;
-      background:rgba(0,0,0,0.6);
-      display:flex; align-items:center; justify-content:center;
-      animation:kamiConfirmFadeIn .15s ease;
-    }
-    @keyframes kamiConfirmFadeIn { from{opacity:0} to{opacity:1} }
-    .kami-confirm-box {
-      background:rgba(10,10,22,0.85); backdrop-filter:blur(20px);
-      -webkit-backdrop-filter:blur(20px);
-      border:1px solid rgb(var(--k-ink) / 0.1);
-      border-radius:16px; padding:28px 32px 22px;
-      min-width:280px; text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,0.5);
-    }
-    .kami-confirm-msg { font-size:15px; color:var(--k-text); margin-bottom:20px; font-weight:500; }
-    .kami-confirm-actions { display:flex; gap:10px; justify-content:center; }
-    .kami-confirm-actions button {
-      padding:8px 20px; border-radius:10px; border:none;
-      font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; font-weight:600;
-      cursor:pointer; transition:.15s;
-    }
-    .kami-confirm-cancel {
-      background:rgb(var(--k-ink) / 0.06); color:var(--k-text-3);
-    }
-    .kami-confirm-cancel:hover { background:rgb(var(--k-ink) / 0.12); color:var(--k-text); }
-    .kami-confirm-ok {
-      background:var(--k-accent); color: var(--k-text);
-    }
-    .kami-confirm-ok:hover { background:var(--k-accent-strong); }
-
-    /* ── Pin Editor Popover ── */
-    #pin-editor {
-      position: fixed; z-index: 30; display: none;
-    }
-    #pin-editor.open { display: block; }
-    #pin-editor .pe-inner {
-      background: rgba(10,10,22,0.7); backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgb(var(--k-ink) / 0.08);
-      border-radius: 14px;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.5);
-      padding: 14px;
-      min-width: 220px;
-      animation: peIn .12s ease;
-    }
-    @keyframes peIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
-    #pin-editor .pe-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    #pin-editor .pe-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      display:flex; align-items:center; justify-content:center;
-      background: var(--k-accent); font-size:10px; font-weight:700; color: var(--k-text); flex-shrink:0;
-    }
-    #pin-editor .pe-username { font-size:11px; color:rgb(var(--k-ink) / 0.35); font-weight:600; }
-    #pin-editor .pe-input {
-      width:100%; padding:8px 10px; border-radius:8px;
-      border: 1px solid rgb(var(--k-ink) / 0.08);
-      background: rgb(var(--k-ink) / 0.04);
-      color: var(--k-text); font-family:inherit; font-size:13px;
-      outline:none; resize:none; min-height:32px;
-    }
-    #pin-editor .pe-input:focus { border-color:color-mix(in srgb, var(--k-accent) 40%, transparent); }
-    #pin-editor .pe-actions {
-      display:flex; align-items:center; gap:6px; margin-top:8px;
-      justify-content:space-between;
-    }
-    #pin-editor .pe-emoji-row { display:flex; gap:4px; }
-    #pin-editor .pe-emoji {
-      width: 30px; height: 30px; border-radius: 50%;
-      border: 1px solid rgb(var(--k-ink) / 0.06);
-      background: rgb(var(--k-ink) / 0.03);
-      cursor: pointer; font-size: 14px;
-      display:flex; align-items:center; justify-content:center;
-      transition: .12s;
-    }
-    #pin-editor .pe-emoji:hover { background:rgb(var(--k-ink) / 0.1); border-color:rgb(var(--k-ink) / 0.15); }
-    #pin-editor .pe-emoji.selected { border-color:var(--k-accent); background:color-mix(in srgb, var(--k-accent) 15%, transparent); }
-    #pin-editor .pe-submit {
-      padding: 6px 16px; border-radius: 8px; border: none;
-      background: var(--k-accent); color: var(--k-text); cursor: pointer;
-      font-family: inherit; font-size: 12px; font-weight: 600;
-      white-space: nowrap; transition: .12s;
-    }
-    #pin-editor .pe-submit:hover { background:var(--k-accent-strong); }
-    #pin-editor .pe-submit:disabled { opacity:0.3; cursor:default; }
-    #pin-editor .pe-cancel {
-      padding: 6px 12px; border-radius: 8px; border: 1px solid rgb(var(--k-ink) / 0.06);
-      background: transparent; color: rgb(var(--k-ink) / 0.3); cursor: pointer;
-      font-family:inherit; font-size:11px; transition:.12s;
-    }
-    #pin-editor .pe-cancel:hover { color:rgb(var(--k-ink) / 0.6); border-color:rgb(var(--k-ink) / 0.12); }
-    #pin-editor .pe-timer {
-      font-size:10px; color:rgb(var(--k-ink) / 0.12); text-align:right; margin-top:4px;
-    }
-
-    @media(max-width:768px) {
-      #reader-pages { padding-top:64px; padding-bottom:60px; }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Leer · KamiTales</title>
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="/css/reader-glass.css">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <style>
+    /* Lector de cómics: interfaz de cristal compartida (reader-glass.css) + modos
+       Continuo, Por páginas y Doble página, con dirección izquierda→derecha o derecha→izquierda. */
+    :root { --rd-top: 96px; --rd-bottom: 88px; --cr-bg: #050508; --ph-ratio: 2 / 3; }
+    @media (max-width: 768px) { :root { --rd-top: 64px; --rd-bottom: 60px; } }
+    [hidden] { display: none !important; }
+    html, body { background: var(--cr-bg); }
+    body { color: var(--k-text); font-family: var(--k-font-body); -webkit-tap-highlight-color: transparent; }
+    #reader-topbar, #reader-bottombar { background: color-mix(in srgb, var(--cr-bg) 62%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    #comments-panel, #settings-panel { background: color-mix(in srgb, var(--cr-bg) 82%, transparent); }
+    body.ui-off #reader-topbar { transform: translateY(-100%); }
+    body.ui-off #reader-bottombar { transform: translateY(100%); }
+    #reader-topbar .chapter-select { max-width: 200px; }
+    #reader-topbar .right button:focus-visible, #reader-bottombar button:focus-visible, #reader-bottombar .comments-btn:focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+    @media (max-width: 768px) { #reader-topbar .chapter-select { max-width: 120px; } }
+
+    /* Barra inferior: comentarios · barra de páginas · botones */
+    #reader-bottombar { gap: 16px; }
+    #reader-bottombar .center { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; max-width: 720px; margin: 0 auto; letter-spacing: 0; }
+    #reader-bottombar .right { width: auto; min-width: 80px; display: flex; justify-content: flex-end; gap: 8px; }
+    #reader-bottombar .right button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgb(var(--k-ink) / 0.08); background: rgb(var(--k-ink) / 0.04); color: var(--k-text); display: grid; place-items: center; cursor: pointer; font-size: 20px; }
+    #reader-bottombar .right button:hover:not(:disabled) { background: rgb(var(--k-ink) / 0.1); }
+    #reader-bottombar .right button:disabled { opacity: .3; cursor: default; }
+    .cr-count { flex: none; font: 600 14px/1 var(--k-font-body); color: rgb(var(--k-ink) / .8); font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+    .cr-scrub { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+    .cr-scrub input { width: 100%; accent-color: var(--k-accent); cursor: pointer; height: 28px; }
+    body[data-dir="rtl"][data-mode="paged"] .cr-scrub input, body[data-dir="rtl"][data-mode="double"] .cr-scrub input { direction: rtl; }
+    .cr-thumb { position: absolute; bottom: 38px; transform: translateX(-50%); display: grid; gap: 6px; justify-items: center; padding: 6px; border-radius: 12px; background: color-mix(in srgb, var(--cr-bg) 88%, transparent); border: 1px solid rgb(var(--k-ink) / .1); box-shadow: 0 12px 30px rgb(0 0 0 / .5); pointer-events: none; }
+    .cr-thumb i { display: block; width: 84px; aspect-ratio: var(--ph-ratio); border-radius: 6px; background: rgb(var(--k-ink) / .06) center / cover no-repeat; }
+    .cr-thumb span { font: 700 12px/1 var(--k-font-body); color: var(--k-text); }
+    .rd-progress { position: absolute; left: 0; right: 0; top: -1px; height: 2px; }
+    .rd-progress i { display: block; height: 100%; width: 0; background: var(--k-accent); box-shadow: 0 0 10px var(--k-accent); transition: width .2s linear; }
+    body[data-dir="rtl"]:not([data-mode="scroll"]) .rd-progress i { margin-left: auto; }
+    @media (max-width: 768px) {
+      #reader-bottombar { gap: 10px; }
+      #reader-bottombar .right button { width: 38px; height: 38px; font-size: 18px; }
+      .cr-count { min-width: 52px; font-size: 13px; }
+      #reader-bottombar .right .cr-only-wide { display: none; }
+    }
+
+    /* Páginas */
+    #reader-pages { position: relative; }
+    #pv-track { position: relative; }
+    .reader-page { position: relative; margin: 0 auto; }
+    .reader-page img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
+    .reader-page img.loaded { animation: crIn .25s ease; }
+    @keyframes crIn { from { opacity: 0; } to { opacity: 1; } }
+    .ph { width: 100%; aspect-ratio: var(--ph-ratio); display: grid; place-items: center; align-content: center; gap: 10px; color: rgb(var(--k-ink) / .35); font-size: 13px; text-align: center; padding: 16px;
+      background: linear-gradient(110deg, rgb(var(--k-ink) / .03) 30%, rgb(var(--k-ink) / .07) 50%, rgb(var(--k-ink) / .03) 70%) 0 0 / 300% 100%; animation: crShimmer 1.6s linear infinite; }
+    .ph.is-error { animation: none; background: rgb(var(--k-ink) / .03); color: var(--k-text-2); }
+    .ph button { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / .15); background: rgb(var(--k-ink) / .06); color: var(--k-text); font: 600 13px var(--k-font-body); cursor: pointer; }
+    @keyframes crShimmer { to { background-position: -300% 0; } }
+    @media (prefers-reduced-motion: reduce) { .ph { animation: none; } }
+
+    /* Modo continuo */
+    body[data-mode="scroll"] #reader-pages { padding: var(--rd-top) 0 0; }
+    body[data-mode="scroll"] .reader-page { max-width: min(100%, var(--cr-width, 860px)); }
+    body[data-mode="scroll"] .reader-page + .reader-page { margin-top: var(--cr-gap, 0px); }
+
+    /* Modos por páginas y doble página: un escenario a pantalla completa */
+    body[data-mode="paged"], body[data-mode="double"] { overflow: hidden; height: 100dvh; }
+    body[data-mode="paged"] #reader-pages, body[data-mode="double"] #reader-pages { position: fixed; inset: 0; overflow: hidden; touch-action: none; display: flex; align-items: center; justify-content: center; }
+    body[data-mode="paged"] #pv-track, body[data-mode="double"] #pv-track { display: flex; align-items: center; justify-content: center; transform-origin: 0 0; will-change: transform; }
+    body[data-dir="rtl"][data-mode="double"] #pv-track { flex-direction: row-reverse; }
+    body[data-mode="paged"] .reader-page, body[data-mode="double"] .reader-page { display: none; margin: 0; }
+    body[data-mode="paged"] .reader-page.is-on, body[data-mode="double"] .reader-page.is-on { display: block; }
+    body[data-mode="paged"] .reader-page img { width: auto; max-width: 100vw; max-height: 100dvh; }
+    body[data-mode="double"] .reader-page img { width: auto; max-width: 50vw; max-height: 100dvh; }
+    body[data-mode="paged"] .ph { width: min(100vw, calc(100dvh * 2 / 3)); }
+    body[data-mode="double"] .ph { width: min(50vw, calc(100dvh * 2 / 3)); }
+    body.is-zoomed #pv-track { cursor: grab; }
+    body[data-mode="paged"] .cr-end, body[data-mode="double"] .cr-end { display: none; }
+    body[data-mode="paged"] .cr-end.is-on, body[data-mode="double"] .cr-end.is-on { display: grid; }
+
+    /* Final de capítulo */
+    .cr-end { width: min(520px, calc(100vw - 32px)); margin: 0 auto; padding: 48px 0 calc(var(--rd-bottom) + 48px); display: grid; gap: 14px; text-align: center; justify-items: center; }
+    body:not([data-mode="scroll"]) .cr-end { padding: 0; }
+    .cr-end__n { font: 600 12px/1 var(--k-font-mono, monospace); letter-spacing: .14em; text-transform: uppercase; color: var(--k-accent); }
+    .cr-end h2 { margin: 0; font: 900 clamp(2rem, 7vw, 2.8rem)/.95 var(--k-font-display); text-transform: uppercase; text-wrap: balance; }
+    .cr-end p { margin: 0; color: var(--k-text-2); line-height: 1.55; }
+    .cr-card { width: 100%; display: grid; gap: 12px; padding: 18px 20px; border-radius: 16px; border: 1px solid rgb(var(--k-ink) / .1); background: rgb(var(--k-ink) / .04); text-align: left; }
+    .cr-next { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; color: inherit; text-decoration: none; }
+    a.cr-card:hover { border-color: var(--k-accent-line); background: rgb(var(--k-ink) / .07); }
+    .cr-next small { display: block; color: var(--k-text-3); font-size: 12px; margin-bottom: 2px; }
+    .cr-next b { display: block; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cr-next .ti { font-size: 22px; color: var(--k-accent); }
+    .cr-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .cr-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / .12); background: rgb(var(--k-ink) / .05); color: var(--k-text); font: 600 13px var(--k-font-body); text-decoration: none; cursor: pointer; }
+    .cr-pill:hover { border-color: var(--k-accent); color: var(--k-accent); }
+
+    /* Estado (carga, error, adelanto) */
+    .cr-state { min-height: 100dvh; display: grid; place-items: center; padding: calc(var(--rd-top) + 24px) 20px calc(var(--rd-bottom) + 24px); }
+    .cr-state > div { width: min(460px, 100%); display: grid; gap: 14px; justify-items: center; text-align: center; }
+    .cr-state .ti { font-size: 40px; color: var(--k-accent); }
+    .cr-state h2 { margin: 0; font: 800 clamp(1.6rem, 5vw, 2.2rem)/1 var(--k-font-display); text-transform: uppercase; }
+    .cr-state p { margin: 0; color: var(--k-text-2); line-height: 1.6; }
+
+    /* Aviso para retomar */
+    .cr-resume { position: fixed; z-index: 12; left: 50%; top: calc(var(--rd-top) + 12px); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px);
+      padding: 8px 8px 8px 16px; border-radius: 999px; background: color-mix(in srgb, var(--cr-bg) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgb(var(--k-ink) / .12); box-shadow: 0 14px 40px rgb(0 0 0 / .5); font-size: 13px; animation: crIn .2s ease; }
+    .cr-resume button { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid rgb(var(--k-ink) / .14); background: rgb(var(--k-ink) / .06); color: var(--k-text); font: 600 12px var(--k-font-body); cursor: pointer; }
+    body.ui-off .cr-resume { top: 12px; }
+
+    /* Ajustes */
+    .mode-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .mode-btn { border: 1.5px solid rgb(var(--k-ink) / 0.06); font-family: var(--k-font-body); color: var(--k-text); }
+    .mode-btn:focus-visible { outline: 2px solid var(--k-accent); outline-offset: 2px; }
+    .mode-btn .mode-icon { font-size: 22px; }
+    .mode-btn:disabled { opacity: .35; cursor: not-allowed; }
+    #settings-panel .group > .hint { font-size: 11px; color: rgb(var(--k-ink) / 0.4); margin-top: 6px; line-height: 1.5; }
+    #settings-panel .hint a { color: var(--k-gold); }
+    .cr-keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12px; color: var(--k-text-2); }
+    .cr-keys kbd { font: 600 11px var(--k-font-body); padding: 2px 6px; border-radius: 5px; border: 1px solid rgb(var(--k-ink) / .15); background: rgb(var(--k-ink) / .05); color: var(--k-text); white-space: nowrap; }
+
+    /* Capa de protección (sin capturar clics) */
+    #reader-shield { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+
+    /* ── StoryPins ─────────────────────────────────────────── */
+    .story-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+    .story-layer .story-pin { pointer-events: auto; }
+    .story-layer.active { pointer-events: auto; }
+    body.ink-mode, body.ink-mode .story-layer.active { cursor: crosshair; }
+    body.pins-off .story-pin { display: none !important; }
+    .draft-pin { position: fixed; z-index: 3; width: 42px; height: 42px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 20%, transparent); border: 2px solid color-mix(in srgb, var(--k-accent) 60%, transparent); transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 16px color-mix(in srgb, var(--k-accent) 30%, transparent); }
+    .draft-pin::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: color-mix(in srgb, var(--k-accent) 25%, transparent); animation: pinPulse 1.2s ease-in-out infinite; }
+    @keyframes pinPulse { 0%,100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.15); opacity: 1; } }
+    .story-pin { position: absolute; z-index: 3; width: 36px; height: 36px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; opacity: .8; transition: opacity .2s, box-shadow .2s; border: 1.5px solid rgb(var(--k-ink) / 0.2); background: color-mix(in srgb, var(--k-accent) 20%, transparent); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; font-size: 14px; overflow: visible; }
+    .story-pin.has-message::before { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--k-accent) 30%, transparent); animation: pinGlow 2s ease-in-out infinite; }
+    @keyframes pinGlow { 0%,100% { opacity: .3; } 50% { opacity: .8; } }
+    .story-pin .pin-bubble { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .story-pin .pin-avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0; }
+    .story-pin .pin-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .story-pin .pin-emoji { font-size: 16px; line-height: 1; }
+    .story-pin.popular { border-color: color-mix(in srgb, var(--k-gold) 50%, transparent); }
+    .story-pin .pin-card { display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 80px; max-width: 280px; width: max-content; white-space: normal; word-break: break-word; background: rgba(8,8,18,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgb(var(--k-ink) / 0.1); border-radius: 10px; padding: 6px 10px; box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 5; }
+    .story-pin:hover, .story-pin.is-open { opacity: 1; z-index: 6; }
+    .story-pin:hover .pin-bubble, .story-pin.is-open .pin-bubble { display: none; }
+    .story-pin:hover .pin-card, .story-pin.is-open .pin-card { display: block; }
+    .pin-card .pc-user { font-size: 11px; font-weight: 600; }
+    .pin-card .pc-user-link { color: rgb(var(--k-ink) / 0.5); cursor: pointer; }
+    .pin-card .pc-user-link:hover { color: var(--k-accent); }
+    .pin-card .pc-text { font-size: 13px; color: var(--k-text); line-height: 1.35; margin-top: 1px; }
+    .pin-card .pc-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+    .pin-card button { border: 0; background: none; padding: 2px 4px; border-radius: 4px; font: 600 11px var(--k-font-body); color: rgb(var(--k-ink) / .5); cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
+    .pin-card button:hover { color: var(--k-accent); background: rgb(var(--k-ink) / .06); }
+    #pin-editor { position: fixed; z-index: 30; display: none; }
+    #pin-editor.open { display: block; }
+    #pin-editor .pe-inner { background: rgba(10,10,22,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgb(var(--k-ink) / 0.1); border-radius: 14px; box-shadow: 0 12px 48px rgba(0,0,0,.5); padding: 14px; width: 260px; }
+    #pin-editor .pe-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--k-text-2); font-weight: 600; }
+    #pin-editor .pe-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--k-accent); font-size: 10px; font-weight: 700; color: #fff; }
+    #pin-editor .pe-input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgb(var(--k-ink) / 0.1); background: rgb(var(--k-ink) / 0.05); color: var(--k-text); font: 13px var(--k-font-body); outline: none; }
+    #pin-editor .pe-input:focus { border-color: var(--k-accent); }
+    #pin-editor .pe-actions { display: flex; align-items: center; gap: 6px; margin-top: 8px; justify-content: space-between; }
+    #pin-editor .pe-emoji-row { display: flex; gap: 4px; }
+    #pin-editor .pe-emoji { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgb(var(--k-ink) / 0.08); background: rgb(var(--k-ink) / 0.04); cursor: pointer; font-size: 14px; display: grid; place-items: center; padding: 0; }
+    #pin-editor .pe-emoji.selected { border-color: var(--k-accent); background: color-mix(in srgb, var(--k-accent) 15%, transparent); }
+    #pin-editor .pe-submit { padding: 6px 14px; border-radius: 8px; border: 0; background: var(--k-accent-fill, var(--k-accent)); color: #fff; cursor: pointer; font: 600 12px var(--k-font-body); }
+    #pin-editor .pe-submit:disabled { opacity: .4; cursor: default; }
+    #pin-editor .pe-cancel { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgb(var(--k-ink) / 0.1); background: transparent; color: var(--k-text-2); cursor: pointer; }
+    #pin-editor .pe-timer { font-size: 10px; color: rgb(var(--k-ink) / .35); text-align: right; margin-top: 4px; }
+    .ink-hint { position: fixed; z-index: 12; left: 50%; bottom: calc(var(--rd-bottom) + 12px); transform: translateX(-50%); padding: 8px 14px; border-radius: 999px; background: var(--k-accent-fill, var(--k-accent)); color: #fff; font: 600 12px var(--k-font-body); box-shadow: 0 10px 30px rgb(0 0 0 / .5); }
+  </style>
 </head>
-<body data-shell="none">
-<!-- ═══════════════════════════════════════════
-       NIVEL 2 — CAPA DE PROTECCIÓN
-  ═══════════════════════════════════════════ -->
-  <div id="reader-shield"></div>
+<body data-shell="none" data-mode="scroll" data-dir="ltr">
+<div id="reader-shield" aria-hidden="true"></div>
 
-  <!-- ═══════════════════════════════════════════
-       NIVEL 1 — UI SUPERIOR
-  ═══════════════════════════════════════════ -->
-  <header id="reader-topbar">
-    <div class="left">
-      <span class="logo-mark">神</span><span class="logo-text">KamiTales</span>
-      <a class="manga-title" id="manga-title-link" title="Volver a la cartelera">Cargando...</a>
-      <select class="chapter-select" id="chapter-select" onchange="jumpToChapter(this.value)">
-        <option value="">#001</option>
-      </select>
-    </div>
+<!-- Barra superior -->
+<header id="reader-topbar">
+  <div class="left">
+    <span class="logo-mark" aria-hidden="true">神</span><span class="logo-text">KamiTales</span>
+    <a class="manga-title" id="manga-title-link" href="/" title="Volver a la obra">Cargando…</a>
+    <select class="chapter-select" id="chapter-select" aria-label="Capítulo"></select>
+  </div>
+  <div class="right">
+    <button type="button" id="btn-story-pin" title="Dejar un StoryPin" aria-label="Dejar un StoryPin" aria-pressed="false"><i class="ti ti-brush" aria-hidden="true"></i></button>
+    <button type="button" id="btn-settings" title="Ajustes de lectura" aria-label="Ajustes de lectura" aria-expanded="false" aria-controls="settings-panel"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i></button>
+  </div>
+</header>
 
-    <div class="right">
-      <button id="btn-story-pin" onclick="toggleInkMode()" title="StoryPin"><i class="ti ti-brush"></i></button>
-      <button id="btn-settings" onclick="toggleSettings()" title="Ajustes"><i class="ti ti-settings"></i></button>
-    </div>
-  </header>
+<main id="k-main">
+  <div id="reader-pages"><div id="pv-track"></div></div>
+</main>
 
-  <!-- ═══════════════════════════════════════════
-       NIVEL 3 — CAPA DE CONTENIDO
-  ═══════════════════════════════════════════ -->
-  <div id="reader-pages"></div>
-
-  <!-- Botón contextual al final -->
-  <div id="next-chapter-cta"></div>
-
-  <!-- ═══════════════════════════════════════════
-       NIVEL 1 — UI INFERIOR
-  ═══════════════════════════════════════════ -->
-  <footer id="reader-bottombar">
-    <div class="left">
-      <div class="comments-btn" id="btn-comments" onclick="toggleComments()">
-        <span class="icon-wrap">
-          <i class="ti ti-message" style="font-size:28px;"></i>
-          <span class="count" id="comments-count">0</span>
-        </span>
-      </div>
-    </div>
-    <div class="center" id="progress-indicator">—</div>
-    <div class="right"></div>
-  </footer>
-
-  <!-- ═══════════════════════════════════════════
-       MODALES
-  ═══════════════════════════════════════════ -->
-  <div id="comments-overlay" onclick="closeComments()"></div>
-  <div id="comments-panel">
-    <div class="cp-header">
-      <div class="cp-title"><i class="ti ti-message"></i> Comentarios</div>
-      <button onclick="closeComments()"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="cp-body" id="cp-body">
-      <div class="cp-empty" id="cp-loading">Cargando comentarios...</div>
-    </div>
-    <div class="cp-footer">
-      <textarea id="cp-input" placeholder="Escribe un comentario..." rows="1"></textarea>
-      <button onclick="postComment()" id="cp-btn">Enviar</button>
+<!-- Barra inferior -->
+<footer id="reader-bottombar">
+  <div class="rd-progress" aria-hidden="true"><i id="rd-progress"></i></div>
+  <div class="left">
+    <div class="comments-btn" id="btn-comments" role="button" tabindex="0" aria-label="Comentarios del capítulo" aria-controls="comments-panel">
+      <span class="icon-wrap"><i class="ti ti-message" style="font-size:28px" aria-hidden="true"></i><span class="count" id="comments-count">0</span></span>
     </div>
   </div>
+  <div class="center">
+    <div class="cr-scrub"><label class="k-visually-hidden" for="cr-range">Ir a la página</label><input type="range" id="cr-range" min="1" max="1" value="1"><div class="cr-thumb" id="cr-thumb" hidden><i id="cr-thumb-img"></i><span id="cr-thumb-n"></span></div></div>
+    <span class="cr-count" id="progress-indicator" aria-live="polite">—</span>
+  </div>
+  <div class="right">
+    <button type="button" id="cr-prev" aria-label="Anterior"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+    <button type="button" id="cr-next" aria-label="Siguiente"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+  </div>
+</footer>
 
-  <div id="settings-overlay" onclick="toggleSettings()"></div>
-  <div id="settings-panel">
-    <h3><i class="ti ti-settings"></i> Ajustes de lectura</h3>
+<div class="cr-resume" id="cr-resume" role="status" hidden></div>
+<div class="ink-hint" id="ink-hint" hidden>Toca un punto de la página para dejar tu StoryPin · Esc para salir</div>
 
-    <div class="group">
-      <label>Modo de lectura</label>
-      <div class="mode-grid" id="mode-grid">
-        <div class="mode-btn" data-mode="vertical" onclick="changeMode('vertical')">
-          <span class="mode-icon">📖</span>
-          <span class="mode-label">Vertical</span>
-        </div>
-        <div class="mode-btn" data-mode="horizontal" onclick="changeMode('horizontal')">
-          <span class="mode-icon">↔️</span>
-          <span class="mode-label">Horizontal</span>
-        </div>
-        <div class="mode-btn" data-mode="webtoon" onclick="changeMode('webtoon')">
-          <span class="mode-icon">📱</span>
-          <span class="mode-label">Webtoon</span>
-        </div>
-        <div class="mode-btn" data-mode="double" onclick="changeMode('double')">
-          <span class="mode-icon">📖📖</span>
-          <span class="mode-label">Doble página</span>
-        </div>
-      </div>
+<!-- Comentarios -->
+<div id="comments-overlay"></div>
+<div id="comments-panel" role="dialog" aria-modal="true" aria-labelledby="cp-title">
+  <div class="cp-header">
+    <div class="cp-title" id="cp-title"><i class="ti ti-message" aria-hidden="true"></i> Comentarios</div>
+    <button type="button" id="cp-close" aria-label="Cerrar comentarios"><i class="ti ti-x" aria-hidden="true"></i></button>
+  </div>
+  <div class="cp-body" id="cp-body"><div class="cp-empty">Cargando comentarios…</div></div>
+  <form class="cp-footer" id="cp-form">
+    <label class="k-visually-hidden" for="cp-input">Tu comentario</label>
+    <textarea id="cp-input" placeholder="Escribe un comentario…" rows="1" maxlength="2000"></textarea>
+    <button type="submit" id="cp-btn">Enviar</button>
+  </form>
+</div>
+
+<!-- Ajustes -->
+<div id="settings-overlay"></div>
+<div id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="st-title">
+  <h3 id="st-title"><i class="ti ti-adjustments-horizontal" aria-hidden="true"></i> Ajustes de lectura</h3>
+  <div class="group">
+    <label>Modo de lectura</label>
+    <div class="mode-grid three" id="st-mode">
+      <button type="button" class="mode-btn" value="scroll"><span class="mode-icon"><i class="ti ti-arrows-vertical" aria-hidden="true"></i></span><span class="mode-label">Continuo</span></button>
+      <button type="button" class="mode-btn" value="paged"><span class="mode-icon"><i class="ti ti-file" aria-hidden="true"></i></span><span class="mode-label">Por páginas</span></button>
+      <button type="button" class="mode-btn" value="double"><span class="mode-icon"><i class="ti ti-book-2" aria-hidden="true"></i></span><span class="mode-label">Doble página</span></button>
     </div>
-
-    <div class="group">
-      <label>Calidad de imagen</label>
-      <select id="sel-quality" onchange="changeQuality(this.value)">
-        <option value="master">🌟 Ultra</option>
-        <option value="1080" selected>✅ Alta</option>
-        <option value="720">📱 Media</option>
-        <option value="480">💾 Baja</option>
-      </select>
-    </div>
-
-    <div class="group" id="quality-warning" style="display:none;">
-      <label style="color:var(--k-gold);">🌟 Ultra solo para usuarios Premium</label>
-    </div>
-
-    <div style="flex:1;"></div>
-
-    <div class="group">
-      <label style="display:flex; align-items:center; justify-content:space-between;">
-        <span>Precargar capítulos</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="chk-preload" checked onchange="savePreload(this.checked)">
-          <span class="toggle-slider2"></span>
-        </label>
-      </label>
-      <div style="font-size:10px; color:rgb(var(--k-ink) / 0.15); margin-top:4px;">Carga automática el siguiente capítulo</div>
-    </div>
-
-    <div class="group">
-      <label style="display:flex; align-items:center; justify-content:space-between;">
-        <span>Mostrar StoryPins</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="chk-storypins" checked onchange="saveStoryPinsVisibility(this.checked)">
-          <span class="toggle-slider2"></span>
-        </label>
-      </label>
-      <div style="font-size:10px; color:rgb(var(--k-ink) / 0.15); margin-top:4px;">Muestra los pins que otros dejaron en las páginas</div>
+    <div class="hint" id="st-mode-hint">Continuo: las páginas una debajo de otra, ideal para webtoon. Por páginas: una a una, tocando los lados o deslizando. Doble página: como un tomo abierto (pantallas anchas).</div>
+  </div>
+  <div class="group" id="st-dir-group">
+    <label>Sentido de lectura</label>
+    <div class="mode-grid" id="st-dir">
+      <button type="button" class="mode-btn" value="rtl"><span class="mode-icon"><i class="ti ti-arrow-left" aria-hidden="true"></i></span><span class="mode-label">Manga (der. → izq.)</span></button>
+      <button type="button" class="mode-btn" value="ltr"><span class="mode-icon"><i class="ti ti-arrow-right" aria-hidden="true"></i></span><span class="mode-label">Cómic (izq. → der.)</span></button>
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════════════
-       STORY PIN EDITOR (overlay flotante)
-  ═══════════════════════════════════════════ -->
-  <div id="pin-editor">
-    <div class="pe-inner">
-      <div class="pe-header">
-        <div class="pe-avatar" id="pe-avatar">?</div>
-        <span class="pe-username" id="pe-username">Tú</span>
-      </div>
-      <input class="pe-input" id="pe-input" placeholder="¿Qué mensaje quieres dejar?" maxlength="180">
-      <div class="pe-actions">
-        <div class="pe-emoji-row">
-          <span class="pe-emoji" data-emoji="💀" onclick="selectReaction('💀')">💀</span>
-          <span class="pe-emoji" data-emoji="😭" onclick="selectReaction('😭')">😭</span>
-          <span class="pe-emoji" data-emoji="🔥" onclick="selectReaction('🔥')">🔥</span>
-          <span class="pe-emoji" data-emoji="❤️" onclick="selectReaction('❤️')">❤️</span>
-          <span class="pe-emoji" data-emoji="😂" onclick="selectReaction('😂')">😂</span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button class="pe-cancel" onclick="cancelDraft()">✕</button>
-          <button class="pe-submit" id="pe-submit" onclick="publishPin()">Publicar</button>
-        </div>
-      </div>
-      <div class="pe-timer" id="pe-timer"></div>
+  <div class="group" id="st-q-group">
+    <label for="sel-quality">Calidad de imagen</label>
+    <select id="sel-quality">
+      <option value="master">Original · Premium</option>
+      <option value="1080">Alta · 1080p</option>
+      <option value="720">Media · 720p</option>
+      <option value="480">Baja · 480p (ahorra datos)</option>
+    </select>
+    <div class="hint" id="st-q-hint"></div>
+  </div>
+  <div class="group">
+    <label style="display:flex;align-items:center;justify-content:space-between">
+      <span>Mostrar StoryPins</span>
+      <span class="toggle-switch"><input type="checkbox" id="chk-storypins"><span class="toggle-slider2"></span></span>
+    </label>
+    <div class="hint">Las notas que otros lectores dejan en un punto de la página.</div>
+  </div>
+  <div style="flex:1"></div>
+  <div class="group cr-only-wide">
+    <label>Atajos</label>
+    <div class="cr-keys">
+      <span><kbd>←</kbd> <kbd>→</kbd></span><span>Pasar página (según el sentido)</span>
+      <span><kbd>Espacio</kbd> <kbd>Av Pág</kbd></span><span>Siguiente</span>
+      <span><kbd>Inicio</kbd> <kbd>Fin</kbd></span><span>Primera / última página</span>
+      <span><kbd>Doble clic</kbd></span><span>Ampliar (por páginas)</span>
     </div>
   </div>
+</div>
 
-  <script src="/js/offline.js?v=2"></script>
-  <script>
-    var TOKEN = localStorage.getItem('kami_token');
-    var mangaId = null, chapterNum = null, totalPages = 0, currentPage = 0;
-    var MANIFEST = null;
-    var _chapterStartTime = Date.now(); // Para medir tiempo real de lectura
+<!-- Editor de StoryPin -->
+<div id="pin-editor" role="dialog" aria-label="Nuevo StoryPin">
+  <div class="pe-inner">
+    <div class="pe-header"><span class="pe-avatar" id="pe-avatar">?</span><span id="pe-username">Tú</span></div>
+    <input class="pe-input" id="pe-input" placeholder="¿Qué quieres dejar aquí?" maxlength="180">
+    <div class="pe-actions">
+      <div class="pe-emoji-row">
+        <button type="button" class="pe-emoji" data-emoji="💀">💀</button><button type="button" class="pe-emoji" data-emoji="😭">😭</button><button type="button" class="pe-emoji" data-emoji="🔥">🔥</button><button type="button" class="pe-emoji" data-emoji="❤️">❤️</button><button type="button" class="pe-emoji" data-emoji="😂">😂</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button type="button" class="pe-cancel" id="pe-cancel" aria-label="Cancelar"><i class="ti ti-x" aria-hidden="true"></i></button>
+        <button type="button" class="pe-submit" id="pe-submit">Publicar</button>
+      </div>
+    </div>
+    <div class="pe-timer" id="pe-timer"></div>
+  </div>
+</div>
 
-    var pathParts = window.location.pathname.split('/');
-    mangaId = pathParts[2];
-    chapterNum = parseInt(pathParts[3]);
+<script>
+(function () {
+  'use strict';
+  /* ════════════════ Utilidades ════════════════ */
+  var $ = function (id) { return document.getElementById(id); };
+  var parts = (window.KT_DEMO_PATH || location.pathname).split('/');   // /leer/:id/:cap
+  var mangaId = decodeURIComponent(parts[2] || '');
+  var chapterNum = parseInt(parts[3], 10) || 1;
+  var COLORS = ['#ff3b6b', '#9d7bff', '#22d3ee', '#f5b83d', '#3ee08f', '#ff5fbf', '#60a5fa', '#fb923c'];
+  var fmtDate = new Intl.DateTimeFormat('es', { dateStyle: 'long', timeStyle: 'short' });
+  function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
+  function me() { try { return JSON.parse(localStorage.getItem('kami_user') || 'null') || {}; } catch (e) { return {}; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function authH(extra) { var h = Object.assign({}, extra || {}); if (token()) h.Authorization = 'Bearer ' + token(); return h; }
+  function toast(m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); }
+  function colorFor(name) { var h = 0; name = String(name || '?'); for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return COLORS[h % COLORS.length]; }
+  function lsGet(k, d) { try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* nada */ } }
 
-    // IntersectionObserver para lazy loading
-    function loadPageImage(img, ph) {
-      var controller = new AbortController();
-      var timeout = setTimeout(function() { controller.abort(); }, 15000);
-      fetch(img.getAttribute('data-src'), { signal: controller.signal })
-        .then(function(r) {
-          clearTimeout(timeout);
-          if (!r.ok) throw new Error('HTTP ' + r.status);
-          return r.blob();
-        })
-        .then(function(blob) {
-          var url = URL.createObjectURL(blob);
-          img.onload = function() {
-            img.style.display = 'block';
-            if (ph.parentElement) ph.remove();
-            URL.revokeObjectURL(url);
+  /* ════════════════ Estado ════════════════ */
+  var M = null;                 // manifiesto
+  var total = 0;
+  var cur = 0;                  // página actual (índice)
+  var vi = 0;                   // vista actual en modos por páginas
+  var views = [];               // [[0], [1,2], …, ['end']]
+  var pageEls = [], endEl = null;
+  var blobs = {};               // índice → objectURL (para miniaturas)
+  var loading = {};
+  var readSent = false;
+  var settings = Object.assign({ pins: true }, lsGet('kt_comic', {}));
+  var perWork = lsGet('kt_comic_modes', {});
+  var mode = 'scroll', dir = 'ltr';
+
+  function wide() { return window.innerWidth >= 1024; }
+  function defaultLayout() {
+    var t = (M && M.manga.type || 'manga').toLowerCase();
+    if (/manhwa|manhua|webtoon/.test(t)) return { mode: 'scroll', dir: 'ltr' };
+    if (t === 'manga') return { mode: 'paged', dir: 'rtl' };
+    return { mode: 'paged', dir: 'ltr' };
+  }
+  function effectiveMode() { return mode === 'double' && !wide() ? 'paged' : mode; }
+
+  /* ════════════════ Carga del capítulo ════════════════ */
+  function showState(icon, title, html) {
+    $('pv-track').innerHTML = '<div class="cr-state"><div><i class="ti ' + icon + '" aria-hidden="true"></i><h2>' + esc(title) + '</h2>' + html + '</div></div>';
+    document.body.dataset.mode = 'scroll';
+  }
+  function loadManifest(keepPage) {
+    if (!keepPage) showState('ti-loader-2', 'Cargando…', '<p>Preparando el capítulo.</p>');
+    return fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/manifest', { headers: authH() })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
+      .then(function (x) {
+        if (x.r.status === 403 && x.d.locked) {
+          showState('ti-lock', 'Adelanto', '<p>Este capítulo se libera gratis el <b>' + esc(fmtDate.format(new Date(x.d.freeAt))) + '</b>.</p><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '">Volver a la obra</a>');
+          return null;
+        }
+        if (x.r.status === 404) {
+          showState('ti-book-off', 'No encontrado', '<p>Este capítulo no existe o todavía no se ha publicado.</p><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '">Ver los capítulos de la obra</a>');
+          return null;
+        }
+        if (!x.r.ok) throw new Error('http');
+        return x.d;
+      })
+      .catch(function () {
+        showState('ti-wifi-off', 'Sin conexión', '<p>No hemos podido cargar el capítulo.</p><button type="button" class="cr-pill" id="cr-retry">Reintentar</button>');
+        var b = $('cr-retry'); if (b) b.addEventListener('click', function () { loadManifest(); });
+        return null;
+      });
+  }
+
+  function init() {
+    loadManifest().then(function (d) {
+      if (!d) return;
+      M = d; total = M.chapter.pages || 0;
+      $('manga-title-link').textContent = M.manga.title;
+      $('manga-title-link').href = '/obra/' + encodeURIComponent(M.manga.id);
+      document.title = 'Cap. ' + chapterNum + ' · ' + M.manga.title + ' · KamiTales';
+      var lay = perWork[mangaId] || defaultLayout();
+      mode = lay.mode; dir = lay.dir;
+      setupQuality();
+      loadChapterList();
+      loadCommentCount();
+      build();
+      var start = startPage();
+      start.then(function (p) { applyMode(p); });
+      if (token()) fetch('/api/track', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ action_type: 'daily_login' }) }).catch(function () {});
+    });
+  }
+
+  // Página inicial: enlace #p=N › progreso guardado › principio
+  function startPage() {
+    var m = /(?:^|[#&])p=(\d+)/.exec(location.hash);
+    if (m) return Promise.resolve(Math.min(total - 1, Math.max(0, parseInt(m[1], 10) - 1)));
+    var local = (lsGet('kt_comic_pos', {}) || {})[mangaId];
+    var fromLocal = local && local.chapter === chapterNum ? local.page : 0;
+    if (!token()) return Promise.resolve(offerResume(fromLocal));
+    return fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/progress', { headers: authH() })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { return offerResume(d && d.chapter === chapterNum ? d.page : fromLocal); })
+      .catch(function () { return offerResume(fromLocal); });
+  }
+  function offerResume(p) {
+    p = parseInt(p, 10) || 0;
+    if (p <= 0 || p >= total - 1) return 0;
+    var box = $('cr-resume');
+    box.innerHTML = '<span>Seguimos en la página <b>' + (p + 1) + '</b></span><button type="button" id="cr-restart">Empezar desde el principio</button>';
+    box.hidden = false;
+    $('cr-restart').addEventListener('click', function () { box.hidden = true; goTo(0, true); });
+    setTimeout(function () { box.hidden = true; }, 7000);
+    return p;
+  }
+
+  /* ════════════════ Construcción de las páginas ════════════════ */
+  function build() {
+    var track = $('pv-track');
+    track.innerHTML = ''; pageEls = []; blobs = {}; loading = {};
+    for (var i = 0; i < total; i++) {
+      var div = document.createElement('div');
+      div.className = 'reader-page'; div.dataset.i = i;
+      div.innerHTML = '<div class="ph">Página ' + (i + 1) + '</div><div class="story-layer" data-page-index="' + i + '"></div>';
+      var img = document.createElement('img');
+      img.alt = 'Página ' + (i + 1); img.hidden = true; img.draggable = false; img.decoding = 'async';
+      div.insertBefore(img, div.firstChild);
+      track.appendChild(div); pageEls.push(div);
+      bindPinEvents(div, i);
+    }
+    endEl = document.createElement('section');
+    endEl.className = 'cr-end'; endEl.setAttribute('aria-label', 'Final del capítulo');
+    endEl.innerHTML = endHTML();
+    track.appendChild(endEl);
+    bindEnd();
+    $('cr-range').max = String(Math.max(1, total));
+    syncStoryLayers();
+  }
+
+  function realTitle(t) { return t && !/^cap[ií]tulo\s*\d+$/i.test(String(t).trim()) ? t : ''; }
+  function endHTML() {
+    var n = M.nav && M.nav.next;
+    if (n) n = Object.assign({}, n, { title: realTitle(n.title) });
+    var h ='<span class="cr-end__n">Capítulo ' + chapterNum + '</span><h2>Fin del capítulo</h2>';
+    if (n && n.locked) h += '<div class="cr-card cr-next"><div><small>Siguiente · adelanto</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b><small>Se libera gratis el ' + esc(fmtDate.format(new Date(n.freeAt))) + '</small></div><i class="ti ti-lock" aria-hidden="true"></i></div>';
+    else if (n) h += '<a class="cr-card cr-next" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '" id="cr-next-ch"><div><small>Siguiente</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b></div><i class="ti ti-arrow-right" aria-hidden="true"></i></a>';
+    else h += '<p>Estás al día. Te avisaremos cuando salga el siguiente si sigues la obra.</p>';
+    h += '<div class="cr-pills"><button type="button" class="cr-pill" id="cr-end-com"><i class="ti ti-message" aria-hidden="true"></i>Comentar el capítulo</button><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '"><i class="ti ti-list" aria-hidden="true"></i>Todos los capítulos</a>' +
+      (M.nav && M.nav.prev != null ? '<a class="cr-pill" href="/leer/' + encodeURIComponent(mangaId) + '/' + M.nav.prev + '"><i class="ti ti-arrow-left" aria-hidden="true"></i>Capítulo anterior</a>' : '') + '</div>';
+    return h;
+  }
+  function bindEnd() { var b = $('cr-end-com'); if (b) b.addEventListener('click', openComments); }
+
+  /* Imágenes: URL firmada del manifiesto, descargada como blob; si caduca, se renueva el manifiesto */
+  var refreshing = null;
+  function refreshManifest() {
+    if (!refreshing) refreshing = fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/manifest', { headers: authH() })
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) { M.pages = d.pages; M.quality = d.quality; })
+      .then(function () { refreshing = null; }, function (e) { refreshing = null; throw e; });
+    return refreshing;
+  }
+  function pageUrl(i) { var p = M.pages && M.pages[i]; return p ? p.url : '/api/image/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/' + (i + 1) + '?raw=1'; }
+  function loadPage(i, retried) {
+    if (i < 0 || i >= total || blobs[i] || loading[i]) return;
+    loading[i] = true;
+    var el = pageEls[i], img = el.querySelector('img'), ph = el.querySelector('.ph');
+    if (ph) { ph.className = 'ph'; ph.textContent = 'Página ' + (i + 1); }
+    var ctl = window.AbortController ? new AbortController() : null;
+    var to = setTimeout(function () { if (ctl) ctl.abort(); }, 20000);
+    fetch(pageUrl(i), ctl ? { signal: ctl.signal } : {})
+      .then(function (r) {
+        clearTimeout(to);
+        if (r.status === 403 && !retried) { loading[i] = false; return refreshManifest().then(function () { loadPage(i, true); }); }
+        if (!r.ok) throw new Error('http');
+        return r.blob().then(function (b) {
+          var url = URL.createObjectURL(b);
+          img.onload = function () {
+            blobs[i] = url; loading[i] = false;
+            img.hidden = false; img.classList.add('loaded');
+            if (ph && ph.parentNode) ph.remove();
+            if (img.naturalWidth && (i === 0 || !document.documentElement.style.getPropertyValue('--ph-ratio'))) {
+              document.documentElement.style.setProperty('--ph-ratio', img.naturalWidth + ' / ' + img.naturalHeight);
+              // Tiras muy altas (webtoon): si el lector no eligió modo para esta obra, pasa a continuo
+              if (!perWork[mangaId] && mode !== 'scroll' && img.naturalHeight / img.naturalWidth > 2.2) { mode = 'scroll'; applyMode(cur); }
+            }
+            loadPinsForPage(i);
           };
-          img.onerror = function() {
-            ph.textContent = 'Error al cargar imagen';
-            URL.revokeObjectURL(url);
-          };
+          img.onerror = function () { loading[i] = false; failPage(i); };
           img.src = url;
-        })
-        .catch(function(err) {
-          clearTimeout(timeout);
-          if (err.name === 'AbortError') {
-            ph.textContent = 'Tiempo de espera agotado. Recarga la página.';
-          } else {
-            ph.textContent = 'Error: ' + err.message;
-          }
         });
+      })
+      .catch(function () { clearTimeout(to); loading[i] = false; failPage(i); });
+  }
+  function failPage(i) {
+    var ph = pageEls[i].querySelector('.ph'); if (!ph) return;
+    ph.className = 'ph is-error';
+    ph.innerHTML = '<span>No se pudo cargar la página ' + (i + 1) + '.</span><button type="button">Reintentar</button>';
+    ph.querySelector('button').addEventListener('click', function (e) { e.stopPropagation(); loadPage(i); });
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) loadPage(+en.target.dataset.i); });
+  }, { rootMargin: '1200px 0px' });
+
+  /* ════════════════ Modos ════════════════ */
+  function computeViews() {
+    var v = [], m = effectiveMode();
+    if (m === 'double') { if (total) v.push([0]); for (var i = 1; i < total; i += 2) v.push(i + 1 < total ? [i, i + 1] : [i]); }
+    else for (var j = 0; j < total; j++) v.push([j]);
+    v.push(['end']);
+    return v;
+  }
+  function applyMode(page) {
+    var m = effectiveMode();
+    document.body.dataset.mode = m;
+    document.body.dataset.dir = dir;
+    resetZoom();
+    io.disconnect();
+    pageEls.forEach(function (el) { el.classList.remove('is-on'); });
+    endEl.classList.remove('is-on');
+    views = computeViews();
+    // Ajustes visibles
+    Array.prototype.forEach.call($('st-mode').children, function (b) { b.setAttribute('aria-pressed', String(b.value === mode)); b.classList.toggle('active', b.value === mode); b.disabled = b.value === 'double' && !wide(); });
+    Array.prototype.forEach.call($('st-dir').children, function (b) { b.setAttribute('aria-pressed', String(b.value === dir)); b.classList.toggle('active', b.value === dir); });
+    $('st-dir-group').hidden = m === 'scroll';
+    var rtl = dir === 'rtl' && m !== 'scroll';
+    $('cr-prev').innerHTML = '<i class="ti ti-chevron-' + (rtl ? 'right' : 'left') + '" aria-hidden="true"></i>';
+    $('cr-next').innerHTML = '<i class="ti ti-chevron-' + (rtl ? 'left' : 'right') + '" aria-hidden="true"></i>';
+    $('cr-prev').setAttribute('aria-label', m === 'scroll' ? 'Página anterior' : 'Anterior');
+    if (m === 'scroll') {
+      pageEls.forEach(function (el) { io.observe(el); });
+      cur = page || 0;
+      requestAnimationFrame(function () { scrollToIndex(cur, false); onPage(cur); });
+    } else {
+      vi = viewOf(page || 0);
+      window.scrollTo(0, 0);
+      showView(vi);
     }
+  }
+  function viewOf(p) { for (var k = 0; k < views.length; k++) if (views[k].indexOf(p) >= 0) return k; return 0; }
+  function setMode(m) { mode = m; saveLayout(); applyMode(cur); }
+  function setDir(d) { dir = d; saveLayout(); applyMode(cur); }
+  function saveLayout() { perWork[mangaId] = { mode: mode, dir: dir }; lsSet('kt_comic_modes', perWork); }
 
-    var pageObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          var page = entry.target;
-          if (page.getAttribute('data-loaded')) return;
-          page.setAttribute('data-loaded', '1');
+  /* Por páginas */
+  function showView(k) {
+    k = Math.max(0, Math.min(views.length - 1, k)); vi = k;
+    resetZoom();
+    pageEls.forEach(function (el) { el.classList.remove('is-on'); });
+    endEl.classList.remove('is-on');
+    var v = views[k];
+    if (v[0] === 'end') { endEl.classList.add('is-on'); cur = total - 1; onPage(cur, true); setUI(true); return; }
+    v.forEach(function (p) { pageEls[p].classList.add('is-on'); loadPage(p); });
+    // Precarga de las vistas vecinas
+    [k + 1, k + 2, k - 1].forEach(function (n) { if (views[n] && views[n][0] !== 'end') views[n].forEach(loadPage); });
+    cur = v[0]; onPage(cur);
+  }
+  function step(d) {
+    var m = effectiveMode();
+    if (m === 'scroll') { goTo(cur + d, true); return; }
+    if (vi + d >= views.length && M.nav && M.nav.next && !M.nav.next.locked) { goChapter(M.nav.next.number); return; }
+    showView(vi + d);
+    if (k0 === null) { k0 = 1; setUI(false); }
+  }
+  var k0 = null; // la primera vez que se pasa página se ocultan las barras
 
-          var img = page.querySelector('img');
-          var ph = page.querySelector('.ph');
-          if (!img || !ph) return;
+  /* Continuo */
+  function scrollToIndex(i, smooth) {
+    var el = i >= total ? endEl : pageEls[i]; if (!el) return;
+    for (var k = Math.max(0, i - 2); k <= Math.min(total - 1, i + 2); k++) loadPage(k);
+    var y = el.getBoundingClientRect().top + window.scrollY - (i === 0 ? 0 : 8);
+    window.scrollTo({ top: i === 0 ? 0 : y, behavior: smooth ? 'smooth' : 'auto' });
+  }
+  function goTo(i, smooth) {
+    if (effectiveMode() === 'scroll') { i = Math.max(0, Math.min(total, i)); cur = Math.min(i, total - 1); scrollToIndex(i, smooth); onPage(cur, i >= total); }
+    else showView(viewOf(Math.max(0, Math.min(total - 1, i))));
+  }
+  var lastY = 0, scrollT = null;
+  window.addEventListener('scroll', function () {
+    if (effectiveMode() !== 'scroll' || !total) return;
+    var y = window.scrollY;
+    if (Math.abs(y - lastY) > 30) { setUI(y < lastY || y < 80); lastY = y; }
+    clearTimeout(scrollT);
+    scrollT = setTimeout(function () {
+      var line = window.innerHeight * 0.4, found = cur;
+      for (var i = 0; i < total; i++) { var r = pageEls[i].getBoundingClientRect(); if (r.top <= line && r.bottom > line) { found = i; break; } if (r.top > line) { found = Math.max(0, i - 1); break; } }
+      var er = endEl.getBoundingClientRect(), atEnd = er.top < window.innerHeight * 0.85;
+      if (found !== cur || atEnd) { cur = found; onPage(cur, atEnd); }
+      if (atEnd) setUI(true);
+    }, 90);
+  }, { passive: true });
 
-          loadPageImage(img, ph);
-          pageObserver.unobserve(page);
-        }
-      });
-    }, { rootMargin: '200px' });
+  /* ════════════════ Cambio de página: indicador, URL, progreso ════════════════ */
+  var saveT = null;
+  function onPage(i, atEnd) {
+    var m = effectiveMode(), v = views[vi] || [i];
+    var label = atEnd && m !== 'scroll' ? 'Fin' : (m === 'double' && v.length === 2 ? (v[0] + 1) + '-' + (v[1] + 1) : String(i + 1));
+    $('progress-indicator').textContent = label + ' / ' + total;
+    $('cr-range').value = String(i + 1);
+    $('rd-progress').style.width = (total ? Math.round(((atEnd ? total : i + 1) / total) * 100) : 0) + '%';
+    $('cr-prev').disabled = m === 'scroll' ? i <= 0 : vi <= 0;
+    $('cr-next').disabled = m === 'scroll' ? !!atEnd : (vi >= views.length - 1 && !(M.nav && M.nav.next && !M.nav.next.locked));
+    try { history.replaceState(null, '', location.pathname + location.search + (i > 0 ? '#p=' + (i + 1) : '')); } catch (e) { /* nada */ }
+    clearTimeout(saveT);
+    saveT = setTimeout(function () { saveProgress(atEnd ? total - 1 : i, false); }, 1200);
+    if (atEnd || i >= total - 1) markRead();
+  }
+  function saveProgress(p, keepalive) {
+    var pos = lsGet('kt_comic_pos', {}); pos[mangaId] = { chapter: chapterNum, page: p }; lsSet('kt_comic_pos', pos);
+    if (!token() || !total) return;
+    fetch('/api/chapters/' + encodeURIComponent(mangaId) + '/progress', { method: 'PUT', keepalive: !!keepalive, headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ chapter: chapterNum, page: p, total: total }) }).catch(function () {});
+  }
+  window.addEventListener('pagehide', function () { if (total) saveProgress(cur, true); });
+  function markRead() {
+    if (readSent || !token()) return; readSent = true;
+    fetch('/api/stats/track', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: Math.max(1, Math.round((Date.now() - t0) / 60000)) }) })
+      .then(function (r) { return r.json(); }).then(function (d) { if (d && d.success && typeof window.mostrarAnimacionXPGanada === 'function') window.mostrarAnimacionXPGanada(10, 'Capítulo leído'); }).catch(function () {});
+  }
+  var t0 = Date.now();
 
-    // ── Cargar manifiesto ──
-    async function loadManifest() {
-      var container = document.getElementById('reader-pages');
-      container.innerHTML = '<div style="padding:60px;text-align:center;color:rgb(var(--k-ink) / 0.1);">Cargando...</div>';
-      // Timeout para el manifiesto
-      var cancelled = false;
-      var manifestTimer = setTimeout(function() {
-        if (!cancelled) {
-          container.innerHTML = '<div style="padding:60px;text-align:center;color:#888;">El servidor no responde. <a href="javascript:location.reload()" style="color:var(--k-accent);">Recargar</a></div>';
-          cancelled = true;
-        }
-      }, 20000);
-      try {
-        var h = {}; if (TOKEN) h['Authorization'] = 'Bearer ' + TOKEN;
-        var res = await fetch('/api/chapters/' + mangaId + '/' + chapterNum + '/manifest', { headers: h });
-        clearTimeout(manifestTimer);
-        if (cancelled) return;
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        MANIFEST = await res.json();
+  /* ════════════════ Barras ════════════════ */
+  function setUI(on) { document.body.classList.toggle('ui-off', !on); }
+  function toggleUI() { setUI(document.body.classList.contains('ui-off')); }
 
-        document.getElementById('manga-title-link').textContent = MANIFEST.manga.title;
-        document.getElementById('manga-title-link').href = '/obra/' + MANIFEST.manga.id;
-        document.title = chapterNum + ' · ' + MANIFEST.manga.title;
+  /* Barra de páginas con miniatura */
+  var range = $('cr-range'), thumb = $('cr-thumb');
+  function showThumb() {
+    var n = parseInt(range.value, 10), i = n - 1;
+    var pct = (n - 1) / Math.max(1, total - 1); if (range.style.direction === 'rtl' || getComputedStyle(range).direction === 'rtl') pct = 1 - pct;
+    thumb.style.left = (8 + pct * (range.clientWidth - 16)) + 'px';
+    $('cr-thumb-n').textContent = 'Página ' + n;
+    $('cr-thumb-img').style.backgroundImage = blobs[i] ? 'url(' + blobs[i] + ')' : '';
+    if (!blobs[i]) loadPage(i);
+    thumb.hidden = false;
+  }
+  range.addEventListener('input', showThumb);
+  range.addEventListener('pointerdown', showThumb);
+  range.addEventListener('change', function () { thumb.hidden = true; goTo(parseInt(range.value, 10) - 1, false); });
+  range.addEventListener('blur', function () { thumb.hidden = true; });
+  $('cr-prev').addEventListener('click', function () { step(-1); });
+  $('cr-next').addEventListener('click', function () { step(1); });
 
-        totalPages = MANIFEST.chapter.pages;
-        currentPage = 0;
-
-        // Info calidad
-        if (MANIFEST.quality) {
-          var s = document.getElementById('sel-quality');
-          if (MANIFEST.quality.selected) s.value = MANIFEST.quality.selected;
-          if (!MANIFEST.quality.isPremium) s.querySelector('[value="master"]').disabled = true;
-          document.getElementById('quality-warning').style.display = MANIFEST.quality.isPremium ? 'none' : 'block';
-        }
-
-        // Restaurar ajustes guardados
-        var savedMode = localStorage.getItem('kami_reader_mode');
-        if (savedMode) {
-          changeMode(savedMode);
-        } else {
-          // Marcar vertical como activo por defecto
-          document.querySelector('.mode-btn[data-mode="vertical"]').classList.add('active');
-        }
-
-        var savedPreload = localStorage.getItem('kami_preload_chapters');
-        document.getElementById('chk-preload').checked = savedPreload !== '0';
-
-        var savedShowPins = localStorage.getItem('kami_show_storypins');
-        document.getElementById('chk-storypins').checked = savedShowPins !== '0';
-
-        // Cargar lista de capítulos
-        loadChapterList();
-        renderAllPages();
-        updateProgress();
-
-        // Track daily login (solo una vez por día gracias al ON CONFLICT)
-        if (TOKEN) {
-          fetch('/api/track', {
-            method: 'POST',
-            headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + TOKEN },
-            body: JSON.stringify({ action_type: 'daily_login' })
-          }).catch(function(){});
-        }
-
-        // Marcar capítulo como leído tras 10 segundos en el reader
-        if (TOKEN) {
-          setTimeout(function() {
-            console.log('[track] Marcando capítulo ' + chapterNum + ' como leído (10s)');
-            fetch('/api/stats/track', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-              body: JSON.stringify({ manga_id: mangaId, chapter_number: chapterNum, minutes: 1 })
-            }).then(function(r) { return r.json(); })
-              .then(function(d) { console.log('[track] Respuesta:', d); if (typeof window.mostrarAnimacionXPGanada === 'function' && d.success) window.mostrarAnimacionXPGanada(10, '¡Capítulo Leído! 📖'); })
-              .catch(function(e) { console.error('[track] Error:', e); });
-          }, 10000);
-        }
-
-      } catch(e) {
-        clearTimeout(manifestTimer);
-        if (!cancelled) {
-          container.innerHTML = '<div style="padding:60px;text-align:center;color:#888;">Error: ' + e.message + '</div>';
-        }
-      }
+  /* ════════════════ Toques, gestos y ampliación (modos por páginas) ════════════════ */
+  var stage = $('reader-pages'), track = $('pv-track');
+  var Z = { s: 1, x: 0, y: 0 };
+  function applyZoom() { track.style.transform = Z.s === 1 && !Z.x && !Z.y ? '' : 'translate(' + Z.x + 'px,' + Z.y + 'px) scale(' + Z.s + ')'; document.body.classList.toggle('is-zoomed', Z.s > 1); }
+  function resetZoom() { Z = { s: 1, x: 0, y: 0 }; applyZoom(); }
+  function zoomAt(cx, cy, ns) {
+    ns = Math.max(1, Math.min(4, ns));
+    var L = track.offsetLeft, T = track.offsetTop;
+    var lx = (cx - L - Z.x) / Z.s, ly = (cy - T - Z.y) / Z.s;
+    Z.x = cx - L - lx * ns; Z.y = cy - T - ly * ns; Z.s = ns;
+    if (ns === 1) { Z.x = 0; Z.y = 0; }
+    applyZoom();
+  }
+  var ptrs = {}, gesture = null, lastTap = 0, tapTimer = null;
+  function paged() { return effectiveMode() !== 'scroll'; }
+  function uiTarget(t) { return t.closest && t.closest('#reader-topbar, #reader-bottombar, #settings-panel, #comments-panel, #pin-editor, .cr-end a, .cr-end button, .ph button, .story-pin, .cr-resume'); }
+  stage.addEventListener('pointerdown', function (e) {
+    if (!paged() || inkMode || uiTarget(e.target)) return;
+    ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(ptrs);
+    if (ids.length === 1) gesture = { type: 'one', sx: e.clientX, sy: e.clientY, x0: Z.x, y0: Z.y, t: Date.now(), moved: false };
+    else if (ids.length === 2) {
+      var a = ptrs[ids[0]], b = ptrs[ids[1]];
+      gesture = { type: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y), s0: Z.s, moved: true };
     }
-
-    // ── Lista de capítulos para el selector ──
-    async function loadChapterList() {
-      try {
-        var res = await fetch('/api/chapters/' + mangaId);
-        var data = await res.json();
-        var sel = document.getElementById('chapter-select');
-        sel.innerHTML = '';
-        (data.chapters || []).forEach(function(ch) {
-          var num = String(ch.number).padStart(3, '0');
-          var opt = document.createElement('option');
-          opt.value = ch.number;
-          opt.textContent = '#' + num;
-          if (ch.number === chapterNum) opt.selected = true;
-          sel.appendChild(opt);
-        });
-      } catch(e) {}
+    try { stage.setPointerCapture(e.pointerId); } catch (err) { /* nada */ }
+  });
+  stage.addEventListener('pointermove', function (e) {
+    if (!ptrs[e.pointerId] || !gesture) return;
+    ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+    if (gesture.type === 'pinch') {
+      var ids = Object.keys(ptrs); if (ids.length < 2) return;
+      var a = ptrs[ids[0]], b = ptrs[ids[1]];
+      zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, gesture.s0 * Math.hypot(a.x - b.x, a.y - b.y) / gesture.d0);
+    } else {
+      var dx = e.clientX - gesture.sx, dy = e.clientY - gesture.sy;
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) gesture.moved = true;
+      if (Z.s > 1) { Z.x = gesture.x0 + dx; Z.y = gesture.y0 + dy; applyZoom(); }
     }
-
-    // ── Renderizar todas las páginas ──
-    function renderAllPages() {
-      var container = document.getElementById('reader-pages');
-      container.innerHTML = '';
-      for (var i = 0; i < totalPages; i++) {
-        var div = document.createElement('div');
-        div.className = 'reader-page';
-        var img = document.createElement('img');
-        img.style.display = 'none';
-        img.alt = 'P\u00e1gina ' + (i + 1);
-        img.dataset.src = '/api/image/' + mangaId + '/' + chapterNum + '/' + (i + 1) + '?raw=1';
-        img.dataset.pageIndex = i;
-        div.appendChild(img);
-        // Placeholder visible mientras se carga
-        var ph = document.createElement('div');
-        ph.className = 'ph';
-        ph.textContent = 'Cargando...';
-        div.appendChild(ph);
-        // Story Pin layer overlay
-        var storyLayer = document.createElement('div');
-        storyLayer.className = 'story-layer';
-        storyLayer.dataset.pageIndex = i;
-        div.appendChild(storyLayer);
-        container.appendChild(div);
-        // Bind ink mode events
-        bindPageEvents(div, i);
-      }
-      // Botón al siguiente capítulo
-      document.getElementById('next-chapter-cta').innerHTML =
-        '<button onclick="goToChapter(' + (chapterNum + 1) + ')" id="next-ch-btn">Al cap\u00edtulo ' + (chapterNum + 1) + '</button>';
-      // Cargar páginas vía IntersectionObserver
-      pageObserver.disconnect();
-      document.querySelectorAll('.reader-page').forEach(function(el) { pageObserver.observe(el); });
-      // Sync story layer active state with current ink mode
-      syncStoryLayers();
+  });
+  function endPtr(e) {
+    if (!ptrs[e.pointerId]) return;
+    delete ptrs[e.pointerId];
+    var g = gesture; if (!g) return;
+    if (g.type === 'pinch') { if (!Object.keys(ptrs).length) { gesture = null; if (Z.s < 1.05) resetZoom(); } return; }
+    gesture = null;
+    var dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+    if (Z.s === 1 && g.moved && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.2) {   // deslizar
+      var fwd = dx < 0; if (dir === 'rtl') fwd = !fwd;
+      step(fwd ? 1 : -1); return;
     }
+    if (g.moved || Date.now() - g.t > 400) return;
+    tap(e.clientX, e.clientY);
+  }
+  stage.addEventListener('pointerup', endPtr);
+  stage.addEventListener('pointercancel', function (e) { delete ptrs[e.pointerId]; gesture = null; });
+  function tap(x, y) {
+    var w = window.innerWidth, zone = x < w * 0.3 ? 'left' : x > w * 0.7 ? 'right' : 'center';
+    if (Z.s > 1) zone = 'center';
+    if (zone !== 'center') { var fwd = zone === 'right'; if (dir === 'rtl') fwd = !fwd; step(fwd ? 1 : -1); return; }
+    var now = Date.now();
+    if (now - lastTap < 280) { clearTimeout(tapTimer); lastTap = 0; zoomAt(x, y, Z.s > 1 ? 1 : 2.2); return; }
+    lastTap = now;
+    tapTimer = setTimeout(toggleUI, 280);
+  }
+  stage.addEventListener('wheel', function (e) {
+    if (!paged() || e.ctrlKey) return;
+    e.preventDefault();
+    if (Z.s > 1) { Z.x -= e.deltaX; Z.y -= e.deltaY; applyZoom(); return; }
+    if (wheelLock) return; if (Math.abs(e.deltaY) < 12 && Math.abs(e.deltaX) < 12) return;
+    wheelLock = true; setTimeout(function () { wheelLock = false; }, 320);
+    step((e.deltaY || e.deltaX) > 0 ? 1 : -1);
+  }, { passive: false });
+  var wheelLock = false;
 
-    // ── Bind mouse events for ink mode on a page ──
-    function bindPageEvents(pageEl, pageIndex) {
-      pageEl.addEventListener('mousemove', function(e) {
-        if (!inkMode) return;
-        var layer = pageEl.querySelector('.story-layer');
-        if (!layer) return;
-        var rect = layer.getBoundingClientRect();
-        var relX = e.clientX - rect.left;
-        var relY = e.clientY - rect.top;
-        var x = relX / rect.width;
-        var y = relY / rect.height;
-        showDraftPin(pageEl, pageIndex, x, y, e.clientX, e.clientY);
-      });
-      pageEl.addEventListener('mouseleave', function() {
-        hideDraftPin();
-      });
-      pageEl.addEventListener('click', function(e) {
-        if (!inkMode) return;
-        if (e.target.closest('.story-pin')) return;
-        if (e.target.closest('#pin-editor')) return;
-        var layer = pageEl.querySelector('.story-layer');
-        if (!layer) return;
-        var rect = layer.getBoundingClientRect();
-        var relX = e.clientX - rect.left;
-        var relY = e.clientY - rect.top;
-        var x = Math.max(0, Math.min(1, relX / rect.width));
-        var y = Math.max(0, Math.min(1, relY / rect.height));
-        placePin(pageIndex, x, y, e.clientX, e.clientY);
-      });
+  // Continuo: un toque (sin arrastrar) muestra u oculta las barras
+  document.addEventListener('click', function (e) {
+    if (paged() || inkMode || uiTarget(e.target) || e.target.closest('.cr-end, .cr-state')) return;
+    if (document.getSelection && String(document.getSelection())) return;
+    toggleUI();
+  });
+
+  /* ════════════════ Teclado ════════════════ */
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input, textarea, select')) return;
+    if (e.key === 'Escape') { if (pinOpen()) cancelDraft(); else if (inkMode) toggleInkMode(); else { closeComments(); closeSettings(); resetZoom(); } return; }
+    if (e.altKey || e.ctrlKey || e.metaKey || !total) return;
+    var m = effectiveMode(), rtl = dir === 'rtl' && m !== 'scroll', k = e.key, d = 0;
+    if (m === 'scroll') {
+      if (k === 'ArrowDown' || k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) d = 1;
+      else if (k === 'ArrowUp' || k === 'ArrowLeft' || k === 'PageUp' || (k === ' ' && e.shiftKey)) d = -1;
+    } else {
+      if (k === 'ArrowRight') d = rtl ? -1 : 1; else if (k === 'ArrowLeft') d = rtl ? 1 : -1;
+      else if (k === 'PageDown' || k === 'ArrowDown' || (k === ' ' && !e.shiftKey)) d = 1;
+      else if (k === 'PageUp' || k === 'ArrowUp' || (k === ' ' && e.shiftKey)) d = -1;
     }
+    if (k === 'Home') { e.preventDefault(); goTo(0, true); return; }
+    if (k === 'End') { e.preventDefault(); goTo(total - 1, true); return; }
+    if (d) { e.preventDefault(); step(d); }
+  });
 
-    function scrollToPage(idx) {
-      if (idx < 0 || idx >= totalPages) return;
-      currentPage = idx;
-      var el = document.querySelectorAll('.reader-page')[idx];
-      if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
-      updateProgress();
-    }
+  window.addEventListener('resize', function () {
+    if (!M) return;
+    if (document.body.dataset.mode !== effectiveMode()) applyMode(cur);
+    else if (Z.s > 1) resetZoom();
+  });
 
-    // ── Scroll detection ──
-    var scrollTimer = null;
-    window.addEventListener('scroll', function() {
-      if (scrollTimer) clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(function() {
-        var pages = document.querySelectorAll('.reader-page');
-        var vTop = window.scrollY, vBot = vTop + window.innerHeight;
-        for (var i = 0; i < pages.length; i++) {
-          var r = pages[i].getBoundingClientRect();
-          var t = r.top + window.scrollY, b = t + r.height;
-          if (t < vBot && b > vTop) {
-            if (currentPage !== i) { currentPage = i; updateProgress(); }
-            return;
-          }
-        }
-      }, 100);
-    });
-
-    function updateProgress() {
-      document.getElementById('progress-indicator').textContent = (currentPage + 1) + ' / ' + totalPages;
-      document.getElementById('comments-count').textContent = 0;
-    }
-
-    // ── Navegación ──
-    function jumpToChapter(num) {
-      if (!num) return;
-      window.location.href = '/leer/' + mangaId + '/' + num;
-    }
-
-    function goToChapter(num) {
-      window.location.href = '/leer/' + mangaId + '/' + num;
-    }
-
-    // ── Teclado ──
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); scrollToPage(currentPage+1); }
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); scrollToPage(currentPage-1); }
-      if (e.key === 'f' || e.key === 'F') toggleSettings();
-    });
-
-    // ── Clic en zonas ──
-    var uiVisible = true;
-    function toggleUIVisibility() {
-      uiVisible = !uiVisible;
-      document.getElementById('reader-topbar').style.transform = uiVisible ? '' : 'translateY(-100%)';
-      document.getElementById('reader-bottombar').style.transform = uiVisible ? '' : 'translateY(100%)';
-    }
-
-    document.addEventListener('click', function(e) {
-      if (e.target.closest('#reader-topbar') || e.target.closest('#reader-bottombar') ||
-          e.target.closest('#settings-panel') || e.target.closest('#settings-overlay') ||
-          e.target.closest('#comments-panel') || e.target.closest('#comments-overlay') ||
-          e.target.closest('#next-chapter-cta')) return;
-      toggleUIVisibility();
-    });
-
-    // ── Settings ──
-    function toggleSettings() {
-      document.getElementById('settings-overlay').classList.toggle('open');
-      document.getElementById('settings-panel').classList.toggle('open');
-      document.getElementById('btn-settings').classList.toggle('active');
-    }
-
-    function changeQuality(val) { loadManifest(); }
-    function changeWidth(val) {
-      document.querySelectorAll('.reader-page img').forEach(function(img) {
-        img.style.width = val==='fit' ? 'auto' : val+'%';
-        img.style.maxWidth = val==='fit' ? 'none' : val+'%';
-        img.style.height = val==='fit' ? '100vh' : 'auto';
-      });
-    }
-
-    // ── Modo de lectura ──
-    function changeMode(val) {
-      localStorage.setItem('kami_reader_mode', val);
-      document.querySelectorAll('.mode-btn').forEach(function(b) {
-        b.classList.toggle('active', b.dataset.mode === val);
-      });
-      if (val === 'horizontal') {
-        document.querySelectorAll('.reader-page').forEach(function(p) { p.style.minHeight = '95vh'; });
-      } else if (val === 'vertical' || val === 'webtoon') {
-        document.querySelectorAll('.reader-page').forEach(function(p) { p.style.minHeight = ''; });
-      }
-    }
-
-    // ── Precarga de capítulos ──
-    function savePreload(val) {
-      localStorage.setItem('kami_preload_chapters', val ? '1' : '0');
-    }
-
-    // ── Visibilidad de StoryPins ──
-    function saveStoryPinsVisibility(val) {
-      localStorage.setItem('kami_show_storypins', val ? '1' : '0');
-      document.querySelectorAll('.story-layer .story-pin').forEach(function(p) {
-        p.style.display = val ? '' : 'none';
-      });
-    }
-
-    // ── Comentarios ──
-    var commentsOpen = false;
-    function toggleComments() {
-      commentsOpen = !commentsOpen;
-      document.getElementById('comments-overlay').classList.toggle('open');
-      document.getElementById('comments-panel').classList.toggle('open');
-      document.getElementById('btn-comments').classList.toggle('active');
-      if (commentsOpen) loadComments();
-    }
-    function closeComments() {
-      commentsOpen = false;
-      document.getElementById('comments-overlay').classList.remove('open');
-      document.getElementById('comments-panel').classList.remove('open');
-      document.getElementById('btn-comments').classList.remove('active');
-    }
-
-    async function loadComments() {
-      var body = document.getElementById('cp-body');
-      body.innerHTML = '<div class="cp-empty">Cargando...</div>';
-      try {
-        var h = {}; if (TOKEN) h['Authorization'] = 'Bearer ' + TOKEN;
-        var res = await fetch('/api/comments/' + mangaId + '/' + chapterNum, { headers: h });
-        var data = await res.json();
-        var comments = data.comments || [];
-        if (comments.length === 0) {
-          body.innerHTML = '<div class="cp-empty">Sin comentarios aún. ¡Sé el primero!</div>';
-          document.getElementById('comments-count').textContent = 0;
-          return;
-        }
-        body.innerHTML = comments.map(function(c) {
-          var initial = (c.username || '?').substring(0,2).toUpperCase();
-          var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
-          var color = colors[c.id % colors.length];
-          var time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-          return '<div class="cp-item"><div class="cp-avatar" style="background:' + color + '">' + initial + '</div><div class="cp-right"><div class="cp-username">' + escHtml(c.username || 'Anónimo') + '</div><div class="cp-text">' + escHtml(c.text) + '</div><div class="cp-time">' + time + '</div></div></div>';
+  /* ════════════════ Lista de capítulos ════════════════ */
+  function loadChapterList() {
+    fetch('/api/chapters/' + encodeURIComponent(mangaId) + '?limit=100', { headers: authH() })
+      .then(function (r) { return r.ok ? r.json() : { chapters: [] }; })
+      .then(function (d) {
+        var list = (d.chapters || []).slice().sort(function (a, b) { return a.number - b.number; });
+        if (!list.length) list = [{ number: chapterNum }];
+        var now = Date.now();
+        $('chapter-select').innerHTML = list.map(function (c) {
+          var lock = c.freeAt && new Date(c.freeAt).getTime() > now;
+          return '<option value="' + c.number + '"' + (c.number === chapterNum ? ' selected' : '') + '>Cap. ' + c.number + (c.title && !/^cap[ií]tulo\s*\d+$/i.test(c.title) ? ' · ' + esc(c.title) : '') + (lock ? ' (adelanto)' : '') + '</option>';
         }).join('');
-        document.getElementById('comments-count').textContent = comments.length;
-      } catch(e) {
-        body.innerHTML = '<div class="cp-empty">Error al cargar comentarios</div>';
-      }
+      }).catch(function () {});
+  }
+  function goChapter(n) { location.href = '/leer/' + encodeURIComponent(mangaId) + '/' + n; }
+  $('chapter-select').addEventListener('change', function () { if (this.value) goChapter(this.value); });
+
+  /* ════════════════ Ajustes ════════════════ */
+  function openSettings() { closeComments(); $('settings-overlay').classList.add('open'); $('settings-panel').classList.add('open'); $('btn-settings').classList.add('active'); $('btn-settings').setAttribute('aria-expanded', 'true'); }
+  function closeSettings() { $('settings-overlay').classList.remove('open'); $('settings-panel').classList.remove('open'); $('btn-settings').classList.remove('active'); $('btn-settings').setAttribute('aria-expanded', 'false'); }
+  $('btn-settings').addEventListener('click', function () { $('settings-panel').classList.contains('open') ? closeSettings() : openSettings(); });
+  $('settings-overlay').addEventListener('click', closeSettings);
+  $('st-mode').addEventListener('click', function (e) { var b = e.target.closest('.mode-btn'); if (b && !b.disabled) setMode(b.value); });
+  $('st-dir').addEventListener('click', function (e) { var b = e.target.closest('.mode-btn'); if (b) setDir(b.value); });
+  $('chk-storypins').checked = settings.pins !== false;
+  document.body.classList.toggle('pins-off', settings.pins === false);
+  $('chk-storypins').addEventListener('change', function () { settings.pins = this.checked; lsSet('kt_comic', settings); document.body.classList.toggle('pins-off', !this.checked); });
+
+  function setupQuality() {
+    var s = $('sel-quality'), q = M.quality || {}, prem = !!q.isPremium;
+    s.value = q.selected || '1080';
+    s.querySelector('[value="master"]').disabled = !prem;
+    if (!token()) { s.disabled = true; $('st-q-hint').innerHTML = '<a href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Inicia sesión</a> para elegir la calidad.'; }
+    else $('st-q-hint').innerHTML = prem ? 'Original muestra las páginas tal como las subió el autor.' : 'La calidad original es para <a href="/premium">Premium</a>.';
+  }
+  $('sel-quality').addEventListener('change', function () {
+    var q = this.value, keep = cur;
+    fetch('/api/settings/quality', { method: 'PUT', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ quality: q }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || 'No se pudo cambiar la calidad.'); }); })
+      .then(function () { return refreshManifest(); })
+      .then(function () { Object.keys(blobs).forEach(function (k) { URL.revokeObjectURL(blobs[k]); }); build(); applyMode(keep); toast('Calidad cambiada.', 'ok'); })
+      .catch(function (err) { toast(err.message, 'bad'); setupQuality(); });
+  });
+
+  /* ════════════════ Comentarios ════════════════ */
+  function openComments() { closeSettings(); $('comments-overlay').classList.add('open'); $('comments-panel').classList.add('open'); $('btn-comments').classList.add('active'); loadComments(); setTimeout(function () { $('cp-input').focus(); }, 250); }
+  function closeComments() { $('comments-overlay').classList.remove('open'); $('comments-panel').classList.remove('open'); $('btn-comments').classList.remove('active'); }
+  $('btn-comments').addEventListener('click', function () { $('comments-panel').classList.contains('open') ? closeComments() : openComments(); });
+  $('btn-comments').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); } });
+  $('comments-overlay').addEventListener('click', closeComments);
+  $('cp-close').addEventListener('click', closeComments);
+  function fetchComments() { return fetch('/api/comments/' + encodeURIComponent(mangaId) + '/' + chapterNum, { headers: authH() }).then(function (r) { return r.ok ? r.json() : { comments: [] }; }); }
+  // El servidor solo entrega los comentarios con sesión iniciada
+  function loadCommentCount() {
+    if (!token()) { $('comments-count').hidden = true; return; }
+    fetchComments().then(function (d) { $('comments-count').textContent = (d.comments || []).length; }).catch(function () {});
+  }
+  function loadComments() {
+    var body = $('cp-body');
+    if (!token()) {
+      body.innerHTML = '<div class="cp-empty"><a class="cr-pill" href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Inicia sesión para leer y escribir comentarios</a></div>';
+      $('cp-form').hidden = true; return;
     }
+    body.innerHTML = '<div class="cp-empty">Cargando…</div>';
+    fetchComments().then(function (d) {
+      var list = d.comments || [];
+      $('comments-count').textContent = list.length;
+      if (!list.length) { body.innerHTML = '<div class="cp-empty">Todavía no hay comentarios. ¡Estrena el hilo!</div>'; return; }
+      body.innerHTML = list.map(function (c) {
+        var name = c.username || 'Anónimo', time = c.created_at ? new Date(c.created_at).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        return '<div class="cp-item"><div class="cp-avatar" style="background:' + colorFor(name) + '">' + esc(name.slice(0, 2).toUpperCase()) + '</div><div class="cp-right"><div class="cp-username">' + esc(name) + '</div><div class="cp-text">' + esc(c.text) + '</div><div class="cp-time">' + esc(time) + '</div></div></div>';
+      }).join('');
+    }).catch(function () { body.innerHTML = '<div class="cp-empty">No se pudieron cargar los comentarios.</div>'; });
+  }
+  $('cp-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var input = $('cp-input'), btn = $('cp-btn'), text = input.value.trim();
+    if (!text) return;
+    if (!token()) { toast('Inicia sesión para comentar.'); return; }
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    fetch('/api/comments/' + encodeURIComponent(mangaId) + '/' + chapterNum, { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ text: text }) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (d.success) { input.value = ''; loadComments(); } else toast(d.error || 'No se pudo enviar.', 'bad'); })
+      .catch(function () { toast('Sin conexión.', 'bad'); })
+      .then(function () { btn.disabled = false; btn.textContent = 'Enviar'; });
+  });
+  $('cp-input').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('cp-form').requestSubmit(); } });
 
-    async function postComment() {
-      var input = document.getElementById('cp-input');
-      var btn = document.getElementById('cp-btn');
-      var text = input.value.trim();
-      if (!text) return;
-      if (!TOKEN) { alert('Debes iniciar sesión para comentar'); return; }
-
-      btn.disabled = true;
-      btn.textContent = 'Enviando...';
-      try {
-        var res = await fetch('/api/comments/' + mangaId + '/' + chapterNum, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-          body: JSON.stringify({ text: text }),
-        });
-        var data = await res.json();
-        if (data.success) {
-          input.value = '';
-          await loadComments();
-        } else {
-          alert(data.error || 'Error al enviar');
-        }
-      } catch(e) {
-        alert('Error de conexión');
-      }
-      btn.disabled = false;
-      btn.textContent = 'Enviar';
-    }
-
-    function escHtml(s) {
-      var d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
-
-    // ══════════════════════════════════════════
-    // STORY PINS SYSTEM
-    // ══════════════════════════════════════════
-
-    var inkMode = false;
-    var draftPinData = null; // {pageEl, pageIndex, x, y, screenX, screenY}
-    var draftPinEl = null;
-    var pendingPin = null; // pin awaiting editor submission
-    var cancelTimer = null;
-    var pinCancelSeconds = 10;
-    var currentPinEditorPin = null; // {pageIndex, x, y} (create mode) or null (edit mode)
-    var editingPinId = null; // pin ID when editing existing, null when creating
-    var loadedPinPages = {}; // pageIndex -> true
-
-    // Get or create a single draft pin element
-    function getDraftPin() {
-      if (!draftPinEl) {
-        draftPinEl = document.createElement('div');
-        draftPinEl.className = 'draft-pin';
-        draftPinEl.id = 'draft-pin';
-        draftPinEl.style.display = 'none';
-        document.body.appendChild(draftPinEl);
-      }
-      return draftPinEl;
-    }
-
-    function showDraftPin(pageEl, pageIndex, x, y, screenX, screenY) {
-      if (!inkMode) return;
-      var pin = getDraftPin();
-      var layer = pageEl.querySelector('.story-layer');
-      if (!layer) { pin.style.display = 'none'; return; }
-      var rect = layer.getBoundingClientRect();
-      pin.style.display = 'block';
-      pin.style.left = (rect.left + x * rect.width) + 'px';
-      pin.style.top = (rect.top + y * rect.height) + 'px';
-      pin.dataset.pageIndex = pageIndex;
-      pin.dataset.x = x;
-      pin.dataset.y = y;
-      draftPinData = { pageEl: pageEl, pageIndex: pageIndex, x: x, y: y, screenX: screenX, screenY: screenY };
-    }
-
-    function hideDraftPin() {
-      var pin = getDraftPin();
-      pin.style.display = 'none';
-      draftPinData = null;
-    }
-
-    // ── Toggle ink mode ──
-    function syncStoryLayers() {
-      document.querySelectorAll('.story-layer').forEach(function(l) {
-        l.classList.toggle('active', inkMode);
-      });
-    }
-
-    function toggleInkMode() {
-      inkMode = !inkMode;
-      document.body.classList.toggle('ink-mode', inkMode);
-      document.getElementById('btn-story-pin').classList.toggle('active', inkMode);
-      syncStoryLayers();
-      if (!inkMode) {
-        hideDraftPin();
-        cancelDraft();
-      }
-    }
-
-    // ── Place a pin (creates draft, opens editor) ──
-    function placePin(pageIndex, x, y, screenX, screenY) {
-      if (!TOKEN) { alert('Debes iniciar sesión para dejar un pin'); toggleInkMode(); return; }
-      // Show the pin editor at click position
-      openPinEditor(pageIndex, x, y, screenX, screenY);
-    }
-
-    // ── Open pin editor (create mode) ──
-    function openPinEditor(pageIndex, x, y, screenX, screenY) {
-      currentPinEditorPin = { pageIndex: pageIndex, x: x, y: y };
-      editingPinId = null;
-      showEditor(screenX, screenY, '', '');
-    }
-
-    // ── Open pin editor (edit mode) ──
-    function openPinEditorForEdit(pinId, currentMessage, currentEmoji) {
-      editingPinId = pinId;
-      currentPinEditorPin = null;
-      showEditor(null, null, currentMessage, currentEmoji);
-    }
-
-    function showEditor(screenX, screenY, prefillMessage, prefillEmoji) {
-      var editor = document.getElementById('pin-editor');
-      var input = document.getElementById('pe-input');
-      var avatar = document.getElementById('pe-avatar');
-      var username = document.getElementById('pe-username');
-
-      try {
-        var userData = JSON.parse(localStorage.getItem('kami_user') || 'null');
-        if (userData) {
-          avatar.textContent = (userData.username || 'Tú').substring(0, 2).toUpperCase();
-          username.textContent = userData.username || 'Tú';
-        }
-      } catch(e) {}
-
-      input.value = prefillMessage || '';
-      document.querySelectorAll('.pe-emoji').forEach(function(e) {
-        e.classList.toggle('selected', e.dataset.emoji === prefillEmoji);
-      });
-      editor.className = 'open';
-      input.focus();
-
-      // Position: for edit mode, center on screen; for create mode, near click
-      if (screenX != null && screenY != null) {
-        var editorW = 260, editorH = 200;
-        var left = Math.min(screenX, window.innerWidth - editorW - 20);
-        var top = Math.min(screenY, window.innerHeight - editorH - 20);
-        if (top < 96) top = screenY + 20;
-        editor.style.left = Math.max(10, left) + 'px';
-        editor.style.top = Math.max(96, top) + 'px';
-      } else {
-        editor.style.left = '50%';
-        editor.style.top = '50%';
-        editor.style.transform = 'translate(-50%, -50%)';
-      }
-
-      var btn = document.getElementById('pe-submit');
-      btn.textContent = editingPinId ? 'Guardar' : 'Publicar';
-      startPinCancelTimer();
-    }
-
-    function selectReaction(emoji) {
-      document.querySelectorAll('.pe-emoji').forEach(function(e) {
-        e.classList.toggle('selected', e.dataset.emoji === emoji);
-      });
-      document.getElementById('pe-input').value = '';
-      // Clear timer since they're reacting quickly
-      resetPinCancelTimer();
-    }
-
-    // ── Publish pin (create or update) ──
-    async function publishPin() {
-      if (!currentPinEditorPin && !editingPinId) return;
-
-      // Snapshot needed values BEFORE any await (cancel timer could null them)
-      var isEditing = editingPinId;
-      var editId = editingPinId;
-      var createData = currentPinEditorPin ? { pageIndex: currentPinEditorPin.pageIndex, x: currentPinEditorPin.x, y: currentPinEditorPin.y } : null;
-
-      var input = document.getElementById('pe-input');
-      var selectedEmoji = document.querySelector('.pe-emoji.selected');
-      var message = input.value.trim();
-      var emoji = selectedEmoji ? selectedEmoji.dataset.emoji : null;
-      if (!message && !emoji) return;
-
-      // Stop cancel timer so it doesn't fire mid-request
-      clearPinCancelTimer();
-
-      var btn = document.getElementById('pe-submit');
-      btn.disabled = true;
-      btn.textContent = '...';
-
-      try {
-        if (isEditing) {
-          // EDIT mode — PUT
-          var res = await fetch('/api/story-pins/' + editId, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-            body: JSON.stringify({ message: message })
-          });
-          var data = await res.json();
-          if (data.success) {
-            closePinEditor();
-            document.querySelectorAll('.story-layer .story-pin').forEach(function(p) { p.remove(); });
-            loadedPinPages = {};
-            document.querySelectorAll('.story-layer').forEach(function(l) {
-              var pi = parseInt(l.dataset.pageIndex);
-              if (!isNaN(pi)) loadPinsForPage(pi);
-            });
-          } else {
-            alert(data.error || 'Error al editar pin');
-          }
-        } else {
-          // CREATE mode — POST
-          var res = await fetch('/api/story-pins', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
-            body: JSON.stringify({
-              mangaId: mangaId,
-              chapterNumber: chapterNum,
-              pageIndex: createData.pageIndex,
-              x: createData.x,
-              y: createData.y,
-              message: message,
-              emoji: emoji,
-              visibility: 'public'
-            })
-          });
-          var data = await res.json();
-          if (data.success) {
-            var pi = createData.pageIndex;
-            closePinEditor();
-            loadedPinPages[pi] = false;
-            loadPinsForPage(pi);
-          } else {
-            alert(data.error || 'Error al publicar pin');
-          }
-        }
-      } catch(e) {
-        console.error('StoryPin error:', e);
-        alert('Error de conexión');
-      }
-      btn.disabled = false;
-      btn.textContent = isEditing ? 'Guardar' : 'Publicar';
-    }
-
-    function closePinEditor() {
-      document.getElementById('pin-editor').className = '';
-      document.getElementById('pin-editor').style.left = '';
-      document.getElementById('pin-editor').style.top = '';
-      document.getElementById('pin-editor').style.transform = '';
-      currentPinEditorPin = null;
-      editingPinId = null;
-      clearPinCancelTimer();
-    }
-
-    function cancelDraft() {
-      closePinEditor();
-    }
-
-    // ── Cancel timer ──
-    function startPinCancelTimer() {
-      clearPinCancelTimer();
-      pinCancelSeconds = 10;
-      document.getElementById('pe-timer').textContent = 'Se cierra en ' + pinCancelSeconds + 's';
-      cancelTimer = setInterval(function() {
-        pinCancelSeconds--;
-        if (pinCancelSeconds <= 0) {
-          document.getElementById('pe-timer').textContent = '';
-          cancelDraft();
-          return;
-        }
-        document.getElementById('pe-timer').textContent = 'Se cierra en ' + pinCancelSeconds + 's';
-      }, 1000);
-    }
-
-    function resetPinCancelTimer() {
-      clearPinCancelTimer();
-      startPinCancelTimer();
-    }
-
-    function clearPinCancelTimer() {
-      if (cancelTimer) { clearInterval(cancelTimer); cancelTimer = null; }
-      document.getElementById('pe-timer').textContent = '';
-    }
-
-    // Close editor on ESC
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && (currentPinEditorPin || editingPinId)) {
-        cancelDraft();
-      }
-      // Enter to submit pin
-      if (e.key === 'Enter' && (currentPinEditorPin || editingPinId) && !e.shiftKey) {
-        e.preventDefault();
-        publishPin();
-      }
+  /* ════════════════ StoryPins ════════════════ */
+  var inkMode = false, editPin = null, editingId = null, cancelTimer = null, secs = 10, loadedPins = {}, draftEl = null;
+  function pinOpen() { return !!(editPin || editingId); }
+  function syncStoryLayers() { document.querySelectorAll('.story-layer').forEach(function (l) { l.classList.toggle('active', inkMode); }); }
+  function toggleInkMode() {
+    if (!inkMode && !token()) { toast('Inicia sesión para dejar un StoryPin.'); return; }
+    inkMode = !inkMode;
+    document.body.classList.toggle('ink-mode', inkMode);
+    $('btn-story-pin').classList.toggle('active', inkMode);
+    $('btn-story-pin').setAttribute('aria-pressed', String(inkMode));
+    $('ink-hint').hidden = !inkMode;
+    if (inkMode) { resetZoom(); if (!settings.pins) { $('chk-storypins').checked = true; $('chk-storypins').dispatchEvent(new Event('change')); } }
+    syncStoryLayers();
+    if (!inkMode) { hideDraft(); cancelDraft(); }
+  }
+  $('btn-story-pin').addEventListener('click', toggleInkMode);
+  function draft() { if (!draftEl) { draftEl = document.createElement('div'); draftEl.className = 'draft-pin'; draftEl.hidden = true; document.body.appendChild(draftEl); } return draftEl; }
+  function hideDraft() { draft().hidden = true; }
+  function bindPinEvents(pageEl, i) {
+    pageEl.addEventListener('mousemove', function (e) { if (!inkMode || pinOpen()) return; var d = draft(); d.hidden = false; d.style.left = e.clientX + 'px'; d.style.top = e.clientY + 'px'; });
+    pageEl.addEventListener('mouseleave', hideDraft);
+    pageEl.addEventListener('click', function (e) {
+      if (!inkMode || e.target.closest('.story-pin') || e.target.closest('#pin-editor')) return;
+      var layer = pageEl.querySelector('.story-layer'), r = layer.getBoundingClientRect();
+      var x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+      editPin = { pageIndex: i, x: x, y: y }; editingId = null;
+      showEditor(e.clientX, e.clientY, '', '');
     });
-
-    // Close editor on click outside
-    document.addEventListener('click', function(e) {
-      if ((currentPinEditorPin || editingPinId) && !e.target.closest('#pin-editor') && !e.target.closest('.draft-pin') && !e.target.closest('.story-layer')) {
+  }
+  function showEditor(sx, sy, msg, emoji) {
+    var ed = $('pin-editor'), u = me();
+    $('pe-avatar').textContent = (u.username || 'Tú').slice(0, 2).toUpperCase(); $('pe-username').textContent = u.username || 'Tú';
+    $('pe-input').value = msg || '';
+    document.querySelectorAll('.pe-emoji').forEach(function (b) { b.classList.toggle('selected', b.dataset.emoji === emoji); });
+    ed.className = 'open';
+    if (sx != null) { ed.style.transform = ''; ed.style.left = Math.max(10, Math.min(sx, innerWidth - 280)) + 'px'; ed.style.top = Math.max(70, Math.min(sy + 16, innerHeight - 180)) + 'px'; }
+    else { ed.style.left = '50%'; ed.style.top = '50%'; ed.style.transform = 'translate(-50%,-50%)'; }
+    $('pe-submit').textContent = editingId ? 'Guardar' : 'Publicar';
+    $('pe-input').focus(); startTimer();
+  }
+  document.querySelector('.pe-emoji-row').addEventListener('click', function (e) {
+    var b = e.target.closest('.pe-emoji'); if (!b) return;
+    document.querySelectorAll('.pe-emoji').forEach(function (x) { x.classList.toggle('selected', x === b); });
+    startTimer();
+  });
+  $('pe-input').addEventListener('input', startTimer);
+  $('pe-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); publishPin(); } });
+  $('pe-cancel').addEventListener('click', cancelDraft);
+  $('pe-submit').addEventListener('click', publishPin);
+  function startTimer() {
+    clearInterval(cancelTimer); secs = 15; $('pe-timer').textContent = 'Se cierra en ' + secs + ' s';
+    cancelTimer = setInterval(function () { secs--; if (secs <= 0) { cancelDraft(); return; } $('pe-timer').textContent = 'Se cierra en ' + secs + ' s'; }, 1000);
+  }
+  function cancelDraft() { $('pin-editor').className = ''; editPin = null; editingId = null; clearInterval(cancelTimer); $('pe-timer').textContent = ''; }
+  function publishPin() {
+    if (!pinOpen()) return;
+    var msg = $('pe-input').value.trim(), sel = document.querySelector('.pe-emoji.selected'), emoji = sel ? sel.dataset.emoji : null;
+    if (!msg && !emoji) { $('pe-input').focus(); return; }
+    var editing = editingId, create = editPin, btn = $('pe-submit');
+    clearInterval(cancelTimer); btn.disabled = true;
+    var req = editing
+      ? fetch('/api/story-pins/' + editing, { method: 'PUT', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ message: msg }) })
+      : fetch('/api/story-pins', { method: 'POST', headers: authH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ mangaId: mangaId, chapterNumber: chapterNum, pageIndex: create.pageIndex, x: create.x, y: create.y, message: msg, emoji: emoji, visibility: 'public' }) });
+    req.then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) { toast(d.error || 'No se pudo guardar el StoryPin.', 'bad'); return; }
         cancelDraft();
-      }
+        if (editing) { loadedPins = {}; pageEls.forEach(function (el, i) { if (blobs[i]) loadPinsForPage(i); }); }
+        else { loadedPins[create.pageIndex] = false; loadPinsForPage(create.pageIndex); toast('StoryPin publicado.', 'ok'); }
+      })
+      .catch(function () { toast('Sin conexión.', 'bad'); })
+      .then(function () { btn.disabled = false; });
+  }
+  document.addEventListener('click', function (e) {
+    if (pinOpen() && !e.target.closest('#pin-editor') && !e.target.closest('.story-layer')) cancelDraft();
+    if (!e.target.closest('.story-pin')) document.querySelectorAll('.story-pin.is-open').forEach(function (p) { p.classList.remove('is-open'); });
+  });
+  function loadPinsForPage(i) {
+    if (loadedPins[i] === true) return; loadedPins[i] = true;
+    fetch('/api/story-pins/' + encodeURIComponent(mangaId) + '/' + chapterNum + '/' + i, { headers: authH() })
+      .then(function (r) { return r.ok ? r.json() : { pins: [] }; })
+      .then(function (d) { renderPins(i, d.pins || []); }).catch(function () {});
+  }
+  function renderPins(i, pins) {
+    var layer = document.querySelector('.story-layer[data-page-index="' + i + '"]'); if (!layer) return;
+    layer.querySelectorAll('.story-pin').forEach(function (el) { el.remove(); });
+    var u = me();
+    pins.forEach(function (pin) {
+      var el = document.createElement('div');
+      el.className = 'story-pin' + (pin.message ? ' has-message' : '') + (pin.likes > 2 ? ' popular' : '');
+      el.style.left = (pin.x * 100) + '%'; el.style.top = (pin.y * 100) + '%';
+      var name = pin.username || 'Anónimo', av = pin.avatar && /^(https?:\/\/|\/)/.test(pin.avatar) ? '<img src="' + esc(pin.avatar) + '" alt="">' : esc(name.slice(0, 2).toUpperCase());
+      var own = u.id && pin.user_id === u.id, admin = u.role === 'admin';
+      el.innerHTML = '<span class="pin-bubble">' + (pin.emoji ? '<span class="pin-emoji">' + esc(pin.emoji) + '</span>' : '<span class="pin-avatar" style="background:' + colorFor(name) + '">' + av + '</span>') + '</span>' +
+        '<div class="pin-card"><div class="pc-user"><a class="pc-user-link" href="/perfil/' + encodeURIComponent(name) + '">' + esc(name) + '</a></div>' +
+        (pin.message ? '<div class="pc-text">' + esc(pin.message) + '</div>' : pin.emoji ? '<div class="pc-text">' + esc(pin.emoji) + '</div>' : '') +
+        '<div class="pc-footer"><button type="button" data-a="like"><i class="ti ti-heart" aria-hidden="true"></i><span>' + (pin.likes || 0) + '</span></button><span>' +
+        (own ? '<button type="button" data-a="edit" aria-label="Editar"><i class="ti ti-pencil" aria-hidden="true"></i></button>' : '') +
+        (own || admin ? '<button type="button" data-a="del" aria-label="Eliminar"><i class="ti ti-trash" aria-hidden="true"></i></button>' : '') + '</span></div></div>';
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var a = e.target.closest('[data-a]');
+        if (!a) { el.classList.toggle('is-open'); return; }
+        if (a.dataset.a === 'like') { if (!token()) { toast('Inicia sesión para dar me gusta.'); return; } fetch('/api/story-pins/' + pin.id + '/like', { method: 'POST', headers: authH() }).then(function (r) { return r.json(); }).then(function (d) { if (d.success) a.querySelector('span').textContent = d.likes; }).catch(function () {}); }
+        if (a.dataset.a === 'edit') { editingId = pin.id; editPin = null; showEditor(null, null, pin.message || '', pin.emoji || ''); }
+        if (a.dataset.a === 'del') { if (!confirm('¿Eliminar este StoryPin?')) return; fetch('/api/story-pins/' + pin.id, { method: 'DELETE', headers: authH() }).then(function (r) { return r.json(); }).then(function (d) { if (d.success) el.remove(); else toast(d.error || 'No se pudo eliminar.', 'bad'); }).catch(function () { toast('Sin conexión.', 'bad'); }); }
+      });
+      layer.appendChild(el);
     });
+  }
 
-    // ── Load pins for a page ──
-    async function loadPinsForPage(pageIndex) {
-      if (loadedPinPages[pageIndex] === true) return;
-      loadedPinPages[pageIndex] = true;
-      try {
-        var h = {}; if (TOKEN) h['Authorization'] = 'Bearer ' + TOKEN;
-        var res = await fetch('/api/story-pins/' + mangaId + '/' + chapterNum + '/' + pageIndex, { headers: h });
-        var data = await res.json();
-        renderPins(pageIndex, data.pins || []);
-      } catch(e) {}
-    }
-
-    function renderPins(pageIndex, pins) {
-      var layer = document.querySelector('.story-layer[data-page-index="' + pageIndex + '"]');
-      if (!layer) return;
-      layer.querySelectorAll('.story-pin').forEach(function(el) { el.remove(); });
-      // Get current user ID from localStorage
-      var currentUserId = null;
-      var currentUserRole = null;
-      try { var u = JSON.parse(localStorage.getItem('kami_user') || 'null') || {}; currentUserId = u.id; currentUserRole = u.role; } catch(e) {}
-
-      pins.forEach(function(pin) {
-        var el = document.createElement('div');
-        el.className = 'story-pin';
-        if (pin.message) el.classList.add('has-message');
-        if (pin.likes > 2) el.classList.add('popular');
-        el.dataset.pinId = pin.id;
-        el.style.left = (pin.x * 100) + '%';
-        el.style.top = (pin.y * 100) + '%';
-        if (localStorage.getItem('kami_show_storypins') === '0') el.style.display = 'none';
-
-        var initial = (pin.username || '?').substring(0, 2).toUpperCase();
-        var colors = ['var(--k-accent)','var(--k-gold)','var(--k-info)','var(--k-ok)','var(--k-violet)','var(--k-orange)'];
-        var color = colors[pin.id % colors.length];
-        var avatarHtml = pin.avatar
-          ? '<img src="' + pin.avatar + '" alt="">'
-          : initial;
-
-        // Bubble (always visible)
-        var bubble = document.createElement('span');
-        bubble.className = 'pin-bubble';
-        bubble.innerHTML = pin.emoji
-          ? '<span class="pin-emoji">' + pin.emoji + '</span>'
-          : '<span class="pin-avatar" style="background:' + color + '">' + avatarHtml + '</span>';
-        el.appendChild(bubble);
-
-        // Card (visible on hover, replaces bubble)
-        var card = document.createElement('div');
-        card.className = 'pin-card';
-        var messageDisplay = pin.message
-          ? '<div class="pc-text">"' + escHtml(pin.message) + '"</div>'
-          : (pin.emoji ? '<div class="pc-text">' + pin.emoji + '</div>' : '');
-        var isOwner = currentUserId && pin.user_id === currentUserId;
-        var isAdmin = currentUserRole === 'admin';
-        var ownerActions = '';
-        if (isOwner) {
-          ownerActions = '<span class="pc-edit" data-pin-id="' + pin.id + '">✏️</span><span class="pc-delete" data-pin-id="' + pin.id + '">🗑</span>';
-        } else if (isAdmin) {
-          ownerActions = '<span class="pc-delete" data-pin-id="' + pin.id + '">🗑</span>';
-        }
-        card.innerHTML =
-          '<div class="pc-user"><span class="pc-user-link" data-username="' + escHtml(pin.username || '') + '">' + escHtml(pin.username || 'Anónimo') + '</span></div>' +
-          messageDisplay +
-          '<div class="pc-footer">' +
-            '<span class="pc-likes" data-pin-id="' + pin.id + '">❤️ <span class="pc-likes-count">' + (pin.likes || 0) + '</span></span>' +
-            (isOwner || isAdmin ? '<span style="display:flex;gap:4px;">' + ownerActions + '</span>' : '') +
-          '</div>';
-        el.appendChild(card);
-
-        // Username click → profile
-        var userLink = card.querySelector('.pc-user-link');
-        if (userLink) {
-          userLink.addEventListener('click', function(e) {
-            e.stopPropagation();
-            window.location.href = '/perfil/' + this.dataset.username;
-          });
-        }
-
-        // Like click
-        card.querySelector('.pc-likes').addEventListener('click', function(e) {
-          e.stopPropagation();
-          likePin(pin.id, this);
-        });
-
-        // Delete click (owner only)
-        var delBtn = card.querySelector('.pc-delete');
-        if (delBtn) {
-          delBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            deletePin(pin.id, el);
-          });
-        }
-
-        // Edit click (owner only)
-        var editBtn = card.querySelector('.pc-edit');
-        if (editBtn) {
-          editBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            openPinEditorForEdit(pin.id, pin.message || '', pin.emoji || '');
-          });
-        }
-
-        layer.appendChild(el);
-      });
-    }
-
-    // ── Like a pin ──
-    async function likePin(pinId, el) {
-      if (!TOKEN) return;
-      try {
-        var res = await fetch('/api/story-pins/' + pinId + '/like', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + TOKEN }
-        });
-        var data = await res.json();
-        if (data.success) {
-          var countEl = el.querySelector('.pc-likes-count');
-          if (countEl) countEl.textContent = data.likes;
-        }
-      } catch(e) {}
-    }
-
-    // ── Alert / Confirm dialogs (in-page, glass style) ──
-    function showAlert(msg) {
-      return new Promise(function(resolve) {
-        var overlay = document.createElement('div');
-        overlay.className = 'kami-overlay';
-        overlay.innerHTML =
-          '<div class="kami-confirm-box">' +
-            '<div class="kami-confirm-msg">' + msg + '</div>' +
-            '<div class="kami-confirm-actions">' +
-              '<button class="kami-confirm-ok">OK</button>' +
-            '</div>' +
-          '</div>';
-        document.body.appendChild(overlay);
-        overlay.querySelector('.kami-confirm-ok').onclick = function() { overlay.remove(); resolve(); };
-        overlay.onclick = function(e) { if (e.target === overlay) { overlay.remove(); resolve(); } };
-      });
-    }
-    function showConfirm(msg) {
-      return new Promise(function(resolve) {
-        var overlay = document.createElement('div');
-        overlay.className = 'kami-overlay';
-        overlay.innerHTML =
-          '<div class="kami-confirm-box">' +
-            '<div class="kami-confirm-msg">' + msg + '</div>' +
-            '<div class="kami-confirm-actions">' +
-              '<button class="kami-confirm-cancel">Cancelar</button>' +
-              '<button class="kami-confirm-ok">Sí, eliminar</button>' +
-            '</div>' +
-          '</div>';
-        document.body.appendChild(overlay);
-        overlay.querySelector('.kami-confirm-cancel').onclick = function() { overlay.remove(); resolve(false); };
-        overlay.querySelector('.kami-confirm-ok').onclick = function() { overlay.remove(); resolve(true); };
-        overlay.onclick = function(e) { if (e.target === overlay) { overlay.remove(); resolve(false); } };
-      });
-    }
-
-    // ── Delete a pin (owner or admin) ──
-    async function deletePin(pinId, pinEl) {
-      if (!TOKEN) return;
-      if (!(await showConfirm('¿Eliminar este StoryPin?'))) return;
-      try {
-        var res = await fetch('/api/story-pins/' + pinId, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + TOKEN }
-        });
-        var data = await res.json();
-        if (data.success) {
-          pinEl.style.transition = 'opacity .2s, transform .2s';
-          pinEl.style.opacity = '0';
-          pinEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
-          setTimeout(function() { pinEl.remove(); }, 200);
-        } else {
-          showAlert(data.error || 'Error al eliminar');
-        }
-      } catch(e) {
-        showAlert('Error de conexión');
-      }
-    }
-
-    // ── Override the image load to trigger pin loading ──
-    // Patch: after an image finishes loading, load pins for that page
-    var origPageObserver = pageObserver;
-    pageObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          var page = entry.target;
-          if (page.getAttribute('data-loaded')) return;
-          page.setAttribute('data-loaded', '1');
-
-          var img = page.querySelector('img');
-          var ph = page.querySelector('.ph');
-          if (!img || !ph) return;
-
-          fetch(img.getAttribute('data-src'))
-            .then(function(r) {
-              if (!r.ok) throw new Error('HTTP ' + r.status);
-              return r.blob();
-            })
-            .then(function(blob) {
-              var url = URL.createObjectURL(blob);
-              img.onload = function() {
-                img.style.display = 'block';
-                if (ph.parentElement) ph.remove();
-                URL.revokeObjectURL(url);
-                // Load pins for this page once image is rendered
-                var pageIdx = parseInt(img.dataset.pageIndex);
-                if (!isNaN(pageIdx)) {
-                  loadedPinPages[pageIdx] = false;
-                  loadPinsForPage(pageIdx);
-                }
-              };
-              img.src = url;
-            })
-            .catch(function(err) {
-              ph.textContent = 'Error: ' + err.message;
-            });
-          pageObserver.unobserve(page);
-        }
-      });
-    }, { rootMargin: '200px' });
-
-    // ── Iniciar ──
-    loadManifest();
-  </script>
+  init();
+})();
+</script>
 </body>
 </html>

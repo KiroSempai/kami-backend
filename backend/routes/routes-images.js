@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const { pool } = require('../db');
 const { verifyToken } = require('../config');
 const { getUserQuality } = require('../image-settings');
-const { getImagePath } = require('../image-processor');
+const { getImagePathReady } = require('../image-processor');
 const { verifySignedURL } = require('../url-signer');
 
 const getRole = require('../getRole');
@@ -38,22 +38,24 @@ router.get('/:mangaId/:chapterNum/:page', async (req, res) => {
   try {
     const { mangaId, chapterNum, page } = req.params;
     const { expires, sig, quality: reqQuality, raw } = req.query;
-
-    // Verificar URL firmada (si tiene parámetros de firma)
-    if (expires && sig) {
-      if (!verifySignedURL(req.originalUrl)) {
-        return res.status(403).json({ error: 'URL expirada o inválida' });
-      }
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(mangaId) || !/^\d{1,5}$/.test(chapterNum) || !/^\d{1,4}$/.test(page)) {
+      return res.status(404).json({ error: 'Imagen no encontrada' });
     }
 
-    let quality = reqQuality || '1080';
+    // Solo con URL firmada: la firma la pone el manifiesto del capítulo, que ya comprobó
+    // que el capítulo está publicado (o que quien lo pide lo edita) y eligió la calidad.
+    let signed = false;
+    try { signed = !!(expires && sig) && verifySignedURL(req.originalUrl); } catch { signed = false; }
+    if (!signed) return res.status(403).json({ error: 'URL expirada o inválida' });
+
+    // La calidad va dentro de la firma; cambiarla en la dirección invalida la URL
+    const quality = ['master', '1080', '720', '480'].includes(reqQuality) ? reqQuality : '1080';
     let addWatermark = false;
 
     const token = req.headers.authorization?.split(' ')[1];
     if (token) {
       try {
         const decoded = await verifyToken(token);
-        quality = await getUserQuality(decoded.userId);
         const r = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
         if (r.rows.length > 0) {
           const role = getRole(r.rows[0]);
@@ -62,11 +64,12 @@ router.get('/:mangaId/:chapterNum/:page', async (req, res) => {
       } catch {}
     }
 
-    const imagePath = getImagePath(mangaId, chapterNum, page, quality);
+    const imagePath = await getImagePathReady(mangaId, chapterNum, page, quality);
     if (!imagePath) return res.status(404).json({ error: 'Imagen no encontrada' });
 
-    // Modo raw: servir imagen directamente (para reader.html con <img> tags)
+    // Modo raw: la imagen tal cual, para el lector (<img> a partir de un blob)
     if (raw !== undefined) {
+      res.setHeader('Cache-Control', 'private, max-age=1800');
       return res.sendFile(imagePath);
     }
 
@@ -99,18 +102,6 @@ router.get('/:mangaId/:chapterNum/:page', async (req, res) => {
   }
 });
 
-// GET /api/image/:mangaId/:chapterNum/:page/raw — solo archivo original (sin encriptar, sin auth)
-router.get('/:mangaId/:chapterNum/:page/raw', async (req, res) => {
-  const { mangaId, chapterNum, page } = req.params;
-  const chapterDir = path.join(__dirname, '..', 'public', 'assets', 'manga', mangaId, `chapter-${chapterNum}`);
-  const base = path.join(chapterDir, `page-${String(page).padStart(3, '0')}`);
-  const exts = ['.jpg', '.jpeg', '.png', '.webp'];
-  for (const ext of exts) {
-    const file = base + ext;
-    if (!file.startsWith(chapterDir)) continue;
-    if (fs.existsSync(file)) return res.sendFile(file);
-  }
-  res.status(404).json({ error: 'Original no encontrado' });
-});
+// (Eliminada la ruta /:page/raw: entregaba el original sin firma ni comprobaciones.)
 
 module.exports = router;

@@ -70,6 +70,25 @@ function getImagePath(mangaId, chapterNum, pageNum, quality) {
   return fs.existsSync(targetPath) ? targetPath : masterPath;
 }
 
+// Igual que getImagePath, pero si la calidad pedida aún no existe la genera y espera,
+// en vez de entregar el master (que es la calidad Premium) mientras tanto.
+async function getImagePathReady(mangaId, chapterNum, pageNum, quality) {
+  if (!QUALITIES[quality]) quality = '1080';
+  const outDir = getOutputDir(mangaId, chapterNum);
+  const masterPath = path.join(outDir, pageFilename(pageNum, 'master'));
+  if (!fs.existsSync(masterPath)) return fallbackOriginal(mangaId, chapterNum, pageNum);
+  if (quality === 'master') return masterPath;
+  const targetPath = path.join(outDir, pageFilename(pageNum, quality));
+  if (fs.existsSync(targetPath)) return targetPath;
+  const tmp = targetPath + '.' + process.pid + '.' + Date.now() + '.tmp';
+  await require('sharp')(masterPath)
+    .resize(QUALITIES[quality].width, null, { fit: 'inside', withoutEnlargement: true })
+    .toFormat('webp', { quality: 85 })
+    .toFile(tmp);
+  try { fs.renameSync(tmp, targetPath); } catch { try { fs.unlinkSync(tmp); } catch { /* nada */ } }
+  return fs.existsSync(targetPath) ? targetPath : null;
+}
+
 function fallbackOriginal(mangaId, chapterNum, pageNum) {
   const chapterDir = path.join(__dirname, 'public', 'assets', 'manga', mangaId, `chapter-${chapterNum}`);
   const base = path.join(chapterDir, `page-${String(pageNum).padStart(3, '0')}`);
@@ -118,6 +137,7 @@ module.exports = {
   processImage,
   processChapterImages,
   getImagePath,
+  getImagePathReady,
   QUALITIES,
   QUALITY_ORDER,
 };

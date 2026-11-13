@@ -24,7 +24,15 @@ function getDefaultAvatar() {
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 const APP_PORT = process.env.PORT || 3000;
-const GOOGLE_REDIRECT_URI = `http://localhost:${APP_PORT}/api/auth/google/callback`;
+// Dirección de vuelta de Google: GOOGLE_REDIRECT_URI si está definida; si no, se deduce del
+// dominio por el que llega la petición (túnel, dominio propio o localhost). Google solo acepta
+// las direcciones registradas en su consola, así que una cabecera falsa no lleva a otro sitio.
+function googleRedirectUri(req) {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
+  const proto = String(req.get('x-forwarded-proto') || req.protocol || 'http').split(',')[0].trim();
+  const host = String(req.get('x-forwarded-host') || req.get('host') || `localhost:${APP_PORT}`).split(',')[0].trim();
+  return `${proto === 'https' ? 'https' : 'http'}://${host}/api/auth/google/callback`;
+}
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -518,7 +526,7 @@ router.get('/google/redirect', (req, res) => {
 
     const params = new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID,
-        redirect_uri: GOOGLE_REDIRECT_URI,
+        redirect_uri: googleRedirectUri(req),
         response_type: 'code',
         scope: 'openid email profile',
         access_type: 'offline',
@@ -549,7 +557,7 @@ router.get('/google/callback', async (req, res) => {
                 code,
                 client_id: GOOGLE_CLIENT_ID,
                 client_secret: GOOGLE_CLIENT_SECRET,
-                redirect_uri: GOOGLE_REDIRECT_URI,
+                redirect_uri: googleRedirectUri(req),
                 grant_type: 'authorization_code',
             }),
         });

@@ -7,10 +7,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 require('dotenv').config();
+// SUPABASE_URL y SUPABASE_SERVICE_KEY van en .env (nunca en el código).
+if (!process.env.SUPABASE_SERVICE_KEY) console.warn('[aviso] Falta SUPABASE_SERVICE_KEY en .env');
 
-// Valores por defecto para Supabase Storage (Render no siempre sincroniza env vars)
-if (!process.env.SUPABASE_URL) process.env.SUPABASE_URL = 'https://bojubfastavgvqkogjnj.supabase.co';
-if (!process.env.SUPABASE_SERVICE_KEY) process.env.SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvanViZmFzdGF2Z3Zxa29nam5qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODg3MzQyMSwiZXhwIjoyMDk0NDQ5NDIxfQ.zk3HoIXv6fcA-ZdXIipbeBjWPicImHXqjlW1A5e5niQ';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 🛡️ Validación de variables de entorno críticas al arranque
@@ -380,6 +379,17 @@ app.get('/design',                   page('design.html'));
 app.get('/preview',                  page('preview.html'));
 
 // ─── Archivos estáticos ──────────────────────────────────────────────────────
+// Las páginas de los capítulos no se sirven como archivos: solo por /api/image con URL
+// firmada (así respetan borradores, adelantos y la calidad de cada cuenta).
+// Las portadas y banners de /assets/manga/<id>/ siguen siendo públicos.
+const PRIVATE_PAGES = /^\/(?:assets\/manga\/[^/]+\/(?:chapter-[^/]*\/|page-[^/]*$)|cache\/enhanced(?:\/|$))/i;
+app.use((req, res, next) => {
+  let p = req.path;
+  try { p = decodeURIComponent(p); } catch { return res.status(400).end(); }
+  p = path.posix.normalize(p.replace(/\\/g, '/'));
+  if (PRIVATE_PAGES.test(p)) return res.status(404).end();
+  next();
+});
 app.use(express.static(PUB, {
   maxAge: '7d',
   index: false,

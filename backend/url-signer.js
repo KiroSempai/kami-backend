@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 
-const SECRET = (process.env.JWT_SECRET || 'kami-signing-key').slice(0, 32);
+// Sin JWT_SECRET no hay clave conocida: se usa una aleatoria por proceso (las URL caducan al reiniciar)
+const SECRET = (process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex')).slice(0, 32);
 const DEFAULT_TTL = 30 * 60 * 1000; // 30 min
 
 function signURL(url) {

@@ -77,6 +77,8 @@
     .ed-prev[data-device="desktop"] iframe { width: min(1200px, 100%); }
 
     .ed-gate { max-width: 560px; margin: 12vh auto; }
+    /* Sin esto, los campos con display propio (k-field) ignoraban «hidden»: salía la fecha aunque eligieras «Publicar ahora» */
+    [hidden] { display: none !important; }
     @media (max-width: 640px) { .ed-bar__work b { max-width: 18ch; } .ed-hide-sm { display: none !important; } .ed-text { font-size: 1.08rem; } }
   </style>
 </head>
@@ -88,6 +90,7 @@
   <div class="ed-bar" role="toolbar" aria-label="Editor">
     <button type="button" class="k-btn k-btn--quiet k-btn--icon" id="ed-side-btn" aria-label="Capítulos" aria-expanded="false" aria-controls="ed-side"><i class="ti ti-layout-sidebar" aria-hidden="true"></i></button>
     <div class="ed-bar__work"><b id="ed-work">Obra</b><span class="ed-save" id="ed-save" role="status" aria-live="polite"><i class="ti ti-circle-dashed" aria-hidden="true"></i>Sin cambios</span></div>
+    <button type="button" class="k-btn k-btn--primary k-btn--sm" id="ed-save-now" hidden title="Publicar los cambios (Ctrl+S)"><i class="ti ti-device-floppy" aria-hidden="true"></i>Guardar</button>
     <div class="ed-tools" role="group" aria-label="Formato">
       <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="bold" aria-label="Negrita (Ctrl+B)" title="Negrita (Ctrl+B)"><i class="ti ti-bold" aria-hidden="true"></i></button>
       <button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-cmd="italic" aria-label="Cursiva (Ctrl+I)" title="Cursiva (Ctrl+I)"><i class="ti ti-italic" aria-hidden="true"></i></button>
@@ -186,7 +189,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var ed = $('ed-text'), titleIn = $('ed-title');
   var meta = { status: 'draft', publishAt: null, freeAt: null, noteBefore: '', noteAfter: '', warnings: [] };
-  var dirty = false, saving = false, saveTimer = null, serverUpdatedAt = null, offline = false;
+  var dirty = false, saving = false, saveTimer = null, serverUpdatedAt = null, offline = false, serverStatus = 'draft';
   var STATUS_LABEL = { draft: 'Borrador', scheduled: 'Programado', published: 'Publicado' };
 
   function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
@@ -344,9 +347,20 @@
 
   ed.addEventListener('input', function (e) { typography(e); changed(); });
   ed.addEventListener('keydown', function (e) {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); save(true); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveNow(); }
   });
   titleIn.addEventListener('input', changed);
+  // Intro en el título baja al texto; Ctrl+S también guarda desde el título
+  titleIn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); var f = ed.firstElementChild; if (f) { var r = document.createRange(); r.setStart(f, 0); r.collapse(true); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } ed.focus(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveNow(); }
+  });
+  function saveNow() {
+    var live = livePublished() && dirty;
+    dirty = true;
+    save(true, true).then(function () { if (live) KAMI.toast('Cambios publicados', 'ok'); }).catch(function (er) { KAMI.toast(er.message, 'bad'); });
+  }
+  $('ed-save-now').addEventListener('click', saveNow);
   try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
 
   /* ── Contadores ────────────────────────────────────────────── */
@@ -369,21 +383,30 @@
   function backupLocal() {
     try { localStorage.setItem(localKey(), JSON.stringify({ savedAt: Date.now(), data: payload() })); } catch (e) {}
   }
+  // Un capítulo ya publicado no se guarda solo: si no, los lectores verían el texto a medio
+  // escribir. Se guarda en este navegador y se publica al pulsar Guardar (o Ctrl+S).
+  function livePublished() { return serverStatus === 'published' && meta.status === 'published'; }
   function changed() {
     dirty = true; updateStats(); backupLocal();
+    clearTimeout(saveTimer);
+    if (livePublished()) { setSave('warn', 'Cambios sin publicar'); $('ed-save-now').hidden = false; return; }
     setSave(null, 'Cambios sin guardar');
     // El error ya se muestra en el indicador; aquí solo se evita una promesa sin capturar
-    clearTimeout(saveTimer); saveTimer = setTimeout(function () { save(false).catch(function () {}); }, 1500);
+    saveTimer = setTimeout(function () { save(false).catch(function () {}); }, 1500);
   }
-  function save(force) {
-    if (saving) { clearTimeout(saveTimer); saveTimer = setTimeout(function () { save(force).catch(function () {}); }, 800); return Promise.resolve(); }
+  // Si ya hay un guardado en marcha, este espera a que termine (así «Publicar» no dice
+  // «publicado» antes de tiempo). strict: los errores sin conexión también se devuelven.
+  var inflight = null;
+  function save(force, strict) {
+    if (inflight) return inflight.then(function () { return save(force, strict); }, function () { return save(force, strict); });
     if (!dirty && !force) return Promise.resolve();
     var data = payload();
     if (!num && !data.title && !data.blocks.length) return Promise.resolve();
     saving = true; setSave(null, 'Guardando…');
     var req = num ? api('PUT', '/api/novel/' + encodeURIComponent(mangaId) + '/' + num, data) : api('POST', '/api/novel/' + encodeURIComponent(mangaId), data);
-    return req.then(function (d) {
-      saving = false; dirty = false; offline = false;
+    inflight = req.then(function (d) {
+      saving = false; dirty = false; offline = false; inflight = null;
+      serverStatus = data.status; $('ed-save-now').hidden = true;
       if (!num && d.chapter) {
         try { localStorage.removeItem(localKey()); } catch (e) {}
         num = d.chapter.number;
@@ -396,13 +419,18 @@
       setSave('ok', 'Guardado · ' + new Intl.DateTimeFormat('es', { hour: '2-digit', minute: '2-digit' }).format(new Date()));
       renderState();
     }).catch(function (e) {
-      saving = false;
-      if (!e.status) { offline = true; setSave('warn', 'Sin conexión: guardado en este navegador'); return; }
+      saving = false; inflight = null;
+      if (!e.status) {
+        offline = true; setSave('warn', 'Sin conexión: guardado en este navegador');
+        if (strict) throw new Error('Sin conexión: no se ha podido guardar. Tu texto sigue a salvo en este navegador.');
+        return;
+      }
       setSave('bad', e.message);
       throw e;
     });
+    return inflight;
   }
-  window.addEventListener('online', function () { if (offline || dirty) { dirty = true; save(true).catch(function () {}); } });
+  window.addEventListener('online', function () { if ((offline || dirty) && !livePublished()) { dirty = true; save(true).catch(function () {}); } });
   window.addEventListener('beforeunload', function (e) { if (dirty || saving) { backupLocal(); e.preventDefault(); e.returnValue = ''; } });
 
   /* ── Estado y publicación ──────────────────────────────────── */
@@ -422,6 +450,7 @@
     $('ed-note-before').value = meta.noteBefore; $('ed-note-after').value = meta.noteAfter;
     $('ed-warnings').querySelectorAll('.k-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(meta.warnings.indexOf(c.value) >= 0)); });
     $('ed-pub-err').textContent = '';
+    var nowIn = toLocalInput(new Date().toISOString()); $('ed-when').min = nowIn; $('ed-free').min = nowIn;
     $('ed-pub').classList.add('is-open');
     var first = document.querySelector('[name="ed-status"]:checked'); if (first) first.focus();
   }
@@ -437,23 +466,30 @@
   $('ed-pub-save').addEventListener('click', function () {
     var st = (document.querySelector('[name="ed-status"]:checked') || {}).value || 'draft';
     var when = fromLocalInput($('ed-when').value);
+    var free = $('ed-early').checked ? fromLocalInput($('ed-free').value) : null;
+    $('ed-pub-err').textContent = '';
     if (st === 'scheduled' && (!when || new Date(when) <= new Date())) { $('ed-pub-err').textContent = 'Elige una fecha futura para programar el capítulo.'; return; }
+    if ($('ed-early').checked && !free) { $('ed-pub-err').textContent = 'Elige cuándo se libera gratis el adelanto.'; return; }
+    if (free && new Date(free) <= (st === 'scheduled' ? new Date(when) : new Date())) { $('ed-pub-err').textContent = 'La fecha en que se libera gratis tiene que ser posterior a la de publicación.'; return; }
     if (st !== 'draft' && !serialize().length) { $('ed-pub-err').textContent = 'El capítulo está vacío. Escribe algo antes de publicarlo.'; return; }
+    var before = JSON.parse(JSON.stringify(meta));   // para deshacer si el guardado falla
     meta.status = st; meta.publishAt = st === 'scheduled' ? when : null;
-    meta.freeAt = $('ed-early').checked ? fromLocalInput($('ed-free').value) : null;
+    meta.freeAt = free;
     meta.noteBefore = $('ed-note-before').value.trim(); meta.noteAfter = $('ed-note-after').value.trim();
     meta.warnings = Array.from($('ed-warnings').querySelectorAll('.k-chip[aria-pressed="true"]')).map(function (c) { return c.value; });
     dirty = true; var btn = $('ed-pub-save'); btn.disabled = true; btn.textContent = 'Guardando…';
-    save(true).then(function () {
+    save(true, true).then(function () {
       closePub();
       KAMI.toast(st === 'published' ? 'Capítulo publicado' : st === 'scheduled' ? 'Capítulo programado' : 'Guardado como borrador', 'ok');
       loadChapters();
-    }).catch(function (e) { $('ed-pub-err').textContent = e.message; })
+    }).catch(function (e) { meta = before; renderState(); $('ed-pub-err').textContent = e.message; })
       .then(function () { btn.disabled = false; btn.textContent = 'Guardar'; });
   });
 
   /* ── Vista previa ──────────────────────────────────────────── */
   $('ed-preview-btn').addEventListener('click', function () {
+    // La vista previa lee el capítulo guardado: en uno ya publicado, eso publica los cambios
+    if (livePublished() && dirty && !confirm('Para ver la vista previa hay que guardar, y este capítulo ya está publicado: tus lectores verán los cambios. ¿Guardar y ver la vista previa?')) return;
     dirty = true;
     save(true).then(function () {
       if (!num) { KAMI.toast('Escribe algo para poder ver la vista previa.'); return; }
@@ -528,7 +564,7 @@
         var c = d.chapter;
         titleIn.value = c.title || ''; render(c.blocks || []);
         Object.assign(meta, { status: c.status, publishAt: c.publishAt, freeAt: c.freeAt, noteBefore: c.noteBefore || '', noteAfter: c.noteAfter || '', warnings: c.warnings || [] });
-        serverUpdatedAt = c.updatedAt;
+        serverUpdatedAt = c.updatedAt; serverStatus = c.status || 'draft';
         $('ed-kicker').textContent = 'Capítulo ' + num;
         setSave('ok', 'Guardado');
       } else { render([]); }

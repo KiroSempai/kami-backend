@@ -138,6 +138,7 @@ module.exports = {
   processChapterImages,
   getImagePath,
   getImagePathReady,
+  getOutputDir,
   QUALITIES,
   QUALITY_ORDER,
 };

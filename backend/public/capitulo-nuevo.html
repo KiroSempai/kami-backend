@@ -73,6 +73,9 @@
     .ed-radio input { accent-color: var(--k-accent); margin-top: 3px; }
     .ed-radio b { display: block; font-size: var(--k-fs-sm); } .ed-radio span { font-size: var(--k-fs-xs); color: var(--k-text-2); }
     .ce-gate { max-width: 560px; margin: 12vh auto; }
+    .ce-page__tag { position: absolute; top: 14px; right: 14px; padding: 2px 7px; border-radius: 6px; font: 700 10px/1.4 var(--k-font-body); background: var(--k-ok); color: #06210f; }
+    #ce-num-h.is-bad { color: var(--k-bad); }
+    .ce-bar__mode { font-size: var(--k-fs-xs); }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -81,7 +84,8 @@
 <div id="ce-gate" class="ce-gate" hidden></div>
 <div id="ce-app" hidden>
   <div class="ce-bar" role="toolbar" aria-label="Editor de cómic">
-    <div class="ce-bar__work"><span>Editor de cómic</span><b id="ce-work">Obra</b></div>
+    <div class="ce-bar__work"><span id="ce-mode">Nuevo capítulo de cómic</span><b id="ce-work">Obra</b></div>
+    <a class="k-btn k-btn--quiet k-btn--sm" id="ce-read" href="#" hidden><i class="ti ti-book" aria-hidden="true"></i>Ver en el lector</a>
     <span class="k-faint" id="ce-state" style="font-size:12px" role="status" aria-live="polite"></span>
     <button type="button" class="k-btn k-btn--secondary k-btn--sm" id="ce-preview-btn" disabled><i class="ti ti-eye" aria-hidden="true"></i>Vista previa</button>
     <button type="button" class="k-btn k-btn--primary k-btn--sm" id="ce-publish" disabled><i class="ti ti-upload" aria-hidden="true"></i><span id="ce-publish-l">Publicar</span></button>
@@ -95,6 +99,8 @@
         <span id="ce-drop-help">O pulsa para elegirlas. JPG, PNG o WEBP · hasta 10 MB por página · máximo 200 páginas.</span>
       </div>
       <input type="file" id="ce-files" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <input type="file" id="ce-replace" accept="image/jpeg,image/png,image/webp" hidden>
+      <div class="k-alert" id="ce-edit-note" hidden><i class="ti ti-info-circle" aria-hidden="true"></i><div>Estás editando un capítulo ya subido. Puedes reordenar, quitar, sustituir o añadir páginas; los StoryPins se mueven con su página y los de páginas quitadas se archivan.</div></div>
       <div class="ce-tools" id="ce-tools" hidden>
         <span class="ce-count" id="ce-count"></span>
         <button type="button" class="k-btn k-btn--quiet k-btn--sm" id="ce-sort"><i class="ti ti-sort-ascending-numbers" aria-hidden="true"></i>Ordenar por nombre</button>
@@ -109,9 +115,15 @@
       <div class="ce-grp">
         <h2>Capítulo</h2>
         <div class="ce-two">
-          <div class="k-field"><label class="k-label" for="ce-num">Número</label><input class="k-input" id="ce-num" type="number" min="1" step="1" inputmode="numeric"></div>
+          <div class="k-field"><label class="k-label" for="ce-num">Número</label><input class="k-input" id="ce-num" type="number" min="1" step="1" inputmode="numeric" aria-describedby="ce-num-h"></div>
           <div class="k-field"><label class="k-label" for="ce-title">Título</label><input class="k-input" id="ce-title" type="text" maxlength="200" placeholder="Opcional…" autocomplete="off"></div>
         </div>
+        <span class="k-help" id="ce-num-h" aria-live="polite"></span>
+      </div>
+      <div class="ce-grp">
+        <h2>Imágenes</h2>
+        <label class="k-switch"><input type="checkbox" id="ce-opt" checked>Optimizar las imágenes grandes</label>
+        <span class="k-help">Las páginas de más de 2400 px de ancho o de más de 4 MB se reducen en tu dispositivo antes de subirlas: la subida es más rápida y se ven igual de nítidas.</span>
       </div>
       <div class="ce-grp">
         <h2>Publicación</h2>
@@ -168,80 +180,114 @@
 <script>
 (function () {
   'use strict';
-  var parts = location.pathname.split('/');            // /obra/:id/nuevo-capitulo
+  var parts = location.pathname.split('/');            // /obra/:id/nuevo-capitulo · /obra/:id/capitulo/:n/editar
   var mangaId = decodeURIComponent(parts[2] || '');
+  var editNum = parts[3] === 'capitulo' ? parseInt(parts[4], 10) || null : null;
   document.body.setAttribute('data-shell-back', '/estudio#obra-' + mangaId);
   var $ = function (id) { return document.getElementById(id); };
   var MAX = 10 * 1024 * 1024, MAXN = 200, OK = /^image\/(jpeg|png|webp)$/;
-  var pages = [];       // { id, file, url, w, h }
+  var OPT_W = 2400, OPT_BYTES = 4 * 1024 * 1024;
+  // Página: { id, kind: 'new' | 'old', file?, n? (número actual), url, w, h }
+  var pages = [];
   var features = { chapterStatus: false };
-  var busy = false, dragId = null, focusId = null;
-  var mb = function (b) { return (b / 1048576).toLocaleString('es', { maximumFractionDigits: 1 }) + ' MB'; };
+  var busy = false, dirty = false, dragId = null, focusId = null, replaceId = null, takenNums = {};
+  var mb = function (b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toLocaleString('es', { maximumFractionDigits: 1 }) + ' MB'; };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function token() { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } }
   function api(url) { return fetch(url).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); }); }
   function gate(icon, title, text, cta) { $('ce-gate').innerHTML = '<div class="k-card"><div class="k-empty"><i class="ti ' + icon + '" aria-hidden="true"></i><h3>' + title + '</h3><p>' + text + '</p>' + (cta || '') + '</div></div>'; $('ce-gate').hidden = false; $('ce-app').hidden = true; }
+  function uid() { return Math.random().toString(36).slice(2, 10); }
+  function touch() { dirty = true; }
 
-  /* ── Añadir páginas ────────────────────────────────────────── */
+  /* ── Añadir y sustituir páginas ─────────────────────────────── */
+  function newPage(f) {
+    var p = { id: uid(), kind: 'new', file: f, url: URL.createObjectURL(f), w: 0, h: 0 };
+    var img = new Image(); img.onload = function () { p.w = img.naturalWidth; p.h = img.naturalHeight; render(); }; img.src = p.url;
+    return p;
+  }
   function addFiles(list) {
     var files = Array.from(list || []), skipped = [];
     files.forEach(function (f) {
       if (pages.length >= MAXN) { skipped.push(f.name + ' (máximo ' + MAXN + ' páginas)'); return; }
       if (!OK.test(f.type)) { skipped.push(f.name + ' (formato no admitido)'); return; }
-      var p = { id: Math.random().toString(36).slice(2, 10), file: f, url: URL.createObjectURL(f), w: 0, h: 0 };
-      pages.push(p);
-      var img = new Image(); img.onload = function () { p.w = img.naturalWidth; p.h = img.naturalHeight; render(); }; img.src = p.url;
+      pages.push(newPage(f));
     });
     if (skipped.length) KAMI.toast('No se añadieron ' + skipped.length + ': ' + skipped.slice(0, 2).join(', ') + (skipped.length > 2 ? '…' : ''), 'bad');
+    if (files.length > skipped.length) touch();
     render();
   }
   $('ce-drop').addEventListener('click', function () { $('ce-files').click(); });
   $('ce-drop').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('ce-files').click(); } });
   $('ce-files').addEventListener('change', function (e) { addFiles(e.target.files); e.target.value = ''; });
+  $('ce-replace').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = '';
+    var i = pages.findIndex(function (p) { return p.id === replaceId; }); replaceId = null;
+    if (!f || i < 0) return;
+    if (!OK.test(f.type)) { KAMI.toast('Formato no admitido: usa JPG, PNG o WEBP.', 'bad'); return; }
+    if (pages[i].kind === 'new') URL.revokeObjectURL(pages[i].url);
+    var p = newPage(f); focusId = p.id; pages[i] = p; touch(); render();
+  });
   ['dragenter', 'dragover'].forEach(function (ev) { document.addEventListener(ev, function (e) { if (e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf('Files') >= 0) { e.preventDefault(); $('ce-drop').classList.add('is-over'); } }); });
   ['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { if (ev === 'dragleave' && e.relatedTarget) return; $('ce-drop').classList.remove('is-over'); }); });
   document.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length && !dragId) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
 
   /* ── Mesa de luz ───────────────────────────────────────────── */
+  function willOptimize(p) { return p.kind === 'new' && $('ce-opt').checked && (p.file.size > OPT_BYTES || p.w > OPT_W); }
   function issues(p) {
-    if (p.file.size > MAX) return { err: 'Pesa ' + mb(p.file.size) + ': el máximo es 10 MB.' };
+    if (p.kind === 'new' && p.file.size > MAX && !$('ce-opt').checked) return { err: 'Pesa ' + mb(p.file.size) + ': el máximo es 10 MB. Activa «Optimizar» o redúcela.' };
     if (p.w && p.w < 600) return { warn: 'Solo ' + p.w + ' px de ancho: se verá borrosa.' };
+    if (willOptimize(p)) return { warn: 'Se reducirá al subir (' + (p.w > OPT_W ? 'a ' + OPT_W + ' px de ancho' : 'para pesar menos') + ').' };
     return {};
   }
   function render() {
-    var total = pages.reduce(function (s, p) { return s + p.file.size; }, 0);
+    var news = pages.filter(function (p) { return p.kind === 'new'; });
+    var total = news.reduce(function (s, p) { return s + p.file.size; }, 0);
     var bad = pages.filter(function (p) { return issues(p).err; }).length;
     $('ce-drop').classList.toggle('is-compact', pages.length > 0);
     $('ce-drop').querySelector('b').textContent = pages.length ? 'Añadir más páginas' : 'Arrastra aquí las páginas del capítulo';
     $('ce-tools').hidden = $('ce-order-help').hidden = !pages.length;
-    $('ce-count').innerHTML = '<b>' + pages.length + '</b> ' + (pages.length === 1 ? 'página' : 'páginas') + ' · ' + mb(total) + (bad ? ' · <span style="color:var(--k-bad)">' + bad + ' con error</span>' : '');
+    $('ce-count').innerHTML = '<b>' + pages.length + '</b> ' + (pages.length === 1 ? 'página' : 'páginas') + (news.length ? ' · ' + (editNum ? news.length + ' nuevas, ' : '') + mb(total) + ' por subir' : '') + (bad ? ' · <span style="color:var(--k-bad)">' + bad + ' con error</span>' : '');
     $('ce-grid').innerHTML = pages.map(function (p, i) {
-      var is = issues(p);
-      return '<div class="ce-page' + (is.err ? ' is-bad' : '') + '" role="listitem" tabindex="0" draggable="true" data-id="' + p.id + '" aria-label="Página ' + (i + 1) + ', ' + esc(p.file.name) + '">' +
-        '<span class="ce-page__n">' + (i + 1) + '</span><div class="ce-page__img"><img src="' + p.url + '" alt=""></div>' +
-        '<div class="ce-page__meta"><b title="' + esc(p.file.name) + '">' + esc(p.file.name) + '</b><span>' + (p.w ? p.w + '×' + p.h + ' · ' : '') + mb(p.file.size) + '</span>' +
+      var is = issues(p), name = p.kind === 'new' ? p.file.name : 'Página ' + p.n + ' actual';
+      var size = p.kind === 'new' ? mb(p.file.size) : (p.w ? '' : 'cargando…');
+      return '<div class="ce-page' + (is.err ? ' is-bad' : '') + '" role="listitem" tabindex="0" draggable="true" data-id="' + p.id + '" aria-label="Página ' + (i + 1) + ', ' + esc(name) + '">' +
+        '<span class="ce-page__n">' + (i + 1) + '</span>' + (editNum && p.kind === 'new' ? '<span class="ce-page__tag">Nueva</span>' : '') +
+        '<div class="ce-page__img"><img src="' + esc(p.url) + '" alt="" loading="lazy"></div>' +
+        '<div class="ce-page__meta"><b title="' + esc(name) + '">' + esc(name) + '</b><span>' + (p.w ? p.w + '×' + p.h + (size ? ' · ' : '') : '') + size + '</span>' +
         (is.err ? '<span class="ce-page__err">' + is.err + '</span>' : is.warn ? '<span class="ce-page__warn">' + is.warn + '</span>' : '') + '</div>' +
-        '<div class="ce-page__act"><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="-1" aria-label="Mover antes"' + (i === 0 ? ' disabled' : '') + '><i class="ti ti-chevron-left" aria-hidden="true"></i></button><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-rm aria-label="Quitar página ' + (i + 1) + '"><i class="ti ti-x" aria-hidden="true"></i></button><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="1" aria-label="Mover después"' + (i === pages.length - 1 ? ' disabled' : '') + '><i class="ti ti-chevron-right" aria-hidden="true"></i></button></div></div>';
+        '<div class="ce-page__act"><button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="-1" aria-label="Mover antes"' + (i === 0 ? ' disabled' : '') + '><i class="ti ti-chevron-left" aria-hidden="true"></i></button>' +
+        '<button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-replace aria-label="Sustituir la página ' + (i + 1) + '" title="Sustituir por otra imagen"><i class="ti ti-replace" aria-hidden="true"></i></button>' +
+        '<button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-rm aria-label="Quitar la página ' + (i + 1) + '"><i class="ti ti-trash" aria-hidden="true"></i></button>' +
+        '<button type="button" class="k-btn k-btn--quiet k-btn--icon k-btn--sm" data-move="1" aria-label="Mover después"' + (i === pages.length - 1 ? ' disabled' : '') + '><i class="ti ti-chevron-right" aria-hidden="true"></i></button></div></div>';
     }).join('');
     if (focusId) { var f = $('ce-grid').querySelector('[data-id="' + focusId + '"]'); if (f) f.focus(); focusId = null; }
-    var ready = pages.length > 0 && !bad && !busy;
+    var numBad = !editNum && !!takenNums[parseInt($('ce-num').value, 10)];
+    var ready = pages.length > 0 && !bad && !busy && !numBad && (!editNum || dirty);
     $('ce-publish').disabled = !ready; $('ce-preview-btn').disabled = !pages.length;
-    $('ce-state').textContent = pages.length ? (bad ? 'Corrige las páginas marcadas' : 'Listo para publicar') : '';
+    $('ce-state').textContent = !pages.length ? '' : bad ? 'Corrige las páginas marcadas' : numBad ? 'Cambia el número del capítulo' : editNum ? (dirty ? 'Cambios sin guardar' : 'Sin cambios') : 'Listo para publicar';
   }
   function move(id, delta) {
     var i = pages.findIndex(function (p) { return p.id === id; }), j = i + delta;
     if (i < 0 || j < 0 || j >= pages.length) return;
-    var x = pages.splice(i, 1)[0]; pages.splice(j, 0, x); focusId = id; render();
+    var x = pages.splice(i, 1)[0]; pages.splice(j, 0, x); focusId = id; touch(); render();
+  }
+  function removePage(id) {
+    var i = pages.findIndex(function (p) { return p.id === id; }); if (i < 0) return;
+    if (pages[i].kind === 'new') URL.revokeObjectURL(pages[i].url);
+    pages.splice(i, 1); touch();
+    var next = pages[Math.min(i, pages.length - 1)]; if (next) focusId = next.id;
+    render();
   }
   $('ce-grid').addEventListener('click', function (e) {
     var card = e.target.closest('.ce-page'); if (!card) return;
     var mv = e.target.closest('[data-move]'); if (mv) { move(card.dataset.id, +mv.dataset.move); return; }
-    if (e.target.closest('[data-rm]')) { var i = pages.findIndex(function (p) { return p.id === card.dataset.id; }); URL.revokeObjectURL(pages[i].url); pages.splice(i, 1); render(); }
+    if (e.target.closest('[data-replace]')) { replaceId = card.dataset.id; $('ce-replace').click(); return; }
+    if (e.target.closest('[data-rm]')) removePage(card.dataset.id);
   });
   $('ce-grid').addEventListener('keydown', function (e) {
     var card = e.target.closest('.ce-page'); if (!card || e.target !== card) return;
     if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); move(card.dataset.id, e.key === 'ArrowLeft' ? -1 : 1); }
-    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); card.querySelector('[data-rm]').click(); }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); removePage(card.dataset.id); }
   });
   // Reordenar arrastrando
   $('ce-grid').addEventListener('dragstart', function (e) { var c = e.target.closest('.ce-page'); if (!c) return; dragId = c.dataset.id; c.classList.add('is-drag'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); });
@@ -249,65 +295,140 @@
   $('ce-grid').addEventListener('drop', function (e) {
     var c = e.target.closest('.ce-page'); if (!c || !dragId) return; e.preventDefault(); e.stopPropagation();
     var from = pages.findIndex(function (p) { return p.id === dragId; }), to = pages.findIndex(function (p) { return p.id === c.dataset.id; });
-    if (from >= 0 && to >= 0 && from !== to) { var x = pages.splice(from, 1)[0]; pages.splice(to, 0, x); }
+    if (from >= 0 && to >= 0 && from !== to) { var x = pages.splice(from, 1)[0]; pages.splice(to, 0, x); touch(); }
     dragId = null; render();
   });
   $('ce-grid').addEventListener('dragend', function () { dragId = null; render(); });
-  $('ce-sort').addEventListener('click', function () { var coll = new Intl.Collator('es', { numeric: true, sensitivity: 'base' }); pages.sort(function (a, b) { return coll.compare(a.file.name, b.file.name); }); render(); KAMI.toast('Páginas ordenadas por nombre de archivo', 'ok'); });
-  $('ce-reverse').addEventListener('click', function () { pages.reverse(); render(); });
-  $('ce-clear').addEventListener('click', function () { pages.forEach(function (p) { URL.revokeObjectURL(p.url); }); pages = []; render(); });
+  $('ce-sort').addEventListener('click', function () {
+    var coll = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
+    var key = function (p) { return p.kind === 'new' ? p.file.name : 'page-' + String(p.n).padStart(4, '0'); };
+    pages.sort(function (a, b) { return coll.compare(key(a), key(b)); }); touch(); render(); KAMI.toast('Páginas ordenadas por nombre');
+  });
+  $('ce-reverse').addEventListener('click', function () { pages.reverse(); touch(); render(); });
+  $('ce-clear').addEventListener('click', function () {
+    if (editNum && !confirm('¿Quitar todas las páginas? Tendrás que añadir al menos una antes de guardar.')) return;
+    pages.forEach(function (p) { if (p.kind === 'new') URL.revokeObjectURL(p.url); }); pages = []; touch(); render();
+  });
+  $('ce-opt').addEventListener('change', render);
+
+  /* ── Número del capítulo: aviso si ya existe ───────────────── */
+  function checkNum() {
+    var n = parseInt($('ce-num').value, 10), h = $('ce-num-h');
+    if (editNum) { h.textContent = ''; return; }
+    if (n && takenNums[n]) { h.className = 'k-help is-bad'; h.textContent = 'Ya existe el capítulo ' + n + '. Elige otro número o edita ese capítulo desde el Estudio.'; }
+    else { h.className = 'k-help'; h.textContent = ''; }
+    render();
+  }
+  $('ce-num').addEventListener('input', checkNum);
+  ['ce-title', 'ce-note-after', 'ce-when', 'ce-free'].forEach(function (id) { $(id).addEventListener('input', function () { touch(); render(); }); });
+
+  /* ── Optimizar imágenes en el dispositivo ──────────────────── */
+  function loadBitmap(file) {
+    if (window.createImageBitmap) return createImageBitmap(file);
+    return new Promise(function (res, rej) { var img = new Image(); img.onload = function () { res(img); }; img.onerror = rej; img.src = URL.createObjectURL(file); });
+  }
+  function optimize(file) {
+    return loadBitmap(file).then(function (bmp) {
+      var w = bmp.width, h = bmp.height;
+      var scale = w > OPT_W ? OPT_W / w : 1;
+      var cw = Math.round(w * scale), chh = Math.round(h * scale);
+      if (chh > 16000) return file;                 // tiras gigantes: el navegador no puede dibujarlas enteras
+      var c = document.createElement('canvas'); c.width = cw; c.height = chh;
+      c.getContext('2d').drawImage(bmp, 0, 0, cw, chh);
+      if (bmp.close) bmp.close();
+      return new Promise(function (res) {
+        c.toBlob(function (b) {
+          if (b && b.type === 'image/webp') return res(b);
+          c.toBlob(function (j) { res(j); }, 'image/jpeg', 0.9);
+        }, 'image/webp', 0.9);
+      }).then(function (blob) {
+        if (!blob || (blob.size >= file.size && file.size <= MAX)) return file;   // si no gana nada, se queda la original
+        var ext = blob.type === 'image/webp' ? '.webp' : '.jpg';
+        return new File([blob], file.name.replace(/\.[^.]+$/, '') + ext, { type: blob.type });
+      });
+    }).catch(function () { return file; });
+  }
+  function prepareFiles(list, onStep) {
+    var out = [], i = 0;
+    function next() {
+      if (i >= list.length) return Promise.resolve(out);
+      var p = list[i++]; onStep(i, list.length);
+      return (willOptimize(p) ? optimize(p.file) : Promise.resolve(p.file)).then(function (f) {
+        if (f.size > MAX) throw new Error('«' + p.file.name + '» sigue pesando ' + mb(f.size) + ' después de optimizarla. Redúcela antes de subirla.');
+        out.push(f); return next();
+      });
+    }
+    return next();
+  }
 
   /* ── Publicación ───────────────────────────────────────────── */
   function toLocalInput(d) { d = new Date(d); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); }
-  document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.addEventListener('change', function () {
-    var st = document.querySelector('[name="ce-status"]:checked').value;
+  function statusVal() { return (document.querySelector('[name="ce-status"]:checked') || {}).value || 'published'; }
+  function syncStatusUI() {
+    var st = statusVal();
     $('ce-when-wrap').hidden = st !== 'scheduled';
     if (st === 'scheduled' && !$('ce-when').value) { var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(18, 0, 0, 0); $('ce-when').value = toLocalInput(d); }
-    $('ce-publish-l').textContent = st === 'draft' ? 'Guardar borrador' : st === 'scheduled' ? 'Programar' : 'Publicar';
-  }); });
-  $('ce-early').addEventListener('change', function (e) { $('ce-free-wrap').hidden = !e.target.checked; if (e.target.checked && !$('ce-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ce-free').value = toLocalInput(d); } });
-  $('ce-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); });
+    $('ce-when').min = toLocalInput(new Date());
+    $('ce-publish-l').textContent = editNum ? 'Guardar cambios' : st === 'draft' ? 'Guardar borrador' : st === 'scheduled' ? 'Programar' : 'Publicar';
+  }
+  document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.addEventListener('change', function () { touch(); syncStatusUI(); render(); }); });
+  $('ce-early').addEventListener('change', function (e) { touch(); $('ce-free-wrap').hidden = !e.target.checked; if (e.target.checked && !$('ce-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ce-free').value = toLocalInput(d); } render(); });
+  $('ce-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) { c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); touch(); render(); } });
 
   $('ce-publish').addEventListener('click', function () {
     $('ce-err').textContent = '';
-    var num = parseInt($('ce-num').value, 10);
+    var num = editNum || parseInt($('ce-num').value, 10);
     if (!num || num < 1) { $('ce-err').textContent = 'Indica el número del capítulo.'; $('ce-num').focus(); return; }
-    var st = features.chapterStatus ? document.querySelector('[name="ce-status"]:checked').value : 'published';
+    if (!editNum && takenNums[num]) { $('ce-err').textContent = 'Ya existe el capítulo ' + num + '.'; $('ce-num').focus(); return; }
+    var st = features.chapterStatus ? statusVal() : 'published';
     var when = $('ce-when').value ? new Date($('ce-when').value).toISOString() : null;
     if (st === 'scheduled' && (!when || new Date(when) <= new Date())) { $('ce-err').textContent = 'Elige una fecha futura para programar el capítulo.'; return; }
+    var free = $('ce-early').checked && $('ce-free').value ? new Date($('ce-free').value).toISOString() : null;
+    if (free && new Date(free) <= (st === 'scheduled' && when ? new Date(when) : new Date())) { $('ce-err').textContent = 'La fecha en que se libera gratis tiene que ser posterior a la de publicación.'; return; }
+    var news = pages.filter(function (p) { return p.kind === 'new'; });
+    busy = true; render();
+    $('ce-upload').hidden = false; $('ce-upload-bar').style.width = '0%'; $('ce-upload-p').textContent = '';
+    prepareFiles(news, function (i, n) { $('ce-upload-l').textContent = news.some(willOptimize) ? 'Preparando las imágenes ' + i + ' de ' + n + '…' : 'Preparando…'; })
+      .then(function (files) { send(num, st, when, free, news, files); })
+      .catch(function (er) { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = er.message; render(); });
+  });
+  function send(num, st, when, free, news, files) {
     var fd = new FormData();
-    fd.append('chapterNumber', num); fd.append('title', $('ce-title').value.trim());
+    if (!editNum) fd.append('chapterNumber', num);
+    fd.append('title', $('ce-title').value.trim());
     if (features.chapterStatus) {
       fd.append('status', st); if (st === 'scheduled') fd.append('publishAt', when);
-      if ($('ce-early').checked && $('ce-free').value) fd.append('freeAt', new Date($('ce-free').value).toISOString());
+      if (free) fd.append('freeAt', free);
       fd.append('noteAfter', $('ce-note-after').value.trim());
       fd.append('warnings', JSON.stringify(Array.from($('ce-warnings').querySelectorAll('[aria-pressed="true"]')).map(function (c) { return c.value; })));
     }
-    pages.forEach(function (p) { fd.append('pages', p.file, p.file.name); });
-    busy = true; render();
-    $('ce-upload').hidden = false; $('ce-upload-l').textContent = 'Subiendo ' + pages.length + ' páginas…';
+    if (editNum) fd.append('order', JSON.stringify(pages.map(function (p) { return p.kind === 'old' ? 'k:' + p.n : 'n:' + news.indexOf(p); })));
+    files.forEach(function (f) { fd.append('pages', f, f.name); });
+    var upBytes = files.reduce(function (s, f) { return s + f.size; }, 0);
+    $('ce-upload-l').textContent = files.length ? 'Subiendo ' + files.length + (files.length === 1 ? ' página' : ' páginas') + ' (' + mb(upBytes) + ')…' : 'Guardando…';
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/chapters/' + encodeURIComponent(mangaId));
+    xhr.open(editNum ? 'PUT' : 'POST', '/api/chapters/' + encodeURIComponent(mangaId) + (editNum ? '/' + editNum : ''));
     xhr.setRequestHeader('Authorization', 'Bearer ' + token());
-    xhr.upload.onprogress = function (e) { if (!e.lengthComputable) return; var pc = Math.round(e.loaded / e.total * 100); $('ce-upload-bar').style.width = pc + '%'; $('ce-upload-p').textContent = pc + ' %'; if (pc >= 100) $('ce-upload-l').textContent = 'Procesando páginas…'; };
+    xhr.upload.onprogress = function (e) { if (!e.lengthComputable) return; var pc = Math.round(e.loaded / e.total * 100); $('ce-upload-bar').style.width = pc + '%'; $('ce-upload-p').textContent = pc + ' %'; if (pc >= 100) $('ce-upload-l').textContent = 'Procesando en el servidor…'; };
     xhr.onload = function () {
       var d = {}; try { d = JSON.parse(xhr.responseText); } catch (e) {}
       if (xhr.status >= 200 && xhr.status < 300) {
-        pages = []; busy = false;
-        KAMI.toast(st === 'draft' ? 'Borrador guardado' : st === 'scheduled' ? 'Capítulo programado' : 'Capítulo publicado', 'ok');
+        dirty = false; busy = false;
+        KAMI.toast(editNum ? 'Cambios guardados' : st === 'draft' ? 'Borrador guardado' : st === 'scheduled' ? 'Capítulo programado' : 'Capítulo publicado', 'ok');
+        pages = [];
         setTimeout(function () { location.href = '/estudio#obra-' + encodeURIComponent(mangaId); }, 700);
-      } else { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = d.error || 'No se pudo subir el capítulo (error ' + xhr.status + ').'; render(); }
+      } else { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = d.error || 'No se pudo guardar el capítulo (error ' + xhr.status + ').'; render(); }
     };
-    xhr.onerror = function () { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = 'Se cortó la conexión durante la subida. Tus páginas siguen aquí: vuelve a pulsar Publicar.'; render(); };
+    xhr.onerror = function () { busy = false; $('ce-upload').hidden = true; $('ce-err').textContent = 'Se cortó la conexión durante la subida. Tus páginas siguen aquí: vuelve a intentarlo.'; render(); };
     xhr.send(fd);
-  });
-  window.addEventListener('beforeunload', function (e) { if (pages.length && !busy) { e.preventDefault(); e.returnValue = ''; } });
+  }
+  window.addEventListener('beforeunload', function (e) { if (((!editNum && pages.length) || (editNum && dirty)) && !busy) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ── Vista previa ──────────────────────────────────────────── */
   var pv = 0;
   function showPv() { var imgs = $('ce-prev-col').querySelectorAll('img'); imgs.forEach(function (im, i) { im.classList.toggle('is-on', i === pv); }); $('ce-prev-pg').textContent = 'Página ' + (pv + 1) + ' de ' + imgs.length; }
   $('ce-preview-btn').addEventListener('click', function () {
-    $('ce-prev-col').innerHTML = pages.map(function (p, i) { return '<img src="' + p.url + '" alt="Página ' + (i + 1) + '">'; }).join('');
+    $('ce-prev-col').innerHTML = pages.map(function (p, i) { return '<img src="' + esc(p.url) + '" alt="Página ' + (i + 1) + '">'; }).join('');
     pv = 0; showPv(); $('ce-prev').classList.add('is-open'); $('ce-prev-close').focus();
   });
   $('ce-prev-close').addEventListener('click', function () { $('ce-prev').classList.remove('is-open'); $('ce-preview-btn').focus(); });
@@ -325,17 +446,48 @@
   });
 
   /* ── Arranque ──────────────────────────────────────────────── */
+  function authApi(url) { return fetch(url, { headers: { Authorization: 'Bearer ' + token() } }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) { var e = new Error(d.error || 'Error ' + r.status); e.status = r.status; throw e; } return d; }); }); }
+  function fillEdit(d) {
+    var c = d.chapter;
+    $('ce-mode').textContent = 'Editar capítulo ' + c.number;
+    $('ce-num').value = c.number; $('ce-num').disabled = true;
+    $('ce-title').value = /^cap[ií]tulo\s*\d+$/i.test(c.title || '') ? '' : (c.title || '');
+    $('ce-edit-note').hidden = false;
+    $('ce-read').hidden = false; $('ce-read').href = '/leer/' + encodeURIComponent(mangaId) + '/' + c.number;
+    document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.checked = r.value === (c.status || 'published'); });
+    if (c.publishAt) $('ce-when').value = toLocalInput(c.publishAt);
+    if (c.freeAt) { $('ce-early').checked = true; $('ce-free').value = toLocalInput(c.freeAt); $('ce-free-wrap').hidden = false; }
+    $('ce-note-after').value = c.noteAfter || '';
+    $('ce-warnings').querySelectorAll('.k-chip').forEach(function (ch) { ch.setAttribute('aria-pressed', String((c.warnings || []).indexOf(ch.value) >= 0)); });
+    pages = (d.pages || []).map(function (p) {
+      var o = { id: uid(), kind: 'old', n: p.page, url: p.url, w: 0, h: 0 };
+      var img = new Image(); img.onload = function () { o.w = img.naturalWidth; o.h = img.naturalHeight; render(); }; img.src = p.url;
+      return o;
+    });
+    document.title = 'Editar capítulo ' + c.number + ' · ' + $('ce-work').textContent + ' · KamiTales';
+  }
   if (!token()) { gate('ti-lock', 'Inicia sesión para subir capítulos', 'Solo el autor de una obra puede subirle capítulos.', '<a class="k-btn k-btn--primary" href="/acceder?return=' + encodeURIComponent(location.pathname) + '">Acceder</a>'); return; }
-  Promise.all([api('/api/manga/' + encodeURIComponent(mangaId)), api('/api/chapters/' + encodeURIComponent(mangaId) + '?limit=1'), api('/api/studio/features').catch(function () { return {}; })]).then(function (r) {
+  Promise.all([
+    api('/api/manga/' + encodeURIComponent(mangaId)),
+    authApi('/api/chapters/' + encodeURIComponent(mangaId) + '?limit=100').catch(function () { return { chapters: [] }; }),
+    api('/api/studio/features').catch(function () { return {}; }),
+    editNum ? authApi('/api/chapters/' + encodeURIComponent(mangaId) + '/' + editNum + '/edit') : Promise.resolve(null)
+  ]).then(function (r) {
     var m = r[0].manga || r[0];
     if (m.type === 'novel') { gate('ti-book-2', 'Esta obra es una novela', 'Los capítulos de novela se escriben en el editor de texto.', '<a class="k-btn k-btn--primary" href="/obra/' + encodeURIComponent(mangaId) + '/escribir">Abrir el editor de novela</a>'); return; }
     features = r[2] || {};
     $('ce-work').textContent = m.title; document.title = m.title + ' · Editor de cómic · KamiTales';
-    var last = (r[1].chapters || [])[0]; $('ce-num').value = last ? last.number + 1 : 1;
+    var list = r[1].chapters || [];
+    list.forEach(function (c) { takenNums[c.number] = true; });
+    var maxN = list.reduce(function (a, c) { return Math.max(a, c.number); }, 0);
+    $('ce-num').value = maxN + 1;
     if (!features.chapterStatus) { document.querySelectorAll('[data-needs-status]').forEach(function (x) { x.hidden = true; }); $('ce-status-note').hidden = false; }
-    $('ce-app').hidden = false; render();
+    if (r[3]) fillEdit(r[3]);
+    syncStatusUI(); checkNum();
+    $('ce-app').hidden = false; dirty = false; render();
   }).catch(function (e) {
-    if (e.status === 404) gate('ti-file-off', 'Esta obra no existe', 'Vuelve al Estudio y elige una de tus obras.', '<a class="k-btn k-btn--primary" href="/estudio#obras">Ir al Estudio</a>');
+    if (e.status === 404) gate('ti-file-off', editNum ? 'Este capítulo no existe' : 'Esta obra no existe', 'Vuelve al Estudio y elige una de tus obras.', '<a class="k-btn k-btn--primary" href="/estudio#obras">Ir al Estudio</a>');
+    else if (e.status === 403) gate('ti-lock', 'Solo el autor puede editar este capítulo', 'Esta obra pertenece a otra cuenta.', '<a class="k-btn k-btn--primary" href="/estudio">Ir al Estudio</a>');
     else gate('ti-wifi-off', 'No se pudo abrir el editor', 'Comprueba tu conexión y recarga la página.');
   });
 })();

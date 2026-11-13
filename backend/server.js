@@ -360,6 +360,7 @@ app.get('/estudio/nueva',            page('obra-nueva.html'));
 app.get('/obra/:id',                 page('obra.html'));
 app.get('/obra/:id/editar',          page('obra-editar.html'));
 app.get('/obra/:id/nuevo-capitulo',  page('capitulo-nuevo.html'));
+app.get('/obra/:id/capitulo/:num/editar', page('capitulo-nuevo.html'));
 // El lector depende del tipo de obra: texto para novelas, páginas para cómics
 app.get('/leer/:id/:cap', async (req, res) => {
   let file = 'lector.html';

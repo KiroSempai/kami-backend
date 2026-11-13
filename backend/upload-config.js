@@ -10,10 +10,13 @@ const TEMP_DIR = path.join(__dirname, 'uploads-tmp');
     try { fs.mkdirSync(d, { recursive: true }); } catch (e) {}
 });
 
+// La extensión del archivo temporal sale del tipo declarado, no del nombre que manda el navegador
+const EXT_BY_MIME = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'image/avif': '.avif' };
+
 const tempStorage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, TEMP_DIR),
     filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname) || '.jpg';
+        const ext = EXT_BY_MIME[file.mimetype] || '.bin';
         cb(null, `${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`);
     }
 });
@@ -22,8 +25,9 @@ const upload = multer({
     storage: tempStorage,
     limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
+        // Extensión y tipo deben ser de imagen; el contenido real se comprueba después con sharp
         const allowed = /\.(jpg|jpeg|png|webp|gif|avif)$/i;
-        cb(null, allowed.test(path.extname(file.originalname)));
+        cb(null, allowed.test(path.extname(file.originalname)) && !!EXT_BY_MIME[file.mimetype]);
     }
 });
 

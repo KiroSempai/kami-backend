@@ -24,8 +24,50 @@ async function visibilityFilter(req, mangaId) {
     return " AND (c.status = 'published' OR (c.status = 'scheduled' AND c.publish_at <= NOW()))";
 }
 const { signURL } = require('../url-signer');
+const { getOutputDir } = require('../image-processor');
 
 const CHAPTERS_PER_PAGE = 50;
+
+// ── Páginas de cómic: comprobación y colocación ──────────────────────────────
+const PAGE_EXT = { jpeg: '.jpg', png: '.png', webp: '.webp' };
+// Comprueba con sharp que cada archivo es de verdad una imagen JPG, PNG o WEBP; devuelve su extensión real
+async function inspectPages(files) {
+    const sharp = require('sharp');
+    const out = [];
+    for (const f of files) {
+        let meta = null;
+        try { meta = await sharp(f.path).metadata(); } catch { meta = null; }
+        if (!meta || !PAGE_EXT[meta.format]) {
+            const e = new Error(`«${String(f.originalname).slice(0, 60)}» no es una imagen JPG, PNG o WEBP válida.`); e.status = 400; throw e;
+        }
+        if ((meta.width || 0) < 100 || (meta.height || 0) < 100) {
+            const e = new Error(`«${String(f.originalname).slice(0, 60)}» es demasiado pequeña (${meta.width}×${meta.height}).`); e.status = 400; throw e;
+        }
+        out.push({ path: f.path, ext: PAGE_EXT[meta.format] });
+    }
+    return out;
+}
+const pageName = (i, ext) => `page-${String(i + 1).padStart(3, '0')}${ext}`;
+function findPageFile(dir, n) {
+    for (const ext of ['.jpg', '.jpeg', '.png', '.webp']) {
+        const f = path.join(dir, `page-${String(n).padStart(3, '0')}${ext}`);
+        if (fs.existsSync(f)) return f;
+    }
+    return null;
+}
+// Borra las versiones procesadas (master y calidades) para que no se sirvan imágenes viejas
+function clearProcessed(mangaId, num) {
+    try { fs.rmSync(getOutputDir(mangaId, num), { recursive: true, force: true }); } catch { /* nada */ }
+}
+function readChapterMeta(body) {
+    const st = ['draft', 'scheduled', 'published'].includes(body.status) ? body.status : null;
+    const when = body.publishAt && !isNaN(new Date(body.publishAt)) ? new Date(body.publishAt).toISOString() : null;
+    const free = body.freeAt && !isNaN(new Date(body.freeAt)) ? new Date(body.freeAt).toISOString() : null;
+    const WARN = ['violencia', 'sexual', 'lenguaje', 'autolesion', 'drogas', 'terror'];
+    let warnings = [];
+    try { warnings = (Array.isArray(body.warnings) ? body.warnings : JSON.parse(body.warnings || '[]')).filter(w => WARN.includes(w)); } catch { /* sin avisos */ }
+    return { st, when, free, warnings, noteAfter: String(body.noteAfter || '').slice(0, 4000), noteBefore: String(body.noteBefore || '').slice(0, 4000) };
+}
 
 // GET /api/chapters/:mangaId - listar capítulos de un manga
 router.get('/:mangaId', async (req, res) => {
@@ -285,29 +327,29 @@ router.post('/:mangaId', requireAuth, requireMangaEditor, upload.array('pages', 
             return res.status(404).json({ error: 'Manga no encontrado' });
         }
 
-        if (!chapterNumber || isNaN(parseInt(chapterNumber))) {
-            return res.status(400).json({ error: 'Número de capítulo requerido' });
+        const num = parseInt(chapterNumber, 10);
+        if (!Number.isInteger(num) || num < 1 || num > 99999) {
+            return res.status(400).json({ error: 'Indica un número de capítulo válido.' });
         }
-
-        const num = parseInt(chapterNumber);
 
         const existing = await pool.query(
             'SELECT id FROM chapters WHERE manga_id = $1 AND chapter_number = $2',
             [mangaId, num]
         );
         if (existing.rows.length > 0) {
-            return res.status(409).json({ error: `El capítulo ${num} ya existe para este manga` });
+            return res.status(409).json({ error: `El capítulo ${num} ya existe. Elige otro número o edita el existente.` });
         }
-
-        const chapterDir = path.join(MANGA_ASSETS_DIR, mangaId, `chapter-${num}`);
-        fs.mkdirSync(chapterDir, { recursive: true });
 
         const files = req.files || [];
-        for (let i = 0; i < files.length; i++) {
-            const ext = path.extname(files[i].originalname) || '.jpg';
-            const pageFilename = `page-${String(i + 1).padStart(3, '0')}${ext}`;
-            fs.renameSync(files[i].path, path.join(chapterDir, pageFilename));
-        }
+        if (!files.length) return res.status(400).json({ error: 'Añade al menos una página.' });
+        const checked = await inspectPages(files);   // 400 si alguna no es una imagen válida
+
+        // Carpeta limpia: si quedaba algo de un capítulo borrado con ese número, fuera
+        const chapterDir = path.join(MANGA_ASSETS_DIR, mangaId, `chapter-${num}`);
+        fs.rmSync(chapterDir, { recursive: true, force: true });
+        clearProcessed(mangaId, num);
+        fs.mkdirSync(chapterDir, { recursive: true });
+        checked.forEach((f, i) => fs.renameSync(f.path, path.join(chapterDir, pageName(i, f.ext))));
 
         const totalPages = files.length;
 
@@ -363,38 +405,142 @@ router.post('/:mangaId', requireAuth, requireMangaEditor, upload.array('pages', 
             console.error('[background] Error procesando imágenes:', err.message);
         });
     } catch (err) {
+        if (err.status === 400) return res.status(400).json({ error: err.message });
         console.error('Error creating chapter:', err);
         res.status(500).json({ error: 'Error al crear capítulo' });
     }
 });
 
-// PUT /api/chapters/:mangaId/:chapterNum - actualizar metadatos del capítulo
-router.put('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, async (req, res) => {
+// GET /api/chapters/:mangaId/:chapterNum/edit — todo lo que necesita el editor de cómic (solo autor)
+router.get('/:mangaId/:chapterNum/edit', requireAuth, requireMangaEditor, async (req, res) => {
     try {
-        const { mangaId, chapterNum } = req.params;
-        const { title, scanGroup } = req.body;
-        const num = parseInt(chapterNum);
+        const { mangaId } = req.params;
+        const num = parseInt(req.params.chapterNum, 10);
+        const r = await pool.query('SELECT * FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, num]);
+        if (!r.rows.length) return res.status(404).json({ error: 'Capítulo no encontrado' });
+        const c = r.rows[0];
+        const pages = [];
+        for (let i = 0; i < (c.pages || 0); i++) pages.push({ page: i + 1, url: signURL(`/api/image/${mangaId}/${num}/${i + 1}?quality=720&raw=1`) });
+        res.json({
+            chapter: {
+                number: c.chapter_number, title: c.title || '', pages: c.pages || 0,
+                status: c.status || 'published', publishAt: c.publish_at || null, freeAt: c.free_at || null,
+                noteAfter: c.note_after || '', warnings: c.content_warnings || [], updatedAt: c.updated_at || null,
+            },
+            pages,
+        });
+    } catch (err) {
+        console.error('[chapters] editar (leer):', err.message);
+        res.status(500).json({ error: 'No se pudo abrir el capítulo.' });
+    }
+});
 
-        const result = await pool.query(
-            `UPDATE chapters SET
-                title = COALESCE($1, title),
-                scan_group = COALESCE($2, scan_group),
-                updated_at = CURRENT_TIMESTAMP
-             WHERE manga_id = $3 AND chapter_number = $4
-             RETURNING id, chapter_number, title, pages, scan_group, release_date`,
-            [title || null, scanGroup || null, mangaId, num]
-        );
+// PUT /api/chapters/:mangaId/:chapterNum — datos del capítulo y, opcionalmente, sus páginas.
+// Páginas: campo «order» (JSON) con la secuencia final, p. ej. ["k:2","n:0","k:1"]:
+//   k:N = conservar la página N actual · n:I = el archivo nuevo número I de «pages».
+router.put('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, upload.array('pages', 200), async (req, res) => {
+    const { mangaId } = req.params;
+    const num = parseInt(req.params.chapterNum, 10);
+    let newDir = null;
+    try {
+        const cur = await pool.query('SELECT * FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, num]);
+        if (!cur.rows.length) return res.status(404).json({ error: 'Capítulo no encontrado' });
+        const ch = cur.rows[0];
+        const body = req.body || {};
+        const files = req.files || [];
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Capítulo no encontrado' });
+        // ── Páginas ──
+        let order = null;
+        if (body.order !== undefined) {
+            try { order = typeof body.order === 'string' ? JSON.parse(body.order) : body.order; } catch { order = null; }
+            if (!Array.isArray(order) || !order.length || order.length > 200) return res.status(400).json({ error: 'El capítulo necesita entre 1 y 200 páginas.' });
+            const usedNew = new Set();
+            for (const t of order) {
+                const m = /^(k|n):(\d{1,4})$/.exec(String(t));
+                if (!m) return res.status(400).json({ error: 'Orden de páginas no válido.' });
+                const n = parseInt(m[2], 10);
+                if (m[1] === 'k' && (n < 1 || n > (ch.pages || 0))) return res.status(400).json({ error: `La página ${n} no existe en este capítulo.` });
+                if (m[1] === 'n') { if (n >= files.length || usedNew.has(n)) return res.status(400).json({ error: 'Faltan archivos de páginas nuevas.' }); usedNew.add(n); }
+            }
+        }
+        const checked = order ? await inspectPages(files) : [];
+
+        // ── Datos ──
+        const meta = readChapterMeta(body);
+        if (meta.st === 'scheduled' && !meta.when) return res.status(400).json({ error: 'Elige la fecha de publicación.' });
+        const sets = [], vals = [];
+        const add = (sql, v) => { vals.push(v); sets.push(sql.replace('?', '$' + vals.length)); };
+        if (typeof body.title === 'string') add('title = ?', body.title.trim().slice(0, 200) || `Capítulo ${num}`);
+        if (typeof body.scanGroup === 'string') add('scan_group = ?', body.scanGroup.slice(0, 100));
+        if (meta.st && await hasColumn('chapters', 'status')) {
+            add('status = ?::varchar', meta.st);
+            add('publish_at = ?::timestamptz', meta.st === 'scheduled' ? meta.when : null);
+            if (meta.st === 'published' && (ch.status || 'published') !== 'published') sets.push('release_date = CURRENT_TIMESTAMP');
+            if (meta.st === 'scheduled') { vals.push(meta.when); sets.push('release_date = $' + vals.length + '::timestamptz'); }
+            add('free_at = ?::timestamptz', meta.free);
+            add('note_after = ?', meta.noteAfter);
+            add('content_warnings = ?', meta.warnings);
         }
 
+        // ── Reconstruir la carpeta del capítulo en una nueva y cambiarlas al final ──
+        const chapterDir = path.join(MANGA_ASSETS_DIR, mangaId, `chapter-${num}`);
+        let pinMap = null;
+        if (order) {
+            newDir = chapterDir + '.__new_' + Date.now();
+            fs.mkdirSync(newDir, { recursive: true });
+            pinMap = {};
+            order.forEach((t, i) => {
+                const [kind, nStr] = String(t).split(':'); const n = parseInt(nStr, 10);
+                if (kind === 'k') {
+                    const src = findPageFile(chapterDir, n);
+                    if (!src) { const e = new Error(`No se encontró el archivo de la página ${n}.`); e.status = 409; throw e; }
+                    fs.copyFileSync(src, path.join(newDir, pageName(i, path.extname(src).toLowerCase() === '.jpeg' ? '.jpg' : path.extname(src).toLowerCase())));
+                    pinMap[n - 1] = i;   // los pines usan índice desde 0
+                } else {
+                    fs.renameSync(checked[n].path, path.join(newDir, pageName(i, checked[n].ext)));
+                }
+            });
+            add('pages = ?', order.length);
+        }
+        if (!sets.length) return res.status(400).json({ error: 'No hay cambios que guardar.' });
+        sets.push('updated_at = CURRENT_TIMESTAMP');
+
+        const client = await pool.connect();
+        let row;
+        try {
+            await client.query('BEGIN');
+            vals.push(mangaId, num);
+            const up = await client.query(`UPDATE chapters SET ${sets.join(', ')} WHERE manga_id = $${vals.length - 1} AND chapter_number = $${vals.length} RETURNING *`, vals);
+            row = up.rows[0];
+            if (pinMap) {
+                // Los StoryPins siguen a su página; los de páginas quitadas se archivan
+                const pins = await client.query('SELECT id, page_index FROM story_pins WHERE manga_id = $1 AND chapter_number = $2 AND deleted_at IS NULL', [mangaId, num]).catch(() => ({ rows: [] }));
+                for (const p of pins.rows) {
+                    const to = pinMap[p.page_index];
+                    if (to === undefined) await client.query('UPDATE story_pins SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1', [p.id]);
+                    else if (to !== p.page_index) await client.query('UPDATE story_pins SET page_index = $1 WHERE id = $2', [to, p.id]);
+                }
+            }
+            if (order) {
+                const oldDir = chapterDir + '.__old_' + Date.now();
+                if (fs.existsSync(chapterDir)) fs.renameSync(chapterDir, oldDir);
+                fs.renameSync(newDir, chapterDir); newDir = null;
+                fs.rmSync(oldDir, { recursive: true, force: true });
+                clearProcessed(mangaId, num);
+            }
+            await client.query('COMMIT');
+        } catch (e) { await client.query('ROLLBACK').catch(() => {}); throw e; } finally { client.release(); }
+
+        await pool.query('UPDATE mangas SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [mangaId]).catch(() => {});
         res.json({
             success: true,
             message: 'Capítulo actualizado',
-            chapter: result.rows[0],
+            chapter: { number: row.chapter_number, title: row.title, pages: row.pages, status: row.status || 'published', publishAt: row.publish_at || null, freeAt: row.free_at || null },
         });
+        if (order) processChapterImages(chapterDir, mangaId, num).catch(e => console.error('[background] Error procesando imágenes:', e.message));
     } catch (err) {
+        if (newDir) fs.rmSync(newDir, { recursive: true, force: true });
+        if (err.status === 400 || err.status === 409) return res.status(err.status).json({ error: err.message });
         console.error('Error updating chapter:', err);
         res.status(500).json({ error: 'Error al actualizar capítulo' });
     }
@@ -419,6 +565,8 @@ router.delete('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, async (r
         if (fs.existsSync(chapterDir)) {
             fs.rmSync(chapterDir, { recursive: true, force: true });
         }
+        // Y sus versiones procesadas: si no, reaparecerían en otro capítulo con el mismo número
+        clearProcessed(mangaId, num);
 
         await pool.query(
             `UPDATE mangas SET

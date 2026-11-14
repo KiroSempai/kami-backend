@@ -13,7 +13,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const router = express.Router();
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, getRole } = require('../middleware/auth');
 const S = require('../payments/stripe');
 const subs = require('../payments/subscriptions');
 
@@ -75,6 +75,17 @@ router.post('/webhook', express.raw({ type: '*/*', limit: '1mb' }), async (req, 
   } catch (err) {
     console.error('[pagos] aviso', event.id, event.type, 'falló:', err.message);
     res.status(500).json({ error: 'No se pudo procesar; se reintentará' }); // Stripe lo reenvía
+  }
+});
+
+// Solo administración: comprueba que monedas, ventas y repartos cuadran
+router.get('/admin/reconcile', requireAuth, async (req, res) => {
+  try {
+    if ((await getRole(req.user.userId)) !== 'admin') return res.status(403).json({ error: 'Solo para administración.' });
+    res.json(await require('../payments/earnings').reconcile());
+  } catch (err) {
+    console.error('[pagos] conciliación:', err.message);
+    res.status(500).json({ error: 'No se pudo comprobar.' });
   }
 });
 

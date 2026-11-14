@@ -125,6 +125,16 @@ router.get('/comments', async (req, res) => {
 });
 
 // Qué admite la base ahora mismo (depende de las migraciones aplicadas)
+// Ingresos del autor: saldo, meses, obras, capítulos y últimos movimientos
+router.get('/earnings', async (req, res) => {
+  try {
+    res.json(await require('../payments/earnings').forAuthor(req.user.userId));
+  } catch (e) {
+    console.error('[studio] ingresos:', e.message);
+    res.status(500).json({ error: 'No se pudieron cargar tus ingresos.' });
+  }
+});
+
 router.get('/features', async (req, res) => {
   res.json({
     chapterStatus: await hasColumn('chapters', 'status'),   // borrador, programado y adelanto

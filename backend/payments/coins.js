@@ -17,6 +17,7 @@ const { pool } = require('../db');
 const { hasColumn } = require('../schema');
 const { canEditManga } = require('../middleware/auth');
 const S = require('./stripe');
+const earnings = require('./earnings');
 
 const PACKS = {
   p500:  { coins: 500,  cents: 499,  base: 500 },
@@ -159,9 +160,9 @@ async function creditPack(db, sessionId) {
   const pi = s.payment_intent && typeof s.payment_intent === 'object' ? s.payment_intent : null;
   const charge = pi && pi.latest_charge && typeof pi.latest_charge === 'object' ? pi.latest_charge : null;
   const bt = charge && charge.balance_transaction && typeof charge.balance_transaction === 'object' ? charge.balance_transaction : null;
-  const tax = (s.total_details && s.total_details.amount_tax) || 0;
+  const tax = earnings.taxOf(pack.cents, (s.total_details && s.total_details.amount_tax) || 0);
   const feeKnown = !!bt && Number.isInteger(bt.fee);
-  const fee = feeKnown ? bt.fee : Math.round(pack.cents * 0.015) + 25;   // estimación hasta conocerla
+  const fee = feeKnown ? bt.fee : earnings.feeGuess(pack.cents);   // estimación hasta conocerla
   const net = Math.max(0, pack.cents - tax - fee);
 
   const pay = await db.query(
@@ -239,10 +240,12 @@ async function unlock(userId, mangaId, chapterNum, expectedCost) {
     }
     if (need) throw new Error('El saldo de ' + userId + ' no cuadra con sus lotes (faltan ' + need + ')');   // nunca debería pasar: se deshace todo
     const full = cost === ch.price_coins ? value : Math.round(value * ch.price_coins / cost);
-    await db.query(
+    const ins = await db.query(
       `INSERT INTO chapter_unlocks (user_id, manga_id, chapter_number, price_coins, coins_spent, discount_pct, value_micros, full_value_micros)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
       [userId, mangaId, num, ch.price_coins, cost, gold ? GOLD_DISCOUNT : 0, value, full]);
+    // La parte del autor se apunta en esta misma operación: si falla, tampoco se cobra
+    await earnings.recordSale(db, { id: ins.rows[0].id, userId, mangaId, chapter: num, fullValueMicros: full });
     const after = await move(db, userId, balance, -cost, 'unlock', { mangaId, chapter: num });
     await db.query('COMMIT');
     return { ok: true, already: false, spent: cost, balance: after };

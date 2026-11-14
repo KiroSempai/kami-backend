@@ -363,16 +363,63 @@
       });
     },
     ingresos: function () {
-      var card = function (icon, t, d) { return '<div class="k-card st-muted-card k-stack--sm k-stack"><i class="ti ' + icon + '" style="font-size:24px;color:var(--k-accent)" aria-hidden="true"></i><b>' + t + '</b><span class="k-muted" style="font-size:13px">' + d + '</span><span class="k-badge">Próximamente</span></div>'; };
-      return Promise.resolve(head('Ingresos', 'Lo que ganes con tus obras aparecerá aquí, céntimo a céntimo.') +
-        '<div class="k-alert k-alert--accent"><i class="ti ti-clock" aria-hidden="true"></i><div><b>Los pagos todavía no están activos.</b> Tus adelantos ya pueden programarse; el cobro se activará con la verificación de autores y los pagos por transferencia.</div></div>' +
-        '<div class="st-kpis">' + card('ti-lock-open', 'Capítulos adelantados', 'Venta de capítulos antes de su fecha de liberación.') + card('ti-heart-handshake', 'Suscripción a tu obra', 'Mecenas mensuales con niveles que tú defines.') + card('ti-coin', 'Propinas', 'Apoyo puntual desde el final de cada capítulo.') + card('ti-crown', 'Reparto Premium', 'El 70 % neto de Premium va a un fondo común que se reparte según el tiempo de lectura.') + '</div>' +
-        '<div class="k-card k-stack--sm k-stack"><b>Cómo se calcula y se paga</b><ul class="k-muted" style="margin:0;padding-left:18px;font-size:14px;line-height:1.7">' +
-          '<li>Recibes el <b>65 %</b> de los ingresos netos de tus obras sin exclusiva y el <b>75 %</b> de las exclusivas.</li>' +
-          '<li>«Netos» significa después de impuestos (como el IVA) y de la comisión del procesador de pago.</li>' +
+      var eur = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+      // Los importes llegan en millonésimas de euro; se muestran al céntimo
+      var money = function (micros) { var v = micros / 1e6; return v > 0 && v < 0.005 ? '< 0,01 €' : eur.format(Math.floor(v * 100 + 1e-6) / 100); };
+      var monthName = function (ym) { var d = new Date(ym + '-15T00:00:00'); return d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') + ' ' + String(d.getFullYear()).slice(2); };
+      var rules = function (d) {
+        return '<div class="k-card k-stack--sm k-stack"><b>Cómo se calcula y se paga</b><ul class="k-muted" style="margin:0;padding-left:18px;font-size:14px;line-height:1.7">' +
+          '<li><b>Adelantos:</b> recibes el <b>' + d.sharePct + ' %</b> del valor neto de cada capítulo que desbloquean tus lectores (el <b>75 %</b> con contrato de exclusiva). Si el lector es Gold y paga menos, tú cobras como si hubiera pagado el precio completo.</li>' +
+          '<li><b>Premium:</b> el <b>' + d.premiumPoolPct + ' %</b> neto de cada suscripción se reparte entre las obras que leyó ese suscriptor ese mes, según el tiempo de lectura. Se calcula al terminar el mes.</li>' +
+          '<li>«Neto» significa después de impuestos (como el IVA) y de la comisión del procesador de pago.</li>' +
           '<li>Se paga una vez al mes, a mes vencido, entre los días 10 y 15.</li>' +
-          '<li>Mínimo para cobrar: 20 €. Si no llegas, se acumula para el mes siguiente.</li>' +
-        '</ul></div>');
+          '<li>Mínimo para cobrar: ' + money(d.payoutMinMicros) + '. Si no llegas, se acumula para el mes siguiente.</li>' +
+        '</ul></div>';
+      };
+      var card = function (icon, t, txt, badge) { return '<div class="k-card st-muted-card k-stack--sm k-stack"><i class="ti ' + icon + '" style="font-size:24px;color:var(--k-accent)" aria-hidden="true"></i><b>' + t + '</b><span class="k-muted" style="font-size:13px">' + txt + '</span>' + (badge ? '<span class="k-badge">' + badge + '</span>' : '') + '</div>'; };
+      var ways = '<div class="st-kpis">' + card('ti-lock-open', 'Capítulos adelantados', 'Publica un capítulo como adelanto y ponle precio: 30, 50 u 80 monedas.', '') + card('ti-crown', 'Reparto Premium', 'Cada suscriptor Premium que te lee te da una parte de su cuota.', '') +
+        card('ti-coin', 'Propinas', 'Apoyo puntual desde el final de cada capítulo.', 'Próximamente') + card('ti-heart-handshake', 'Suscripción a tu obra', 'Mecenas mensuales con niveles que tú defines.', 'Próximamente') + '</div>';
+      return load('earnings', '/api/studio/earnings').then(function (d) {
+        var t = d.totals, has = d.ready && (t.earned !== 0 || t.paid !== 0 || d.recent.length);
+        if (!has) {
+          return head('Ingresos', 'Lo que ganes con tus obras aparecerá aquí, céntimo a céntimo.') +
+            '<div class="k-alert k-alert--accent"><i class="ti ti-' + (d.ready ? 'seeding' : 'clock') + '" aria-hidden="true"></i><div>' + (d.ready
+              ? '<b>Todavía no tienes ingresos.</b> Aparecerán aquí en cuanto un lector desbloquee uno de tus adelantos o un suscriptor Premium lea tu obra.'
+              : '<b>Los ingresos todavía no están activos.</b> Tus adelantos ya pueden programarse; el cobro se activará cuando se abran los pagos.') + '</div></div>' + ways + rules(d);
+        }
+        // Barras por mes: adelantos y Premium apilados
+        var max = Math.max(1, d.months.reduce(function (m, x) { return Math.max(m, x.sales + x.premium); }, 0));
+        var bars = d.months.map(function (x) {
+          var tot = x.sales + x.premium + x.other;
+          return '<div class="st-bar" style="grid-template-columns:58px minmax(0,1fr) 76px"><span class="st-bar__label">' + monthName(x.month) + '</span><div class="st-bar__track" style="display:flex" role="img" aria-label="' + monthName(x.month) + ': ' + money(x.sales) + ' de adelantos y ' + money(x.premium) + ' de Premium">' +
+            '<div class="st-bar__fill" style="width:' + (x.sales / max * 100).toFixed(2) + '%;background:var(--k-gold);border-radius:999px 0 0 999px"></div><div class="st-bar__fill" style="width:' + (x.premium / max * 100).toFixed(2) + '%;background:var(--k-violet);border-radius:0 999px 999px 0"></div></div>' +
+            '<span class="st-bar__v">' + money(tot) + '</span></div>';
+        }).join('');
+        var pct = Math.max(0, Math.min(100, Math.round(t.balance / d.payoutMinMicros * 100)));
+        var works = d.works.map(function (w) {
+          var chs = w.chapters.length ? '<details style="margin-top:6px"><summary style="cursor:pointer;font-size:13px;color:var(--k-text-2)">Ventas por capítulo</summary><div style="display:grid;gap:4px;margin-top:8px;font-size:13px">' +
+            w.chapters.slice().sort(function (x, y) { return x.number - y.number; }).map(function (c) { return '<div class="k-row k-row--between"><span>Capítulo ' + c.number + ' · ' + nf.format(c.unitsSold) + (c.unitsSold === 1 ? ' venta' : ' ventas') + '</span><b style="font-variant-numeric:tabular-nums">' + money(c.total) + '</b></div>'; }).join('') + '</div></details>' : '';
+          return '<div class="st-row" style="grid-template-columns:minmax(0,1fr) auto"><div class="st-row__main"><div class="st-row__title"><a href="/obra/' + encodeURIComponent(w.mangaId) + '">' + esc(w.title) + '</a><span class="k-badge">' + w.sharePct + ' %</span></div>' +
+            '<div class="st-row__meta"><span>Adelantos <b>' + money(w.sales) + '</b> · ' + nf.format(w.unitsSold) + (w.unitsSold === 1 ? ' venta' : ' ventas') + '</span><span>Premium <b>' + money(w.premium) + '</b></span></div>' + chs + '</div>' +
+            '<b style="font:800 20px/1 var(--k-font-display);font-variant-numeric:tabular-nums">' + money(w.total) + '</b></div>';
+        }).join('');
+        var KIND = { sale: ['ti-lock-open', 'Adelanto desbloqueado'], premium: ['ti-crown', 'Reparto Premium'], reversal: ['ti-receipt-refund', 'Anulación'], payout: ['ti-building-bank', 'Pago recibido'], adjust: ['ti-adjustments', 'Ajuste'] };
+        var recent = d.recent.map(function (x) {
+          var k = KIND[x.kind] || KIND.adjust;
+          var what = x.kind === 'sale' ? esc(x.mangaTitle || 'Obra') + ' · capítulo ' + x.chapter : x.kind === 'premium' ? esc(x.mangaTitle || 'Obra') + ' · ' + monthName(x.period.slice(0, 7)) : (x.note ? esc(x.note) : '');
+          return '<div class="st-row" style="grid-template-columns:36px minmax(0,1fr) auto"><i class="ti ' + k[0] + '" style="font-size:20px;color:var(--k-text-2);justify-self:center" aria-hidden="true"></i><div class="st-row__main"><b style="font-size:14px">' + k[1] + '</b><div class="st-row__meta"><span>' + what + '</span><span>' + new Date(x.at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span></div></div>' +
+            '<b style="font-variant-numeric:tabular-nums;white-space:nowrap' + (x.amount > 0 ? ';color:var(--k-ok)' : '') + '">' + (x.amount > 0 ? '+' : '−') + money(Math.abs(x.amount)) + '</b></div>';
+        }).join('');
+        return head('Ingresos', 'Lo que has ganado con tus obras, céntimo a céntimo.') +
+          '<div class="st-kpis"><div class="st-kpi"><span>Saldo pendiente de pago</span><b>' + money(t.balance) + '</b></div><div class="st-kpi"><span>Este mes</span><b>' + money(t.thisMonth) + '</b></div><div class="st-kpi"><span>Mes pasado</span><b>' + money(t.lastMonth) + '</b></div><div class="st-kpi"><span>Total ganado</span><b>' + money(t.earned) + '</b></div></div>' +
+          '<div class="k-card k-stack--sm k-stack"><div class="k-row k-row--between"><b>' + (pct >= 100 ? 'Ya llegas al mínimo para cobrar' : 'Te faltan ' + money(d.payoutMinMicros - t.balance) + ' para el primer cobro') + '</b><span class="k-muted" style="font-size:13px">Mínimo ' + money(d.payoutMinMicros) + '</span></div>' +
+            '<div class="st-bar__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Progreso hacia el mínimo de cobro"><div class="st-bar__fill" style="width:' + pct + '%;background:var(--k-ok)"></div></div>' +
+            '<span class="k-muted" style="font-size:13px">Los pagos a autores se abrirán con la verificación de identidad. Mientras tanto tu saldo se acumula y no caduca.</span></div>' +
+          (d.months.length ? '<div class="k-card k-stack"><div class="k-row k-row--between"><b>Ingresos por mes</b><span class="st-legend"><span><i style="background:var(--k-gold)"></i>Adelantos</span><span><i style="background:var(--k-violet)"></i>Premium</span></span></div><div class="st-bars">' + bars + '</div></div>' : '') +
+          (works ? '<div class="k-stack--sm k-stack"><b>Por obra</b><div class="st-table">' + works + '</div></div>' : '') +
+          (recent ? '<div class="k-stack--sm k-stack"><b>Últimos movimientos</b><div class="st-table">' + recent + '</div></div>' : '') +
+          rules(d);
+      });
     },
     contrato: function () {
       var li = function (t) { return '<li><i class="ti ti-check" aria-hidden="true"></i><span>' + t + '</span></li>'; };

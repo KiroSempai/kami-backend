@@ -12,6 +12,7 @@
 const { pool } = require('../db');
 const { hasColumn } = require('../schema');
 const S = require('./stripe');
+const earnings = require('./earnings');
 
 // Estados de Stripe en los que la suscripción da acceso.
 const LIVE = ['active', 'trialing', 'past_due'];
@@ -178,7 +179,7 @@ async function recordInvoice(db, invoiceId) {
   const u = await db.query('SELECT id FROM users WHERE stripe_customer_id = $1', [idOf(inv.customer)]);
   const charge = inv.charge && typeof inv.charge === 'object' ? inv.charge : null;
   const bt = charge && charge.balance_transaction && typeof charge.balance_transaction === 'object' ? charge.balance_transaction : null;
-  const tax = Number.isInteger(inv.tax) ? inv.tax : (inv.total_tax_amounts || []).reduce((a, t) => a + (t.amount || 0), 0);
+  const tax = earnings.taxOf(inv.amount_paid, Number.isInteger(inv.tax) ? inv.tax : (inv.total_tax_amounts || []).reduce((a, t) => a + (t.amount || 0), 0));
   await db.query(
     `INSERT INTO payments (user_id, kind, stripe_invoice_id, stripe_payment_intent_id, stripe_charge_id, stripe_subscription_id,
                            amount_cents, tax_cents, fee_cents, currency, livemode, paid_at)
@@ -232,6 +233,12 @@ async function handleEvent(db, event) {
     case 'invoice.payment_succeeded': {
       const r = await recordInvoice(db, o.id);
       if (r.subId) await syncSubscription(db, r.subId);
+      // Un cobro anual cubre doce meses: el reparto de Premium lo divide entre ellos
+      if (r.subId && await hasColumn('payments', 'cover_months')) {
+        await db.query(
+          `UPDATE payments p SET cover_months = CASE WHEN s.billing_interval = 'year' THEN 12 ELSE 1 END
+             FROM subscriptions s WHERE p.stripe_invoice_id = $1 AND s.stripe_subscription_id = p.stripe_subscription_id`, [o.id]);
+      }
       return r;
     }
     case 'invoice.payment_failed': {

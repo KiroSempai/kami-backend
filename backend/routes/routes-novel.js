@@ -133,6 +133,7 @@ router.put('/:mangaId/progress', ready, requireAuth, async (req, res) => {
        WHERE user_id = $1 AND manga_id = $2`,
       [req.user.userId, req.params.mangaId, pct >= 95 ? chapter : chapter - 1]
     ).catch(() => {});
+    require('../payments/earnings').ping(req.user.userId, req.params.mangaId);   // tiempo de lectura (no bloquea)
     res.json({ success: true });
   } catch (e) {
     console.error('[novel] progreso:', e.message);

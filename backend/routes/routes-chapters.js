@@ -170,6 +170,7 @@ router.put('/:mangaId/progress', requireAuth, async (req, res) => {
                      total_pages_read = COALESCE(user_reading.total_pages_read, 0) + 1, updated_at = CURRENT_TIMESTAMP`,
             withPct ? [req.user.userId, req.params.mangaId, chapter, page, pct] : [req.user.userId, req.params.mangaId, chapter, page]
         );
+        require('../payments/earnings').ping(req.user.userId, req.params.mangaId);   // tiempo de lectura (no bloquea)
         res.json({ success: true, percent: pct });
     } catch (err) {
         console.error('[chapters] guardar progreso:', err.message);

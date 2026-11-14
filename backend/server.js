@@ -474,6 +474,7 @@ cleanExpiredTokens();
 
 // Iniciar procesadores de analytics
 analyticsScheduler.start();
+require('./payments/jobs').start();
 
 // Crear servidor HTTP y montar Socket.io
 const server = http.createServer(app);

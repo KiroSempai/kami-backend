@@ -148,6 +148,7 @@
       <label class="k-switch"><input type="checkbox" id="ed-early">Adelanto de pago</label>
       <span class="k-help">Los lectores ven el capítulo en la lista con la fecha en que se libera gratis. Hasta entonces, el texto no se muestra.</span>
       <div class="k-field" id="ed-free-wrap" hidden><label class="k-label" for="ed-free">Se libera gratis el</label><input class="k-input" type="datetime-local" id="ed-free"></div>
+      <div class="k-field" id="ed-price-wrap" hidden><label class="k-label" for="ed-price">Leerlo antes cuesta</label><select class="k-select" id="ed-price"><option value="">No se vende: solo se puede esperar</option><option value="30">30 monedas</option><option value="50">50 monedas</option><option value="80">80 monedas</option></select><span class="k-help">Quien no quiera esperar lo desbloquea con monedas. Al llegar la fecha es gratis para todos.</span></div>
     </div>
     <div class="k-field"><label class="k-label" for="ed-note-before">Nota del autor, antes del capítulo</label><textarea class="k-textarea" id="ed-note-before" rows="3" placeholder="Opcional. Un aviso o un saludo breve…"></textarea></div>
     <div class="k-field"><label class="k-label" for="ed-note-after">Nota del autor, al final</label><textarea class="k-textarea" id="ed-note-after" rows="3" placeholder="Opcional. Agradecimientos, cuándo sale el siguiente…"></textarea></div>
@@ -188,7 +189,7 @@
   document.body.setAttribute('data-shell-back', '/estudio#obra-' + mangaId);
   var $ = function (id) { return document.getElementById(id); };
   var ed = $('ed-text'), titleIn = $('ed-title');
-  var meta = { status: 'draft', publishAt: null, freeAt: null, noteBefore: '', noteAfter: '', warnings: [] };
+  var meta = { status: 'draft', publishAt: null, freeAt: null, priceCoins: null, noteBefore: '', noteAfter: '', warnings: [] };
   var dirty = false, saving = false, saveTimer = null, serverUpdatedAt = null, offline = false, serverStatus = 'draft';
   var STATUS_LABEL = { draft: 'Borrador', scheduled: 'Programado', published: 'Publicado' };
 
@@ -378,7 +379,7 @@
     el.innerHTML = '<i class="ti ' + icon + '" aria-hidden="true"></i>' + esc(text);
   }
   function payload() {
-    return { title: titleIn.value.trim(), blocks: serialize(), status: meta.status, publishAt: meta.publishAt, freeAt: meta.freeAt, noteBefore: meta.noteBefore, noteAfter: meta.noteAfter, warnings: meta.warnings };
+    return { title: titleIn.value.trim(), blocks: serialize(), status: meta.status, publishAt: meta.publishAt, freeAt: meta.freeAt, priceCoins: meta.freeAt ? meta.priceCoins : null, noteBefore: meta.noteBefore, noteAfter: meta.noteAfter, warnings: meta.warnings };
   }
   function backupLocal() {
     try { localStorage.setItem(localKey(), JSON.stringify({ savedAt: Date.now(), data: payload() })); } catch (e) {}
@@ -446,7 +447,7 @@
   function openPub() {
     document.querySelectorAll('[name="ed-status"]').forEach(function (r) { r.checked = r.value === meta.status; });
     $('ed-when').value = toLocalInput(meta.publishAt); $('ed-when-wrap').hidden = meta.status !== 'scheduled';
-    $('ed-early').checked = !!meta.freeAt; $('ed-free').value = toLocalInput(meta.freeAt); $('ed-free-wrap').hidden = !meta.freeAt;
+    $('ed-early').checked = !!meta.freeAt; $('ed-free').value = toLocalInput(meta.freeAt); $('ed-free-wrap').hidden = !meta.freeAt; $('ed-price-wrap').hidden = !meta.freeAt; $('ed-price').value = meta.priceCoins || '';
     $('ed-note-before').value = meta.noteBefore; $('ed-note-after').value = meta.noteAfter;
     $('ed-warnings').querySelectorAll('.k-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(meta.warnings.indexOf(c.value) >= 0)); });
     $('ed-pub-err').textContent = '';
@@ -459,7 +460,7 @@
   $('ed-pub').addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closePub(); });
   document.querySelectorAll('[name="ed-status"]').forEach(function (r) { r.addEventListener('change', function () { $('ed-when-wrap').hidden = r.value !== 'scheduled' || !r.checked; }); });
   $('ed-early').addEventListener('change', function (e) {
-    $('ed-free-wrap').hidden = !e.target.checked;
+    $('ed-free-wrap').hidden = !e.target.checked; $('ed-price-wrap').hidden = !e.target.checked;
     if (e.target.checked && !$('ed-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ed-free').value = toLocalInput(d.toISOString()); }
   });
   $('ed-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); });
@@ -474,7 +475,7 @@
     if (st !== 'draft' && !serialize().length) { $('ed-pub-err').textContent = 'El capítulo está vacío. Escribe algo antes de publicarlo.'; return; }
     var before = JSON.parse(JSON.stringify(meta));   // para deshacer si el guardado falla
     meta.status = st; meta.publishAt = st === 'scheduled' ? when : null;
-    meta.freeAt = free;
+    meta.freeAt = free; meta.priceCoins = free ? (parseInt($('ed-price').value, 10) || null) : null;
     meta.noteBefore = $('ed-note-before').value.trim(); meta.noteAfter = $('ed-note-after').value.trim();
     meta.warnings = Array.from($('ed-warnings').querySelectorAll('.k-chip[aria-pressed="true"]')).map(function (c) { return c.value; });
     dirty = true; var btn = $('ed-pub-save'); btn.disabled = true; btn.textContent = 'Guardando…';
@@ -539,7 +540,7 @@
     box.hidden = false;
     $('ed-rec-yes').onclick = function () {
       titleIn.value = raw.data.title || ''; render(raw.data.blocks || []);
-      Object.assign(meta, { status: raw.data.status || meta.status, publishAt: raw.data.publishAt, freeAt: raw.data.freeAt, noteBefore: raw.data.noteBefore || '', noteAfter: raw.data.noteAfter || '', warnings: raw.data.warnings || [] });
+      Object.assign(meta, { status: raw.data.status || meta.status, publishAt: raw.data.publishAt, freeAt: raw.data.freeAt, priceCoins: raw.data.priceCoins || null, noteBefore: raw.data.noteBefore || '', noteAfter: raw.data.noteAfter || '', warnings: raw.data.warnings || [] });
       box.hidden = true; changed();
     };
     $('ed-rec-no').onclick = function () { try { localStorage.removeItem(localKey()); } catch (e) {} box.hidden = true; };
@@ -563,7 +564,7 @@
         if (!d.isEditor) { gate('ti-lock', 'Solo el autor puede editar', 'Este capítulo pertenece a otra cuenta.', '<a class="k-btn k-btn--primary" href="/leer/' + encodeURIComponent(mangaId) + '/' + num + '">Leerlo</a>'); return; }
         var c = d.chapter;
         titleIn.value = c.title || ''; render(c.blocks || []);
-        Object.assign(meta, { status: c.status, publishAt: c.publishAt, freeAt: c.freeAt, noteBefore: c.noteBefore || '', noteAfter: c.noteAfter || '', warnings: c.warnings || [] });
+        Object.assign(meta, { status: c.status, publishAt: c.publishAt, freeAt: c.freeAt, priceCoins: c.priceCoins || null, noteBefore: c.noteBefore || '', noteAfter: c.noteAfter || '', warnings: c.warnings || [] });
         serverUpdatedAt = c.updatedAt; serverStatus = c.status || 'draft';
         $('ed-kicker').textContent = 'Capítulo ' + num;
         setSave('ok', 'Guardado');

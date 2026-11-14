@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Monedas · KamiTales</title>
+  <meta name="description" content="Monedas de KamiTales: lee los capítulos adelantados sin esperar y apoya a sus autores.">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/kami.css">
+  <script src="/js/kami-shell.js"></script>
+  <style>
+    [hidden] { display: none !important; }
+    .mn { display: grid; gap: var(--k-8); padding-bottom: var(--k-12); max-width: 980px; margin-inline: auto; }
+    .mn-hero { display: grid; gap: var(--k-4); padding-top: var(--k-4); }
+    .mn-hero h1 { margin: 0; font: 900 clamp(2.2rem, 7vw, 3.6rem)/.92 var(--k-font-display); text-transform: uppercase; text-wrap: balance; }
+    .mn-hero h1 span { color: var(--k-gold); }
+    .mn-hero p { margin: 0; color: var(--k-text-2); max-width: 58ch; line-height: 1.6; }
+    .mn-balance { display: inline-flex; align-items: center; gap: var(--k-3); justify-self: start; padding: var(--k-3) var(--k-5) var(--k-3) var(--k-3); border-radius: var(--k-r-pill);
+      border: 1px solid color-mix(in srgb, var(--k-gold) 40%, transparent); background: color-mix(in srgb, var(--k-gold) 8%, var(--k-surface-1)); }
+    .mn-balance .ti { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; color: #1a1205; background: linear-gradient(140deg, #ffe08a, var(--k-gold) 55%, #c98a1c); }
+    .mn-balance b { font: 900 1.9rem/1 var(--k-font-display); font-variant-numeric: tabular-nums; }
+    .mn-balance small { display: block; color: var(--k-text-3); font-size: var(--k-fs-xs); }
+    .mn-banner { display: grid; grid-template-columns: auto 1fr; gap: var(--k-3); align-items: center; padding: var(--k-4); border-radius: var(--k-r-lg); border: 1px solid var(--k-line-2); background: var(--k-surface-1); }
+    .mn-banner .ti { font-size: 24px; color: var(--k-gold); }
+    .mn-banner b { display: block; } .mn-banner small { color: var(--k-text-2); }
+    .mn-banner.is-ok { border-color: color-mix(in srgb, var(--k-ok, #3ecf8e) 50%, transparent); } .mn-banner.is-ok .ti { color: var(--k-ok, #3ecf8e); }
+    .mn-sec { display: grid; gap: var(--k-4); }
+    .mn-sec h2 { margin: 0; font: 800 var(--k-fs-xl)/1 var(--k-font-display); text-transform: uppercase; }
+    .mn-packs { display: grid; gap: var(--k-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+    .mn-pack { position: relative; display: grid; gap: var(--k-3); align-content: start; padding: var(--k-6) var(--k-5) var(--k-5); border-radius: 20px; border: 1px solid var(--k-line); background: var(--k-surface-1); transition: border-color var(--k-t-fast), transform var(--k-t-fast); }
+    .mn-pack:hover { border-color: color-mix(in srgb, var(--k-gold) 50%, transparent); transform: translateY(-2px); }
+    .mn-pack.is-best { border-color: color-mix(in srgb, var(--k-gold) 55%, transparent); background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--k-gold) 14%, transparent), transparent 70%), var(--k-surface-1); }
+    .mn-pack .k-badge { position: absolute; top: 14px; right: 14px; }
+    .mn-pack__n { font: 900 2.6rem/1 var(--k-font-display); font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 8px; }
+    .mn-pack__n small { font: 600 var(--k-fs-sm) var(--k-font-body); color: var(--k-text-3); text-transform: none; }
+    .mn-pack__bonus { color: var(--k-gold); font-weight: 700; font-size: var(--k-fs-sm); min-height: 1.4em; }
+    .mn-pack__what { color: var(--k-text-3); font-size: var(--k-fs-sm); margin: 0; }
+    .mn-gold { background: linear-gradient(120deg, #ffe08a, var(--k-gold) 60%, #d99a25); color: #1a1205; border-color: transparent; }
+    .mn-gold:hover { filter: brightness(1.06); color: #1a1205; }
+    .mn-how { display: grid; gap: var(--k-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+    .mn-how div { display: grid; gap: 6px; align-content: start; padding: var(--k-4); border-radius: var(--k-r-lg); border: 1px solid var(--k-line); }
+    .mn-how .ti { font-size: 22px; color: var(--k-gold); } .mn-how p { margin: 0; color: var(--k-text-3); font-size: var(--k-fs-sm); line-height: 1.5; }
+    .mn-hist { list-style: none; margin: 0; padding: 0; display: grid; }
+    .mn-hist li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: var(--k-3); align-items: center; padding: var(--k-3) 0; border-bottom: 1px solid var(--k-line); }
+    .mn-hist li:last-child { border-bottom: 0; }
+    .mn-hist .ti { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: var(--k-surface-2); color: var(--k-text-2); }
+    .mn-hist b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .mn-hist small { color: var(--k-text-3); }
+    .mn-hist a { color: inherit; }
+    .mn-delta { font: 700 var(--k-fs-md) var(--k-font-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .mn-delta.is-plus { color: var(--k-gold); }
+    .mn-legal { color: var(--k-text-3); font-size: var(--k-fs-xs); margin: 0; max-width: 70ch; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<main class="k-page mn" id="k-main">
+  <header class="mn-hero">
+    <span class="k-eyebrow" style="color:var(--k-gold)">Monedas</span>
+    <h1>Lee ya lo que <span>viene después</span></h1>
+    <p>Algunos autores publican capítulos por adelantado. Puedes esperar a que se liberen gratis o leerlos ya con monedas. La mayor parte de lo que gastas va directamente a su autor.</p>
+    <div class="mn-balance" id="mn-balance" hidden><i class="ti ti-coin" aria-hidden="true"></i><div><b id="mn-bal">0</b><small>monedas en tu cuenta</small></div></div>
+  </header>
+
+  <div id="mn-banner" aria-live="polite" hidden></div>
+
+  <section class="mn-sec" aria-labelledby="mn-h-packs">
+    <h2 id="mn-h-packs">Paquetes</h2>
+    <div class="mn-packs" id="mn-packs"></div>
+    <p class="mn-legal">Precios con IVA incluido. El pago se hace en la página segura de Stripe: KamiTales no ve ni guarda tu tarjeta. Las monedas no caducan y solo sirven dentro de KamiTales.</p>
+  </section>
+
+  <section class="mn-sec" aria-labelledby="mn-h-how">
+    <h2 id="mn-h-how">Cómo funciona</h2>
+    <div class="mn-how">
+      <div><i class="ti ti-clock-bolt" aria-hidden="true"></i><b>Adelantos, no muros</b><p>Cada adelanto tiene una fecha en la que pasa a ser gratis para todos. Nada queda bloqueado para siempre.</p></div>
+      <div><i class="ti ti-tag" aria-hidden="true"></i><b>30, 50 u 80 monedas</b><p>El precio lo elige el autor entre esos tres niveles. Lo ves antes de confirmar y nunca se cobra dos veces el mismo capítulo.</p></div>
+      <div><i class="ti ti-crown" aria-hidden="true"></i><b>Con Gold, un 20 % menos</b><p>El descuento lo pone KamiTales: el autor cobra lo mismo que si hubieras pagado el precio completo.</p></div>
+    </div>
+  </section>
+
+  <section class="mn-sec" id="mn-hist-sec" aria-labelledby="mn-h-hist" hidden>
+    <h2 id="mn-h-hist">Movimientos</h2>
+    <ul class="mn-hist" id="mn-hist"></ul>
+  </section>
+</main>
+
+<dialog class="k-dialog" id="mn-dlg" aria-labelledby="mn-dlg-h">
+  <form method="dialog" style="display:grid;gap:var(--k-4)">
+    <h2 id="mn-dlg-h" style="margin:0">Muy pronto</h2>
+    <p style="margin:0;color:var(--k-text-2)">La compra de monedas todavía no está abierta. En cuanto se active podrás hacerlo desde aquí mismo.</p>
+    <button class="k-btn k-btn--primary k-btn--block" value="ok">Entendido</button>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var NF = new Intl.NumberFormat('es-ES'), EUR = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  var DF = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  var token = function () { try { return localStorage.getItem('kami_token'); } catch (e) { return null; } };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var toast = function (m, t) { if (window.KAMI && KAMI.toast) KAMI.toast(m, t); };
+  var H = function () { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() }; };
+  var qs = new URLSearchParams(location.search);
+  // A dónde volver tras comprar: solo rutas internas sencillas
+  var back = qs.get('volver') || ''; if (!/^\/[A-Za-z0-9\-_/]{1,200}$/.test(back) || back.indexOf('//') >= 0) back = '';
+  var paid = qs.get('monedas');
+  var PACKS = [{ key: 'p500', coins: 500, cents: 499, bonus: 0 }, { key: 'p1050', coins: 1050, cents: 999, bonus: 50 }, { key: 'p2200', coins: 2200, cents: 1999, bonus: 200 }];
+
+  function banner(icon, title, text, okCls) {
+    var el = $('mn-banner');
+    el.innerHTML = '<div class="mn-banner' + (okCls ? ' is-ok' : '') + '"><i class="ti ' + icon + '" aria-hidden="true"></i><div><b>' + title + '</b><small>' + text + '</small></div></div>';
+    el.hidden = false;
+  }
+  function paintPacks() {
+    $('mn-packs').innerHTML = PACKS.map(function (p, i) {
+      return '<article class="mn-pack' + (i === 1 ? ' is-best' : '') + '">' + (i === 1 ? '<span class="k-badge k-badge--gold">El más elegido</span>' : '') +
+        '<div class="mn-pack__n">' + NF.format(p.coins) + '<small>monedas</small></div>' +
+        '<div class="mn-pack__bonus">' + (p.bonus ? '+' + NF.format(p.bonus) + ' de regalo' : '') + '</div>' +
+        '<p class="mn-pack__what">Entre ' + Math.floor(p.coins / 80) + ' y ' + Math.floor(p.coins / 30) + ' capítulos adelantados</p>' +
+        '<button type="button" class="k-btn k-btn--block ' + (i === 1 ? 'mn-gold' : 'k-btn--secondary') + '" data-pack="' + p.key + '">' + EUR.format(p.cents / 100) + '</button></article>';
+    }).join('');
+  }
+  function paintBalance(n) { $('mn-bal').textContent = NF.format(n); $('mn-balance').hidden = false; }
+  var REASON = { purchase: ['ti-shopping-bag', 'Compra de monedas'], unlock: ['ti-lock-open', 'Capítulo desbloqueado'], refund: ['ti-receipt-refund', 'Devolución'], grant: ['ti-gift', 'Regalo'], adjust: ['ti-adjustments', 'Ajuste'] };
+  function paintHistory(items) {
+    if (!items.length) return;
+    $('mn-hist').innerHTML = items.map(function (x) {
+      var r = REASON[x.reason] || REASON.adjust;
+      var title = x.reason === 'unlock' && x.mangaId ? '<a href="/leer/' + encodeURIComponent(x.mangaId) + '/' + x.chapter + '">' + esc(x.mangaTitle || 'Obra') + ' · capítulo ' + x.chapter + '</a>' : r[1];
+      return '<li><i class="ti ' + r[0] + '" aria-hidden="true"></i><div><b>' + title + '</b><small>' + esc(DF.format(new Date(x.at))) + ' · saldo ' + NF.format(x.balanceAfter) + '</small></div>' +
+        '<span class="mn-delta' + (x.delta > 0 ? ' is-plus' : '') + '">' + (x.delta > 0 ? '+' : '−') + NF.format(Math.abs(x.delta)) + '</span></li>';
+    }).join('');
+    $('mn-hist-sec').hidden = false;
+  }
+  function load() {
+    if (!token()) return Promise.resolve(null);
+    return fetch('/api/coins/wallet', { headers: H() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (w) {
+      if (!w) return null;
+      if (w.packs && w.packs.length) { PACKS = w.packs; paintPacks(); }
+      paintBalance(w.balance);
+      fetch('/api/coins/history', { headers: H() }).then(function (r) { return r.ok ? r.json() : { items: [] }; }).then(function (d) { paintHistory(d.items || []); }).catch(function () { /* sin historial */ });
+      return w;
+    }).catch(function () { return null; });
+  }
+
+  paintPacks();
+  $('mn-packs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-pack]'); if (!b || b.disabled) return;
+    if (!token()) { location.href = '/acceder?return=' + encodeURIComponent('/monedas' + (back ? '?volver=' + encodeURIComponent(back) : '')); return; }
+    var label = b.innerHTML; b.disabled = true; b.innerHTML = '<i class="ti ti-loader-2" aria-hidden="true"></i>Abriendo el pago…';
+    fetch('/api/coins/checkout', { method: 'POST', headers: H(), body: JSON.stringify({ pack: b.dataset.pack, returnTo: back || '/monedas' }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (x.ok && /^https:\/\//.test(x.d.url || '')) { location.href = x.d.url; return; }
+        if (x.ok) { var d = $('mn-dlg'); if (d.showModal) d.showModal(); else toast('La compra de monedas todavía no está abierta.'); }
+        else toast(x.d.error || 'No se pudo abrir el pago. Inténtalo de nuevo.', 'bad');
+      })
+      .catch(function () { toast('Sin conexión. Revisa tu red e inténtalo de nuevo.', 'bad'); })
+      .then(function () { b.disabled = false; b.innerHTML = label; });
+  });
+
+  if (paid) { try { history.replaceState(null, '', '/monedas'); } catch (e) { /* nada */ } }
+  if (paid === 'cancelado') banner('ti-arrow-back-up', 'Pago cancelado', 'No se te ha cobrado nada.');
+  else if (back) banner('ti-book', 'Vuelves a tu capítulo al terminar', 'Después de pagar te llevamos de nuevo a lo que estabas leyendo.');
+
+  load().then(function (w) {
+    if (paid !== 'ok' || !w) return;
+    // El aviso de pago puede tardar unos segundos: se espera a que suba el saldo
+    var before = w.balance, tries = 0;
+    banner('ti-loader-2', 'Recibiendo tus monedas…', 'Tu pago se está confirmando.');
+    (function poll() {
+      fetch('/api/coins/wallet', { headers: H() }).then(function (r) { return r.json(); }).then(function (x) {
+        var last = (function () { try { var v = sessionStorage.getItem('kt_coins_before'); return v === null ? NaN : Number(v); } catch (e) { return NaN; } })();
+        if (x.balance > (isNaN(last) ? before : Math.min(last, before)) || tries >= 7) {
+          paintBalance(x.balance); load();
+          if (tries >= 7 && x.balance <= before) banner('ti-hourglass', 'Tu pago está en camino', 'Aún no ha llegado la confirmación. Recarga la página en un momento; no hace falta pagar otra vez.');
+          else banner('ti-circle-check', 'Monedas añadidas', 'Ya tienes ' + NF.format(x.balance) + ' monedas.', true);
+          return;
+        }
+        tries++; setTimeout(poll, 2000);
+      }).catch(function () { /* se queda el aviso de espera */ });
+    })();
+  });
+  // Antes de salir a pagar se recuerda el saldo, para saber al volver si ya subió
+  $('mn-packs').addEventListener('click', function () { try { sessionStorage.setItem('kt_coins_before', String(Number(($('mn-bal').textContent || '0').replace(/\D/g, '')))); } catch (e) { /* nada */ } }, true);
+})();
+</script>
+</body>
+</html>

@@ -398,7 +398,7 @@
     var now = new Date();
     if (c.status === 'draft') return 'draft';
     if (c.status === 'scheduled' && (!c.publishAt || new Date(c.publishAt) > now)) return 'scheduled';
-    if (c.freeAt && new Date(c.freeAt) > now) return 'early';
+    if (c.freeAt && new Date(c.freeAt) > now) return c.unlocked ? 'ok' : 'early';
     return 'ok';
   }
   function renderChapters() {
@@ -419,7 +419,8 @@
       if (when) meta.push('<span>' + ago(when) + '</span>');
       if (isNovel() && c.wordCount) meta.push('<span>' + nf.format(c.wordCount) + ' palabras · ' + Math.max(1, Math.round(c.wordCount / 230)) + ' min</span>');
       else if (c.pages) meta.push('<span>' + c.pages + ' páginas</span>');
-      if (st === 'early') meta.push('<span class="k-badge k-badge--gold"><i class="ti ti-clock-bolt" aria-hidden="true"></i>Adelanto · gratis el ' + new Date(c.freeAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span>');
+      if (st === 'early') meta.push('<span class="k-badge k-badge--gold"><i class="ti ti-clock-bolt" aria-hidden="true"></i>Adelanto · gratis el ' + new Date(c.freeAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) + '</span>' + (c.priceCoins ? '<span class="k-badge"><i class="ti ti-coin" aria-hidden="true"></i>' + c.priceCoins + '</span>' : ''));
+      if (c.unlocked && c.freeAt && new Date(c.freeAt) > new Date()) meta.push('<span class="k-badge k-badge--ok"><i class="ti ti-lock-open" aria-hidden="true"></i>Desbloqueado</span>');
       if (st === 'draft') meta.push('<span class="k-badge">Borrador</span>');
       if (st === 'scheduled') meta.push('<span class="k-badge k-badge--info">Programado' + (c.publishAt ? ' · ' + new Date(c.publishAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '') + '</span>');
       if (st === 'ok' && when && new Date(when).getTime() > weekAgo && !read) meta.push('<span class="k-badge k-badge--accent">Nuevo</span>');

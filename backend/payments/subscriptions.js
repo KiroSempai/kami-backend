@@ -212,12 +212,16 @@ async function recordDispute(db, dispute) {
 }
 
 // ─── Avisos de Stripe ───────────────────────────────────────────────────────
+const coinsReady = () => require('./coins').tablesReady();
 async function handleEvent(db, event) {
   const o = event.data.object;
   switch (event.type) {
     case 'checkout.session.completed':
       if (o.mode === 'subscription' && o.subscription) return syncSubscription(db, idOf(o.subscription));
+      if (o.mode === 'payment') return (await coinsReady()) ? require('./coins').creditPack(db, o.id) : { skipped: 'monedas sin activar' };
       return { skipped: 'no es una suscripción' };
+    case 'checkout.session.async_payment_succeeded':
+      return (await coinsReady()) ? require('./coins').creditPack(db, o.id) : { skipped: 'monedas sin activar' };
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
     case 'customer.subscription.deleted':
@@ -235,9 +239,11 @@ async function handleEvent(db, event) {
       return subId ? syncSubscription(db, subId) : { skipped: 'sin suscripción' };
     }
     case 'charge.refunded':
-      return recordRefund(db, o.id);
+      await recordRefund(db, o.id);
+      return require('./coins').voidPackByCharge(db, o.id, idOf(o.payment_intent));
     case 'charge.dispute.created':
-      return recordDispute(db, o);
+      await recordDispute(db, o);
+      return require('./coins').voidPackByCharge(db, idOf(o.charge), idOf(o.payment_intent));
     default:
       return { skipped: 'tipo sin tratar' };
   }
@@ -292,4 +298,4 @@ async function statusOf(userId) {
   return out;
 }
 
-module.exports = { ready, createCheckout, createPortal, processEvent, handleEvent, syncSubscription, statusOf, LIVE };
+module.exports = { ready, ensureCustomer, createCheckout, createPortal, processEvent, handleEvent, syncSubscription, statusOf, LIVE };

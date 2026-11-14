@@ -136,6 +136,7 @@
         <div data-needs-status class="ce-grp">
           <label class="k-switch"><input type="checkbox" id="ce-early">Adelanto de pago</label>
           <div class="k-field" id="ce-free-wrap" hidden><label class="k-label" for="ce-free">Se libera gratis el</label><input class="k-input" type="datetime-local" id="ce-free"></div>
+          <div class="k-field" id="ce-price-wrap" hidden><label class="k-label" for="ce-price">Leerlo antes cuesta</label><select class="k-select" id="ce-price"><option value="">No se vende: solo se puede esperar</option><option value="30">30 monedas</option><option value="50">50 monedas</option><option value="80">80 monedas</option></select><span class="k-help">Quien no quiera esperar lo desbloquea con monedas. Al llegar la fecha es gratis para todos.</span></div>
         </div>
         <p class="k-help" id="ce-status-note" hidden>La programación, los borradores y los adelantos para cómics se activan cuando se aplique la última migración de la base de datos. Por ahora el capítulo se publica al subirlo.</p>
       </div>
@@ -320,7 +321,7 @@
     render();
   }
   $('ce-num').addEventListener('input', checkNum);
-  ['ce-title', 'ce-note-after', 'ce-when', 'ce-free'].forEach(function (id) { $(id).addEventListener('input', function () { touch(); render(); }); });
+  ['ce-title', 'ce-note-after', 'ce-when', 'ce-free', 'ce-price'].forEach(function (id) { $(id).addEventListener('input', function () { touch(); render(); }); });
 
   /* ── Optimizar imágenes en el dispositivo ──────────────────── */
   function loadBitmap(file) {
@@ -372,7 +373,7 @@
     $('ce-publish-l').textContent = editNum ? 'Guardar cambios' : st === 'draft' ? 'Guardar borrador' : st === 'scheduled' ? 'Programar' : 'Publicar';
   }
   document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.addEventListener('change', function () { touch(); syncStatusUI(); render(); }); });
-  $('ce-early').addEventListener('change', function (e) { touch(); $('ce-free-wrap').hidden = !e.target.checked; if (e.target.checked && !$('ce-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ce-free').value = toLocalInput(d); } render(); });
+  $('ce-early').addEventListener('change', function (e) { touch(); $('ce-free-wrap').hidden = !e.target.checked; $('ce-price-wrap').hidden = !e.target.checked; if (e.target.checked && !$('ce-free').value) { var d = new Date(); d.setDate(d.getDate() + 7); $('ce-free').value = toLocalInput(d); } render(); });
   $('ce-warnings').addEventListener('click', function (e) { var c = e.target.closest('.k-chip'); if (c) { c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true')); touch(); render(); } });
 
   $('ce-publish').addEventListener('click', function () {
@@ -399,6 +400,7 @@
     if (features.chapterStatus) {
       fd.append('status', st); if (st === 'scheduled') fd.append('publishAt', when);
       if (free) fd.append('freeAt', free);
+      fd.append('priceCoins', free ? $('ce-price').value : '');
       fd.append('noteAfter', $('ce-note-after').value.trim());
       fd.append('warnings', JSON.stringify(Array.from($('ce-warnings').querySelectorAll('[aria-pressed="true"]')).map(function (c) { return c.value; })));
     }
@@ -456,7 +458,7 @@
     $('ce-read').hidden = false; $('ce-read').href = '/leer/' + encodeURIComponent(mangaId) + '/' + c.number;
     document.querySelectorAll('[name="ce-status"]').forEach(function (r) { r.checked = r.value === (c.status || 'published'); });
     if (c.publishAt) $('ce-when').value = toLocalInput(c.publishAt);
-    if (c.freeAt) { $('ce-early').checked = true; $('ce-free').value = toLocalInput(c.freeAt); $('ce-free-wrap').hidden = false; }
+    if (c.freeAt) { $('ce-early').checked = true; $('ce-free').value = toLocalInput(c.freeAt); $('ce-free-wrap').hidden = false; $('ce-price-wrap').hidden = false; $('ce-price').value = c.priceCoins || ''; }
     $('ce-note-after').value = c.noteAfter || '';
     $('ce-warnings').querySelectorAll('.k-chip').forEach(function (ch) { ch.setAttribute('aria-pressed', String((c.warnings || []).indexOf(ch.value) >= 0)); });
     pages = (d.pages || []).map(function (p) {

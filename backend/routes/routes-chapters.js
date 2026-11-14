@@ -13,6 +13,13 @@ const { processChapterImages } = require('../image-processor');
 const { verifyToken } = require('../config');
 const { requireAuth, requireMangaEditor, canEditManga } = require('../middleware/auth');
 const { hasColumn } = require('../schema');
+const coins = require('../payments/coins');
+// Usuario de la petición si trae sesión válida; null si es anónima
+async function optionalUserId(req) {
+    const h = req.headers.authorization || '';
+    if (!h.startsWith('Bearer ')) return null;
+    try { return (await verifyToken(h.slice(7))).userId || null; } catch { return null; }
+}
 
 // Borradores y capítulos programados no se listan al público
 async function visibilityFilter(req, mangaId) {
@@ -77,6 +84,7 @@ router.get('/:mangaId', async (req, res) => {
         const { page = 1, limit = CHAPTERS_PER_PAGE } = req.query;
 
         const vis = await visibilityFilter(req, mangaId);
+        const reader = await coins.readerContext(await optionalUserId(req), mangaId);
         const countResult = await pool.query(
             'SELECT COUNT(*) FROM chapters c WHERE c.manga_id = $1' + vis,
             [mangaId]
@@ -116,6 +124,8 @@ router.get('/:mangaId', async (req, res) => {
                 commentCount: parseInt(r.comment_count) || 0,
                 status: r.status || 'published',
                 freeAt: r.free_at || null,
+                priceCoins: reader.ready ? (r.price_coins || null) : null,
+                unlocked: reader.unlocked.has(r.chapter_number),
                 wordCount: r.word_count || 0,
             })),
             pagination: { page: pageNum, limit: limitNum, total, totalPages },
@@ -247,8 +257,11 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
         const st = chapter.status || 'published';
         const visible = st === 'published' || (st === 'scheduled' && chapter.publish_at && new Date(chapter.publish_at) <= now);
         if (!visible && !editor) return res.status(404).json({ error: 'Capítulo no encontrado' });
-        if (!editor && chapter.free_at && new Date(chapter.free_at) > now) {
-            return res.status(403).json({ error: 'Este capítulo es un adelanto.', locked: true, freeAt: chapter.free_at });
+        // Adelanto: pasa quien edita la obra o quien lo desbloqueó con monedas
+        const reader = await coins.readerContext(userId, mangaId);
+        if (!editor && chapter.free_at && new Date(chapter.free_at) > now && !reader.unlocked.has(chapter.chapter_number)) {
+            return res.status(403).json({ error: 'Este capítulo es un adelanto.', locked: true, freeAt: chapter.free_at,
+                offer: reader.sell ? coins.offerFor(chapter, reader.gold) : null });
         }
 
         // Capítulos vecinos visibles, para navegar sin pedir la lista entera
@@ -260,9 +273,11 @@ router.get('/:mangaId/:chapterNum/manifest', async (req, res) => {
         );
         let next = null;
         if (nb.rows[0].next != null) {
-            const n = await pool.query('SELECT chapter_number, title, free_at FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, nb.rows[0].next]);
+            const n = await pool.query('SELECT * FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, nb.rows[0].next]);
             const row = n.rows[0];
-            next = { number: row.chapter_number, title: row.title || '', freeAt: row.free_at || null, locked: !editor && !!row.free_at && new Date(row.free_at) > now };
+            const nextLocked = !editor && !!row.free_at && new Date(row.free_at) > now && !reader.unlocked.has(row.chapter_number);
+            next = { number: row.chapter_number, title: row.title || '', freeAt: row.free_at || null, locked: nextLocked,
+                offer: nextLocked && reader.sell ? coins.offerFor(row, reader.gold) : null };
         }
 
         // Construir URLs firmadas para cada página
@@ -370,6 +385,7 @@ router.post('/:mangaId', requireAuth, requireMangaEditor, upload.array('pages', 
                 [mangaId, num, title || `Capítulo ${num}`, totalPages, scanGroup || '', st, st === 'scheduled' ? when : null, free,
                  String(req.body.noteBefore || '').slice(0, 4000), String(req.body.noteAfter || '').slice(0, 4000), warnings]
             );
+            await coins.savePrice(mangaId, num, req.body.priceCoins, free);
         } else {
             result = await pool.query(
                 `INSERT INTO chapters (manga_id, chapter_number, title, pages, scan_group, release_date)
@@ -425,7 +441,7 @@ router.get('/:mangaId/:chapterNum/edit', requireAuth, requireMangaEditor, async 
         res.json({
             chapter: {
                 number: c.chapter_number, title: c.title || '', pages: c.pages || 0,
-                status: c.status || 'published', publishAt: c.publish_at || null, freeAt: c.free_at || null,
+                status: c.status || 'published', publishAt: c.publish_at || null, freeAt: c.free_at || null, priceCoins: c.price_coins || null,
                 noteAfter: c.note_after || '', warnings: c.content_warnings || [], updatedAt: c.updated_at || null,
             },
             pages,
@@ -479,6 +495,7 @@ router.put('/:mangaId/:chapterNum', requireAuth, requireMangaEditor, upload.arra
             if (meta.st === 'published' && (ch.status || 'published') !== 'published') sets.push('release_date = CURRENT_TIMESTAMP');
             if (meta.st === 'scheduled') { vals.push(meta.when); sets.push('release_date = $' + vals.length + '::timestamptz'); }
             add('free_at = ?::timestamptz', meta.free);
+            if (body.priceCoins !== undefined && await hasColumn('chapters', 'price_coins')) add('price_coins = ?', coins.cleanPrice(body.priceCoins, meta.free));
             add('note_after = ?', meta.noteAfter);
             add('content_warnings = ?', meta.warnings);
         }

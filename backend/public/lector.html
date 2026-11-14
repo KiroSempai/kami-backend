@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/reader-glass.css">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/unlock.js"></script>
   <style>
     /* Lector de cómics: interfaz de cristal compartida (reader-glass.css) + modos
        Continuo, Por páginas y Doble página, con dirección izquierda→derecha o derecha→izquierda. */
@@ -463,7 +464,8 @@
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { r: r, d: d }; }); })
       .then(function (x) {
         if (x.r.status === 403 && x.d.locked) {
-          showState('ti-lock', 'Adelanto', '<p>Este capítulo se libera gratis el <b>' + esc(fmtDate.format(new Date(x.d.freeAt))) + '</b>.</p><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '">Volver a la obra</a>');
+          showState('ti-lock', 'Adelanto', '<p>Este capítulo se libera gratis el <b>' + esc(fmtDate.format(new Date(x.d.freeAt))) + '</b>.' + (x.d.offer ? ' Si no quieres esperar, puedes leerlo ya.' : '') + '</p><div id="cr-unlock" style="width:100%"></div><a class="cr-pill" href="/obra/' + encodeURIComponent(mangaId) + '">Volver a la obra</a>');
+          if (window.KAMI_UNLOCK) KAMI_UNLOCK.mount($('cr-unlock'), { mangaId: mangaId, chapter: chapterNum, offer: x.d.offer, onUnlocked: function () { location.reload(); } });
           return null;
         }
         if (x.r.status === 404) {
@@ -549,7 +551,7 @@
     var n = M.nav && M.nav.next;
     if (n) n = Object.assign({}, n, { title: realTitle(n.title) });
     var h ='<span class="cr-end__n">Capítulo ' + chapterNum + '</span><h2>Fin del capítulo</h2>';
-    if (n && n.locked) h += '<div class="cr-card cr-next"><div><small>Siguiente · adelanto</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b><small>Se libera gratis el ' + esc(fmtDate.format(new Date(n.freeAt))) + '</small></div><i class="ti ti-lock" aria-hidden="true"></i></div>';
+    if (n && n.locked) h += '<div class="cr-card cr-next"><div><small>Siguiente · adelanto</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b><small>Se libera gratis el ' + esc(fmtDate.format(new Date(n.freeAt))) + '</small></div>' + (n.offer ? '<a class="cr-pill" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '"><i class="ti ti-coin" aria-hidden="true"></i>Leer ya · ' + n.offer.cost + '</a>' : '<i class="ti ti-lock" aria-hidden="true"></i>') + '</div>';
     else if (n) h += '<a class="cr-card cr-next" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '" id="cr-next-ch"><div><small>Siguiente</small><b>Capítulo ' + n.number + (n.title ? ' · ' + esc(n.title) : '') + '</b></div><i class="ti ti-arrow-right" aria-hidden="true"></i></a>';
     else h += '<p>Estás al día. Te avisaremos cuando salga el siguiente si sigues la obra.</p>';
     h += '<div class="cr-card"><b>¿Qué te ha parecido?</b><div class="cr-react" id="cr-react" role="group" aria-label="Reaccionar al capítulo">' +

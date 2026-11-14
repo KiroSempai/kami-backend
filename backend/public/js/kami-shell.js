@@ -197,6 +197,7 @@
             '<a role="menuitem" class="k-menu__item" href="' + ROUTES.library + '"><i class="ti ti-books"></i>Mi biblioteca</a>' +
             '<a role="menuitem" class="k-menu__item" href="' + ROUTES.studio + '"><i class="ti ti-pencil-plus"></i>Estudio</a>' +
             '<a role="menuitem" class="k-menu__item" href="' + ROUTES.premium + '"><i class="ti ti-crown"></i>Premium</a>' +
+            '<a role="menuitem" class="k-menu__item" href="/monedas"><i class="ti ti-coin"></i>Monedas</a>' +
             '<div class="k-menu__sep"></div>' +
             '<button role="menuitem" type="button" class="k-menu__item" data-k-appearance><i class="ti ti-palette"></i>Apariencia</button>' +
             '<a role="menuitem" class="k-menu__item" href="' + ROUTES.settings + '"><i class="ti ti-settings"></i>Configuración</a>' +

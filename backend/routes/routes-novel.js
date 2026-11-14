@@ -18,6 +18,7 @@ const { pool } = require('../db');
 const { verifyToken } = require('../config');
 const { requireAuth, requireMangaEditor, requireNotBanned, canEditManga } = require('../middleware/auth');
 const { hasColumn } = require('../schema');
+const coins = require('../payments/coins');
 
 const MIGRATION_HINT = 'Falta aplicar migrate-novel-reader.sql en la base de datos.';
 async function ready(req, res, next) {
@@ -64,8 +65,9 @@ const WARNINGS = ['violencia', 'sexual', 'lenguaje', 'autolesion', 'drogas', 'te
 
 const VISIBLE_SQL = `(c.status = 'published' OR (c.status = 'scheduled' AND c.publish_at <= NOW()))`;
 
-function chapterOut(r, { withContent, editor }) {
-  const locked = !editor && r.free_at && new Date(r.free_at) > new Date();
+function chapterOut(r, { withContent, editor, reader }) {
+  const unlocked = !!(reader && reader.unlocked.has(r.chapter_number));
+  const locked = !editor && !unlocked && r.free_at && new Date(r.free_at) > new Date();
   return {
     number: r.chapter_number,
     title: r.title || '',
@@ -78,6 +80,9 @@ function chapterOut(r, { withContent, editor }) {
     noteAfter: withContent && !locked ? r.note_after || '' : '',
     warnings: r.content_warnings || [],
     locked: !!locked,
+    unlocked,
+    priceCoins: reader && reader.ready ? (r.price_coins || null) : (editor ? r.price_coins || null : null),
+    offer: locked && reader && reader.sell ? coins.offerFor(r, reader.gold) : null,
     blocks: withContent && !locked ? (r.content || []) : undefined,
     updatedAt: r.updated_at,
   };
@@ -92,7 +97,8 @@ router.get('/:mangaId/chapters', ready, optionalAuth, async (req, res) => {
       `SELECT c.* FROM chapters c WHERE c.manga_id = $1 ${editor ? '' : 'AND ' + VISIBLE_SQL} ORDER BY c.chapter_number ASC`,
       [mangaId]
     );
-    res.json({ mangaId, isEditor: editor, chapters: r.rows.map(row => chapterOut(row, { withContent: false, editor })) });
+    const reader = await coins.readerContext(req.user && req.user.userId, mangaId);
+    res.json({ mangaId, isEditor: editor, chapters: r.rows.map(row => chapterOut(row, { withContent: false, editor, reader })) });
   } catch (e) {
     console.error('[novel] lista:', e.message);
     res.status(500).json({ error: 'No se pudieron cargar los capítulos.' });
@@ -142,6 +148,7 @@ router.get('/:mangaId/:num', ready, optionalAuth, async (req, res) => {
     const m = await pool.query('SELECT id, title, author, type, cover, social_links, created_by FROM mangas WHERE id = $1', [mangaId]);
     if (!m.rows.length) return res.status(404).json({ error: 'Esta obra no existe.' });
     const editor = await isEditor(req, mangaId);
+    const reader = await coins.readerContext(req.user && req.user.userId, mangaId);
     const visible = editor ? '' : 'AND ' + VISIBLE_SQL;
     const r = await pool.query(`SELECT c.* FROM chapters c WHERE c.manga_id = $1 AND c.chapter_number = $2 ${visible}`, [mangaId, num]);
     if (!r.rows.length) return res.status(404).json({ error: 'Este capítulo no existe o todavía no está publicado.' });
@@ -154,14 +161,15 @@ router.get('/:mangaId/:num', ready, optionalAuth, async (req, res) => {
     );
     let next = null;
     if (nav.rows[0].next) {
-      const n = await pool.query('SELECT chapter_number, title, free_at FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, nav.rows[0].next]);
+      const n = await pool.query('SELECT * FROM chapters WHERE manga_id = $1 AND chapter_number = $2', [mangaId, nav.rows[0].next]);
       const row = n.rows[0];
-      next = { number: row.chapter_number, title: row.title || '', freeAt: row.free_at, locked: !editor && row.free_at && new Date(row.free_at) > new Date() };
+      const nextLocked = !editor && !reader.unlocked.has(row.chapter_number) && !!row.free_at && new Date(row.free_at) > new Date();
+      next = { number: row.chapter_number, title: row.title || '', freeAt: row.free_at, locked: nextLocked, offer: nextLocked && reader.sell ? coins.offerFor(row, reader.gold) : null };
     }
     const man = m.rows[0];
     res.json({
       manga: { id: man.id, title: man.title, author: man.author, type: man.type, cover: man.cover, links: man.social_links || {} },
-      chapter: chapterOut(r.rows[0], { withContent: true, editor }),
+      chapter: chapterOut(r.rows[0], { withContent: true, editor, reader }),
       prev: nav.rows[0].prev, next, total: parseInt(nav.rows[0].total, 10) || 0,
       isEditor: editor,
     });
@@ -207,6 +215,7 @@ router.post('/:mangaId', ready, requireAuth, requireMangaEditor, async (req, res
       [mangaId, num, d.title, JSON.stringify(d.blocks), d.words, d.status, d.publishAt, d.freeAt, d.noteBefore, d.noteAfter, d.warnings]
     );
     if (!r.rows.length) return res.status(409).json({ error: `Ya existe el capítulo ${num}.` });
+    r.rows[0].price_coins = await coins.savePrice(mangaId, num, req.body.priceCoins, d.freeAt);
     await pool.query('UPDATE mangas SET total_chapters = (SELECT COUNT(*) FROM chapters WHERE manga_id = $1), updated_at = CURRENT_TIMESTAMP WHERE id = $1', [mangaId]);
     res.status(201).json({ chapter: chapterOut(r.rows[0], { withContent: true, editor: true }) });
   } catch (e) {
@@ -231,6 +240,7 @@ router.put('/:mangaId/:num', ready, requireAuth, requireMangaEditor, async (req,
       [mangaId, num, d.title, JSON.stringify(d.blocks), d.words, d.status, d.publishAt, d.freeAt, d.noteBefore, d.noteAfter, d.warnings]
     );
     if (!r.rows.length) return res.status(404).json({ error: 'Este capítulo no existe.' });
+    if (req.body.priceCoins !== undefined) r.rows[0].price_coins = await coins.savePrice(mangaId, num, req.body.priceCoins, d.freeAt);
     if (d.status !== 'draft') await pool.query('UPDATE mangas SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [mangaId]);
     res.json({ chapter: chapterOut(r.rows[0], { withContent: false, editor: true }) });
   } catch (e) {

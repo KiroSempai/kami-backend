@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/reader-glass.css">
   <link rel="stylesheet" href="/css/kami.css">
   <script src="/js/kami-shell.js"></script>
+  <script src="/js/unlock.js"></script>
   <style>
     /* Lector de novelas: misma interfaz de cristal que el de cómics (reader-glass.css).
        Aquí solo lo propio del texto: fondos, letra, párrafos y comentarios por párrafo. */
@@ -360,7 +361,7 @@
       '</header>';
     if (c.locked) {
       return '<article class="rd-chapter" data-num="' + c.number + '">' + head +
-        '<div class="rd-glass" style="text-align:center;justify-items:center"><i class="ti ti-lock" style="font-size:34px;color:var(--k-gold)" aria-hidden="true"></i><b>Capítulo adelantado</b><span style="color:var(--rd-muted);font-size:14px">Se libera gratis el <b>' + fmtDate.format(new Date(c.freeAt)) + '</b>. Hasta entonces es un adelanto para quien apoya al autor.</span>' + supportLinks(d.manga) + '</div></article>';
+        '<div class="rd-glass" style="text-align:center;justify-items:center"><i class="ti ti-lock" style="font-size:34px;color:var(--k-gold)" aria-hidden="true"></i><b>Capítulo adelantado</b><span style="color:var(--rd-muted);font-size:14px">Se libera gratis el <b>' + fmtDate.format(new Date(c.freeAt)) + '</b>. ' + (c.offer ? 'Si no quieres esperar, puedes leerlo ya.' : 'Hasta entonces es un adelanto para quien apoya al autor.') + '</span><div class="rd-unlock" data-unlock="' + c.number + '" style="width:100%"></div>' + supportLinks(d.manga) + '</div></article>';
     }
     return '<article class="rd-chapter" data-num="' + c.number + '" aria-label="Capítulo ' + c.number + '">' + head +
       (c.noteBefore ? '<aside class="rd-note"><b>Nota del autor</b>' + esc(c.noteBefore).replace(/\n/g, '<br>') + '</aside>' : '') +
@@ -369,7 +370,7 @@
   function endHtml(d) {
     var c = d.chapter, n = d.next;
     var next = n ? (n.locked
-      ? '<div class="rd-glass rd-next"><div><b>Capítulo ' + n.number + (n.title ? ': ' + esc(n.title) : '') + '</b><div style="color:var(--rd-muted);font-size:13px">Adelanto · se libera gratis el ' + fmtDate.format(new Date(n.freeAt)) + '</div></div><i class="ti ti-lock" style="font-size:22px;color:var(--k-gold)" aria-hidden="true"></i></div>'
+      ? '<div class="rd-glass rd-next"><div><b>Capítulo ' + n.number + (n.title ? ': ' + esc(n.title) : '') + '</b><div style="color:var(--rd-muted);font-size:13px">Adelanto · se libera gratis el ' + fmtDate.format(new Date(n.freeAt)) + '</div></div>' + (n.offer ? '<a class="rd-pill" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '"><i class="ti ti-coin" aria-hidden="true"></i>Leer ya · ' + n.offer.cost + '</a>' : '<i class="ti ti-lock" style="font-size:22px;color:var(--k-gold)" aria-hidden="true"></i>') + '</div>'
       : '<a class="rd-glass rd-next" href="/leer/' + encodeURIComponent(mangaId) + '/' + n.number + '"><div><span class="k-eyebrow">Siguiente</span><div style="font-weight:700;margin-top:4px">Capítulo ' + n.number + (n.title ? ': ' + esc(n.title) : '') + '</div></div><i class="ti ti-arrow-right" style="font-size:22px;color:var(--k-accent)" aria-hidden="true"></i></a>')
       : '<div class="rd-glass"><b>Estás al día.</b><span style="color:var(--rd-muted);font-size:13px">Todavía no hay más capítulos publicados.</span></div>';
     var support = supportLinks(d.manga);
@@ -402,8 +403,14 @@
     renderEnd(d);
     updateChapterCount(n);
   }
+  // Adelanto con precio: botón para leerlo ya con monedas
+  function mountUnlock(d) {
+    var el = document.querySelector('[data-unlock="' + d.chapter.number + '"]');
+    if (el && !el.firstChild && window.KAMI_UNLOCK) KAMI_UNLOCK.mount(el, { mangaId: mangaId, chapter: d.chapter.number, offer: d.chapter.offer, onUnlocked: function () { location.reload(); } });
+  }
   function renderEnd(d) {
     var end = $('rd-end');
+    mountUnlock(d);
     if (d.chapter.locked) { end.hidden = true; return; }
     end.innerHTML = endHtml(d); end.hidden = false;
     $('rd-ch-comments').onclick = function () { openComments(null, d.chapter.number); };
@@ -619,7 +626,7 @@
     api('GET', B + '/chapters').then(function (d) {
       state.chapters = d.chapters || [];
       $('chapter-select').innerHTML = state.chapters.map(function (c) {
-        return '<option value="' + c.number + '"' + (c.locked ? ' disabled' : '') + '>#' + String(c.number).padStart(3, '0') + (c.locked ? ' · ' + fmtShort.format(new Date(c.freeAt)) : '') + '</option>';
+        return '<option value="' + c.number + '"' + (c.locked && !c.offer ? ' disabled' : '') + '>#' + String(c.number).padStart(3, '0') + (c.locked ? ' · ' + fmtShort.format(new Date(c.freeAt)) : '') + '</option>';
       }).join('');
       $('chapter-select').value = String(state.current);
     }).catch(function () {});
